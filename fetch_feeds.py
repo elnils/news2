@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """
-Presseschau – Neue#!/usr/bin/env python3
-"""
 Presseschau – Neue Edition
-- Rollendes 7-Tage-Archiv (neue Artikel werden vorne eingefügt, alte fallen hinten raus)
-- 2 Datensets: articles.json (allgemeine News) + eu_articles.json (nur offizielle EU-Quellen)
-- 100+ kuratierte Quellen
-- Noise-Filter + Relevanz-Scoring
-"""
 
+- Rollendes 7‑Tage‑Archiv (neue Artikel werden vorne eingefügt, alte fallen hinten raus)
+- 2 Datensets: articles.json (allgemeine News) + eu_articles.json (nur offizielle EU‑Quellen)
+- 100+ kuratierte Quellen
+- Noise‑Filter + Relevanz‑Scoring
+"""
 import json, time, hashlib, re, sys, os
 from datetime import datetime, timezone, timedelta
 from urllib.request import urlopen, Request
@@ -16,7 +14,6 @@ from urllib.error import URLError
 from xml.etree import ElementTree as ET
 from email.utils import parsedate_to_datetime
 from collections import Counter
-
 # ═══════════════════════════════════════════════════════════════
 # OFFIZIELLE EU-QUELLEN (gehen in eu_articles.json)
 # ═══════════════════════════════════════════════════════════════
