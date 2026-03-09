@@ -8,65 +8,49 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f1f3f7;
-  --surface: #ffffff;
-  --border: #e4e7ef;
-  --text: #0f1523;
-  --text2: #52596e;
-  --muted: #9198ad;
-  --shadow: 0 1px 3px rgba(15,21,35,.07), 0 0 0 1px rgba(15,21,35,.04);
-  --shadow-md: 0 6px 24px rgba(15,21,35,.10);
-  --radius: 10px;
-  --font: 'Plus Jakarta Sans', sans-serif;
+  --bg:#f0f2f7;--surface:#fff;--border:#e3e7f0;
+  --text:#0f1523;--text2:#52596e;--muted:#9198ad;
+  --blue:#3b82f6;--blue-lt:#eff6ff;
+  --shadow:0 1px 3px rgba(15,21,35,.07),0 0 0 1px rgba(15,21,35,.04);
+  --shadow-md:0 6px 24px rgba(15,21,35,.10);
+  --r:10px;--font:'Plus Jakarta Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px}
 
 /* ── TOP BAR ── */
-#topbar{
-  height:52px;background:var(--surface);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 18px;gap:12px;
-  position:sticky;top:0;z-index:300;
-  box-shadow:0 1px 8px rgba(15,21,35,.06);
-}
-.logo{font-size:17px;font-weight:700;letter-spacing:-.03em;color:#0f1523;white-space:nowrap;flex-shrink:0}
+#topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;position:sticky;top:0;z-index:300;box-shadow:0 1px 8px rgba(15,21,35,.06)}
+.logo{font-size:17px;font-weight:700;letter-spacing:-.03em;white-space:nowrap;flex-shrink:0}
 .logo span{background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-mid{flex:1;display:flex;justify-content:center}
-.search-wrap{position:relative;width:300px}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;flex-shrink:0}
+.sw{position:relative;width:300px}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 #q{width:100%;padding:7px 12px 7px 34px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-#q:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #eff6ff;background:#fff}
+#q:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt);background:#fff}
 #q::placeholder{color:var(--muted)}
-.topbar-right{display:flex;gap:7px;align-items:center;flex-shrink:0}
-.tbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--font);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
-.tbtn:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
-.tbtn.primary{background:#3b82f6;color:#fff;border-color:#3b82f6}
-.tbtn.primary:hover{background:#2563eb;border-color:#2563eb}
-.tbtn.active{background:#eff6ff;color:#3b82f6;border-color:#3b82f6}
+.tr{display:flex;gap:7px;align-items:center;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--font);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.p:hover{background:#2563eb;border-color:#2563eb}
 
 /* ── VIEW TABS ── */
-#viewbar{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:0 18px;display:flex;gap:2px;align-items:center;
-}
+#viewbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;display:flex;gap:2px;align-items:center}
 .vtab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
 .vtab:hover{color:var(--text2)}
-.vtab.active{color:#3b82f6;border-bottom-color:#3b82f6}
-.vright{margin-left:auto;display:flex;gap:6px;align-items:center;padding:6px 0}
+.vtab.active{color:var(--blue);border-bottom-color:var(--blue)}
+#upd-info{margin-left:auto;font-size:11.5px;color:var(--muted);padding:8px 0}
 
 /* ── FILTER BAR ── */
-#filterbar{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:8px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-}
-.flabel{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+#filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
 .chips{display:flex;gap:4px;flex-wrap:wrap}
 .chip{font-size:12px;font-weight:500;padding:4px 11px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap}
-.chip:hover{border-color:#3b82f6;color:#3b82f6}
-.chip.active{background:#3b82f6;border-color:#3b82f6;color:#fff;box-shadow:0 1px 5px rgba(59,130,246,.3)}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 1px 5px rgba(59,130,246,.3)}
 .vsep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
 .fsel{appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%239198ad' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 9px center;border:1.5px solid var(--border);color:var(--text);padding:5px 28px 5px 10px;border-radius:8px;font-family:var(--font);font-size:12.5px;cursor:pointer;outline:none;transition:border-color .15s;min-width:150px}
-.fsel:focus{border-color:#3b82f6;background-color:#fff}
+.fsel:focus{border-color:var(--blue);background-color:#fff}
 .kw-wrap{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .kw-tag{display:flex;align-items:center;gap:3px;font-size:11.5px;font-weight:500;padding:3px 7px 3px 10px;border-radius:20px;background:#fff7ed;border:1.5px solid #fed7aa;color:#c2410c}
 .kw-tag button{background:none;border:none;cursor:pointer;color:#c2410c;font-size:13px;line-height:1;padding:0;opacity:.6}
@@ -80,91 +64,90 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .spill{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);padding:2px 10px;border-radius:20px;font-size:11.5px}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .dot.loading{background:#f59e0b;animation:pulse 1s infinite}
-.dot.ok{background:#16a34a}.dot.err{background:#dc2626}.dot.partial{background:#f59e0b}
+.dot.ok{background:#16a34a}.dot.err{background:#dc2626}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sright{margin-left:auto;display:flex;gap:5px;align-items:center}
-.sortbtn{font-family:var(--font);font-size:11.5px;font-weight:500;padding:3px 10px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
-.sortbtn:first-child{border-radius:6px 0 0 6px}
-.sortbtn:last-child{border-radius:0 6px 6px 0;border-left:none}
-.sortbtn.active{background:#3b82f6;color:#fff;border-color:#3b82f6}
+.sr{margin-left:auto;display:flex;gap:5px}
+.sb{font-family:var(--font);font-size:11.5px;font-weight:500;padding:3px 10px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
+.sb:first-child{border-radius:6px 0 0 6px}
+.sb:last-child{border-radius:0 6px 6px 0;border-left:none}
+.sb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 
-/* ── SOURCE COLOR BADGE ── */
-.src-badge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+/* ── SOURCE BADGE ── */
+.sbadge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
 
-/* ── VIEWS ── */
+/* ── MAIN ── */
 #main{padding:16px 18px}
 
-/* GRID VIEW */
-#view-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
+/* GRID */
+#vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
 
-/* LIST VIEW */
-#view-list{display:flex;flex-direction:column;gap:6px}
-.list-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:box-shadow .15s,transform .12s;box-shadow:var(--shadow)}
-.list-item:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.li-left{flex:1;min-width:0}
-.li-title{font-size:14px;font-weight:600;line-height:1.35;color:var(--text);margin-bottom:4px}
-.li-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.li-date{font-size:11px;color:var(--muted)}
-.li-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+/* LIST */
+#vlist{display:flex;flex-direction:column;gap:6px}
+.li{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:box-shadow .15s,transform .12s;box-shadow:var(--shadow)}
+.li:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.li-l{flex:1;min-width:0}
+.li-t{font-size:14px;font-weight:600;line-height:1.35;color:var(--text);margin-bottom:4px}
+.li-m{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.li-d{font-size:11px;color:var(--muted)}
+.li-r{flex-shrink:0;font-size:12px;color:var(--text2);max-width:300px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* DASHBOARD VIEW */
-#view-dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.dash-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-.dash-header{padding:11px 14px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.dash-title{font-size:13px;font-weight:700;letter-spacing:-.01em}
-.dash-count{font-size:11px;color:var(--muted);margin-left:auto}
-.dash-items{padding:4px 0}
-.dash-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
-.dash-item:last-child{border-bottom:none}
-.dash-item:hover{background:#f8faff}
-.dash-item-title{font-size:12.5px;font-weight:500;line-height:1.35;color:var(--text);margin-bottom:3px}
-.dash-item-meta{display:flex;gap:6px;align-items:center}
-.dash-item-src{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.dash-item-date{font-size:10px;color:var(--muted)}
+/* DASHBOARD */
+#vdash{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.ds{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.ds-h{padding:11px 14px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ds-title{font-size:13px;font-weight:700}
+.ds-cnt{font-size:11px;color:var(--muted);margin-left:auto}
+.ds-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.ds-item:last-child{border-bottom:none}
+.ds-item:hover{background:#f7f9ff}
+.ds-it{font-size:12.5px;font-weight:500;line-height:1.35;color:var(--text);margin-bottom:3px}
+.ds-im{display:flex;gap:6px;align-items:center}
+.ds-is{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.ds-id{font-size:10px;color:var(--muted)}
 
-/* CARD (shared by grid + dash) */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);transition:box-shadow .18s,transform .14s;cursor:pointer;animation:fadeUp .2s ease both}
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);transition:box-shadow .18s,transform .14s;cursor:pointer;animation:fu .2s ease both}
 .card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.card-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.card-date{font-size:10.5px;color:var(--muted);white-space:nowrap}
-.card-title{font-size:14px;font-weight:600;line-height:1.38;color:var(--text)}
-.card-desc{font-size:12.5px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.card-tags{display:flex;gap:4px;flex-wrap:wrap}
-.card-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ct{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.cd{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.ctitle{font-size:14px;font-weight:600;line-height:1.38;color:var(--text)}
+.cdesc{font-size:12.5px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ctags{display:flex;gap:4px;flex-wrap:wrap}
+.ctag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
 
 /* ── READ MODAL ── */
-#read-modal{display:none;position:fixed;inset:0;background:rgba(15,21,35,.45);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;padding:16px}
-#read-modal.open{display:flex}
-.rm-inner{background:var(--surface);border-radius:16px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(15,21,35,.22);display:flex;flex-direction:column}
-.rm-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;position:sticky;top:0;background:var(--surface);border-radius:16px 16px 0 0;z-index:1}
-.rm-header-left{flex:1;min-width:0}
-.rm-source{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+#rm{display:none;position:fixed;inset:0;background:rgba(15,21,35,.45);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;padding:16px}
+#rm.open{display:flex}
+.rm-in{background:var(--surface);border-radius:16px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(15,21,35,.22);display:flex;flex-direction:column}
+.rm-hd{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;position:sticky;top:0;background:var(--surface);border-radius:16px 16px 0 0;z-index:1}
+.rm-hl{flex:1;min-width:0}
+.rm-src{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
 .rm-title{font-size:18px;font-weight:700;line-height:1.3;color:var(--text)}
-.rm-close{flex-shrink:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;font-size:16px;cursor:pointer;color:var(--muted);line-height:1;transition:all .15s}
-.rm-close:hover{background:var(--border);color:var(--text)}
-.rm-body{padding:18px 20px 20px;flex:1}
+.rm-x{flex-shrink:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;font-size:16px;cursor:pointer;color:var(--muted);line-height:1;transition:all .15s}
+.rm-x:hover{background:var(--border);color:var(--text)}
+.rm-bd{padding:18px 20px 20px;flex:1}
 .rm-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .rm-date{font-size:12px;color:var(--muted)}
 .rm-tags{display:flex;gap:4px;flex-wrap:wrap}
-.rm-text{font-size:14px;color:var(--text2);line-height:1.7;white-space:pre-line}
-.rm-footer{padding:14px 20px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+.rm-txt{font-size:14px;color:var(--text2);line-height:1.7;white-space:pre-line}
+.rm-ft{padding:14px 20px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
 
 /* ── EXPORT MODAL ── */
-#exp-modal{display:none;position:fixed;inset:0;background:rgba(15,21,35,.4);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:16px}
-#exp-modal.open{display:flex}
-.em-inner{background:var(--surface);border-radius:16px;padding:26px;max-width:460px;width:100%;box-shadow:0 25px 60px rgba(15,21,35,.18);display:flex;flex-direction:column;gap:14px;position:relative}
-.em-inner h2{font-size:18px;font-weight:700}
-.em-inner p{font-size:13px;color:var(--text2);line-height:1.5}
-.em-actions{display:flex;gap:8px;flex-wrap:wrap}
-.em-inner textarea{width:100%;height:100px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;color:var(--text);resize:vertical;outline:none}
-.modal-close-btn{position:absolute;top:14px;right:16px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-size:15px;cursor:pointer;color:var(--muted);line-height:1}
+#em{display:none;position:fixed;inset:0;background:rgba(15,21,35,.4);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:16px}
+#em.open{display:flex}
+.em-in{background:var(--surface);border-radius:16px;padding:26px;max-width:460px;width:100%;box-shadow:0 25px 60px rgba(15,21,35,.18);display:flex;flex-direction:column;gap:14px;position:relative}
+.em-in h2{font-size:18px;font-weight:700}
+.em-in p{font-size:13px;color:var(--text2);line-height:1.5}
+.em-in textarea{width:100%;height:100px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;color:var(--text);resize:vertical;outline:none}
+.mc{position:absolute;top:14px;right:16px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-size:15px;cursor:pointer;color:var(--muted);line-height:1}
+.em-acts{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ── SKELETON ── */
-.skel{background:linear-gradient(90deg,#eef0f5 25%,#e6e9f0 50%,#eef0f5 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* SKELETON */
+.sk{background:linear-gradient(90deg,#eef0f5 25%,#e6e9f0 50%,#eef0f5 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:6px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-#empty-msg{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;display:none;grid-column:1/-1}
+#no-res{display:none;grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)}
 footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;background:var(--surface)}
 </style>
 </head>
@@ -174,17 +157,17 @@ footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color
 <div id="topbar">
   <div class="logo">Presse<span>schau</span></div>
   <div class="topbar-mid">
-    <div class="search-wrap">
+    <div class="sw">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input id="q" placeholder="Suche in Titel &amp; Text…" oninput="applyFilters()">
     </div>
   </div>
-  <div class="topbar-right">
-    <button class="tbtn" id="refresh-btn" onclick="loadAllFeeds()">
+  <div class="tr">
+    <button class="btn" onclick="loadData()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-      Laden
+      Aktualisieren
     </button>
-    <button class="tbtn primary" onclick="openExport()">
+    <button class="btn p" onclick="openExp()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
     </button>
@@ -196,14 +179,12 @@ footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color
   <div class="vtab active" onclick="setView('grid')">⊞ Kacheln</div>
   <div class="vtab" onclick="setView('list')">☰ Liste</div>
   <div class="vtab" onclick="setView('dash')">◈ Dashboard</div>
-  <div class="vright">
-    <span id="feed-progress" style="font-size:11.5px;color:var(--muted)"></span>
-  </div>
+  <div id="upd-info"></div>
 </div>
 
 <!-- FILTER BAR -->
 <div id="filterbar">
-  <span class="flabel">Thema</span>
+  <span class="fl">Thema</span>
   <div class="chips">
     <span class="chip active" data-t="all"          onclick="setTopic('all')">Alle</span>
     <span class="chip"        data-t="ki"           onclick="setTopic('ki')">🤖 KI</span>
@@ -216,31 +197,31 @@ footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color
     <span class="chip"        data-t="medizin"      onclick="setTopic('medizin')">🏥 Medizin</span>
   </div>
   <div class="vsep"></div>
-  <select class="fsel" id="topic-dd" onchange="setTopicDD(this.value)">
+  <select class="fsel" id="tdd" onchange="setTopicDD(this.value)">
     <option value="">Weitere Themen…</option>
-    <option value="raumfahrt">Raumfahrt</option>
-    <option value="finanzen">Finanzen &amp; Börse</option>
-    <option value="startup">Start-ups</option>
-    <option value="eu">Europa &amp; EU</option>
-    <option value="mobilitaet">Mobilität</option>
-    <option value="wissenschaft">Wissenschaft</option>
-    <option value="datenschutz">Datenschutz</option>
-    <option value="medien">Medien</option>
-    <option value="bildung">Bildung</option>
-    <option value="umwelt">Umwelt</option>
-    <option value="arbeit">Arbeit &amp; Soziales</option>
-    <option value="ukraine">Ukraine</option>
-    <option value="nahost">Nahost</option>
-    <option value="asien">Asien &amp; China</option>
-    <option value="usa">USA</option>
-    <option value="netzpolitik">Netzpolitik</option>
-    <option value="sport">Sport</option>
+    <option value="raumfahrt">🚀 Raumfahrt</option>
+    <option value="finanzen">💹 Finanzen</option>
+    <option value="startup">💡 Start-ups</option>
+    <option value="eu">🇪🇺 Europa / EU</option>
+    <option value="mobilitaet">🚗 Mobilität</option>
+    <option value="wissenschaft">🔬 Wissenschaft</option>
+    <option value="datenschutz">🔏 Datenschutz</option>
+    <option value="medien">📰 Medien</option>
+    <option value="bildung">🎓 Bildung</option>
+    <option value="umwelt">🌿 Umwelt</option>
+    <option value="arbeit">👷 Arbeit</option>
+    <option value="ukraine">🌍 Ukraine</option>
+    <option value="nahost">🌍 Nahost</option>
+    <option value="asien">🌏 Asien</option>
+    <option value="usa">🇺🇸 USA</option>
+    <option value="netzpolitik">🌐 Netzpolitik</option>
+    <option value="sport">⚽ Sport</option>
   </select>
   <div class="vsep"></div>
-  <span class="flabel">Quelle</span>
+  <span class="fl">Quelle</span>
   <div class="chips" id="src-chips"><span class="chip active" data-s="all" onclick="setSrc('all')">Alle</span></div>
   <div class="vsep"></div>
-  <span class="flabel">+ Stichwort</span>
+  <span class="fl">+ Stichwort</span>
   <div class="kw-wrap" id="kw-wrap">
     <input class="kw-in" id="kw-in" placeholder="Glasfaser ↵" onkeydown="kwKey(event)">
   </div>
@@ -248,672 +229,316 @@ footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color
 
 <!-- STATUS BAR -->
 <div id="statusbar">
-  <div class="spill">
-    <span class="dot loading" id="sdot"></span>
-    <span id="stxt">Lade…</span>
-  </div>
-  <span><strong id="art-count">0</strong> Artikel</span>
-  <div class="sright">
-    <div style="display:flex">
-      <button class="sortbtn active" id="sn" onclick="setSort('new')">↓ Neueste</button>
-      <button class="sortbtn" id="so" onclick="setSort('old')">↑ Älteste</button>
-    </div>
+  <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
+  <span><strong id="acnt">0</strong> Artikel</span>
+  <div class="sr">
+    <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
+    <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
   </div>
 </div>
 
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <div id="main">
-  <div id="view-grid"></div>
-  <div id="view-list" style="display:none"></div>
-  <div id="view-dash" style="display:none"></div>
+  <div id="vgrid"></div>
+  <div id="vlist" style="display:none"></div>
+  <div id="vdash" style="display:none"></div>
 </div>
 
 <!-- READ MODAL -->
-<div id="read-modal" onclick="closeReadIfOut(event)">
-  <div class="rm-inner">
-    <div class="rm-header">
-      <div class="rm-header-left">
-        <div class="rm-source" id="rm-src"></div>
+<div id="rm" onclick="closeRMOut(event)">
+  <div class="rm-in">
+    <div class="rm-hd">
+      <div class="rm-hl">
+        <div class="rm-src" id="rm-src"></div>
         <div class="rm-title" id="rm-title"></div>
       </div>
-      <button class="rm-close" onclick="closeRead()">✕</button>
+      <button class="rm-x" onclick="closeRM()">✕</button>
     </div>
-    <div class="rm-body">
+    <div class="rm-bd">
       <div class="rm-meta">
         <span class="rm-date" id="rm-date"></span>
         <div class="rm-tags" id="rm-tags"></div>
       </div>
-      <div class="rm-text" id="rm-text"></div>
+      <div class="rm-txt" id="rm-txt"></div>
     </div>
-    <div class="rm-footer">
-      <button class="tbtn primary" id="rm-link" onclick="openLink()">🔗 Artikel öffnen</button>
-      <button class="tbtn" onclick="closeRead()">Schließen</button>
+    <div class="rm-ft">
+      <button class="btn p" onclick="openLink()">🔗 Artikel öffnen</button>
+      <button class="btn" onclick="closeRM()">Schließen</button>
     </div>
   </div>
 </div>
 
 <!-- EXPORT MODAL -->
-<div id="exp-modal" onclick="closeExpOut(event)">
-  <div class="em-inner">
-    <button class="modal-close-btn" onclick="closeExp()">✕</button>
+<div id="em" onclick="closeEMOut(event)">
+  <div class="em-in">
+    <button class="mc" onclick="closeEM()">✕</button>
     <h2>Export &amp; Mail</h2>
-    <p><strong id="exp-count">0</strong> Artikel aktuell gefiltert</p>
+    <p><strong id="exp-cnt">0</strong> gefilterte Artikel</p>
     <textarea id="exp-prev" readonly></textarea>
-    <div class="em-actions">
-      <button class="tbtn" onclick="dlCSV()">📊 CSV</button>
-      <button class="tbtn" onclick="dlTXT()">📄 TXT</button>
-      <button class="tbtn primary" onclick="sendMail()">✉️ Per Mail (max 40)</button>
+    <div class="em-acts">
+      <button class="btn" onclick="dlCSV()">📊 CSV</button>
+      <button class="btn" onclick="dlTXT()">📄 TXT</button>
+      <button class="btn p" onclick="sendMail()">✉️ Mail (max 40)</button>
     </div>
     <p style="font-size:11px;color:var(--muted)">Mail öffnet deinen Mailclient. CSV/TXT laufen lokal im Browser.</p>
   </div>
 </div>
 
 <footer>
-  <span>Presseschau — 55+ RSS-Quellen · GitHub Pages</span>
-  <span id="last-upd"></span>
+  <span>Presseschau — automatisch aktualisiert via GitHub Actions</span>
+  <span id="footer-upd"></span>
 </footer>
 
 <script>
-// ════════════════════════════════════════════════════════
-// 55+ FEEDS  (DE + EN, mit Kategorie-Hint)
-// ════════════════════════════════════════════════════════
-const FEEDS = [
-  // ── Deutsch: Allgemein ──────────────────────────────
-  {u:'https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml',  n:'Tagesschau',    cat:'de-general'},
-  {u:'https://www.spiegel.de/schlagzeilen/rss/0,5291,,00.xml',              n:'Spiegel',       cat:'de-general'},
-  {u:'https://newsfeed.zeit.de/index',                                      n:'Zeit',          cat:'de-general'},
-  {u:'https://rss.sueddeutsche.de/rss/Alles',                               n:'SZ',            cat:'de-general'},
-  {u:'https://www.deutschlandfunk.de/politikportal-100.rss',                n:'DLF',           cat:'de-general'},
-  {u:'https://www.faz.net/rss/aktuell/',                                    n:'FAZ',           cat:'de-general'},
-  {u:'https://www.welt.de/feeds/latest.rss',                                n:'Welt',          cat:'de-general'},
-  {u:'https://www.stern.de/feed/standard/all/',                             n:'Stern',         cat:'de-general'},
-  {u:'https://www.focus.de/rssfeeds/neueste-artikel_id_2438.xml',           n:'Focus',         cat:'de-general'},
-  {u:'https://www.ndr.de/nachrichten/info/podcast4906.xml',                 n:'NDR',           cat:'de-general'},
-  {u:'https://www.mdr.de/nachrichten/index-rss.xml',                       n:'MDR',           cat:'de-general'},
-  // ── Deutsch: Technik / IT ───────────────────────────
-  {u:'https://www.heise.de/newsticker/heise.rdf',                           n:'Heise',         cat:'de-tech'},
-  {u:'https://www.golem.de/rss',                                            n:'Golem',         cat:'de-tech'},
-  {u:'https://www.netzwelt.de/news/feed.xml',                               n:'Netzwelt',      cat:'de-tech'},
-  {u:'https://feeds.feedburner.com/netzwelt',                               n:'Netzwelt2',     cat:'de-tech'},
-  {u:'https://www.ip-insider.de/rss/news.xml',                              n:'IP-Insider',    cat:'de-tech'},
-  {u:'https://www.computerwoche.de/feed/news.rss',                          n:'CompWoche',     cat:'de-tech'},
-  {u:'https://t3n.de/rss.xml',                                              n:'t3n',           cat:'de-tech'},
-  // ── Deutsch: Wirtschaft ────────────────────────────
-  {u:'https://www.handelsblatt.com/contentexport/feed/finanzen',            n:'HB Finanzen',   cat:'de-economy'},
-  {u:'https://www.handelsblatt.com/contentexport/feed/technologie',         n:'HB Technik',    cat:'de-economy'},
-  {u:'https://www.wiwo.de/contentexport/feed/rss/schlagzeilen',             n:'WiWo',          cat:'de-economy'},
-  {u:'https://www.finanznachrichten.de/rss-aktien-nachrichten',             n:'FinanzN.',      cat:'de-economy'},
-  {u:'https://www.finanzen.net/rss/news',                                   n:'Finanzen.net',  cat:'de-economy'},
-  {u:'https://www.manager-magazin.de/static/rss/alle.xml',                 n:'Manager-Mag.',  cat:'de-economy'},
-  // ── Deutsch: Politik / EU ──────────────────────────
-  {u:'https://www.europarl.europa.eu/rss/doc/press-releases/de.xml',       n:'EU-Parl.',      cat:'de-politics'},
-  {u:'https://www.bundesregierung.de/breg-de/aktuelles/rss-nachrichten-bundesregierung-462382.xml', n:'Bundesreg.', cat:'de-politics'},
-  // ── Englisch: General ──────────────────────────────
-  {u:'https://feeds.bbci.co.uk/news/rss.xml',                              n:'BBC News',      cat:'en-general'},
-  {u:'https://feeds.bbci.co.uk/news/world/rss.xml',                        n:'BBC World',     cat:'en-general'},
-  {u:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',             n:'NYT World',     cat:'en-general'},
-  {u:'https://feeds.reuters.com/reuters/topNews',                           n:'Reuters',       cat:'en-general'},
-  {u:'https://feeds.reuters.com/Reuters/worldNews',                        n:'Reuters World', cat:'en-general'},
-  {u:'https://apnews.com/index.rss',                                       n:'AP News',       cat:'en-general'},
-  {u:'https://www.theguardian.com/world/rss',                              n:'Guardian',      cat:'en-general'},
-  {u:'https://www.dw.com/rss/rss.xml',                                     n:'DW English',    cat:'en-general'},
-  // ── Englisch: Tech / KI ────────────────────────────
-  {u:'https://techcrunch.com/feed/',                                        n:'TechCrunch',    cat:'en-tech'},
-  {u:'https://www.theverge.com/rss/index.xml',                             n:'The Verge',     cat:'en-tech'},
-  {u:'https://www.wired.com/feed/rss',                                     n:'Wired',         cat:'en-tech'},
-  {u:'https://feeds.arstechnica.com/arstechnica/index',                    n:'Ars Technica',  cat:'en-tech'},
-  {u:'https://www.technologyreview.com/feed/',                             n:'MIT Tech Rev.', cat:'en-tech'},
-  {u:'https://venturebeat.com/feed/',                                      n:'VentureBeat',   cat:'en-tech'},
-  {u:'https://9to5mac.com/feed/',                                          n:'9to5Mac',       cat:'en-tech'},
-  {u:'https://www.zdnet.com/news/rss.xml',                                 n:'ZDNet',         cat:'en-tech'},
-  {u:'https://www.lightreading.com/rss/',                                  n:'Light Reading', cat:'en-tech'},
-  {u:'https://spectrum.ieee.org/feeds/feed.rss',                           n:'IEEE Spectrum', cat:'en-tech'},
-  // ── Englisch: KI speziell ──────────────────────────
-  {u:'https://openai.com/news/rss.xml',                                    n:'OpenAI Blog',   cat:'en-ai'},
-  {u:'https://deepmind.google/blog/rss/',                                  n:'DeepMind',      cat:'en-ai'},
-  // ── Englisch: Verteidigung ─────────────────────────
-  {u:'https://www.defensenews.com/arc/outboundfeeds/rss/',                 n:'Defense News',  cat:'en-defense'},
-  {u:'https://breakingdefense.com/feed/',                                  n:'Breaking Def.', cat:'en-defense'},
-  {u:'https://www.janes.com/feeds/news',                                   n:"Jane's",        cat:'en-defense'},
-  {u:'https://taskandpurpose.com/feed/',                                   n:'Task&Purpose',  cat:'en-defense'},
-  // ── Englisch: Wirtschaft / Finanz ──────────────────
-  {u:'https://www.ft.com/?format=rss',                                     n:'FT',            cat:'en-economy'},
-  {u:'https://feeds.bloomberg.com/markets/news.rss',                       n:'Bloomberg',     cat:'en-economy'},
-  {u:'https://www.economist.com/finance-and-economics/rss.xml',            n:'Economist',     cat:'en-economy'},
-  // ── Englisch: Wissenschaft ─────────────────────────
-  {u:'https://www.nature.com/nature.rss',                                  n:'Nature',        cat:'en-science'},
-  {u:'https://www.sciencedaily.com/rss/all.xml',                           n:'ScienceDaily',  cat:'en-science'},
-  {u:'https://phys.org/rss-feed/',                                         n:'Phys.org',      cat:'en-science'},
-];
-
-// ════════════════════════════════════════════════════════
-// PER-SOURCE COLORS (hue based on index)
-// ════════════════════════════════════════════════════════
-const SRC_PALETTES = [
+// ── PALETTEN ────────────────────────────────────────
+const PAL=[
   {bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},
   {bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},
   {bg:'#fff7ed',tc:'#c2410c'},{bg:'#fefce8',tc:'#a16207'},{bg:'#f5f3ff',tc:'#6d28d9'},
-  {bg:'#ffe4e6',tc:'#be123c'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},
-  {bg:'#d1fae5',tc:'#065f46'},{bg:'#fce7f3',tc:'#9d174d'},{bg:'#fef9c3',tc:'#713f12'},
-  {bg:'#e0e7ff',tc:'#3730a3'},{bg:'#dcfce7',tc:'#166534'},{bg:'#fff7ed',tc:'#9a3412'},
+  {bg:'#fce7f3',tc:'#9d174d'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},
+  {bg:'#d1fae5',tc:'#065f46'},{bg:'#ffe4e6',tc:'#9f1239'},{bg:'#e0e7ff',tc:'#3730a3'},
+  {bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'},
 ];
-const srcColorCache = {};
-function srcColor(name) {
-  if (!srcColorCache[name]) {
-    const idx = Object.keys(srcColorCache).length % SRC_PALETTES.length;
-    srcColorCache[name] = SRC_PALETTES[idx];
-  }
-  return srcColorCache[name];
+const CC={};
+function srcC(n){
+  if(!CC[n]){const i=Object.keys(CC).length%PAL.length;CC[n]=PAL[i];}
+  return CC[n];
+}
+function badge(n){
+  const c=srcC(n);
+  return `<span class="sbadge" style="background:${c.bg};color:${c.tc}">${esc(n)}</span>`;
 }
 
-// ════════════════════════════════════════════════════════
-// TOPIC SCORING – strikt (Mindest-Score 2)
-// ════════════════════════════════════════════════════════
-const TOPIC_RULES = {
-  ki: {
-    must:[],
-    score:[
-      [3,['künstliche intelligenz','artificial intelligence','machine learning','deep learning','large language model','llm','neural network','neuronales netz']],
-      [2,['chatgpt','gpt-4','gpt-5','gpt-','openai','anthropic','gemini','claude ai','mistral','llama ','stable diffusion','midjourney','dall-e','sora','copilot ai','ki-','ki-modell','ki-system','ki-gestützt','ai-','ai model','generative ai','generativer']],
-      [1,['algorithmus','transformer','roboter','automat','sprachmodell','bildgenerierung','textgenerierung','deepfake','nvidia ai','gpu cluster','inference','training data','foundation model']],
-    ],
-    min:2
-  },
-  tech: {
-    must:[],
-    score:[
-      [3,['software','hardware','betriebssystem','prozessor','chip','halbleiter','quantencomputer','open source','linux','cloud computing','rechenzentrum','data center']],
-      [2,['smartphone','app ','apps ','5g','glasfaser','breitband','router','netzwerk','server','api ','entwickler','developer','github','programmier','microsoft','apple ','google ','samsung','intel','amd','arm chip']],
-      [1,['digital','internet','it-','tech-','update','patch','release','version','browser','usb','bluetooth','wifi','streaming']],
-    ],
-    min:2
-  },
-  verteidigung: {
-    must:[],
-    score:[
-      [3,['bundeswehr','nato','militär','streitkräfte','verteidigungsministerium','pentagon','defense department','armed forces','kriegsführung']],
-      [2,['rüstung','waffe','drohne ','kampfjet','panzer ','fregatte','u-boot','rakete ','munition','sicherheitspolitik','geheimdienstlich','geheimdienst','bnd ','cia ','nsa ','mossad']],
-      [1,['soldat','gefecht','front','offensive','angriff','krieg ','war ','conflict','ukraine-krieg','nato-','verteidigung']],
-    ],
-    min:2
-  },
-  politik: {
-    must:[],
-    score:[
-      [3,['bundestag','bundesregierung','koalition','kanzler','wahlkampf','parlamentswahl','nationalversammlung','kongress ','senat ']],
-      [2,['cdu','spd','fdp','grüne','afd','bsw','regierung','minister ','partei','wahl ','election','gesetzentwurf','gesetz ','reform ','abstimmung','eu-kommission','europaparlament']],
-      [1,['merz','scholz','baerbock','habeck','trump','biden','harris','macron','putin','xi jinping','politisch']],
-    ],
-    min:2
-  },
-  wirtschaft: {
-    must:[],
-    score:[
-      [3,['dax','bip','bruttoinlandsprodukt','konjunktur','rezession','inflation rate','federal reserve','europäische zentralbank','ezb']],
-      [2,['unternehmen','konzern','aktie','börse','export','import','tarif','haushalt','schulden','insolvenz','fusion','übernahme','quartalsergebnis','gewinn','verlust']],
-      [1,['wirtschaft','economy','market','markt','industrie','handel','finanz','bank','kredit','zins']],
-    ],
-    min:2
-  },
-  sicherheit: {
-    must:[],
-    score:[
-      [3,['cyberangriff','ransomware','malware','zero-day','exploit','datenleck','data breach','phishing-kampagne','ddos-angriff']],
-      [2,['cybersecurity','cyber security','bsi ','hacker','hack ','sicherheitslücke','vulnerability','vpn','firewall','verschlüsselung','datenschutz','dsgvo']],
-      [1,['it-sicherheit','schutz','passwort','authentifizierung','backdoor','trojan']],
-    ],
-    min:2
-  },
-  energie: {
-    must:[],
-    score:[
-      [3,['energiewende','erneuerbare energien','solar','windkraft','offshore-wind','atomkraft','kernkraft','lng terminal']],
-      [2,['strompreis','gaspreise','ölpreis','wasserstoff','photovoltaik','kraftwerk','stromerzeugung','co2-emissionen','klimaschutz']],
-      [1,['energie','strom','gas ','öl ','pipeline','batterie','speicher','netz']],
-    ],
-    min:2
-  },
-  medizin: {
-    must:[],
-    score:[
-      [3,['klinische studie','impfstoff','mrna','onkologie','pharmaunternehmen','zulassung','fda ','ema ']],
-      [2,['krebs','tumor','therapie','behandlung','antibiotikum','virus ','impfung','krankenhaus','klinik','arznei','medikament']],
-      [1,['gesundheit','medizin','patient','diagnose','chirurgie','pflege','forschung']],
-    ],
-    min:2
-  },
-  raumfahrt: {
-    must:[],
-    score:[
-      [3,['nasa','esa ','spacex','raumfahrt','weltraummission','internationale raumstation','iss ','mondlandung']],
-      [2,['rakete ','satellit','orbit','ariane','starship','mars-mission','mond ','asteroid','raumsonde']],
-      [1,['weltraum','space ','launch','orbit','galaxie','komet']],
-    ],
-    min:2
-  },
-  finanzen: {
-    must:[],
-    score:[
-      [3,['dax','nasdaq','dow jones','s&p 500','etf ','börsengang','ipo ','bitcoin','ethereum','krypto']],
-      [2,['aktie','fonds','dividende','anleihe','zinserhöhung','leitzins','fed ','ezb ','hedge fund','trading']],
-      [1,['rendite','depot','investition','portfolio','kredit','schulden']],
-    ],
-    min:2
-  },
-  startup: {
-    must:[],
-    score:[
-      [3,['venture capital','series a','series b','series c','ipo ','unicorn','startup-']],
-      [2,['start-up','startup','gründer','finanzierungsrunde','inkubator','accelerator','pitch']],
-      [1,['innovation','disruption','gründung','skalierung']],
-    ],
-    min:2
-  },
-  eu: {
-    must:[],
-    score:[
-      [3,['europäische union','eu-kommission','europaparlament','europäischer rat','eu-richtlinie','eu-verordnung']],
-      [2,['eu ','brüssel','von der leyen','eurozone','schengen','eu-gipfel','eu-wahl']],
-      [1,['europä','eu-','brüsseler']],
-    ],
-    min:2
-  },
-  mobilitaet: {
-    must:[],
-    score:[
-      [3,['elektroauto','e-mobilität','autonomes fahren','deutsche bahn','öpnv','urban air mobility']],
-      [2,['tesla ','volkswagen vw','bmw ','mercedes ','verkehr','bahn ','zug ','flugzeug','lkw ','fahrrad','wasserstoffauto']],
-      [1,['mobilität','transport','fahrzeug','antrieb','laden','ladestation']],
-    ],
-    min:2
-  },
-  wissenschaft: {
-    must:[],
-    score:[
-      [3,['nature ','science journal','peer-reviewed','studie zeigt','forscher','forschungsergebnis','quantencomputer','crispr','genomeditierung']],
-      [2,['universität','forschung','experiment','physik','biologie','chemie','astronomie','archäologie','genetik','dna ']],
-      [1,['wissenschaft','wissenschaftler','labor','theorie','entdeckung','analyse']],
-    ],
-    min:2
-  },
-  datenschutz:{must:[],score:[[3,['dsgvo','gdpr','datenschutzbehörde','datenpanne','datenschutverletzung']],[2,['datenschutz','privatsphäre','überwachung','tracking','einwilligung','personenbezogen']],[1,['cookies','profiling','opt-in','opt-out']]],min:2},
-  medien:{must:[],score:[[3,['pressefreiheit','öffentlich-rechtlich','ard ','zdf ','rundfunkbeitrag','medienrecht']],[2,['medienhaus','zeitung','verlag','journalismus','redaktion','tiktok','instagram','social media']],[1,['medien','plattform','content','reichweite']]],min:2},
-  bildung:{must:[],score:[[3,['pisa-studie','hochschulrankig','lehrermangel','bildungsreform','schulpflicht']],[2,['schule','universität','hochschule','bildung','studium','abitur','ausbildung']],[1,['lernen','unterricht','lehre','campus']]],min:2},
-  umwelt:{must:[],score:[[3,['biodiversität','artensterben','regenwald','meeresschutz','co2-budget','klimakrise']],[2,['naturschutz','umwelt','plastik','abholzung','wasserknappheit','dürre','überschwemmung']],[1,['klima','natur','emissionen','ökologie']]],min:2},
-  arbeit:{must:[],score:[[3,['tarifvertrag','mindestlohn','streik','gewerkschaft','fachkräftemangel','homeoffice-pflicht']],[2,['arbeit','homeoffice','remote work','rente','bürgergeld','kündigung','entlassung']],[1,['job','beschäftigung','beruf','arbeitslos']]],min:2},
-  ukraine:{must:[],score:[[3,['ukraine','selensky','kiew','donbas','cherson','saporizhzhia','frontlinie']],[2,['ukraine-krieg','russisch','russland','kreml','nato-ostflanke','waffenlieferung']],[1,['osteuropa','gegenoffensive','waffenstillstand']]],min:2},
-  nahost:{must:[],score:[[3,['israel','gaza','hamas','palästina','westjordanland','libanon','hisbollah']],[2,['nahost','iran','netanjahu','jemen','houthi','syrien','irak']],[1,['naher osten','middle east','arabisch']]],min:2},
-  asien:{must:[],score:[[3,['china','taiwan','hongkong','beijing','xi jinping','south china sea']],[2,['chinesisch','japan','südkorea','indien','nordkorea','asean','halbleiter china']],[1,['asien','pazifik','indo-pazifik']]],min:2},
-  usa:{must:[],score:[[3,['vereinigte staaten','washington dc','weißes haus','supreme court','kongress ','senat ']],[2,['trump','harris','biden','demokraten','republikaner','us-','usa ']],[1,['american','washington','federal']],],min:2},
-  netzpolitik:{must:[],score:[[3,['netzausbau','glasfaserausbau','5g-ausbau','netzneutralität','internetfreiheit']],[2,['netzpolitik','digitale infrastruktur','breitband','starlink','kabel']],[1,['internet','netz','digital']]],min:2},
-  sport:{must:[],score:[[3,['bundesliga','champions league','wm ','weltmeisterschaft','olympia','em ']],[2,['fußball','tennis','formel 1','basketball','leichtathletik','schwimmen']],[1,['sport','match','finale','turnier']]],min:2},
+const TOPIC_COLORS={
+  ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',
+  wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',medizin:'#ec4899',
+  raumfahrt:'#06b6d4',finanzen:'#14b8a6',startup:'#a855f7',eu:'#3b82f6',
+  mobilitaet:'#84cc16',wissenschaft:'#06b6d4',ukraine:'#eab308',nahost:'#ef4444',
+  asien:'#f97316',usa:'#6366f1',netzpolitik:'#0ea5e9',sport:'#22c55e',
+};
+const TOPIC_LABELS={
+  ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',
+  wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cybersec',energie:'⚡ Energie',
+  medizin:'🏥 Medizin',raumfahrt:'🚀 Raumfahrt',finanzen:'💹 Finanzen',
+  startup:'💡 Start-ups',eu:'🇪🇺 EU/Europa',mobilitaet:'🚗 Mobilität',
+  wissenschaft:'🔬 Wissenschaft',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',
+  asien:'🌏 Asien',usa:'🇺🇸 USA',netzpolitik:'🌐 Netzpolitik',sport:'⚽ Sport',
 };
 
-function scoreArticle(text) {
-  const topics = {};
-  for (const [topic, rule] of Object.entries(TOPIC_RULES)) {
-    let s = 0;
-    for (const [pts, kws] of rule.score) {
-      for (const kw of kws) {
-        if (text.includes(kw)) { s += pts; break; } // break: jede Gruppe nur einmal
-      }
-    }
-    if (s >= rule.min) topics[topic] = s;
-  }
-  return topics; // { ki: 5, tech: 3, ... }
-}
+// ── STATE ───────────────────────────────────────────
+let ALL=[],filtered=[],activeTopic='all',activeSrc='all',activeSort='new',kws=[],activeView='grid',cur=null;
 
-// ════════════════════════════════════════════════════════
-// PROXY FETCH – 4 Strategien, kein doppelter body read
-// ════════════════════════════════════════════════════════
-async function strat_allorigins(url) {
-  const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal:AbortSignal.timeout(11000)});
-  if (!r.ok) return null;
-  const txt = await r.text();
-  return JSON.parse(txt)?.contents ?? null;
-}
-async function strat_corsproxy(url) {
-  const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, {signal:AbortSignal.timeout(11000)});
-  if (!r.ok) return null;
-  return await r.text();
-}
-async function strat_rss2json(url) {
-  const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=60`, {signal:AbortSignal.timeout(11000)});
-  if (!r.ok) return null;
-  const j = JSON.parse(await r.text());
-  if (j?.status !== 'ok' || !j.items?.length) return null;
-  return '<rss><channel>' + j.items.map(it =>
-    `<item><title><![CDATA[${it.title??''}]]></title><link>${it.link??''}</link><description><![CDATA[${it.description??it.content??''}]]></description><pubDate>${it.pubDate??''}</pubDate></item>`
-  ).join('') + '</channel></rss>';
-}
-async function strat_direct(url) {
-  const r = await fetch(url, {signal:AbortSignal.timeout(9000), mode:'cors'});
-  if (!r.ok) return null;
-  return await r.text();
-}
-
-async function fetchFeed(url) {
-  for (const fn of [strat_allorigins, strat_corsproxy, strat_rss2json, strat_direct]) {
-    try {
-      const xml = await fn(url);
-      if (xml && xml.length > 300) return xml;
-    } catch {}
-  }
-  return null;
-}
-
-// ════════════════════════════════════════════════════════
-// PARSE RSS
-// ════════════════════════════════════════════════════════
-function parseRSS(xml, src) {
-  try {
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    const items = doc.querySelectorAll('item, entry');
-    if (!items.length) return [];
-    return Array.from(items).map(item => {
-      const title   = item.querySelector('title')?.textContent?.trim() ?? '';
-      const linkEl  = item.querySelector('link');
-      const link    = linkEl?.textContent?.trim().replace(/^\s*$/, '') || linkEl?.getAttribute('href') || '#';
-      const rawDesc = item.querySelector('description, summary, content\\:encoded, content')?.textContent?.trim() ?? '';
-      const desc    = rawDesc.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
-      const pubRaw  = item.querySelector('pubDate, published, updated, dc\\:date')?.textContent?.trim() ?? '';
-      const date    = pubRaw ? new Date(pubRaw) : new Date(0);
-      if (!title) return null;
-      const text    = (title + ' ' + desc).toLowerCase();
-      const scored  = scoreArticle(text);
-      const topics  = Object.keys(scored).sort((a,b) => scored[b] - scored[a]); // sort by relevance
-      return { title, link: link.trim(), desc, date, source: src, topics, scored };
-    }).filter(Boolean);
-  } catch { return []; }
-}
-
-// ════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════
-let allArticles=[], activeTopic='all', activeSrc='all', activeSort='new';
-let customKws=[], filteredCache=[], activeView='grid';
-let currentArticle=null;
-
-// ════════════════════════════════════════════════════════
-// LOAD
-// ════════════════════════════════════════════════════════
-async function loadAllFeeds() {
-  allArticles = [];
-  document.getElementById('refresh-btn').disabled = true;
-  setStatus('loading','Lade…');
+// ── LOAD articles.json ──────────────────────────────
+async function loadData(){
+  setStatus('loading','Lade articles.json…');
   showSkel();
-
-  let done = 0;
-  const promises = FEEDS.map(async f => {
-    try {
-      const xml = await fetchFeed(f.u);
-      if (!xml) return [];
-      const arts = parseRSS(xml, f.n);
-      done++;
-      document.getElementById('feed-progress').textContent = `${done}/${FEEDS.length} Feeds`;
-      return arts;
-    } catch { return []; }
-  });
-
-  const results = await Promise.all(promises);
-  results.forEach(arr => allArticles.push(...arr));
-
-  // Deduplicate by title+source
-  const seen = new Set();
-  allArticles = allArticles.filter(a => {
-    const k = a.source + '|' + a.title.slice(0,60);
-    if (seen.has(k)) return false;
-    seen.add(k); return true;
-  });
-
-  buildSrcChips();
-  applyFilters();
-
-  document.getElementById('refresh-btn').disabled = false;
-  document.getElementById('last-upd').textContent = 'Zuletzt: ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  const loaded = done;
-  const failed = FEEDS.length - loaded;
-  if (!allArticles.length) setStatus('err','Keine Artikel geladen');
-  else if (failed) setStatus('partial', `${loaded}/${FEEDS.length} Feeds · ${allArticles.length} Artikel`);
-  else setStatus('ok', `${loaded} Feeds · ${allArticles.length} Artikel`);
+  try{
+    // Cache-buster damit der Browser nicht alte Version serviert
+    const r=await fetch('articles.json?t='+Date.now());
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    ALL=d.articles||[];
+    const upd=d.updated?new Date(d.updated).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'–';
+    document.getElementById('upd-info').textContent=`Zuletzt: ${upd} · ${d.feeds_ok||'?'} Feeds · ${ALL.length} Artikel`;
+    document.getElementById('footer-upd').textContent=`Stand: ${upd}`;
+    setStatus('ok',`${ALL.length} Artikel geladen`);
+    buildSrcChips();
+    applyFilters();
+  }catch(e){
+    setStatus('err','Fehler beim Laden: '+e.message);
+    document.getElementById('vgrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted)">⚠️ articles.json nicht gefunden.<br><br>Bitte erst den GitHub Actions Workflow einmal manuell starten,<br>dann entsteht die Datei automatisch.</div>';
+  }
 }
 
-// ════════════════════════════════════════════════════════
-// FILTER
-// ════════════════════════════════════════════════════════
-function applyFilters() {
-  const q = document.getElementById('q').value.toLowerCase().trim();
-  filteredCache = allArticles.filter(a => {
-    const text = (a.title + ' ' + a.desc).toLowerCase();
-    const tMatch = activeTopic === 'all' || a.topics.includes(activeTopic);
-    const kwMatch = !customKws.length || customKws.every(kw => text.includes(kw));
-    const sMatch  = activeSrc === 'all' || a.source === activeSrc;
-    const qMatch  = !q || text.includes(q);
-    return tMatch && kwMatch && sMatch && qMatch;
+// ── FILTER ──────────────────────────────────────────
+function applyFilters(){
+  const q=document.getElementById('q').value.toLowerCase().trim();
+  filtered=ALL.filter(a=>{
+    const txt=(a.title+' '+a.desc).toLowerCase();
+    return(activeTopic==='all'||a.topics.includes(activeTopic))
+      &&(activeSrc==='all'||a.source===activeSrc)
+      &&(!kws.length||kws.every(k=>txt.includes(k)))
+      &&(!q||txt.includes(q));
   });
-  filteredCache.sort((a,b) => activeSort==='new' ? b.date-a.date : a.date-b.date);
-  document.getElementById('art-count').textContent = filteredCache.length;
+  filtered.sort((a,b)=>activeSort==='new'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
+  document.getElementById('acnt').textContent=filtered.length;
   renderView();
 }
 
-// ════════════════════════════════════════════════════════
-// RENDER
-// ════════════════════════════════════════════════════════
-function buildSrcChips() {
-  const w = document.getElementById('src-chips');
-  w.innerHTML = '<span class="chip active" data-s="all" onclick="setSrc(\'all\')">Alle</span>';
-  [...new Set(allArticles.map(a=>a.source))].sort().forEach(s => {
-    const sp = document.createElement('span');
-    sp.className='chip'; sp.dataset.s=s;
-    sp.textContent=s; sp.onclick=()=>setSrc(s);
+// ── RENDER ──────────────────────────────────────────
+function buildSrcChips(){
+  const w=document.getElementById('src-chips');
+  w.innerHTML='<span class="chip active" data-s="all" onclick="setSrc(\'all\')">Alle</span>';
+  [...new Set(ALL.map(a=>a.source))].sort().forEach(s=>{
+    const sp=document.createElement('span');
+    sp.className='chip';sp.dataset.s=s;sp.textContent=s;sp.onclick=()=>setSrc(s);
     w.appendChild(sp);
   });
 }
 
-function srcBadge(name) {
-  const c = srcColor(name);
-  return `<span class="src-badge" style="background:${c.bg};color:${c.tc}">${esc(name)}</span>`;
-}
-
-function renderView() {
-  if (activeView === 'grid')  renderGrid();
-  else if (activeView === 'list') renderList();
+function renderView(){
+  if(activeView==='grid')renderGrid();
+  else if(activeView==='list')renderList();
   else renderDash();
 }
 
-function renderGrid() {
-  const el = document.getElementById('view-grid');
-  if (!filteredCache.length) { el.innerHTML = '<div id="empty-msg" style="display:block;text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel.</div>'; return; }
-  el.innerHTML = filteredCache.map((a,i) => {
-    const c = srcColor(a.source);
-    const dateStr = fmtDate(a.date);
-    const tags = a.topics.slice(0,3).map(t=>`<span class="card-tag">${t}</span>`).join('');
-    return `<div class="card" style="animation-delay:${Math.min(i*.016,.4)}s;border-top:3px solid ${c.tc}" onclick="openRead(${i})">
-      <div class="card-top">${srcBadge(a.source)}<span class="card-date">${dateStr}</span></div>
-      <div class="card-title">${esc(a.title)}</div>
-      ${a.desc ? `<div class="card-desc">${esc(a.desc.slice(0,200))}</div>` : ''}
-      ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+function renderGrid(){
+  const el=document.getElementById('vgrid');
+  if(!filtered.length){el.innerHTML='<div id="no-res" style="display:block;text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel gefunden.</div>';return;}
+  el.innerHTML=filtered.map((a,i)=>{
+    const c=srcC(a.source);
+    const tags=a.topics.slice(0,3).map(t=>`<span class="ctag">${t}</span>`).join('');
+    return`<div class="card" style="animation-delay:${Math.min(i*.015,.4)}s;border-top:3px solid ${c.tc}" onclick="openRM(${i})">
+      <div class="ct">${badge(a.source)}<span class="cd">${fd(a.date)}</span></div>
+      <div class="ctitle">${esc(a.title)}</div>
+      ${a.desc?`<div class="cdesc">${esc(a.desc.slice(0,220))}</div>`:''}
+      ${tags?`<div class="ctags">${tags}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function renderList() {
-  const el = document.getElementById('view-list');
-  if (!filteredCache.length) { el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel.</div>'; return; }
-  el.innerHTML = filteredCache.map((a,i) => {
-    const c = srcColor(a.source);
-    const tags = a.topics.slice(0,2).map(t=>`<span class="card-tag">${t}</span>`).join('');
-    return `<div class="list-item" style="border-left:3px solid ${c.tc}" onclick="openRead(${i})">
-      <div class="li-left">
-        <div class="li-title">${esc(a.title)}</div>
-        <div class="li-meta">${srcBadge(a.source)}<span class="li-date">${fmtDate(a.date)}</span>${tags}</div>
-      </div>
-      ${a.desc ? `<div style="font-size:12px;color:var(--text2);max-width:340px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(a.desc)}</div>` : ''}
+function renderList(){
+  const el=document.getElementById('vlist');
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel gefunden.</div>';return;}
+  el.innerHTML=filtered.map((a,i)=>{
+    const c=srcC(a.source);
+    const tags=a.topics.slice(0,2).map(t=>`<span class="ctag">${t}</span>`).join('');
+    return`<div class="li" style="border-left:3px solid ${c.tc}" onclick="openRM(${i})">
+      <div class="li-l"><div class="li-t">${esc(a.title)}</div>
+      <div class="li-m">${badge(a.source)}<span class="li-d">${fd(a.date)}</span>${tags}</div></div>
+      ${a.desc?`<div class="li-r">${esc(a.desc.slice(0,180))}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function renderDash() {
-  const el = document.getElementById('view-dash');
-  // Dashboard: Artikel gruppiert nach Hauptthema
-  const topicLabels = {
-    ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',
-    wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cybersec',energie:'⚡ Energie',
-    medizin:'🏥 Medizin',raumfahrt:'🚀 Raumfahrt',finanzen:'💹 Finanzen',
-    startup:'🚀 Start-ups',eu:'🇪🇺 Europa/EU',mobilitaet:'🚗 Mobilität',
-    ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',
-  };
-  const buckets = {};
-  filteredCache.forEach((a,idx) => {
-    const main = a.topics[0] || 'sonstig';
-    if (!buckets[main]) buckets[main] = [];
-    buckets[main].push({...a, _idx:idx});
+function renderDash(){
+  const el=document.getElementById('vdash');
+  const buckets={};
+  filtered.forEach((a,i)=>{
+    const m=a.topics[0]||'sonstig';
+    if(!buckets[m])buckets[m]=[];
+    buckets[m].push({...a,_i:i});
   });
-  // Top buckets by count
-  const sorted = Object.entries(buckets).sort((a,b)=>b[1].length-a[1].length);
-  if (!sorted.length) { el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel.</div>'; return; }
-  el.innerHTML = sorted.map(([topic, arts]) => {
-    const label = topicLabels[topic] || topic;
-    const c = topicColor(topic);
-    const items = arts.slice(0,6).map(a => {
-      const sc = srcColor(a.source);
-      return `<div class="dash-item" onclick="openRead(${a._idx})">
-        <div class="dash-item-title">${esc(a.title)}</div>
-        <div class="dash-item-meta"><span class="dash-item-src" style="color:${sc.tc}">${esc(a.source)}</span><span class="dash-item-date">${fmtDate(a.date)}</span></div>
+  const sorted=Object.entries(buckets).sort((a,b)=>b[1].length-a[1].length);
+  if(!sorted.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel.</div>';return;}
+  el.innerHTML=sorted.map(([t,arts])=>{
+    const col=TOPIC_COLORS[t]||'#6b7280';
+    const label=TOPIC_LABELS[t]||t;
+    const items=arts.slice(0,6).map(a=>{
+      const sc=srcC(a.source);
+      return`<div class="ds-item" onclick="openRM(${a._i})">
+        <div class="ds-it">${esc(a.title)}</div>
+        <div class="ds-im"><span class="ds-is" style="color:${sc.tc}">${esc(a.source)}</span><span class="ds-id">${fd(a.date)}</span></div>
       </div>`;
     }).join('');
-    return `<div class="dash-section">
-      <div class="dash-header" style="border-left:3px solid ${c}">
-        <span class="dash-title">${label}</span>
-        <span class="dash-count">${arts.length} Artikel</span>
-      </div>
-      <div class="dash-items">${items}${arts.length>6?`<div style="padding:7px 14px;font-size:11.5px;color:var(--muted);cursor:pointer" onclick="setTopic('${topic}');setView('list')">Alle ${arts.length} anzeigen →</div>`:''}</div>
-    </div>`;
+    const more=arts.length>6?`<div style="padding:7px 14px;font-size:11.5px;color:var(--muted);cursor:pointer" onclick="setTopic('${t}');setView('list')">Alle ${arts.length} →</div>`:'';
+    return`<div class="ds"><div class="ds-h" style="border-left:3px solid ${col}"><span class="ds-title">${label}</span><span class="ds-cnt">${arts.length}</span></div><div>${items}${more}</div></div>`;
   }).join('');
 }
 
-function topicColor(t) {
-  const m = {ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',medizin:'#ec4899',raumfahrt:'#06b6d4',finanzen:'#14b8a6',startup:'#a855f7',eu:'#3b82f6',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1'};
-  return m[t] || '#6b7280';
+function showSkel(){
+  document.getElementById('vgrid').innerHTML=Array.from({length:15},(_,i)=>`<div class="card" style="gap:10px;animation-delay:${i*.03}s;cursor:default"><div class="sk" style="width:35%;height:18px;border-radius:5px"></div><div class="sk" style="width:92%;height:14px"></div><div class="sk" style="width:100%;height:12px"></div><div class="sk" style="width:68%;height:12px"></div></div>`).join('');
 }
 
-function fmtDate(d) {
-  if (!d || d.getTime() < 86400000) return '–';
-  return d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+// ── READ MODAL ──────────────────────────────────────
+function openRM(i){
+  cur=filtered[i];if(!cur)return;
+  const c=srcC(cur.source);
+  document.getElementById('rm-src').innerHTML=badge(cur.source);
+  document.getElementById('rm-title').textContent=cur.title;
+  document.getElementById('rm-date').textContent=fd(cur.date);
+  document.getElementById('rm-tags').innerHTML=cur.topics.map(t=>`<span class="ctag">${t}</span>`).join('');
+  document.getElementById('rm-txt').textContent=cur.desc||'(Kein Vorschautext – bitte Artikel direkt öffnen)';
+  document.getElementById('rm').classList.add('open');
 }
+function closeRM(){document.getElementById('rm').classList.remove('open')}
+function closeRMOut(e){if(e.target.id==='rm')closeRM()}
+function openLink(){if(cur?.link)window.open(cur.link,'_blank','noopener')}
 
-// ════════════════════════════════════════════════════════
-// READ MODAL
-// ════════════════════════════════════════════════════════
-function openRead(idx) {
-  const a = filteredCache[idx];
-  if (!a) return;
-  currentArticle = a;
-  const c = srcColor(a.source);
-  document.getElementById('rm-src').innerHTML = srcBadge(a.source);
-  document.getElementById('rm-title').textContent = a.title;
-  document.getElementById('rm-date').textContent = fmtDate(a.date);
-  document.getElementById('rm-tags').innerHTML = a.topics.map(t=>`<span class="card-tag">${t}</span>`).join('');
-  document.getElementById('rm-text').textContent = a.desc || '(Kein Vorschautext verfügbar – Artikel direkt öffnen)';
-  document.getElementById('read-modal').classList.add('open');
-}
-function closeRead() { document.getElementById('read-modal').classList.remove('open'); }
-function closeReadIfOut(e) { if (e.target.id==='read-modal') closeRead(); }
-function openLink() { if (currentArticle?.link) window.open(currentArticle.link,'_blank','noopener'); }
-
-// ════════════════════════════════════════════════════════
-// SETTERS
-// ════════════════════════════════════════════════════════
-function setView(v) {
-  activeView = v;
-  ['grid','list','dash'].forEach(x => {
-    document.getElementById('view-'+x).style.display = x===v ? (x==='list'?'flex':'grid') : 'none';
+// ── SETTER ──────────────────────────────────────────
+function setView(v){
+  activeView=v;
+  ['grid','list','dash'].forEach(x=>{
+    document.getElementById('v'+x).style.display=x===v?(x==='list'?'flex':'grid'):'none';
   });
-  document.querySelectorAll('.vtab').forEach((el,i) => el.classList.toggle('active', ['grid','list','dash'][i]===v));
+  document.querySelectorAll('.vtab').forEach((el,i)=>el.classList.toggle('active',['grid','list','dash'][i]===v));
   renderView();
 }
-function setTopic(t) {
-  activeTopic = t;
-  document.querySelectorAll('[data-t]').forEach(el => el.classList.toggle('active', el.dataset.t===t));
-  document.getElementById('topic-dd').value = '';
+function setTopic(t){
+  activeTopic=t;
+  document.querySelectorAll('[data-t]').forEach(el=>el.classList.toggle('active',el.dataset.t===t));
+  document.getElementById('tdd').value='';
   applyFilters();
 }
-function setTopicDD(v) {
-  if (!v) { setTopic('all'); return; }
-  activeTopic = v;
-  document.querySelectorAll('[data-t]').forEach(el => el.classList.remove('active'));
+function setTopicDD(v){
+  if(!v){setTopic('all');return;}
+  activeTopic=v;
+  document.querySelectorAll('[data-t]').forEach(el=>el.classList.remove('active'));
   applyFilters();
 }
-function setSrc(s) {
-  activeSrc = s;
-  document.querySelectorAll('[data-s]').forEach(el => el.classList.toggle('active', el.dataset.s===s));
+function setSrc(s){
+  activeSrc=s;
+  document.querySelectorAll('[data-s]').forEach(el=>el.classList.toggle('active',el.dataset.s===s));
   applyFilters();
 }
-function setSort(s) {
-  activeSort = s;
+function setSort(s){
+  activeSort=s;
   document.getElementById('sn').classList.toggle('active',s==='new');
   document.getElementById('so').classList.toggle('active',s==='old');
   applyFilters();
 }
-function setStatus(t,m) {
+function setStatus(t,m){
   document.getElementById('sdot').className='dot '+t;
   document.getElementById('stxt').textContent=m;
 }
 
-// ════════════════════════════════════════════════════════
-// KEYWORDS
-// ════════════════════════════════════════════════════════
-function kwKey(e) {
-  if (e.key==='Enter'||e.key===',') {
+// ── KEYWORDS ────────────────────────────────────────
+function kwKey(e){
+  if(e.key==='Enter'||e.key===','){
     e.preventDefault();
-    const v = e.target.value.trim().toLowerCase();
-    if (v && !customKws.includes(v)) { customKws.push(v); renderKWTags(); applyFilters(); }
+    const v=e.target.value.trim().toLowerCase();
+    if(v&&!kws.includes(v)){kws.push(v);renderKWTags();applyFilters();}
     e.target.value='';
   }
 }
-function removeKW(kw) { customKws=customKws.filter(k=>k!==kw); renderKWTags(); applyFilters(); }
-function renderKWTags() {
+function removeKW(k){kws=kws.filter(x=>x!==k);renderKWTags();applyFilters()}
+function renderKWTags(){
   document.getElementById('kw-wrap').querySelectorAll('.kw-tag').forEach(e=>e.remove());
   const inp=document.getElementById('kw-in');
-  customKws.forEach(kw=>{
-    const s=document.createElement('span'); s.className='kw-tag';
-    s.innerHTML=`${esc(kw)}<button onclick="removeKW('${esc(kw)}')" title="×">×</button>`;
+  kws.forEach(k=>{
+    const s=document.createElement('span');s.className='kw-tag';
+    s.innerHTML=`${esc(k)}<button onclick="removeKW('${esc(k)}')" title="×">×</button>`;
     inp.parentNode.insertBefore(s,inp);
   });
 }
 
-// ════════════════════════════════════════════════════════
-// EXPORT
-// ════════════════════════════════════════════════════════
-function openExport() {
-  document.getElementById('exp-count').textContent=filteredCache.length;
-  document.getElementById('exp-prev').value=filteredCache.slice(0,8).map(a=>`[${a.source}] ${a.title}\n${a.link}`).join('\n\n')+(filteredCache.length>8?`\n…+${filteredCache.length-8}`:'');
-  document.getElementById('exp-modal').classList.add('open');
+// ── EXPORT ──────────────────────────────────────────
+function openExp(){
+  document.getElementById('exp-cnt').textContent=filtered.length;
+  document.getElementById('exp-prev').value=filtered.slice(0,8).map(a=>`[${a.source}] ${a.title}\n${a.link}`).join('\n\n')+(filtered.length>8?`\n…+${filtered.length-8}`:'');
+  document.getElementById('em').classList.add('open');
 }
-function closeExp(){document.getElementById('exp-modal').classList.remove('open')}
-function closeExpOut(e){if(e.target.id==='exp-modal')closeExp()}
+function closeEM(){document.getElementById('em').classList.remove('open')}
+function closeEMOut(e){if(e.target.id==='em')closeEM()}
 function dlCSV(){
   const b='\uFEFF',h='Quelle;Datum;Themen;Titel;Beschreibung;Link\n';
-  const r=filteredCache.map(a=>`"${a.source}";"${fmtDate(a.date)}";"${a.topics.join(',')}";"${a.title.replace(/"/g,'""')}";"${a.desc.slice(0,200).replace(/"/g,'""')}";"${a.link}"`).join('\n');
+  const r=filtered.map(a=>`"${a.source}";"${fd(a.date)}";"${a.topics.join(',')}";"${a.title.replace(/"/g,'""')}";"${(a.desc||'').slice(0,200).replace(/"/g,'""')}";"${a.link}"`).join('\n');
   dl(b+h+r,'presseschau.csv','text/csv;charset=utf-8');
 }
-function dlTXT(){dl(filteredCache.map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'),'presseschau.txt','text/plain;charset=utf-8')}
+function dlTXT(){dl(filtered.map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'),'presseschau.txt','text/plain;charset=utf-8')}
 function sendMail(){
-  window.open(`mailto:?subject=${encodeURIComponent('Presseschau – '+new Date().toLocaleDateString('de-DE'))}&body=${encodeURIComponent(filteredCache.slice(0,40).map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'))}`);
+  window.open(`mailto:?subject=${encodeURIComponent('Presseschau – '+new Date().toLocaleDateString('de-DE'))}&body=${encodeURIComponent(filtered.slice(0,40).map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'))}`);
 }
 function dl(c,n,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=n;a.click();URL.revokeObjectURL(a.href)}
 
-function showSkel(){
-  const g=document.getElementById('view-grid');
-  g.innerHTML=Array.from({length:15},(_,i)=>`<div class="card" style="gap:10px;animation-delay:${i*.035}s;cursor:default"><div class="skel" style="width:35%;height:18px;border-radius:5px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:100%;height:12px"></div><div class="skel" style="width:68%;height:12px"></div></div>`).join('');
+function fd(iso){
+  if(!iso)return'–';
+  try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}
 }
-
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
-loadAllFeeds();
+// ── INIT ─────────────────────────────────────────────
+loadData();
 </script>
 </body>
 </html>
