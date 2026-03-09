@@ -235,7 +235,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
 </head>
 <body>
 <div id="topbar">
-  <div class="logo">Presse<span>schau</span><small>Bundesministerium Edition</small></div>
+  <div class="logo">Presse<span>schau</span><small>09 März Edition</small></div>
   <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Volltext suchen…" oninput="applyFilters()"></div></div>
   <div class="tr">
     <span id="mark-count">0 markiert</span>
@@ -344,7 +344,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   </div>
   <p class="copy-hint">Markierungen werden nach Export automatisch aufgelöst.</p>
 </div></div>
-<footer><span>Presseschau · Bundesministerium Edition · GitHub Actions alle 30 Min</span><span id="footer-upd"></span></footer>
+<footer><span>Presseschau · 09 März Edition · GitHub Actions alle 30 Min</span><span id="footer-upd"></span></footer>
 <script>
 const PAL=[{bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},{bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},{bg:'#fff7ed',tc:'#c2410c'},{bg:'#fefce8',tc:'#a16207'},{bg:'#f5f3ff',tc:'#6d28d9'},{bg:'#fce7f3',tc:'#9d174d'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},{bg:'#d1fae5',tc:'#065f46'},{bg:'#ffe4e6',tc:'#9f1239'},{bg:'#e0e7ff',tc:'#3730a3'},{bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'}];
 const CC={};
@@ -498,7 +498,7 @@ async function summarizeArticle(){
   box.style.display='block';
   body.innerHTML='<div class="ai-thinking"><span>Analysiere…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
   const a=curArticle;
-  const prompt='Du bist ein Analyseassistent für ein Bundesministerium. Fasse diesen Nachrichtenartikel in 3-4 prägnanten Sätzen zusammen. Nenne am Ende auf einer eigenen Zeile die wichtigste politische Implikation für Deutschland/EU (falls relevant). Antworte nur auf Deutsch.\n\nQuelle: '+a.source+'\nTitel: '+a.title+'\nText: '+(a.desc||'(kein Vorschautext)')+'\nLink: '+a.link;
+  const prompt='Du bist ein Analyseassistent für ein 09 März. Fasse diesen Nachrichtenartikel in 3-4 prägnanten Sätzen zusammen. Nenne am Ende auf einer eigenen Zeile die wichtigste politische Implikation für Deutschland/EU (falls relevant). Antworte nur auf Deutsch.\n\nQuelle: '+a.source+'\nTitel: '+a.title+'\nText: '+(a.desc||'(kein Vorschautext)')+'\nLink: '+a.link;
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:prompt}]})});
     const d=await resp.json();
