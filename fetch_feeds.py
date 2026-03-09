@@ -444,7 +444,7 @@ if __name__ == "__main__":
 - 2 Datensets: articles.json (allgemeine News) + eu_articles.json (nur offizielle EU-Quellen)
 - 100+ kuratierte Quellen
 - Noise-Filter + Relevanz-Scoring
-"""
+""
 
 import json, time, hashlib, re, sys, os
 from datetime import datetime, timezone, timedelta
