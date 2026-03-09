@@ -7,263 +7,291 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#f0f2f7;--surface:#fff;--border:#e3e7f0;
-  --text:#0f1523;--text2:#52596e;--muted:#9198ad;
-  --blue:#3b82f6;--blue-lt:#eff6ff;
-  --shadow:0 1px 3px rgba(15,21,35,.07),0 0 0 1px rgba(15,21,35,.04);
-  --shadow-md:0 6px 24px rgba(15,21,35,.10);
-  --r:10px;--font:'Plus Jakarta Sans',sans-serif;
+:root{
+  --bg:#eef0f5;--surface:#fff;--surface2:#f7f8fb;--border:#e2e6f0;
+  --text:#0d1220;--text2:#4a5168;--muted:#8b92a8;
+  --blue:#2563eb;--blue-lt:#eff4ff;--blue-md:#dbeafe;
+  --eu:#003399;--eu-lt:#e8ecff;--eu-gold:#ffcc00;
+  --green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --shadow:0 1px 3px rgba(13,18,32,.07),0 0 0 1px rgba(13,18,32,.04);
+  --shadow-md:0 4px 20px rgba(13,18,32,.10);
+  --r:10px;--f:'Plus Jakarta Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--f);font-size:14px;display:flex;flex-direction:column}
 
 /* ── TOP BAR ── */
-#topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;position:sticky;top:0;z-index:300;box-shadow:0 1px 8px rgba(15,21,35,.06)}
-.logo{font-size:17px;font-weight:700;letter-spacing:-.03em;white-space:nowrap;flex-shrink:0}
-.logo span{background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#topbar{height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;box-shadow:0 1px 8px rgba(13,18,32,.06);z-index:300}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.03em;white-space:nowrap;flex-shrink:0}
+.logo span{background:linear-gradient(135deg,#2563eb,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo small{font-size:9.5px;font-weight:500;color:var(--muted);display:block;letter-spacing:.02em;margin-top:-2px;-webkit-text-fill-color:var(--muted)}
 .topbar-mid{flex:1;display:flex;justify-content:center}
-.sw{position:relative;width:300px}
-.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
-#q{width:100%;padding:7px 12px 7px 34px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+.sw{position:relative;width:260px}
+.sw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#q{width:100%;padding:7px 10px 7px 32px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--f);font-size:13px;color:var(--text);outline:none;transition:all .2s}
 #q:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt);background:#fff}
 #q::placeholder{color:var(--muted)}
-.tr{display:flex;gap:7px;align-items:center;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--font);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tr{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--f);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}
-.btn.p:hover{background:#2563eb;border-color:#2563eb}
+.btn.p:hover{background:#1d4ed8}
+.btn.danger{border-color:#fca5a5;color:var(--red)}
+.btn.danger:hover{background:#fef2f2;border-color:var(--red)}
+#mark-count{display:none;background:#fef3c7;border:1.5px solid #fcd34d;color:#92400e;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
 
-/* ── VIEW TABS ── */
-#viewbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;display:flex;gap:2px;align-items:center}
-.vtab{padding:10px 14px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
-.vtab:hover{color:var(--text2)}
-.vtab.active{color:var(--blue);border-bottom-color:var(--blue)}
-#upd-info{margin-left:auto;font-size:11.5px;color:var(--muted);padding:8px 0}
+/* ── MAIN TABS ── */
+#maintabs{background:var(--surface);border-bottom:2px solid var(--border);display:flex;flex-shrink:0;padding:0 16px;gap:2px}
+.mtab{padding:10px 18px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:7px;user-select:none;white-space:nowrap}
+.mtab:hover{color:var(--text2)}
+.mtab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.mtab.eu-tab.active{color:var(--eu);border-bottom-color:var(--eu)}
+.mtab .badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.mtab.active .badge{background:var(--blue-lt);color:var(--blue)}
+.mtab.eu-tab.active .badge{background:var(--eu-lt);color:var(--eu)}
+
+/* ── TREND BAR ── */
+#trend-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 16px;display:flex;gap:8px;align-items:center;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+#trend-bar::-webkit-scrollbar{display:none}
+.trend-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+.bubble{display:inline-flex;align-items:center;gap:4px;padding:3px 11px;border-radius:20px;border:1.5px solid;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.bubble:hover{filter:brightness(.9)}
+.bubble .bc{font-size:9.5px;font-weight:700;opacity:.65}
+.kw-bub{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);white-space:nowrap;flex-shrink:0}
+.kw-bub strong{color:var(--text)}
 
 /* ── FILTER BAR ── */
-#filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.fl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
-.chips{display:flex;gap:4px;flex-wrap:wrap}
-.chip{font-size:12px;font-weight:500;padding:4px 11px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap}
+#filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.fl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+.chips{display:flex;gap:3px;flex-wrap:wrap}
+.chip{font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap}
 .chip:hover{border-color:var(--blue);color:var(--blue)}
-.chip.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 1px 5px rgba(59,130,246,.3)}
-.vsep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
-.fsel{appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%239198ad' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 9px center;border:1.5px solid var(--border);color:var(--text);padding:5px 28px 5px 10px;border-radius:8px;font-family:var(--font);font-size:12.5px;cursor:pointer;outline:none;transition:border-color .15s;min-width:150px}
-.fsel:focus{border-color:var(--blue);background-color:#fff}
-.kw-wrap{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-.kw-tag{display:flex;align-items:center;gap:3px;font-size:11.5px;font-weight:500;padding:3px 7px 3px 10px;border-radius:20px;background:#fff7ed;border:1.5px solid #fed7aa;color:#c2410c}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 1px 4px rgba(37,99,235,.25)}
+/* EU-Tab chips in EU-Blau */
+body.eu-mode .chip.active{background:var(--eu);border-color:var(--eu)}
+body.eu-mode .chip:hover{border-color:var(--eu);color:var(--eu)}
+.vsep{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0}
+.fsel{appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238b92a8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 8px center;border:1.5px solid var(--border);color:var(--text);padding:4px 26px 4px 9px;border-radius:7px;font-family:var(--f);font-size:12px;cursor:pointer;outline:none;min-width:130px}
+.fsel:focus{border-color:var(--blue)}
+.kw-wrap{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.kw-tag{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 6px 2px 9px;border-radius:20px;background:#fff7ed;border:1.5px solid #fed7aa;color:#c2410c}
 .kw-tag button{background:none;border:none;cursor:pointer;color:#c2410c;font-size:13px;line-height:1;padding:0;opacity:.6}
 .kw-tag button:hover{opacity:1}
-.kw-in{background:var(--bg);border:1.5px dashed var(--border);color:var(--text);padding:4px 10px;border-radius:20px;font-family:var(--font);font-size:12px;width:120px;outline:none;transition:all .15s}
+.kw-in{background:var(--bg);border:1.5px dashed var(--border);color:var(--text);padding:3px 9px;border-radius:20px;font-family:var(--f);font-size:11.5px;width:105px;outline:none;transition:all .15s}
 .kw-in:focus{border-color:#f97316;border-style:solid;background:#fff}
 .kw-in::placeholder{color:var(--muted)}
 
 /* ── STATUS BAR ── */
-#statusbar{padding:5px 18px;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);background:#fafbfd;flex-wrap:wrap}
-.spill{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);padding:2px 10px;border-radius:20px;font-size:11.5px}
-.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.dot.loading{background:#f59e0b;animation:pulse 1s infinite}
-.dot.ok{background:#16a34a}.dot.err{background:#dc2626}
+#statusbar{padding:4px 16px;display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--text2);border-bottom:1px solid var(--border);background:#f9fafc;flex-shrink:0;flex-wrap:wrap}
+.spill{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);padding:2px 9px;border-radius:20px;font-size:11px}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot.loading{background:var(--amber);animation:pulse 1s infinite}
+.dot.ok{background:var(--green)}.dot.err{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sr{margin-left:auto;display:flex;gap:5px}
-.sb{font-family:var(--font);font-size:11.5px;font-weight:500;padding:3px 10px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
+.sr{margin-left:auto;display:flex;gap:4px}
+.sb{font-family:var(--f);font-size:11px;font-weight:500;padding:2px 9px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
 .sb:first-child{border-radius:6px 0 0 6px}
 .sb:last-child{border-radius:0 6px 6px 0;border-left:none}
 .sb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+body.eu-mode .sb.active{background:var(--eu);border-color:var(--eu)}
 
-/* ── SOURCE BADGE ── */
-.sbadge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+/* ── WORKSPACE ── */
+#workspace{display:flex;flex:1;overflow:hidden}
+#list-pane{width:400px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg);overflow:hidden}
+#list-scroll{flex:1;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:5px}
+#list-scroll::-webkit-scrollbar{width:4px}
+#list-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
 
-/* ── MAIN ── */
-#main{padding:16px 18px}
+/* ── ARTICLE ITEM ── */
+.art-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:9px 11px;cursor:pointer;transition:all .14s;display:flex;gap:7px;align-items:flex-start;animation:fu .17s ease both}
+.art-item:hover{border-color:#c7d2e8;box-shadow:var(--shadow-md)}
+.art-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt);background:#fafcff}
+.art-item.marked{background:#fefce8;border-color:#fcd34d}
+.art-item.marked.active{border-color:var(--blue);background:#fafcff}
+body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--eu-lt)}
+@keyframes fu{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
-/* GRID */
-#vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
+.ai-check{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .14s;background:var(--surface);font-size:9px;line-height:1}
+.ai-check:hover{border-color:var(--amber)}
+.ai-check.checked{background:#fbbf24;border-color:#f59e0b;color:#fff}
+.ai-check.checked::after{content:'★'}
 
-/* LIST */
-#vlist{display:flex;flex-direction:column;gap:6px}
-.li{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:box-shadow .15s,transform .12s;box-shadow:var(--shadow)}
-.li:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.li-l{flex:1;min-width:0}
-.li-t{font-size:14px;font-weight:600;line-height:1.35;color:var(--text);margin-bottom:4px}
-.li-m{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.li-d{font-size:11px;color:var(--muted)}
-.li-r{flex-shrink:0;font-size:12px;color:var(--text2);max-width:300px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ai-content{flex:1;min-width:0}
+.ai-top{display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:3px}
+.sbadge{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 5px;border-radius:4px;white-space:nowrap}
+.ai-date{font-size:10px;color:var(--muted);white-space:nowrap}
+.ai-title{font-size:12.5px;font-weight:600;line-height:1.35;color:var(--text);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ai-meta{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+.ctag{font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
+.eu-tag{background:#e8ecff;color:var(--eu);border-color:#c7d0f0}
+.boost-star{font-size:9px;color:var(--amber)}
+.inst-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--eu-lt);color:var(--eu);border:1px solid #c7d0f0}
 
-/* DASHBOARD */
-#vdash{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.ds{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
-.ds-h{padding:11px 14px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.ds-title{font-size:13px;font-weight:700}
-.ds-cnt{font-size:11px;color:var(--muted);margin-left:auto}
-.ds-item{padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
-.ds-item:last-child{border-bottom:none}
-.ds-item:hover{background:#f7f9ff}
-.ds-it{font-size:12.5px;font-weight:500;line-height:1.35;color:var(--text);margin-bottom:3px}
-.ds-im{display:flex;gap:6px;align-items:center}
-.ds-is{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.ds-id{font-size:10px;color:var(--muted)}
+/* ── READER PANE ── */
+#reader-pane{flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden}
+#reader-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px}
+#reader-empty svg{opacity:.25}
+#reader-empty p{font-size:14px;font-weight:500}
+#reader-empty small{font-size:12px;opacity:.7}
+#reader-content{display:none;flex-direction:column;height:100%}
+#reader-header{padding:18px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+#reader-source-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+#reader-source{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+#reader-date{font-size:11px;color:var(--muted)}
+#reader-inst{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--eu-lt);color:var(--eu)}
+#reader-title{font-size:19px;font-weight:700;line-height:1.3;color:var(--text);margin-bottom:9px}
+#reader-tags{display:flex;gap:5px;flex-wrap:wrap}
+.rtag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
+.rtag.eu{background:var(--eu-lt);color:var(--eu);border-color:#c7d0f0}
+#reader-body{flex:1;overflow-y:auto;padding:18px 22px}
+#reader-body::-webkit-scrollbar{width:4px}
+#reader-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+#reader-text{font-size:15px;color:var(--text2);line-height:1.75;white-space:pre-line}
+#reader-footer{padding:10px 22px;border-top:1px solid var(--border);display:flex;gap:7px;align-items:center;flex-shrink:0;background:var(--surface2)}
 
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);transition:box-shadow .18s,transform .14s;cursor:pointer;animation:fu .2s ease both}
-.card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.ct{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.cd{font-size:10.5px;color:var(--muted);white-space:nowrap}
-.ctitle{font-size:14px;font-weight:600;line-height:1.38;color:var(--text)}
-.cdesc{font-size:12.5px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.ctags{display:flex;gap:4px;flex-wrap:wrap}
-.ctag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
-
-/* ── READ MODAL ── */
-#rm{display:none;position:fixed;inset:0;background:rgba(15,21,35,.45);backdrop-filter:blur(5px);z-index:500;align-items:center;justify-content:center;padding:16px}
-#rm.open{display:flex}
-.rm-in{background:var(--surface);border-radius:16px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(15,21,35,.22);display:flex;flex-direction:column}
-.rm-hd{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;position:sticky;top:0;background:var(--surface);border-radius:16px 16px 0 0;z-index:1}
-.rm-hl{flex:1;min-width:0}
-.rm-src{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.rm-title{font-size:18px;font-weight:700;line-height:1.3;color:var(--text)}
-.rm-x{flex-shrink:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;font-size:16px;cursor:pointer;color:var(--muted);line-height:1;transition:all .15s}
-.rm-x:hover{background:var(--border);color:var(--text)}
-.rm-bd{padding:18px 20px 20px;flex:1}
-.rm-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.rm-date{font-size:12px;color:var(--muted)}
-.rm-tags{display:flex;gap:4px;flex-wrap:wrap}
-.rm-txt{font-size:14px;color:var(--text2);line-height:1.7;white-space:pre-line}
-.rm-ft{padding:14px 20px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+/* EU BANNER in reader */
+.eu-banner{background:linear-gradient(135deg,#003399 0%,#1a4db3 100%);color:#fff;padding:10px 22px;display:flex;align-items:center;gap:10px;font-size:12px;flex-shrink:0}
+.eu-stars{font-size:16px;letter-spacing:2px}
+.eu-banner strong{font-weight:700}
 
 /* ── EXPORT MODAL ── */
-#em{display:none;position:fixed;inset:0;background:rgba(15,21,35,.4);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:16px}
+#em{display:none;position:fixed;inset:0;background:rgba(13,18,32,.45);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:16px}
 #em.open{display:flex}
-.em-in{background:var(--surface);border-radius:16px;padding:26px;max-width:460px;width:100%;box-shadow:0 25px 60px rgba(15,21,35,.18);display:flex;flex-direction:column;gap:14px;position:relative}
-.em-in h2{font-size:18px;font-weight:700}
-.em-in p{font-size:13px;color:var(--text2);line-height:1.5}
-.em-in textarea{width:100%;height:100px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px;font-family:var(--font);font-size:12px;color:var(--text);resize:vertical;outline:none}
-.mc{position:absolute;top:14px;right:16px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-size:15px;cursor:pointer;color:var(--muted);line-height:1}
-.em-acts{display:flex;gap:8px;flex-wrap:wrap}
+.em-in{background:var(--surface);border-radius:16px;padding:24px;max-width:520px;width:100%;box-shadow:0 25px 60px rgba(13,18,32,.2);display:flex;flex-direction:column;gap:13px;position:relative;max-height:82vh;overflow-y:auto}
+.em-in h2{font-size:17px;font-weight:700}
+.em-in p{font-size:13px;color:var(--text2)}
+.em-in textarea{width:100%;height:160px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;font-family:var(--f);font-size:12px;color:var(--text);resize:vertical;outline:none}
+.em-acts{display:flex;gap:7px;flex-wrap:wrap}
+.mc{position:absolute;top:14px;right:16px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-size:14px;cursor:pointer;color:var(--muted);line-height:1}
+.copy-hint{font-size:11px;color:var(--muted);font-style:italic}
 
-/* SKELETON */
-.sk{background:linear-gradient(90deg,#eef0f5 25%,#e6e9f0 50%,#eef0f5 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:6px}
+/* ── SKELETONS ── */
+.sk{background:linear-gradient(90deg,#eef0f5 25%,#e4e8f0 50%,#eef0f5 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:6px}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-#no-res{display:none;grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)}
-footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;background:var(--surface)}
+footer{border-top:1px solid var(--border);padding:7px 16px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;background:var(--surface);flex-shrink:0}
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="logo">Presse<span>schau</span></div>
+  <div class="logo">Presse<span>schau</span><small>Neue Edition</small></div>
   <div class="topbar-mid">
     <div class="sw">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input id="q" placeholder="Suche in Titel &amp; Text…" oninput="applyFilters()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="q" placeholder="Volltext suchen…" oninput="applyFilters()">
     </div>
   </div>
   <div class="tr">
+    <span id="mark-count">0 markiert</span>
+    <button class="btn" id="export-marked-btn" style="display:none" onclick="openExpMarked()">⭐ Export Markierte</button>
+    <button class="btn danger" id="clear-marks-btn" style="display:none" onclick="clearMarks()">✕ Markierung</button>
     <button class="btn" onclick="loadData()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
       Aktualisieren
     </button>
-    <button class="btn p" onclick="openExp()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export
-    </button>
+    <button class="btn p" onclick="openExpAll()">↓ Export</button>
   </div>
 </div>
 
-<!-- VIEW TABS -->
-<div id="viewbar">
-  <div class="vtab active" onclick="setView('grid')">⊞ Kacheln</div>
-  <div class="vtab" onclick="setView('list')">☰ Liste</div>
-  <div class="vtab" onclick="setView('dash')">◈ Dashboard</div>
-  <div id="upd-info"></div>
+<!-- MAIN TABS -->
+<div id="maintabs">
+  <div class="mtab active" id="tab-news" onclick="switchTab('news')">
+    📰 Nachrichten
+    <span class="badge" id="tab-news-cnt">–</span>
+  </div>
+  <div class="mtab eu-tab" id="tab-eu" onclick="switchTab('eu')">
+    🇪🇺 EU Direkt
+    <span class="badge" id="tab-eu-cnt">–</span>
+  </div>
+</div>
+
+<!-- TREND BAR -->
+<div id="trend-bar">
+  <span class="trend-label">Trends</span>
+  <span id="trend-bubbles" style="display:flex;gap:5px;align-items:center"></span>
+  <div class="vsep" style="margin:0 8px"></div>
+  <span class="trend-label">Hot Words</span>
+  <span id="keyword-bubbles" style="display:flex;gap:4px;align-items:center"></span>
 </div>
 
 <!-- FILTER BAR -->
 <div id="filterbar">
-  <span class="fl">Thema</span>
-  <div class="chips">
-    <span class="chip active" data-t="all"          onclick="setTopic('all')">Alle</span>
-    <span class="chip"        data-t="ki"           onclick="setTopic('ki')">🤖 KI</span>
-    <span class="chip"        data-t="tech"         onclick="setTopic('tech')">💻 Technik</span>
-    <span class="chip"        data-t="verteidigung" onclick="setTopic('verteidigung')">🛡 Verteidigung</span>
-    <span class="chip"        data-t="politik"      onclick="setTopic('politik')">🏛 Politik</span>
-    <span class="chip"        data-t="wirtschaft"   onclick="setTopic('wirtschaft')">📈 Wirtschaft</span>
-    <span class="chip"        data-t="sicherheit"   onclick="setTopic('sicherheit')">🔐 Cybersec</span>
-    <span class="chip"        data-t="energie"      onclick="setTopic('energie')">⚡ Energie</span>
-    <span class="chip"        data-t="medizin"      onclick="setTopic('medizin')">🏥 Medizin</span>
+  <span class="fl" id="filter-label">Thema</span>
+  <div class="chips" id="topic-chips">
+    <!-- dynamisch befüllt je nach Tab -->
   </div>
   <div class="vsep"></div>
   <select class="fsel" id="tdd" onchange="setTopicDD(this.value)">
-    <option value="">Weitere Themen…</option>
-    <option value="raumfahrt">🚀 Raumfahrt</option>
-    <option value="finanzen">💹 Finanzen</option>
-    <option value="startup">💡 Start-ups</option>
-    <option value="eu">🇪🇺 Europa / EU</option>
-    <option value="mobilitaet">🚗 Mobilität</option>
-    <option value="wissenschaft">🔬 Wissenschaft</option>
-    <option value="datenschutz">🔏 Datenschutz</option>
-    <option value="medien">📰 Medien</option>
-    <option value="bildung">🎓 Bildung</option>
-    <option value="umwelt">🌿 Umwelt</option>
-    <option value="arbeit">👷 Arbeit</option>
-    <option value="ukraine">🌍 Ukraine</option>
-    <option value="nahost">🌍 Nahost</option>
-    <option value="asien">🌏 Asien</option>
-    <option value="usa">🇺🇸 USA</option>
-    <option value="netzpolitik">🌐 Netzpolitik</option>
-    <option value="sport">⚽ Sport</option>
+    <option value="">Weitere…</option>
   </select>
   <div class="vsep"></div>
   <span class="fl">Quelle</span>
-  <div class="chips" id="src-chips"><span class="chip active" data-s="all" onclick="setSrc('all')">Alle</span></div>
-  <div class="vsep"></div>
-  <span class="fl">+ Stichwort</span>
-  <div class="kw-wrap" id="kw-wrap">
-    <input class="kw-in" id="kw-in" placeholder="Glasfaser ↵" onkeydown="kwKey(event)">
+  <div class="chips" id="src-chips">
+    <span class="chip active" data-s="all" onclick="chipClick(this,'src')" ondblclick="chipDbl(this,'src')">Alle</span>
   </div>
+  <div class="vsep"></div>
+  <span class="fl">Stichwort</span>
+  <div class="kw-wrap" id="kw-wrap">
+    <input class="kw-in" id="kw-in" placeholder="Begriff ↵" onkeydown="kwKey(event)">
+  </div>
+  <div class="vsep"></div>
+  <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer">
+    <input type="checkbox" id="only-boost" onchange="applyFilters()" style="accent-color:var(--amber)">
+    <span>⭐ Top-Relevanz</span>
+  </label>
 </div>
 
 <!-- STATUS BAR -->
 <div id="statusbar">
   <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
   <span><strong id="acnt">0</strong> Artikel</span>
+  <span id="upd-info" style="color:var(--muted)"></span>
   <div class="sr">
     <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
     <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
+    <button class="sb" id="sb2" onclick="setSort('boost')" title="Relevanz">⭐ Relevanz</button>
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<div id="main">
-  <div id="vgrid"></div>
-  <div id="vlist" style="display:none"></div>
-  <div id="vdash" style="display:none"></div>
-</div>
-
-<!-- READ MODAL -->
-<div id="rm" onclick="closeRMOut(event)">
-  <div class="rm-in">
-    <div class="rm-hd">
-      <div class="rm-hl">
-        <div class="rm-src" id="rm-src"></div>
-        <div class="rm-title" id="rm-title"></div>
-      </div>
-      <button class="rm-x" onclick="closeRM()">✕</button>
+<!-- WORKSPACE -->
+<div id="workspace">
+  <!-- LEFT: List -->
+  <div id="list-pane">
+    <div id="list-scroll"></div>
+  </div>
+  <!-- RIGHT: Reader -->
+  <div id="reader-pane">
+    <div id="reader-empty">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <p>Artikel auswählen</p>
+      <small>← Klicke einen Artikel an · ↑↓ Navigieren · M Markieren · Enter Öffnen</small>
     </div>
-    <div class="rm-bd">
-      <div class="rm-meta">
-        <span class="rm-date" id="rm-date"></span>
-        <div class="rm-tags" id="rm-tags"></div>
+    <div id="reader-content">
+      <!-- EU Banner (nur im EU-Tab) -->
+      <div class="eu-banner" id="eu-banner" style="display:none">
+        <span class="eu-stars">★ ★ ★ ★ ★</span>
+        <div><strong>EU Direkt</strong> – Offizielle Quelle: Europäisches Parlament, Rat, Kommission oder EU-Institution</div>
       </div>
-      <div class="rm-txt" id="rm-txt"></div>
-    </div>
-    <div class="rm-ft">
-      <button class="btn p" onclick="openLink()">🔗 Artikel öffnen</button>
-      <button class="btn" onclick="closeRM()">Schließen</button>
+      <div id="reader-header">
+        <div id="reader-source-row">
+          <span id="reader-source"></span>
+          <span id="reader-inst" style="display:none"></span>
+          <span id="reader-date"></span>
+        </div>
+        <div id="reader-title"></div>
+        <div id="reader-tags"></div>
+      </div>
+      <div id="reader-body"><div id="reader-text"></div></div>
+      <div id="reader-footer">
+        <button class="btn p" onclick="openCurLink()">🔗 Artikel öffnen</button>
+        <button class="btn" id="reader-mark-btn" onclick="toggleMarkCur()">☆ Markieren</button>
+        <span style="flex:1"></span>
+        <button class="btn" onclick="prevArt()">← Vorheriger</button>
+        <button class="btn" onclick="nextArt()">Nächster →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -272,25 +300,28 @@ footer{border-top:1px solid var(--border);padding:11px 18px;font-size:11px;color
 <div id="em" onclick="closeEMOut(event)">
   <div class="em-in">
     <button class="mc" onclick="closeEM()">✕</button>
-    <h2>Export &amp; Mail</h2>
-    <p><strong id="exp-cnt">0</strong> gefilterte Artikel</p>
-    <textarea id="exp-prev" readonly></textarea>
+    <h2 id="em-title">Export</h2>
+    <p id="em-desc"></p>
+    <textarea id="em-txt" readonly></textarea>
     <div class="em-acts">
-      <button class="btn" onclick="dlCSV()">📊 CSV</button>
+      <button class="btn p" onclick="copyExport()">📋 Kopieren</button>
       <button class="btn" onclick="dlTXT()">📄 TXT</button>
-      <button class="btn p" onclick="sendMail()">✉️ Mail (max 40)</button>
+      <button class="btn" onclick="dlCSV()">📊 CSV</button>
+      <button class="btn" onclick="sendMail()">✉️ Mail</button>
     </div>
-    <p style="font-size:11px;color:var(--muted)">Mail öffnet deinen Mailclient. CSV/TXT laufen lokal im Browser.</p>
+    <p class="copy-hint">„Kopieren" → direkt in E-Mail oder Word einfügen</p>
   </div>
 </div>
 
 <footer>
-  <span>Presseschau — automatisch aktualisiert via GitHub Actions</span>
+  <span>Presseschau · Neue Edition · GitHub Actions alle 30 Min</span>
   <span id="footer-upd"></span>
 </footer>
 
 <script>
-// ── PALETTEN ────────────────────────────────────────
+// ════════════════════════════════════════
+// PALETTEN
+// ════════════════════════════════════════
 const PAL=[
   {bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},
   {bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},
@@ -300,199 +331,370 @@ const PAL=[
   {bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'},
 ];
 const CC={};
-function srcC(n){
-  if(!CC[n]){const i=Object.keys(CC).length%PAL.length;CC[n]=PAL[i];}
-  return CC[n];
-}
-function badge(n){
-  const c=srcC(n);
-  return `<span class="sbadge" style="background:${c.bg};color:${c.tc}">${esc(n)}</span>`;
-}
+function srcC(n){if(!CC[n]){CC[n]=PAL[Object.keys(CC).length%PAL.length];}return CC[n];}
+function badge(n){const c=srcC(n);return`<span class="sbadge" style="background:${c.bg};color:${c.tc}">${esc(n)}</span>`;}
 
-const TOPIC_COLORS={
-  ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',
-  wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',medizin:'#ec4899',
-  raumfahrt:'#06b6d4',finanzen:'#14b8a6',startup:'#a855f7',eu:'#3b82f6',
-  mobilitaet:'#84cc16',wissenschaft:'#06b6d4',ukraine:'#eab308',nahost:'#ef4444',
-  asien:'#f97316',usa:'#6366f1',netzpolitik:'#0ea5e9',sport:'#22c55e',
-};
-const TOPIC_LABELS={
-  ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',
-  wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cybersec',energie:'⚡ Energie',
-  medizin:'🏥 Medizin',raumfahrt:'🚀 Raumfahrt',finanzen:'💹 Finanzen',
-  startup:'💡 Start-ups',eu:'🇪🇺 EU/Europa',mobilitaet:'🚗 Mobilität',
-  wissenschaft:'🔬 Wissenschaft',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',
-  asien:'🌏 Asien',usa:'🇺🇸 USA',netzpolitik:'🌐 Netzpolitik',sport:'⚽ Sport',
+// Topic-Farben & Labels
+const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899',netzpolitik:'#0ea5e9'};
+const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wiss.',medizin:'🏥 Medizin',netzpolitik:'🌐 Netz'};
+const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',aussenpolitik:'#ef4444',migration:'#f97316',haushalt:'#f59e0b',rechtsstaat:'#8b5cf6'};
+const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',haushalt:'💶 Haushalt',rechtsstaat:'⚖️ Rechtsstaat'};
+
+// Institutions-Kategorien Labels
+const INST_LABELS={
+  'ep':'Europäisches Parlament','ep-committee':'EP-Ausschuss',
+  'ec':'EU-Kommission','council':'Rat der EU',
+  'eu-inst':'EU-Institution','eurlex':'EUR-Lex',
+  'eu-media':'EU-Medien','eu-think':'Think Tank'
 };
 
-// ── STATE ───────────────────────────────────────────
-let ALL=[],filtered=[],activeTopic='all',activeSrc='all',activeSort='new',kws=[],activeView='grid',cur=null;
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let ALL_NEWS=[],ALL_EU=[];
+let filtered=[],marked=new Set();
+let activeTab='news',activeTopic='all',activeSrc='all',activeSort='new',kws=[];
+let curIdx=-1,curArticle=null;
 
-// ── LOAD articles.json ──────────────────────────────
+// ════════════════════════════════════════
+// CHIP CONFIGS per TAB
+// ════════════════════════════════════════
+const NEWS_CHIPS=[
+  {t:'all',label:'Alle'},{t:'ki',label:'🤖 KI'},{t:'tech',label:'💻 Technik'},
+  {t:'verteidigung',label:'🛡 Verteidigung'},{t:'politik',label:'🏛 Politik'},
+  {t:'wirtschaft',label:'📈 Wirtschaft'},{t:'sicherheit',label:'🔐 Cyber'},
+  {t:'energie',label:'⚡ Energie'},{t:'eu',label:'🇪🇺 EU'},
+];
+const NEWS_DD=[
+  {v:'ukraine',l:'🌍 Ukraine'},{v:'nahost',l:'🌍 Nahost'},{v:'asien',l:'🌏 Asien/China'},
+  {v:'usa',l:'🇺🇸 USA'},{v:'finanzen',l:'💹 Finanzen'},{v:'startup',l:'💡 Start-ups'},
+  {v:'mobilitaet',l:'🚗 Mobilität'},{v:'wissenschaft',l:'🔬 Wissenschaft'},
+  {v:'medizin',l:'🏥 Medizin'},{v:'netzpolitik',l:'🌐 Netzpolitik'},
+];
+const EU_CHIPS=[
+  {t:'all',label:'Alle'},{t:'gesetzgebung',label:'📜 Gesetzgebung'},
+  {t:'digitales',label:'💻 Digital/KI'},{t:'wirtschaft',label:'📈 Wirtschaft'},
+  {t:'energie_klima',label:'🌿 Energie/Klima'},{t:'aussenpolitik',label:'🌐 Außenpolitik'},
+  {t:'migration',label:'👥 Migration'},{t:'haushalt',label:'💶 Haushalt'},
+  {t:'rechtsstaat',label:'⚖️ Rechtsstaat'},
+];
+const EU_DD_INST=[
+  {v:'__ep',l:'🏛 Europäisches Parlament'},{v:'__ec',l:'⚙️ EU-Kommission'},
+  {v:'__council',l:'🤝 Rat der EU'},{v:'__ep-committee',l:'📋 EP-Ausschüsse'},
+  {v:'__eu-inst',l:'🏢 EU-Institutionen'},{v:'__eurlex',l:'📖 EUR-Lex'},
+  {v:'__eu-media',l:'📰 EU-Medien'},{v:'__eu-think',l:'💡 Think Tanks'},
+];
+
+// ════════════════════════════════════════
+// LOAD
+// ════════════════════════════════════════
 async function loadData(){
-  setStatus('loading','Lade articles.json…');
-  showSkel();
+  setStatus('loading','Lade…');showSkel();
+  const t=Date.now();
   try{
-    // Cache-buster damit der Browser nicht alte Version serviert
-    const r=await fetch('articles.json?t='+Date.now());
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    ALL=d.articles||[];
-    const upd=d.updated?new Date(d.updated).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'–';
-    document.getElementById('upd-info').textContent=`Zuletzt: ${upd} · ${d.feeds_ok||'?'} Feeds · ${ALL.length} Artikel`;
-    document.getElementById('footer-upd').textContent=`Stand: ${upd}`;
-    setStatus('ok',`${ALL.length} Artikel geladen`);
+    const [r1,r2]=await Promise.all([
+      fetch('articles.json?t='+t),
+      fetch('eu_articles.json?t='+t)
+    ]);
+    if(r1.ok){const d=await r1.json();ALL_NEWS=d.articles||[];
+      document.getElementById('tab-news-cnt').textContent=ALL_NEWS.length;
+      if(d.updated){const u=fmt(d.updated);document.getElementById('upd-info').textContent=`Stand: ${u}`;document.getElementById('footer-upd').textContent=`News: ${u}`;}
+      if(d.trends)renderTrends(d.trends,activeTab==='news');
+    }
+    if(r2.ok){const d=await r2.json();ALL_EU=d.articles||[];
+      document.getElementById('tab-eu-cnt').textContent=ALL_EU.length;
+    }
+    setStatus('ok',`${ALL_NEWS.length} News · ${ALL_EU.length} EU`);
     buildSrcChips();
     applyFilters();
   }catch(e){
-    setStatus('err','Fehler beim Laden: '+e.message);
-    document.getElementById('vgrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted)">⚠️ articles.json nicht gefunden.<br><br>Bitte erst den GitHub Actions Workflow einmal manuell starten,<br>dann entsteht die Datei automatisch.</div>';
+    setStatus('err','Fehler: '+e.message);
+    document.getElementById('list-scroll').innerHTML=`<div style="padding:30px 14px;text-align:center;color:var(--muted)">⚠️ <strong>Dateien nicht gefunden</strong><br><br>Actions → RSS Feeds holen → Run workflow</div>`;
   }
 }
 
-// ── FILTER ──────────────────────────────────────────
-function applyFilters(){
-  const q=document.getElementById('q').value.toLowerCase().trim();
-  filtered=ALL.filter(a=>{
-    const txt=(a.title+' '+a.desc).toLowerCase();
-    return(activeTopic==='all'||a.topics.includes(activeTopic))
-      &&(activeSrc==='all'||a.source===activeSrc)
-      &&(!kws.length||kws.every(k=>txt.includes(k)))
-      &&(!q||txt.includes(q));
+// ════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════
+function switchTab(tab){
+  activeTab=tab;
+  activeTopic='all';activeSrc='all';kws=[];
+  document.getElementById('kw-wrap').querySelectorAll('.kw-tag').forEach(e=>e.remove());
+  document.getElementById('q').value='';
+  document.getElementById('only-boost').checked=false;
+  document.getElementById('tdd').value='';
+
+  document.getElementById('tab-news').classList.toggle('active',tab==='news');
+  document.getElementById('tab-eu').classList.toggle('active',tab==='eu');
+  document.body.classList.toggle('eu-mode',tab==='eu');
+
+  buildTopicChips(tab);
+  buildDD(tab);
+  buildSrcChips();
+
+  const cur=curArticle;
+  resetReader();
+
+  // Trendbar aktualisieren
+  const data=tab==='news'?ALL_NEWS:ALL_EU;
+  const trends=computeTrendsLocal(data,tab==='eu'?EU_TC:NEWS_TC);
+  renderTrends(trends,true);
+
+  applyFilters();
+}
+
+function buildTopicChips(tab){
+  const chips=tab==='news'?NEWS_CHIPS:EU_CHIPS;
+  const w=document.getElementById('topic-chips');
+  w.innerHTML=chips.map(c=>`<span class="chip${c.t==='all'?' active':''}" data-t="${c.t}" onclick="chipClick(this,'topic')" ondblclick="chipDbl(this,'topic')">${c.label}</span>`).join('');
+}
+
+function buildDD(tab){
+  const sel=document.getElementById('tdd');
+  let opts='<option value="">Weitere…</option>';
+  if(tab==='news'){
+    opts+=NEWS_DD.map(d=>`<option value="${d.v}">${d.l}</option>`).join('');
+  }else{
+    opts+='<optgroup label="Nach Institution">';
+    opts+=EU_DD_INST.map(d=>`<option value="${d.v}">${d.l}</option>`).join('');
+    opts+='</optgroup>';
+  }
+  sel.innerHTML=opts;
+}
+
+// ════════════════════════════════════════
+// TRENDS
+// ════════════════════════════════════════
+function computeTrendsLocal(articles,tcMap){
+  const now=new Date();
+  const recent=articles.filter(a=>{
+    if(!a.date)return false;
+    try{return(now-new Date(a.date))/3600000<=48;}catch{return false;}
   });
-  filtered.sort((a,b)=>activeSort==='new'?(b.date||'').localeCompare(a.date||''):(a.date||'').localeCompare(b.date||''));
-  document.getElementById('acnt').textContent=filtered.length;
-  renderView();
-}
-
-// ── RENDER ──────────────────────────────────────────
-function buildSrcChips(){
-  const w=document.getElementById('src-chips');
-  w.innerHTML='<span class="chip active" data-s="all" onclick="setSrc(\'all\')">Alle</span>';
-  [...new Set(ALL.map(a=>a.source))].sort().forEach(s=>{
-    const sp=document.createElement('span');
-    sp.className='chip';sp.dataset.s=s;sp.textContent=s;sp.onclick=()=>setSrc(s);
-    w.appendChild(sp);
+  const tc={};
+  recent.forEach(a=>(a.topics||[]).forEach(t=>{tc[t]=(tc[t]||0)+1;}));
+  const stop=new Set(['der','die','das','ein','eine','und','oder','aber','nicht','mit','von','für','auf','in','an','zu','im','am','ist','sind','hat','haben','wird','nach','vor','über','the','a','and','or','of','to','for','is','are','was','has','have','with','be','it','its','this','that','as','by','at','from','new','said','says','beim','also','mehr','noch','alle','sein']);
+  const wc={};
+  recent.forEach(a=>{
+    (a.title||'').match(/\b[a-zA-ZäöüÄÖÜß][a-zäöüß]{4,}\b/g)?.forEach(w=>{
+      const wl=w.toLowerCase();
+      if(!stop.has(wl)){wc[wl]=(wc[wl]||0)+1;}
+    });
   });
+  return{topic_counts:tc,top_keywords:wc,recent_count:recent.length};
 }
 
-function renderView(){
-  if(activeView==='grid')renderGrid();
-  else if(activeView==='list')renderList();
-  else renderDash();
-}
-
-function renderGrid(){
-  const el=document.getElementById('vgrid');
-  if(!filtered.length){el.innerHTML='<div id="no-res" style="display:block;text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel gefunden.</div>';return;}
-  el.innerHTML=filtered.map((a,i)=>{
-    const c=srcC(a.source);
-    const tags=a.topics.slice(0,3).map(t=>`<span class="ctag">${t}</span>`).join('');
-    return`<div class="card" style="animation-delay:${Math.min(i*.015,.4)}s;border-top:3px solid ${c.tc}" onclick="openRM(${i})">
-      <div class="ct">${badge(a.source)}<span class="cd">${fd(a.date)}</span></div>
-      <div class="ctitle">${esc(a.title)}</div>
-      ${a.desc?`<div class="cdesc">${esc(a.desc.slice(0,220))}</div>`:''}
-      ${tags?`<div class="ctags">${tags}</div>`:''}
-    </div>`;
+function renderTrends(trends,forCurrentTab){
+  const tcMap=activeTab==='eu'?EU_TC:NEWS_TC;
+  const tlMap=activeTab==='eu'?EU_TL:NEWS_TL;
+  const tc=trends.topic_counts||{};
+  const sorted=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxC=sorted[0]?.[1]||1;
+  document.getElementById('trend-bubbles').innerHTML=sorted.map(([t,cnt])=>{
+    const col=tcMap[t]||'#6b7280';
+    const lbl=tlMap[t]||t;
+    const sz=Math.max(11,Math.round(11+2*(cnt/maxC)));
+    return`<span class="bubble" style="background:${col}18;border-color:${col}44;color:${col};font-size:${sz}px" onclick="setTopicBubble('${t}')">${lbl} <span class="bc">${cnt}</span></span>`;
+  }).join('');
+  const kc=trends.top_keywords||{};
+  const kSorted=Object.entries(kc).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxK=kSorted[0]?.[1]||1;
+  document.getElementById('keyword-bubbles').innerHTML=kSorted.map(([w,cnt])=>{
+    const weight=cnt/maxK;
+    return`<span class="kw-bub" style="opacity:${.45+weight*.55}">${weight>.5?`<strong>${esc(w)}</strong>`:esc(w)} <span style="font-size:9px;color:var(--muted)">${cnt}</span></span>`;
   }).join('');
 }
 
-function renderList(){
-  const el=document.getElementById('vlist');
-  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel gefunden.</div>';return;}
-  el.innerHTML=filtered.map((a,i)=>{
-    const c=srcC(a.source);
-    const tags=a.topics.slice(0,2).map(t=>`<span class="ctag">${t}</span>`).join('');
-    return`<div class="li" style="border-left:3px solid ${c.tc}" onclick="openRM(${i})">
-      <div class="li-l"><div class="li-t">${esc(a.title)}</div>
-      <div class="li-m">${badge(a.source)}<span class="li-d">${fd(a.date)}</span>${tags}</div></div>
-      ${a.desc?`<div class="li-r">${esc(a.desc.slice(0,180))}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-function renderDash(){
-  const el=document.getElementById('vdash');
-  const buckets={};
-  filtered.forEach((a,i)=>{
-    const m=a.topics[0]||'sonstig';
-    if(!buckets[m])buckets[m]=[];
-    buckets[m].push({...a,_i:i});
-  });
-  const sorted=Object.entries(buckets).sort((a,b)=>b[1].length-a[1].length);
-  if(!sorted.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)">Keine Artikel.</div>';return;}
-  el.innerHTML=sorted.map(([t,arts])=>{
-    const col=TOPIC_COLORS[t]||'#6b7280';
-    const label=TOPIC_LABELS[t]||t;
-    const items=arts.slice(0,6).map(a=>{
-      const sc=srcC(a.source);
-      return`<div class="ds-item" onclick="openRM(${a._i})">
-        <div class="ds-it">${esc(a.title)}</div>
-        <div class="ds-im"><span class="ds-is" style="color:${sc.tc}">${esc(a.source)}</span><span class="ds-id">${fd(a.date)}</span></div>
-      </div>`;
-    }).join('');
-    const more=arts.length>6?`<div style="padding:7px 14px;font-size:11.5px;color:var(--muted);cursor:pointer" onclick="setTopic('${t}');setView('list')">Alle ${arts.length} →</div>`:'';
-    return`<div class="ds"><div class="ds-h" style="border-left:3px solid ${col}"><span class="ds-title">${label}</span><span class="ds-cnt">${arts.length}</span></div><div>${items}${more}</div></div>`;
-  }).join('');
-}
-
-function showSkel(){
-  document.getElementById('vgrid').innerHTML=Array.from({length:15},(_,i)=>`<div class="card" style="gap:10px;animation-delay:${i*.03}s;cursor:default"><div class="sk" style="width:35%;height:18px;border-radius:5px"></div><div class="sk" style="width:92%;height:14px"></div><div class="sk" style="width:100%;height:12px"></div><div class="sk" style="width:68%;height:12px"></div></div>`).join('');
-}
-
-// ── READ MODAL ──────────────────────────────────────
-function openRM(i){
-  cur=filtered[i];if(!cur)return;
-  const c=srcC(cur.source);
-  document.getElementById('rm-src').innerHTML=badge(cur.source);
-  document.getElementById('rm-title').textContent=cur.title;
-  document.getElementById('rm-date').textContent=fd(cur.date);
-  document.getElementById('rm-tags').innerHTML=cur.topics.map(t=>`<span class="ctag">${t}</span>`).join('');
-  document.getElementById('rm-txt').textContent=cur.desc||'(Kein Vorschautext – bitte Artikel direkt öffnen)';
-  document.getElementById('rm').classList.add('open');
-}
-function closeRM(){document.getElementById('rm').classList.remove('open')}
-function closeRMOut(e){if(e.target.id==='rm')closeRM()}
-function openLink(){if(cur?.link)window.open(cur.link,'_blank','noopener')}
-
-// ── SETTER ──────────────────────────────────────────
-function setView(v){
-  activeView=v;
-  ['grid','list','dash'].forEach(x=>{
-    document.getElementById('v'+x).style.display=x===v?(x==='list'?'flex':'grid'):'none';
-  });
-  document.querySelectorAll('.vtab').forEach((el,i)=>el.classList.toggle('active',['grid','list','dash'][i]===v));
-  renderView();
-}
-function setTopic(t){
+function setTopicBubble(t){
   activeTopic=t;
   document.querySelectorAll('[data-t]').forEach(el=>el.classList.toggle('active',el.dataset.t===t));
   document.getElementById('tdd').value='';
   applyFilters();
 }
-function setTopicDD(v){
-  if(!v){setTopic('all');return;}
-  activeTopic=v;
-  document.querySelectorAll('[data-t]').forEach(el=>el.classList.remove('active'));
+
+// ════════════════════════════════════════
+// FILTER
+// ════════════════════════════════════════
+function applyFilters(){
+  const q=document.getElementById('q').value.toLowerCase().trim();
+  const onlyBoost=document.getElementById('only-boost').checked;
+  const pool=activeTab==='news'?ALL_NEWS:ALL_EU;
+
+  filtered=pool.filter(a=>{
+    const txt=((a.title||'')+' '+(a.desc||'')).toLowerCase();
+    // Institution filter (EU-Tab, prefixed with __)
+    if(activeTopic.startsWith('__')){
+      const cat=activeTopic.slice(2);
+      if(a.cat!==cat)return false;
+    }else if(activeTopic!=='all'){
+      if(!(a.topics||[]).includes(activeTopic))return false;
+    }
+    return(activeSrc==='all'||a.source===activeSrc)
+      &&(!kws.length||kws.every(k=>txt.includes(k)))
+      &&(!q||txt.includes(q))
+      &&(!onlyBoost||(a.boost||0)>0);
+  });
+  sortFiltered();
+  document.getElementById('acnt').textContent=filtered.length;
+  renderList();
+}
+
+function sortFiltered(){
+  if(activeSort==='boost')filtered.sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||'')));
+  else if(activeSort==='new')filtered.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  else filtered.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+
+// ════════════════════════════════════════
+// RENDER LIST
+// ════════════════════════════════════════
+function renderList(){
+  const el=document.getElementById('list-scroll');
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:40px 14px;color:var(--muted);font-size:13px">Keine Artikel gefunden.</div>';return;}
+  el.innerHTML=filtered.map((a,i)=>{
+    const c=srcC(a.source);
+    const isEU=activeTab==='eu';
+    const tags=(a.topics||[]).slice(0,2).map(t=>`<span class="ctag${isEU?' eu-tag':''}">${t}</span>`).join('');
+    const instLabel=isEU&&a.cat?`<span class="inst-badge">${INST_LABELS[a.cat]||a.cat}</span>`:'';
+    const boost=a.boost>0?`<span class="boost-star">${'⭐'.repeat(Math.min(a.boost,3))}</span>`:'';
+    const isMarked=marked.has(a.id);
+    return`<div class="art-item${i===curIdx?' active':''}${isMarked?' marked':''}" onclick="openArt(${i})" id="ai-${i}" style="border-left:3px solid ${isEU?'#003399':c.tc}">
+      <div class="ai-check${isMarked?' checked':''}" onclick="toggleMark(event,${i})"></div>
+      <div class="ai-content">
+        <div class="ai-top">${badge(a.source)}<span class="ai-date">${fd(a.date)}</span></div>
+        <div class="ai-title">${esc(a.title)}${boost}</div>
+        <div class="ai-meta">${instLabel}${tags}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildSrcChips(){
+  const pool=activeTab==='news'?ALL_NEWS:ALL_EU;
+  const w=document.getElementById('src-chips');
+  w.innerHTML='<span class="chip active" data-s="all" onclick="chipClick(this,\'src\')" ondblclick="chipDbl(this,\'src\')">Alle</span>';
+  [...new Set(pool.map(a=>a.source))].sort().forEach(s=>{
+    const sp=document.createElement('span');sp.className='chip';sp.dataset.s=s;sp.textContent=s;
+    sp.onclick=function(){chipClick(this,'src')};sp.ondblclick=function(){chipDbl(this,'src')};
+    w.appendChild(sp);
+  });
+}
+
+function showSkel(){
+  document.getElementById('list-scroll').innerHTML=Array.from({length:8},(_,i)=>
+    `<div class="art-item" style="cursor:default;animation-delay:${i*.04}s">
+      <div style="width:17px;height:17px;flex-shrink:0"><div class="sk" style="width:17px;height:17px;border-radius:5px"></div></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div class="sk" style="width:42%;height:10px"></div>
+        <div class="sk" style="width:88%;height:12px"></div>
+        <div class="sk" style="width:60%;height:12px"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════
+// READER
+// ════════════════════════════════════════
+function openArt(i){
+  curIdx=i;curArticle=filtered[i];
+  if(!curArticle)return;
+  document.querySelectorAll('.art-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+  const a=curArticle;
+  const isEU=activeTab==='eu';
+  const c=srcC(a.source);
+
+  document.getElementById('eu-banner').style.display=isEU?'flex':'none';
+  document.getElementById('reader-source').innerHTML=badge(a.source);
+
+  const instEl=document.getElementById('reader-inst');
+  if(isEU&&a.cat){instEl.textContent=INST_LABELS[a.cat]||a.cat;instEl.style.display='inline';}
+  else{instEl.style.display='none';}
+
+  document.getElementById('reader-date').textContent=fd(a.date);
+  document.getElementById('reader-title').textContent=a.title;
+
+  const tagClass=isEU?'rtag eu':'rtag';
+  document.getElementById('reader-tags').innerHTML=(a.topics||[]).map(t=>`<span class="${tagClass}">${t}</span>`).join('');
+  document.getElementById('reader-text').textContent=a.desc||(a.link?'(Kein Vorschautext – Artikel direkt öffnen)':'');
+
+  const mb=document.getElementById('reader-mark-btn');
+  mb.textContent=marked.has(a.id)?'★ Markiert':'☆ Markieren';
+  mb.style.background=marked.has(a.id)?'#fef3c7':'';
+
+  document.getElementById('reader-empty').style.display='none';
+  document.getElementById('reader-content').style.display='flex';
+}
+
+function resetReader(){
+  curIdx=-1;curArticle=null;
+  document.getElementById('reader-empty').style.display='flex';
+  document.getElementById('reader-content').style.display='none';
+}
+
+function openCurLink(){if(curArticle?.link)window.open(curArticle.link,'_blank','noopener')}
+function prevArt(){if(curIdx>0){openArt(curIdx-1);scrollTo(curIdx-1);}}
+function nextArt(){if(curIdx<filtered.length-1){openArt(curIdx+1);scrollTo(curIdx+1);}}
+function scrollTo(i){document.getElementById('ai-'+i)?.scrollIntoView({block:'nearest',behavior:'smooth'})}
+
+// ════════════════════════════════════════
+// MARKING
+// ════════════════════════════════════════
+function toggleMark(e,i){
+  e.stopPropagation();
+  const a=filtered[i];if(!a)return;
+  if(marked.has(a.id))marked.delete(a.id);else marked.add(a.id);
+  updateMarkUI();renderList();
+  if(curIdx===i)openArt(i);
+}
+function toggleMarkCur(){
+  if(!curArticle)return;
+  if(marked.has(curArticle.id))marked.delete(curArticle.id);else marked.add(curArticle.id);
+  updateMarkUI();renderList();openArt(curIdx);
+}
+function clearMarks(){marked.clear();updateMarkUI();renderList();if(curArticle)openArt(curIdx);}
+function updateMarkUI(){
+  const cnt=marked.size;
+  document.getElementById('mark-count').textContent=cnt+' markiert';
+  document.getElementById('mark-count').style.display=cnt?'block':'none';
+  document.getElementById('export-marked-btn').style.display=cnt?'block':'none';
+  document.getElementById('clear-marks-btn').style.display=cnt?'block':'none';
+}
+
+// ════════════════════════════════════════
+// CHIPS / FILTER CONTROLS
+// ════════════════════════════════════════
+function chipClick(el,type){
+  if(type==='topic'){
+    activeTopic=el.dataset.t;
+    document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===activeTopic));
+    document.getElementById('tdd').value='';
+  }else{
+    activeSrc=el.dataset.s;
+    document.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('active',e.dataset.s===activeSrc));
+  }
   applyFilters();
 }
-function setSrc(s){
-  activeSrc=s;
-  document.querySelectorAll('[data-s]').forEach(el=>el.classList.toggle('active',el.dataset.s===s));
+function chipDbl(el,type){
+  if(type==='topic'){activeTopic='all';document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t==='all'));document.getElementById('tdd').value='';}
+  else{activeSrc='all';document.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('active',e.dataset.s==='all'));}
+  applyFilters();
+}
+function setTopicDD(v){
+  if(!v){activeTopic='all';document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t==='all'));applyFilters();return;}
+  activeTopic=v;
+  document.querySelectorAll('[data-t]').forEach(e=>e.classList.remove('active'));
   applyFilters();
 }
 function setSort(s){
   activeSort=s;
-  document.getElementById('sn').classList.toggle('active',s==='new');
-  document.getElementById('so').classList.toggle('active',s==='old');
-  applyFilters();
+  ['sn','so','sb2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['new','old','boost'][i]===s));
+  sortFiltered();renderList();
 }
-function setStatus(t,m){
-  document.getElementById('sdot').className='dot '+t;
-  document.getElementById('stxt').textContent=m;
-}
+function setStatus(t,m){document.getElementById('sdot').className='dot '+t;document.getElementById('stxt').textContent=m;}
 
-// ── KEYWORDS ────────────────────────────────────────
+// ════════════════════════════════════════
+// KEYWORDS
+// ════════════════════════════════════════
 function kwKey(e){
   if(e.key==='Enter'||e.key===','){
     e.preventDefault();
@@ -501,7 +703,7 @@ function kwKey(e){
     e.target.value='';
   }
 }
-function removeKW(k){kws=kws.filter(x=>x!==k);renderKWTags();applyFilters()}
+function removeKW(k){kws=kws.filter(x=>x!==k);renderKWTags();applyFilters();}
 function renderKWTags(){
   document.getElementById('kw-wrap').querySelectorAll('.kw-tag').forEach(e=>e.remove());
   const inp=document.getElementById('kw-in');
@@ -512,32 +714,73 @@ function renderKWTags(){
   });
 }
 
-// ── EXPORT ──────────────────────────────────────────
-function openExp(){
-  document.getElementById('exp-cnt').textContent=filtered.length;
-  document.getElementById('exp-prev').value=filtered.slice(0,8).map(a=>`[${a.source}] ${a.title}\n${a.link}`).join('\n\n')+(filtered.length>8?`\n…+${filtered.length-8}`:'');
+// ════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════
+let exportArticles=[];
+function openExpMarked(){
+  const pool=[...ALL_NEWS,...ALL_EU];
+  exportArticles=pool.filter(a=>marked.has(a.id));
+  showExp(`⭐ Export Markierte (${exportArticles.length})`,`${exportArticles.length} markierte Artikel`);
+}
+function openExpAll(){
+  exportArticles=[...filtered];
+  showExp(`Export (${filtered.length} Artikel)`,`Alle gefilterten Artikel im aktuellen Tab.`);
+}
+function showExp(title,desc){
+  document.getElementById('em-title').textContent=title;
+  document.getElementById('em-desc').textContent=desc;
+  document.getElementById('em-txt').value=fmtExp(exportArticles);
   document.getElementById('em').classList.add('open');
 }
-function closeEM(){document.getElementById('em').classList.remove('open')}
-function closeEMOut(e){if(e.target.id==='em')closeEM()}
+function fmtExp(arts){
+  return arts.map((a,i)=>{
+    const t=a.topics?.slice(0,3).join(', ')||'–';
+    return`${i+1}. ${a.title}\n   Quelle: ${a.source} | ${fd(a.date)} | Themen: ${t}\n   Link: ${a.link||'–'}`;
+  }).join('\n\n');
+}
+function copyExport(){
+  navigator.clipboard.writeText(document.getElementById('em-txt').value).then(()=>{
+    const b=event.target;b.textContent='✓ Kopiert!';setTimeout(()=>b.textContent='📋 Kopieren',2000);
+  });
+}
+function dlTXT(){dl(fmtExp(exportArticles),'presseschau.txt','text/plain;charset=utf-8')}
 function dlCSV(){
   const b='\uFEFF',h='Quelle;Datum;Themen;Titel;Beschreibung;Link\n';
-  const r=filtered.map(a=>`"${a.source}";"${fd(a.date)}";"${a.topics.join(',')}";"${a.title.replace(/"/g,'""')}";"${(a.desc||'').slice(0,200).replace(/"/g,'""')}";"${a.link}"`).join('\n');
+  const r=exportArticles.map(a=>`"${a.source}";"${fd(a.date)}";"${(a.topics||[]).join(',')}";"${(a.title||'').replace(/"/g,'""')}";"${(a.desc||'').slice(0,300).replace(/"/g,'""')}";"${a.link||''}"`).join('\n');
   dl(b+h+r,'presseschau.csv','text/csv;charset=utf-8');
 }
-function dlTXT(){dl(filtered.map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'),'presseschau.txt','text/plain;charset=utf-8')}
 function sendMail(){
-  window.open(`mailto:?subject=${encodeURIComponent('Presseschau – '+new Date().toLocaleDateString('de-DE'))}&body=${encodeURIComponent(filtered.slice(0,40).map((a,i)=>`${i+1}. [${a.source}] ${a.title}\n${a.link}`).join('\n\n'))}`);
+  const sub=encodeURIComponent('Presseschau – '+new Date().toLocaleDateString('de-DE'));
+  window.open(`mailto:?subject=${sub}&body=${encodeURIComponent(fmtExp(exportArticles.slice(0,40)))}`);
 }
 function dl(c,n,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=n;a.click();URL.revokeObjectURL(a.href)}
+function closeEM(){document.getElementById('em').classList.remove('open')}
+function closeEMOut(e){if(e.target.id==='em')closeEM()}
 
-function fd(iso){
-  if(!iso)return'–';
-  try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}
-}
+// ════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════
+function fd(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
+function fmt(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ── INIT ─────────────────────────────────────────────
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowDown'){e.preventDefault();nextArt();}
+  if(e.key==='ArrowUp'){e.preventDefault();prevArt();}
+  if(e.key==='Enter'&&curArticle)openCurLink();
+  if(e.key==='m'&&curArticle)toggleMarkCur();
+  if(e.key==='1')switchTab('news');
+  if(e.key==='2')switchTab('eu');
+});
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+buildTopicChips('news');
+buildDD('news');
 loadData();
 </script>
 </body>
