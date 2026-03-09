@@ -1,0 +1,35 @@
+name: RSS Feeds holen
+
+on:
+  # Automatisch alle 30 Minuten
+  schedule:
+    - cron: '*/30 * * * *'
+  # Manuell auslösbar (nützlich zum Testen)
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # damit der Action-Bot ins Repo pushen darf
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Feeds holen
+        run: python fetch_feeds.py
+
+      - name: articles.json committen & pushen
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add articles.json
+          # Nur committen wenn sich wirklich etwas geändert hat
+          git diff --cached --quiet || git commit -m "chore: articles.json aktualisiert [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push
