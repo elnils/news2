@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -231,20 +232,244 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .sk{background:linear-gradient(90deg,#eef0f5 25%,#e4e8f0 50%,#eef0f5 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:6px}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;background:var(--surface);flex-shrink:0}
+
+/* ─────────────────────────────────────────
+MOBILE  (≤ 680 px)
+───────────────────────────────────────── */
+@media (max-width:680px){
+/* Prevent body scroll-lock conflicts on iOS */
+html,body{overflow:hidden;height:100%;height:100dvh}
+
+/* ── Topbar: Logo + Search only, overflow actions hidden ── */
+#topbar{padding:0 10px;gap:7px;height:48px}
+.logo small{display:none}
+.topbar-mid{flex:1}
+.sw{width:100%}
+/* Hide desktop-only topbar buttons; keep Reload + Export */
+#mark-count{display:none!important}
+#export-marked-btn{display:none!important}
+#clear-marks-btn{display:none!important}
+.tr .btn:not(#mob-reload):not(#mob-export){display:none}
+/* Make reload/export compact */
+.tr{gap:4px}
+.btn{padding:5px 8px;font-size:11px}
+
+/* ── Viewbar: tabs only, no view switcher, no upd-info ── */
+#viewbar{padding:0 10px;overflow-x:auto;scrollbar-width:none}
+#viewbar::-webkit-scrollbar{display:none}
+.vbar-sep{display:none}
+.vtab{display:none}          /* hide split/grid/list/dash tabs */
+#upd-info{display:none}
+.mtab{padding:9px 14px;font-size:12px}
+
+/* ── Trend bar: hidden on mobile ── */
+#trend-bar{display:none}
+
+/* ── Filter bar: collapsible ── */
+#filterbar{
+padding:0;
+flex-direction:column;
+align-items:stretch;
+gap:0;
+overflow:hidden;
+max-height:36px;       /* collapsed: show toggle row only */
+transition:max-height .25s ease;
+position:relative;
+}
+#filterbar.open{max-height:400px}
+/* Inject toggle button via pseudo / JS */
+#filter-toggle{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:7px 12px;
+background:var(–surface);
+font-size:11px;font-weight:600;color:var(–text2);
+cursor:pointer;
+user-select:none;
+flex-shrink:0;
+height:36px;
+border-bottom:1px solid transparent;
+transition:border-color .15s;
+}
+#filterbar.open #filter-toggle{border-color:var(–border)}
+#filter-toggle-icon{transition:transform .22s;font-size:10px;color:var(–muted)}
+#filterbar.open #filter-toggle-icon{transform:rotate(180deg)}
+#filter-inner{
+display:flex;flex-direction:column;gap:6px;
+padding:8px 12px 10px;
+overflow:hidden;
+}
+/* Horizontal scroll for chips */
+#filterbar .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+#filterbar .chips::-webkit-scrollbar{display:none}
+.vsep{display:none}
+.fl{font-size:10px;margin-bottom:2px}
+.fsel{min-width:unset;width:100%}
+.kw-in{width:100%;box-sizing:border-box}
+
+/* ── Status bar: compact ── */
+#statusbar{padding:3px 10px;gap:6px;font-size:10.5px}
+.spill{padding:2px 7px}
+.sr{gap:2px}
+.sb{padding:2px 6px;font-size:10.5px}
+
+/* ── Main area ── */
+#main{flex:1;overflow:hidden}
+
+/* Hide desktop split/grid/dash; list is default */
+#view-split{display:none!important}
+#view-grid{display:none!important}
+#view-dash{display:none!important}
+/* List view always visible on mobile */
+#view-list{
+display:block!important;
+height:100%;
+overflow-y:auto;
+-webkit-overflow-scrolling:touch;
+padding:7px 8px;
+}
+
+/* List rows: larger touch targets */
+.lrow{padding:10px 11px;border-radius:10px;gap:8px}
+.lrow-check{width:20px;height:20px;border-radius:5px;font-size:10px;flex-shrink:0}
+.lrow-title{font-size:14px;line-height:1.35}
+.lrow-meta{gap:4px}
+.lrow-date{font-size:10px}
+/* Hide description in list to keep rows compact */
+.lrow-desc{display:none}
+
+/* ── Mobile reader: full-screen overlay ── */
+#mob-reader{
+display:none;
+position:fixed;
+inset:0;
+z-index:400;
+background:var(–surface);
+flex-direction:column;
+overflow:hidden;
+}
+#mob-reader.open{display:flex}
+
+#mob-reader-topbar{
+height:48px;
+display:flex;align-items:center;gap:8px;
+padding:0 12px;
+border-bottom:1px solid var(–border);
+background:var(–surface);
+flex-shrink:0;
+}
+#mob-back-btn{
+display:flex;align-items:center;gap:5px;
+background:none;border:none;cursor:pointer;
+font-family:var(–f);font-size:13px;font-weight:600;color:var(–blue);
+padding:6px 4px;
+}
+body.eu-mode #mob-back-btn{color:var(–eu)}
+#mob-reader-source-info{
+flex:1;display:flex;flex-direction:column;min-width:0;
+}
+#mob-reader-source-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(–text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mob-reader-date{font-size:10px;color:var(–muted)}
+#mob-reader-actions{display:flex;gap:5px;flex-shrink:0}
+#mob-reader-actions .btn{padding:5px 8px;font-size:11px}
+
+#mob-reader-body{
+flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+padding:14px 14px 0;
+}
+#mob-reader-eu-banner{
+background:linear-gradient(135deg,#003399,#1a4db3);color:#fff;
+padding:7px 14px;font-size:11px;
+display:none;align-items:center;gap:8px;flex-shrink:0;
+}
+#mob-reader-eu-banner.show{display:flex}
+#mob-reader-title{font-size:18px;font-weight:700;line-height:1.3;color:var(–text);margin-bottom:8px}
+#mob-reader-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+#mob-reader-text{font-size:15px;color:var(–text2);line-height:1.8;white-space:pre-line}
+#mob-ai-summary-box{
+margin-top:16px;border:1.5px solid var(–border);border-radius:9px;overflow:hidden;display:none;
+margin-bottom:16px;
+}
+#mob-ai-summary-header{background:var(–bg);padding:8px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(–border)}
+#mob-ai-summary-header span{font-size:12px;font-weight:600;color:var(–text2);flex:1}
+#mob-ai-summary-body{padding:12px;font-size:13px;color:var(–text2);line-height:1.65}
+
+#mob-reader-footer{
+padding:10px 12px;
+border-top:1px solid var(–border);
+background:var(–surface2);
+display:flex;gap:7px;flex-shrink:0;
+padding-bottom:max(10px,env(safe-area-inset-bottom));
+}
+#mob-reader-footer .btn{flex:1;justify-content:center;padding:9px 4px;font-size:12px;font-weight:600}
+
+/* Footer: hide on mobile to save space */
+footer{display:none}
+
+/* Active filter indicator on toggle */
+#filter-active-dot{
+width:6px;height:6px;border-radius:50%;
+background:var(–blue);
+display:none;margin-left:4px;flex-shrink:0;
+}
+body.eu-mode #filter-active-dot{background:var(–eu)}
+#filter-active-dot.show{display:block}
+}
 </style>
+
 </head>
 <body>
+
+<!-- ── Mobile reader overlay (DOM sibling to #main) ── -->
+
+<div id="mob-reader">
+  <div id="mob-reader-eu-banner"><span class="eu-stars">★ ★ ★</span><span><strong>EU Direkt</strong> – Offizielle EU-Quelle</span></div>
+  <div id="mob-reader-topbar">
+    <button id="mob-back-btn" onclick="mobReaderClose()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Zurück
+    </button>
+    <div id="mob-reader-source-info">
+      <div id="mob-reader-source-name"></div>
+      <div id="mob-reader-date"></div>
+    </div>
+    <div id="mob-reader-actions">
+      <button class="btn" id="mob-mark-btn" onclick="mobToggleMark()">☆</button>
+      <button class="btn p" onclick="mobOpenLink()">🔗</button>
+    </div>
+  </div>
+  <div id="mob-reader-body">
+    <div id="mob-reader-title"></div>
+    <div id="mob-reader-tags"></div>
+    <div id="mob-reader-text"></div>
+    <div id="mob-ai-summary-box">
+      <div id="mob-ai-summary-header">
+        <span>🤖 KI-Zusammenfassung</span>
+        <button class="btn" style="font-size:11px;padding:2px 7px" onclick="mobSummarize()">↺ Neu</button>
+      </div>
+      <div id="mob-ai-summary-body"></div>
+    </div>
+  </div>
+  <div id="mob-reader-footer">
+    <button class="btn" onclick="mobPrev()">← Vor.</button>
+    <button class="btn" onclick="mobSummarize()">🤖 KI</button>
+    <button class="btn" onclick="mobNext()">Nächst. →</button>
+  </div>
+</div>
+
 <div id="topbar">
   <div class="logo">Presse<span>schau</span><small>09 März Edition</small></div>
-  <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Volltext suchen…" oninput="applyFilters()"></div></div>
+  <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Suchen…" oninput="applyFilters()"></div></div>
   <div class="tr">
     <span id="mark-count">0 markiert</span>
     <button class="btn" id="export-marked-btn" style="display:none" onclick="openExpMarked()">⭐ Export Markierte</button>
     <button class="btn danger" id="clear-marks-btn" style="display:none" onclick="clearMarks()">✕ Marks</button>
-    <button class="btn" onclick="loadData()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Reload</button>
-    <button class="btn p" onclick="openExpAll()">↓ Export</button>
+    <button class="btn" id="mob-reload" onclick="loadData()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Reload</button>
+    <button class="btn p" id="mob-export" onclick="openExpAll()">↓</button>
   </div>
 </div>
+
 <div id="viewbar">
   <div class="mtab active" id="tab-news" onclick="switchTab('news')">📰 Nachrichten <span class="badge" id="tab-news-cnt">–</span></div>
   <div class="mtab eu-tab" id="tab-eu" onclick="switchTab('eu')">🇪🇺 EU Direkt <span class="badge" id="tab-eu-cnt">–</span></div>
@@ -255,6 +480,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   <div class="vtab" id="vt-dash" onclick="setView('dash')">◈ Dashboard</div>
   <div id="upd-info"></div>
 </div>
+
 <div id="trend-bar">
   <span class="trend-label">Trends</span>
   <span id="trend-bubbles" style="display:flex;gap:5px;align-items:center"></span>
@@ -262,29 +488,44 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   <span class="trend-label">Hot Words</span>
   <span id="keyword-bubbles" style="display:flex;gap:4px;align-items:center"></span>
 </div>
+
 <div id="filterbar">
-  <span class="fl">Thema</span>
-  <div class="chips" id="topic-chips"></div>
-  <div class="vsep"></div>
-  <select class="fsel" id="tdd" onchange="setTopicDD(this.value)"><option value="">Weitere…</option></select>
-  <div class="vsep"></div>
-  <span class="fl">Quelle</span>
-  <div class="chips" id="src-chips"><span class="chip active" data-s="all" onclick="chipClick(this,'src')" ondblclick="chipDbl(this,'src')">Alle</span></div>
-  <div class="vsep"></div>
-  <span class="fl">Stichwort</span>
-  <div class="kw-wrap" id="kw-wrap"><input class="kw-in" id="kw-in" placeholder="Begriff ↵" onkeydown="kwKey(event)"></div>
-  <div class="vsep"></div>
-  <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer"><input type="checkbox" id="only-boost" onchange="applyFilters()" style="accent-color:var(--amber)">⭐ Top-Relevanz</label>
+  <!-- Mobile toggle row (hidden on desktop via JS injection) -->
+  <div id="filter-toggle" onclick="toggleFilterBar()">
+    <span>
+      🔍 Filter
+      <span id="filter-active-dot"></span>
+    </span>
+    <span id="filter-toggle-icon">▼</span>
+  </div>
+  <div id="filter-inner">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span class="fl">Thema</span>
+      <div class="chips" id="topic-chips"></div>
+      <select class="fsel" id="tdd" onchange="setTopicDD(this.value)"><option value="">Weitere…</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span class="fl">Quelle</span>
+      <div class="chips" id="src-chips"><span class="chip active" data-s="all" onclick="chipClick(this,'src')" ondblclick="chipDbl(this,'src')">Alle</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span class="fl">Stichwort</span>
+      <div class="kw-wrap" id="kw-wrap"><input class="kw-in" id="kw-in" placeholder="Begriff ↵" onkeydown="kwKey(event)"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer"><input type="checkbox" id="only-boost" onchange="applyFilters()" style="accent-color:var(--amber)">⭐ Top-Relevanz</label>
+  </div>
 </div>
+
 <div id="statusbar">
   <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
   <span><strong id="acnt">0</strong> Artikel</span>
   <div class="sr">
-    <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
-    <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
-    <button class="sb" id="sb2" onclick="setSort('boost')">⭐ Relevanz</button>
+    <button class="sb active" id="sn" onclick="setSort('new')">↓ Neu</button>
+    <button class="sb" id="so" onclick="setSort('old')">↑ Alt</button>
+    <button class="sb" id="sb2" onclick="setSort('boost')">⭐</button>
   </div>
 </div>
+
 <div id="main">
   <div id="view-split">
     <div id="list-pane" style="width:370px"><div id="list-scroll"></div></div>
@@ -293,7 +534,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
       <div id="reader-empty">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <p>Artikel auswählen</p>
-        <small>← Klicken zum Lesen · ↑↓ Navigieren<br>M = Markieren · Enter = Link öffnen · S = KI-Zusammenfassung</small>
+        <small>← Klicken zum Lesen · ↑↓ Navigieren<br>M = Markieren · Enter = Link öffnen · S = KI</small>
       </div>
       <div id="reader-content">
         <div class="eu-banner" id="eu-banner" style="display:none"><span class="eu-stars">★ ★ ★</span><span><strong>EU Direkt</strong> – Offizielle EU-Quelle</span></div>
@@ -324,6 +565,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   <div id="view-list"></div>
   <div id="view-dash"><div class="dash-inner" id="dash-inner"></div></div>
 </div>
+
 <div id="km"><div class="km-in">
   <h2>🤖 KI-Zusammenfassung</h2>
   <p>Anthropic API-Key eingeben. Wird nur in dieser Browser-Session gehalten – nie gespeichert.</p>
@@ -331,6 +573,7 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   <div class="km-acts"><button class="btn p" onclick="saveKey()">Speichern & Zusammenfassen</button><button class="btn" onclick="closeKM()">Abbrechen</button></div>
   <p class="km-note">Key gilt nur für diese Session. Hol dir einen Key unter console.anthropic.com</p>
 </div></div>
+
 <div id="em" onclick="closeEMOut(event)"><div class="em-in">
   <button class="mc" onclick="closeEM()">✕</button>
   <h2 id="em-title">Export</h2>
@@ -344,7 +587,9 @@ footer{border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:
   </div>
   <p class="copy-hint">Markierungen werden nach Export automatisch aufgelöst.</p>
 </div></div>
+
 <footer><span>Presseschau · 09 März Edition · GitHub Actions alle 30 Min</span><span id="footer-upd"></span></footer>
+
 <script>
 const PAL=[{bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},{bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},{bg:'#fff7ed',tc:'#c2410c'},{bg:'#fefce8',tc:'#a16207'},{bg:'#f5f3ff',tc:'#6d28d9'},{bg:'#fce7f3',tc:'#9d174d'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},{bg:'#d1fae5',tc:'#065f46'},{bg:'#ffe4e6',tc:'#9f1239'},{bg:'#e0e7ff',tc:'#3730a3'},{bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'}];
 const CC={};
@@ -364,6 +609,97 @@ let ALL_NEWS=[],ALL_EU=[],filtered=[],marked=new Set();
 let activeTab='news',activeView='split',activeTopic='all',activeSrc='all',activeSort='new',kws=[];
 let curIdx=-1,curArticle=null,apiKey='',pendingSum=false;
 
+// ── Mobile detection ──
+function isMobile(){return window.matchMedia('(max-width:680px)').matches;}
+
+// ── Mobile: filter bar toggle ──
+function toggleFilterBar(){
+  const fb=document.getElementById('filterbar');
+  fb.classList.toggle('open');
+}
+function updateFilterDot(){
+  const active=activeTopic!=='all'||activeSrc!=='all'||kws.length>0||document.getElementById('only-boost').checked;
+  document.getElementById('filter-active-dot').classList.toggle('show',active);
+}
+
+// ── Mobile reader state ──
+let mobArticle=null;
+
+function mobReaderOpen(a,idx){
+  mobArticle=a;curIdx=idx;curArticle=a;
+  const isEU=activeTab==='eu';
+  document.getElementById('mob-reader-eu-banner').classList.toggle('show',isEU);
+  document.getElementById('mob-reader-source-name').innerHTML=badge(a.source)+(isEU&&a.cat?` <span class="inst-badge">${INST_LABELS[a.cat]||a.cat}</span>`:'');
+  document.getElementById('mob-reader-date').textContent=fd(a.date);
+  document.getElementById('mob-reader-title').textContent=a.title;
+  const tc=isEU?'rtag eu':'rtag';
+  document.getElementById('mob-reader-tags').innerHTML=(a.topics||[]).map(t=>`<span class="${tc}">${t}</span>`).join('');
+  document.getElementById('mob-reader-text').textContent=a.desc||(a.link?'(Kein Vorschautext – Artikel direkt öffnen)':'');
+  document.getElementById('mob-ai-summary-box').style.display='none';
+  document.getElementById('mob-ai-summary-body').innerHTML='';
+  updateMobMarkBtn();
+  document.getElementById('mob-reader').classList.add('open');
+  // Scroll body to top
+  document.getElementById('mob-reader-body').scrollTop=0;
+}
+
+function mobReaderClose(){
+  document.getElementById('mob-reader').classList.remove('open');
+}
+
+function mobOpenLink(){if(mobArticle?.link)window.open(mobArticle.link,'_blank','noopener');}
+
+function mobToggleMark(){
+  if(!mobArticle)return;
+  if(marked.has(mobArticle.id))marked.delete(mobArticle.id);
+  else marked.add(mobArticle.id);
+  updateMarkUI();updateMobMarkBtn();renderListV();
+}
+
+function updateMobMarkBtn(){
+  const btn=document.getElementById('mob-mark-btn');
+  if(!btn||!mobArticle)return;
+  btn.textContent=marked.has(mobArticle.id)?'★':'☆';
+  btn.style.background=marked.has(mobArticle.id)?'#fef3c7':'';
+}
+
+function mobPrev(){
+  if(curIdx>0){const a=filtered[curIdx-1];mobReaderOpen(a,curIdx-1);}
+}
+function mobNext(){
+  if(curIdx<filtered.length-1){const a=filtered[curIdx+1];mobReaderOpen(a,curIdx+1);}
+}
+
+async function mobSummarize(){
+  if(!mobArticle)return;
+  if(!apiKey){pendingSum=true;document.getElementById('km').classList.add('open');document.getElementById('api-key-input').focus();return;}
+  const box=document.getElementById('mob-ai-summary-box');
+  const body=document.getElementById('mob-ai-summary-body');
+  box.style.display='block';
+  body.innerHTML='<div class="ai-thinking"><span>Analysiere…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
+  const a=mobArticle;
+  const prompt='Du bist ein Analyseassistent. Fasse diesen Nachrichtenartikel in 3-4 prägnanten Sätzen zusammen. Nenne am Ende auf einer eigenen Zeile die wichtigste politische Implikation für Deutschland/EU (falls relevant). Antworte nur auf Deutsch.\n\nQuelle: '+a.source+'\nTitel: '+a.title+'\nText: '+(a.desc||'(kein Vorschautext)')+'\nLink: '+a.link;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const d=await resp.json();
+    if(d.error){body.innerHTML='<div style="color:var(--red);font-size:12px">⚠️ '+esc(d.error.message)+'</div>';return;}
+    const text=d.content?.[0]?.text||'Keine Antwort';
+    body.innerHTML='<div style="font-size:13px;line-height:1.65;color:var(--text2);white-space:pre-line">'+esc(text)+'</div>';
+    // Scroll to summary
+    setTimeout(()=>document.getElementById('mob-reader-body').scrollTop=9999,100);
+  }catch(e){body.innerHTML='<div style="color:var(--red);font-size:12px">⚠️ '+esc(e.message)+'</div>';}
+}
+
+// ── Back gesture (Android back button) ──
+window.addEventListener('popstate',()=>{
+  if(document.getElementById('mob-reader').classList.contains('open')){
+    mobReaderClose();
+    history.pushState(null,'',location.href);
+  }
+});
+// Push state so back button can close reader
+history.pushState(null,'',location.href);
+
 async function loadData(){
   setStatus('loading','Lade…');showSkel();
   const t=Date.now();
@@ -377,19 +713,21 @@ async function loadData(){
 }
 
 function switchTab(tab){
-  activeTab=tab;activeTopic='all';activeSrc='all';kws=[];curIdx=-1;curArticle=null;
+  activeTab=tab;activeTopic='all';activeSrc='all';kws=[];curIdx=-1;curArticle=null;mobArticle=null;
   document.getElementById('kw-wrap').querySelectorAll('.kw-tag').forEach(e=>e.remove());
   document.getElementById('q').value='';document.getElementById('only-boost').checked=false;document.getElementById('tdd').value='';
   document.getElementById('tab-news').classList.toggle('active',tab==='news');
   document.getElementById('tab-eu').classList.toggle('active',tab==='eu');
   document.body.classList.toggle('eu-mode',tab==='eu');
   buildTopicChips(tab);buildDD(tab);buildSrcChips();resetReader();refreshTrends();applyFilters();
+  if(isMobile())mobReaderClose();
 }
 
 function buildTopicChips(tab){const chips=tab==='news'?NEWS_CHIPS:EU_CHIPS;document.getElementById('topic-chips').innerHTML=chips.map(c=>'<span class="chip'+(c.t==='all'?' active':'')+'" data-t="'+c.t+'" onclick="chipClick(this,\'topic\')" ondblclick="chipDbl(this,\'topic\')">'+c.l+'</span>').join('');}
 function buildDD(tab){const sel=document.getElementById('tdd');const opts=tab==='news'?NEWS_DD:EU_DD;sel.innerHTML='<option value="">Weitere…</option>'+opts.map(d=>'<option value="'+d.v+'">'+d.l+'</option>').join('');}
 
 function setView(v){
+  if(isMobile())return; // mobile ignores view changes
   activeView=v;
   ['split','grid','list','dash'].forEach(x=>{
     const el=document.getElementById('view-'+x);
@@ -411,8 +749,11 @@ function applyFilters(){
   });
   sortFiltered();
   document.getElementById('acnt').textContent=filtered.length;
+  updateFilterDot();
   renderView();
+  if(isMobile())renderListV();
 }
+
 function sortFiltered(){
   if(activeSort==='boost')filtered.sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||'')));
   else if(activeSort==='new')filtered.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
@@ -435,12 +776,20 @@ function artHTML(a,i,mode){
   const col=isEU?'#003399':c.tc;
   if(mode==='split')return'<div class="art-item'+(i===curIdx?' active':'')+(isM?' marked':'')+'" onclick="openArt('+i+')" id="ai-'+i+'" style="border-left:3px solid '+col+'"><div class="ai-check'+(isM?' checked':'')+'" onclick="toggleMark(event,'+i+')"></div><div class="ai-content"><div class="ai-top">'+badge(a.source)+'<span class="ai-date">'+fd(a.date)+'</span></div><div class="ai-title">'+esc(a.title)+boost+'</div><div class="ai-meta">'+inst+tags+'</div></div></div>';
   if(mode==='grid')return'<div class="gcard'+(isM?' marked':'')+'" style="border-top:3px solid '+col+';animation-delay:'+Math.min(i*.01,.35)+'s" onclick="openArtById(\''+a.id+'\')"><div class="gcard-check'+(isM?' checked':'')+'" onclick="gmark(event,\''+a.id+'\')"></div><div class="gcard-top">'+badge(a.source)+'<span class="gcard-date">'+fd(a.date)+'</span></div><div class="gcard-title">'+esc(a.title)+'</div>'+(a.desc?'<div class="gcard-desc">'+esc(a.desc.slice(0,200))+'</div>':'')+(tags?'<div class="gcard-tags">'+tags+'</div>':'')+'</div>';
-  if(mode==='list')return'<div class="lrow'+(isM?' marked':'')+'" style="border-left:3px solid '+col+'" onclick="openArtById(\''+a.id+'\')"><div class="lrow-check'+(isM?' checked':'')+'" onclick="lmark(event,\''+a.id+'\')"></div><div class="lrow-main"><div class="lrow-title">'+esc(a.title)+'</div><div class="lrow-meta">'+badge(a.source)+'<span class="lrow-date">'+fd(a.date)+'</span>'+tags+'</div></div>'+(a.desc?'<div class="lrow-desc">'+esc(a.desc.slice(0,160))+'</div>':'')+'</div>';
+  if(mode==='list'){
+    // On mobile: tap row → open mob-reader; on desktop: standard
+    const clickFn=`openArtById('${a.id}')`;
+    return'<div class="lrow'+(isM?' marked':'')+'" style="border-left:3px solid '+col+'" onclick="'+clickFn+'"><div class="lrow-check'+(isM?' checked':'')+'" onclick="lmark(event,\''+a.id+'\')"></div><div class="lrow-main"><div class="lrow-title">'+esc(a.title)+'</div><div class="lrow-meta">'+badge(a.source)+'<span class="lrow-date">'+fd(a.date)+'</span>'+tags+'</div></div>'+(a.desc?'<div class="lrow-desc">'+esc(a.desc.slice(0,160))+'</div>':'')+'</div>';
+  }
 }
 
 function renderSplit(){const el=document.getElementById('list-scroll');if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:30px 10px;color:var(--muted);font-size:12px">Keine Artikel.</div>';return;}el.innerHTML=filtered.map((a,i)=>artHTML(a,i,'split')).join('');}
 function renderGrid(){const el=document.getElementById('grid-inner');if(!filtered.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Keine Artikel.</div>';return;}el.innerHTML=filtered.map((a,i)=>artHTML(a,i,'grid')).join('');}
-function renderListV(){const el=document.getElementById('view-list');if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Keine Artikel.</div>';return;}el.innerHTML=filtered.map((a,i)=>artHTML(a,i,'list')).join('');}
+function renderListV(){
+  const el=document.getElementById('view-list');
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Keine Artikel.</div>';return;}
+  el.innerHTML=filtered.map((a,i)=>artHTML(a,i,'list')).join('');
+}
 
 function renderDash(){
   const el=document.getElementById('dash-inner');
@@ -457,7 +806,17 @@ function renderDash(){
   }).join('');
 }
 
-function openArtById(id){const i=filtered.findIndex(a=>a.id===id);if(i>=0){setView('split');openArt(i);}}
+function openArtById(id){
+  const i=filtered.findIndex(a=>a.id===id);
+  if(i<0)return;
+  if(isMobile()){
+    mobReaderOpen(filtered[i],i);
+    history.pushState({reader:true},'',location.href);
+  }else{
+    setView('split');openArt(i);
+  }
+}
+
 function ftopic(t){activeTopic=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));setView('split');applyFilters();}
 
 function showSkel(){document.getElementById('list-scroll').innerHTML=Array.from({length:8},(_,i)=>'<div class="art-item" style="cursor:default;animation-delay:'+(i*.04)+'s"><div style="width:15px;height:15px;flex-shrink:0"><div class="sk" style="width:15px;height:15px;border-radius:4px"></div></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div class="sk" style="width:40%;height:9px"></div><div class="sk" style="width:88%;height:11px"></div><div class="sk" style="width:58%;height:11px"></div></div></div>').join('');}
@@ -507,7 +866,7 @@ async function summarizeArticle(){
     body.innerHTML='<div style="font-size:13px;line-height:1.65;color:var(--text2);white-space:pre-line">'+esc(text)+'</div>';
   }catch(e){body.innerHTML='<div style="color:var(--red);font-size:12px">⚠️ '+esc(e.message)+'</div>';}
 }
-function saveKey(){apiKey=document.getElementById('api-key-input').value.trim();document.getElementById('km').classList.remove('open');if(apiKey&&pendingSum){pendingSum=false;summarizeArticle();}}
+function saveKey(){apiKey=document.getElementById('api-key-input').value.trim();document.getElementById('km').classList.remove('open');if(apiKey&&pendingSum){pendingSum=false;if(isMobile())mobSummarize();else summarizeArticle();}}
 function closeKM(){document.getElementById('km').classList.remove('open');pendingSum=false;}
 
 function toggleMark(e,i){e.stopPropagation();const a=filtered[i];if(!a)return;if(marked.has(a.id))marked.delete(a.id);else marked.add(a.id);updateMarkUI();renderSplit();if(curIdx===i)openArt(i);}
@@ -517,10 +876,16 @@ function toggleMarkCur(){if(!curArticle)return;if(marked.has(curArticle.id))mark
 function clearMarks(){marked.clear();updateMarkUI();renderView();if(curArticle)openArt(curIdx);}
 function updateMarkUI(){const cnt=marked.size;document.getElementById('mark-count').textContent=cnt+' markiert';document.getElementById('mark-count').style.display=cnt?'block':'none';document.getElementById('export-marked-btn').style.display=cnt?'block':'none';document.getElementById('clear-marks-btn').style.display=cnt?'block':'none';}
 
-function chipClick(el,type){if(type==='topic'){activeTopic=el.dataset.t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===activeTopic));document.getElementById('tdd').value='';}else{activeSrc=el.dataset.s;document.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('active',e.dataset.s===activeSrc));}applyFilters();}
+function chipClick(el,type){
+  if(type==='topic'){activeTopic=el.dataset.t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===activeTopic));document.getElementById('tdd').value='';}
+  else{activeSrc=el.dataset.s;document.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('active',e.dataset.s===activeSrc));}
+  applyFilters();
+  // Auto-close filter bar on mobile after selection
+  if(isMobile()){document.getElementById('filterbar').classList.remove('open');}
+}
 function chipDbl(el,type){if(type==='topic'){activeTopic='all';document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t==='all'));document.getElementById('tdd').value='';}else{activeSrc='all';document.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('active',e.dataset.s==='all'));}applyFilters();}
-function setTopicDD(v){if(!v){activeTopic='all';document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t==='all'));applyFilters();return;}activeTopic=v;document.querySelectorAll('[data-t]').forEach(e=>e.classList.remove('active'));applyFilters();}
-function setSort(s){activeSort=s;['sn','so','sb2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['new','old','boost'][i]===s));sortFiltered();renderView();}
+function setTopicDD(v){if(!v){activeTopic='all';document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t==='all'));applyFilters();return;}activeTopic=v;document.querySelectorAll('[data-t]').forEach(e=>e.classList.remove('active'));applyFilters();if(isMobile())document.getElementById('filterbar').classList.remove('open');}
+function setSort(s){activeSort=s;['sn','so','sb2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',['new','old','boost'][i]===s));sortFiltered();renderView();if(isMobile())renderListV();}
 function setStatus(t,m){document.getElementById('sdot').className='dot '+t;document.getElementById('stxt').textContent=m;}
 function setTopicBubble(t){activeTopic=t;document.querySelectorAll('[data-t]').forEach(el=>el.classList.toggle('active',el.dataset.t===t));document.getElementById('tdd').value='';applyFilters();}
 
@@ -542,7 +907,7 @@ function refreshTrends(){
   document.getElementById('keyword-bubbles').innerHTML=ks.map(([w,cnt])=>{const weight=cnt/maxK;return'<span class="kw-bub" style="opacity:'+(0.45+weight*0.55)+'">'+(weight>.5?'<strong>'+esc(w)+'</strong>':esc(w))+' <span style="font-size:9px;color:var(--muted)">'+cnt+'</span></span>';}).join('');
 }
 
-// DRAG HANDLE
+// DRAG HANDLE (desktop only)
 (function(){
   const h=document.getElementById('drag-handle');
   const lp=document.getElementById('list-pane');
@@ -551,6 +916,23 @@ function refreshTrends(){
   document.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.max(180,Math.min(window.innerWidth-200,sw+(e.clientX-sx)));lp.style.width=w+'px';});
   document.addEventListener('mouseup',()=>{drag=false;h.classList.remove('dragging');});
 })();
+
+// ── Mobile: init view on load ──
+(function(){
+  if(isMobile()){
+    // Force list visible
+    document.getElementById('view-list').style.display='block';
+    // Ensure filter-inner is inside filterbar (already in HTML, just confirm)
+  }
+})();
+
+// On resize: re-evaluate
+window.addEventListener('resize',()=>{
+  if(isMobile()){
+    document.getElementById('view-list').style.display='block';
+    renderListV();
+  }
+});
 
 let exportArticles=[];
 function openExpMarked(){const pool=[...ALL_NEWS,...ALL_EU];exportArticles=pool.filter(a=>marked.has(a.id));showExp('⭐ Export Markierte ('+exportArticles.length+')',exportArticles.length+' markierte Artikel – Markierungen werden nach Export aufgelöst.');}
@@ -583,5 +965,6 @@ document.addEventListener('keydown',e=>{
 
 buildTopicChips('news');buildDD('news');loadData();
 </script>
+
 </body>
 </html>
