@@ -265,44 +265,22 @@ html,body{overflow:hidden;height:100%;height:100dvh}
 /* ── Trend bar: hidden on mobile ── */
 #trend-bar{display:none}
 
-/* ── Filter bar: collapsible ── */
-#filterbar{
-padding:0;
-flex-direction:column;
-align-items:stretch;
-gap:0;
-overflow:hidden;
-max-height:36px;       /* collapsed: show toggle row only */
-transition:max-height .25s ease;
-position:relative;
-}
-#filterbar.open{max-height:400px}
-/* Inject toggle button via pseudo / JS */
-#filter-toggle{
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:7px 12px;
-background:var(–surface);
-font-size:11px;font-weight:600;color:var(–text2);
-cursor:pointer;
-user-select:none;
-flex-shrink:0;
-height:36px;
-border-bottom:1px solid transparent;
-transition:border-color .15s;
-}
+/* ── Filter bar: topic chips always visible + collapsible extras ── */
+#filterbar{padding:0;flex-direction:column;align-items:stretch;gap:0;overflow:visible;max-height:none;}
+/* Row 1: always-visible scrollable topic chips */
+#mob-chips-bar{display:flex;align-items:center;overflow-x:auto;overflow-y:visible;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:6px 10px;gap:5px;border-bottom:1px solid var(–border);background:var(–surface);flex-shrink:0;}
+#mob-chips-bar::-webkit-scrollbar{display:none}
+#mob-chips-bar .chip{flex-shrink:0;font-size:12px;padding:4px 11px;border-radius:20px;white-space:nowrap;}
+#desktop-topic-row{display:none}
+/* Row 2: toggle for extra filters */
+#filter-toggle{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;background:var(–surface2);font-size:11px;font-weight:600;color:var(–text2);cursor:pointer;user-select:none;flex-shrink:0;height:32px;border-bottom:1px solid transparent;transition:border-color .15s;}
 #filterbar.open #filter-toggle{border-color:var(–border)}
 #filter-toggle-icon{transition:transform .22s;font-size:10px;color:var(–muted)}
 #filterbar.open #filter-toggle-icon{transform:rotate(180deg)}
-#filter-inner{
-display:flex;flex-direction:column;gap:6px;
-padding:8px 12px 10px;
-overflow:hidden;
-}
-/* Horizontal scroll for chips */
-#filterbar .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-#filterbar .chips::-webkit-scrollbar{display:none}
+#filter-inner{display:flex;flex-direction:column;gap:6px;overflow:hidden;max-height:0;padding:0 12px;transition:max-height .25s ease,padding .2s ease;}
+#filterbar.open #filter-inner{max-height:300px;padding:8px 12px 10px;}
+#filter-inner .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+#filter-inner .chips::-webkit-scrollbar{display:none}
 .vsep{display:none}
 .fl{font-size:10px;margin-bottom:2px}
 .fsel{min-width:unset;width:100%}
@@ -343,13 +321,18 @@ padding:7px 8px;
 #mob-reader{
 display:none;
 position:fixed;
-inset:0;
-z-index:400;
+top:0;left:0;right:0;bottom:0;
+width:100%;height:100%;
+z-index:1000;
 background:var(–surface);
 flex-direction:column;
 overflow:hidden;
+/* iOS Safari fix */
+-webkit-overflow-scrolling:touch;
 }
 #mob-reader.open{display:flex}
+/* Prevent background scroll when reader is open */
+body.reader-open{overflow:hidden;position:fixed;width:100%}
 
 #mob-reader-topbar{
 height:48px;
@@ -490,16 +473,16 @@ body.eu-mode #filter-active-dot{background:var(–eu)}
 </div>
 
 <div id="filterbar">
-  <!-- Mobile toggle row (hidden on desktop via JS injection) -->
+  <!-- Mobile: always-visible scrollable topic chips row -->
+  <div id="mob-chips-bar"><!-- filled by rebuildMobChips() --></div>
+  <!-- Toggle for Quelle / Stichwort extras -->
   <div id="filter-toggle" onclick="toggleFilterBar()">
-    <span>
-      🔍 Filter
-      <span id="filter-active-dot"></span>
-    </span>
+    <span>🔍 Quelle &amp; mehr <span id="filter-active-dot"></span></span>
     <span id="filter-toggle-icon">▼</span>
   </div>
   <div id="filter-inner">
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <!-- Desktop: topic chips inside panel; hidden on mobile -->
+    <div id="desktop-topic-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span class="fl">Thema</span>
       <div class="chips" id="topic-chips"></div>
       <select class="fsel" id="tdd" onchange="setTopicDD(this.value)"><option value="">Weitere…</option></select>
@@ -639,12 +622,13 @@ function mobReaderOpen(a,idx){
   document.getElementById('mob-ai-summary-body').innerHTML='';
   updateMobMarkBtn();
   document.getElementById('mob-reader').classList.add('open');
-  // Scroll body to top
+  document.body.classList.add('reader-open');
   document.getElementById('mob-reader-body').scrollTop=0;
 }
 
 function mobReaderClose(){
   document.getElementById('mob-reader').classList.remove('open');
+  document.body.classList.remove('reader-open');
 }
 
 function mobOpenLink(){if(mobArticle?.link)window.open(mobArticle.link,'_blank','noopener');}
@@ -723,7 +707,26 @@ function switchTab(tab){
   if(isMobile())mobReaderClose();
 }
 
-function buildTopicChips(tab){const chips=tab==='news'?NEWS_CHIPS:EU_CHIPS;document.getElementById('topic-chips').innerHTML=chips.map(c=>'<span class="chip'+(c.t==='all'?' active':'')+'" data-t="'+c.t+'" onclick="chipClick(this,\'topic\')" ondblclick="chipDbl(this,\'topic\')">'+c.l+'</span>').join('');}
+function buildTopicChips(tab){
+  const chips=tab==='news'?NEWS_CHIPS:EU_CHIPS;
+  document.getElementById('topic-chips').innerHTML=chips.map(c=>'<span class="chip'+(c.t==='all'?' active':'')+'" data-t="'+c.t+'" onclick="chipClick(this,\'topic\')" ondblclick="chipDbl(this,\'topic\')">'+c.l+'</span>').join('');
+  rebuildMobChips(chips);
+}
+
+function rebuildMobChips(chips){
+  const bar=document.getElementById('mob-chips-bar');
+  if(!bar)return;
+  bar.innerHTML=chips.map(c=>'<span class="chip'+(c.t===activeTopic?' active':'')+'" data-t="'+c.t+'" onclick="mobChipClick(this,\''+c.t+'\')">'+c.l+'</span>').join('');
+}
+
+function mobChipClick(el,t){
+  activeTopic=t;
+  // sync desktop chips
+  document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));
+  document.getElementById('tdd').value='';
+  applyFilters();
+  document.getElementById('filterbar').classList.remove('open');
+}
 function buildDD(tab){const sel=document.getElementById('tdd');const opts=tab==='news'?NEWS_DD:EU_DD;sel.innerHTML='<option value="">Weitere…</option>'+opts.map(d=>'<option value="'+d.v+'">'+d.l+'</option>').join('');}
 
 function setView(v){
