@@ -207,8 +207,9 @@ body.eu-mode .art-item.active{border-color:var(–eu);box-shadow:0 0 0 2px var(�
 
 /* ═══════════ MOBILE ═══════════ */
 #mobile{
-display:none;
-flex-direction:column;
+position:relative;
+z-index:1;
+}
 /* Use dvh so Safari address bar doesn’t cause overflow */
 height:100dvh;
 max-height:100dvh;
@@ -283,7 +284,18 @@ padding:6px 8px 12px;
 display:none;
 position:fixed;
 top:0;left:0;
-width:100%;height:100%;
+width:100%;
+height:100dvh;
+z-index:800;
+background:#ffffff;
+flex-direction:column;
+overflow:hidden;
+isolation:isolate;
+}
+#m-reader.open{
+display:flex;
+background:#ffffff;
+}
 /* Use dvh for height */
 height:100dvh;
 z-index:800;
