@@ -1,7 +1,7 @@
 name: RSS Feeds holen
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/25 * * * *'
   workflow_dispatch:
 jobs:
   fetch:
@@ -24,6 +24,6 @@ jobs:
           git stash
           git pull --rebase origin main
           git stash pop || true
-          git add articles.json eu_articles.json bundestag_articles.json documents.json
+          git add articles.json eu_articles.json bundestag_articles.json documents.json docs_files/
           git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push
