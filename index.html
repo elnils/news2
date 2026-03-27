@@ -159,6 +159,28 @@ body.eu-mode .sb.active{background:var(--eu);border-color:var(--eu)}
 .lrow-date{font-size:10px;color:var(--muted)}
 .lrow-desc{flex-shrink:0;max-width:300px;font-size:11px;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #view-dash{display:none;width:100%;height:100%;overflow-y:auto;padding:10px}
+#view-docs{display:none;width:100%;height:100%;overflow:hidden;display:none;flex-direction:row}
+#docs-list{width:380px;flex-shrink:0;overflow-y:auto;padding:8px;border-right:1px solid var(--border);background:var(--bg);display:flex;flex-direction:column;gap:4px}
+#docs-list::-webkit-scrollbar{width:4px}
+#docs-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+#docs-viewer{flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden}
+#docs-viewer-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:9px}
+#docs-viewer-frame{flex:1;border:none;display:none}
+#docs-viewer-header{padding:10px 16px;border-bottom:1px solid var(--border);display:none;flex-shrink:0;gap:8px;align-items:center;flex-wrap:wrap}
+.doc-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;cursor:pointer;transition:all .13s;display:flex;gap:8px;align-items:flex-start;animation:fu .15s ease both}
+.doc-item:hover{border-color:#c7d2e8;box-shadow:var(--shadow)}
+.doc-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
+.doc-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.doc-content{flex:1;min-width:0}
+.doc-title{font-size:12px;font-weight:600;line-height:1.3;color:var(--text);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.doc-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.doc-type{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.doc-type.eurlex{background:#e8ecff;color:#003399;border-color:#c7d0f0}
+.doc-date{font-size:9px;color:var(--muted)}
+#docs-filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.doc-filter-chip{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .14s;user-select:none;white-space:nowrap}
+.doc-filter-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+#docs-count{font-size:11px;color:var(--muted);margin-left:auto}
 .dash-inner{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
 .ds{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
 .ds-hd{padding:9px 12px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
@@ -346,7 +368,7 @@ body.eu-mode #m-back{color:var(--eu)}
 <!-- MOBILE -->
 <div id="mobile">
   <div id="m-topbar">
-    <div class="m-logo">made by<span>elnils</span></div>
+    <div class="m-logo">Presse<span>schau</span></div>
     <div class="m-srch">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input id="mq" placeholder="Suchen…" oninput="debounce(mFilter)">
@@ -359,6 +381,7 @@ body.eu-mode #m-back{color:var(--eu)}
     <div class="m-tab active" id="mt-news" onclick="mTab('news')">📰 Nachrichten <span class="badge" id="mc-news">–</span></div>
     <div class="m-tab eu" id="mt-eu" onclick="mTab('eu')">🇪🇺 EU Direkt <span class="badge" id="mc-eu">–</span></div>
     <div class="m-tab" id="mt-bt" onclick="mTab('bt')">🏛 Bundestag <span class="badge" id="mc-bt">–</span></div>
+    <div class="m-tab" id="mt-docs" onclick="mTab('docs')">📄 Dokumente <span class="badge" id="mc-docs">–</span></div>
   </div>
   <div id="m-chips"></div>
   <div id="m-status">
@@ -404,7 +427,7 @@ body.eu-mode #m-back{color:var(--eu)}
 <!-- DESKTOP -->
 <div id="desktop">
   <div id="topbar">
-    <div class="logo">made by<span>elnils</span><small>mady be elnils</small></div>
+    <div class="logo">Presse<span>schau</span><small>Presseschau</small></div>
     <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Volltext suchen…" oninput="debounce(applyFilters)"></div></div>
     <div class="tr">
       <span id="mark-count">0 markiert</span>
@@ -418,6 +441,7 @@ body.eu-mode #m-back{color:var(--eu)}
     <div class="mtab active" id="tab-news" onclick="switchTab('news')">📰 Nachrichten <span class="badge" id="tab-news-cnt">–</span></div>
     <div class="mtab eu-tab" id="tab-eu" onclick="switchTab('eu')">🇪🇺 EU Direkt <span class="badge" id="tab-eu-cnt">–</span></div>
     <div class="mtab" id="tab-bt" onclick="switchTab('bt')">🏛 Bundestag <span class="badge" id="tab-bt-cnt">–</span></div>
+    <div class="mtab" id="tab-docs" onclick="switchTab('docs')">📄 Dokumente <span class="badge" id="tab-docs-cnt">–</span></div>
     <div class="vbar-sep"></div>
     <div class="vtab active" id="vt-split" onclick="setView('split')">⬜ Split</div>
     <div class="vtab" id="vt-grid" onclick="setView('grid')">⊞ Kacheln</div>
@@ -493,6 +517,29 @@ body.eu-mode #m-back{color:var(--eu)}
     <div id="view-grid"><div class="grid-inner" id="grid-inner"></div></div>
     <div id="view-list"></div>
     <div id="view-dash"><div class="dash-inner" id="dash-inner"></div></div>
+    <div id="view-docs" style="display:none;flex-direction:row;width:100%;height:100%">
+      <div style="display:flex;flex-direction:column;width:380px;flex-shrink:0;height:100%;border-right:1px solid var(--border);background:var(--bg)">
+        <div id="docs-filterbar">
+          <span class="doc-filter-chip active" data-df="all" onclick="docFilter(this)">Alle</span>
+          <span class="doc-filter-chip" data-df="bt" onclick="docFilter(this)">🏛 Bundestag</span>
+          <span class="doc-filter-chip" data-df="eurlex" onclick="docFilter(this)">🇪🇺 EUR-Lex</span>
+          <span id="docs-count">0 Dok.</span>
+        </div>
+        <div id="docs-list"></div>
+      </div>
+      <div id="docs-viewer">
+        <div id="docs-viewer-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <p>Dokument auswählen</p>
+          <small>PDF wird direkt angezeigt</small>
+        </div>
+        <div id="docs-viewer-header" style="display:none;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;align-items:center;flex-wrap:wrap">
+          <span id="docs-viewer-title" style="font-size:13px;font-weight:600;flex:1;min-width:0"></span>
+          <button class="btn p" id="docs-open-btn" onclick="openDocLink()">🔗 Öffnen</button>
+        </div>
+        <iframe id="docs-viewer-frame" style="flex:1;border:none;display:none;width:100%;height:100%"></iframe>
+      </div>
+    </div>
   </div>
   <div id="d-footer"><span>Presseschau · GitHub Actions alle 30 Min</span><span id="footer-upd"></span></div>
 </div>
@@ -538,7 +585,7 @@ const NEWS_CHIPS_D=ALL_CHIPS_NEWS.slice(0,9);
 const NEWS_DD=[{v:'ukraine',l:'🌍 Ukraine'},{v:'nahost',l:'🌍 Nahost'},{v:'asien',l:'🌏 Asien'},{v:'usa',l:'🇺🇸 USA'},{v:'finanzen',l:'💹 Finanzen'},{v:'startup',l:'💡 Start-ups'},{v:'mobilitaet',l:'🚗 Mobilität'},{v:'wissenschaft',l:'🔬 Wissenschaft'},{v:'medizin',l:'🏥 Medizin'}];
 const EU_DD=[{v:'__ep',l:'🏛 Europ. Parlament'},{v:'__ec',l:'⚙️ EU-Kommission'},{v:'__council',l:'🤝 Rat der EU'},{v:'__ep-committee',l:'📋 EP-Ausschüsse'},{v:'__eu-inst',l:'🏢 EU-Institutionen'},{v:'__eurlex',l:'📖 EUR-Lex'},{v:'__eu-media',l:'📰 EU-Medien'},{v:'__eu-think',l:'💡 Think Tanks'}];
 
-let ALL_NEWS=[],ALL_EU=[],ALL_BT=[],marked=new Set(),apiKey='',pendingSum=false;
+let ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_DOCS=[],marked=new Set(),apiKey='',pendingSum=false;
 let d_filt=[],d_tab='news',d_view='split',d_top='all',d_src='all',d_sort='new',d_kws=[],d_idx=-1,d_art=null;
 let m_filt=[],m_tab='news',m_top='all',m_sort='new',m_idx=-1,m_art=null;
 let _debTimer=null,_rafId=null;
@@ -550,10 +597,11 @@ async function loadData(){
   setSt('loading','Lade…');
   const t=Date.now();
   try{
-    const[r1,r2,r3]=await Promise.all([
+    const[r1,r2,r3,r4]=await Promise.all([
       fetch('articles.json?t='+t),
       fetch('eu_articles.json?t='+t),
-      fetch('bundestag_articles.json?t='+t).catch(()=>null)
+      fetch('bundestag_articles.json?t='+t).catch(()=>null),
+      fetch('documents.json?t='+t).catch(()=>null)
     ]);
     if(r1.ok){const d=await r1.json();ALL_NEWS=d.articles||[];
       g('tab-news-cnt').textContent=ALL_NEWS.length;g('mc-news').textContent=ALL_NEWS.length;
@@ -562,7 +610,9 @@ async function loadData(){
       g('tab-eu-cnt').textContent=ALL_EU.length;g('mc-eu').textContent=ALL_EU.length;}
     if(r3&&r3.ok){const d=await r3.json();ALL_BT=d.articles||[];
       g('tab-bt-cnt').textContent=ALL_BT.length;g('mc-bt').textContent=ALL_BT.length;}
-    setSt('ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT');
+    if(r4&&r4.ok){const d=await r4.json();ALL_DOCS=d.documents||[];
+      g('tab-docs-cnt').textContent=ALL_DOCS.length;g('mc-docs').textContent=ALL_DOCS.length;}
+    setSt('ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT · '+ALL_DOCS.length+' Dok.');
     buildSrcChips();applyFilters();refreshTrends();mFilter();
   }catch(e){setSt('err','Fehler: '+e.message);}
 }
@@ -578,7 +628,9 @@ function mTab(tab){
   g('mt-news').className='m-tab'+(tab==='news'?' active':'');
   g('mt-eu').className='m-tab eu'+(tab==='eu'?' active':'');
   g('mt-bt').className='m-tab'+(tab==='bt'?' active':'');
+  g('mt-docs').className='m-tab'+(tab==='docs'?' active':'');
   document.body.classList.toggle('eu-mode',tab==='eu');
+  if(tab==='docs'){g('m-chips').innerHTML='';g('m-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Dokumente nur auf Desktop verfügbar.</div>';return;}
   mChips();mFilter();
 }
 function mChips(){
@@ -695,9 +747,68 @@ function switchTab(tab){
   g('tab-news').classList.toggle('active',tab==='news');
   g('tab-eu').classList.toggle('active',tab==='eu');
   g('tab-bt').classList.toggle('active',tab==='bt');
+  g('tab-docs').classList.toggle('active',tab==='docs');
+  if(tab==='docs'){
+    ['split','grid','list','dash'].forEach(x=>g('view-'+x).style.display='none');
+    g('view-docs').style.display='flex';
+    g('filterbar').style.display='none';
+    g('trend-bar').style.display='none';
+    renderDocs('all');
+    return;
+  }
+  g('view-docs').style.display='none';
+  g('filterbar').style.display='flex';
+  g('trend-bar').style.display='flex';
   buildTopicChips(tab);buildDD(tab);buildSrcChips();resetReader();refreshTrends();applyFilters();
 }
-function buildTopicChips(tab){
+/* ══ DOKUMENTE ══ */
+let d_doc_filter='all', d_cur_doc=null;
+function docFilter(el){
+  d_doc_filter=el.dataset.df;
+  document.querySelectorAll('.doc-filter-chip').forEach(e=>e.classList.toggle('active',e.dataset.df===d_doc_filter));
+  renderDocs(d_doc_filter);
+}
+function renderDocs(filter){
+  const el=g('docs-list');
+  const filtered=filter==='all'?ALL_DOCS:ALL_DOCS.filter(d=>d.origin===filter);
+  g('docs-count').textContent=filtered.length+' Dok.';
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Keine Dokumente.</div>';return;}
+  el.innerHTML=filtered.map((doc,i)=>{
+    const icon=doc.is_pdf?'📄':doc.type.includes('Protokoll')?'📝':doc.type.includes('Tagesordnung')?'📋':doc.type.includes('Amtsblatt')?'🇪🇺':'📄';
+    const typeClass=doc.origin==='eurlex'?'doc-type eurlex':'doc-type';
+    return`<div class="doc-item${d_cur_doc&&d_cur_doc.id===doc.id?' active':''}" onclick="openDoc(${i},'${filter}')">
+      <span class="doc-icon">${icon}</span>
+      <div class="doc-content">
+        <div class="doc-title">${esc(doc.title)}</div>
+        <div class="doc-meta">
+          <span class="${typeClass}">${esc(doc.type)}</span>
+          <span class="doc-date">${fd(doc.date)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openDoc(i, filter){
+  const filtered=filter==='all'?ALL_DOCS:ALL_DOCS.filter(d=>d.origin===filter);
+  d_cur_doc=filtered[i];if(!d_cur_doc)return;
+  const doc=d_cur_doc;
+  // Header anzeigen
+  const hdr=g('docs-viewer-header');hdr.style.display='flex';
+  g('docs-viewer-title').textContent=doc.title;
+  // Leere Ansicht verstecken
+  g('docs-viewer-empty').style.display='none';
+  // iframe
+  const frame=g('docs-viewer-frame');
+  frame.style.display='block';
+  // PDFs direkt, andere Links via Google Docs Viewer
+  const isPdf=doc.is_pdf||doc.link.toLowerCase().includes('.pdf');
+  frame.src=isPdf?doc.link:'https://docs.google.com/viewer?url='+encodeURIComponent(doc.link)+'&embedded=true';
+  // Aktives Item markieren
+  renderDocs(filter);
+}
+function openDocLink(){if(d_cur_doc?.link)window.open(d_cur_doc.link,'_blank','noopener');}
+
+
   const ch=tab==='news'?NEWS_CHIPS_D:tab==='eu'?ALL_CHIPS_EU:ALL_CHIPS_BT;
   g('topic-chips').innerHTML=ch.map(c=>'<span class="chip'+(c.t==='all'?' active':'')+'" data-t="'+c.t+'" onclick="chipClick(this,\'topic\')" ondblclick="chipDbl(this,\'topic\')">'+c.l+'</span>').join('');
 }
@@ -852,7 +963,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
   if(e.key==='ArrowDown'){e.preventDefault();nextArt();}if(e.key==='ArrowUp'){e.preventDefault();prevArt();}
   if(e.key==='Enter'&&d_art)openCurLink();if(e.key==='m'&&d_art)toggleMarkCur();if(e.key==='s'&&d_art)summarizeArticle();
-  if(e.key==='1')switchTab('news');if(e.key==='2')switchTab('eu');if(e.key==='3')switchTab('bt');
+  if(e.key==='1')switchTab('news');if(e.key==='2')switchTab('eu');if(e.key==='3')switchTab('bt');if(e.key==='4')switchTab('docs');
 });
 buildTopicChips('news');buildDD('news');mChips();loadData();
 history.pushState(null,'',location.href);
