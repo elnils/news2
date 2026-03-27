@@ -1,32 +1,26 @@
 name: RSS Feeds holen
-
 on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
-
 jobs:
   fetch:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v4
-
       - name: Python einrichten
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Feeds holen (News + EU Direkt)
-        run: python fetch_feeds.py
-
+      - name: Feeds holen (News + EU Direkt + Bundestag)
+        run: python fetch_news.py
       - name: JSON-Dateien committen
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add articles.json eu_articles.json
+          git add articles.json eu_articles.json bundestag_articles.json
           git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push
