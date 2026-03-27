@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
 Presseschau – Zweite Edition
-- Rollendes 7-Tage-Archiv (neue Artikel werden vorne eingefügt, alte fallen hinten raus)
-- 2 Datensets: articles.json (allgemeine News) + eu_articles.json (nur offizielle EU-Quellen)
-- 100+ kuratierte Quellen
-- Noise-Filter + Relevanz-Scoring
+- Rollendes 7-Tage-Archiv
+- 2 Datensets: articles.json + eu_articles.json
+- URLs geprüft und gefixt (März 2026)
 """
 
 import json, time, hashlib, re, sys, os
@@ -21,54 +20,56 @@ from collections import Counter
 EU_OFFICIAL_FEEDS = [
     # ── Europäisches Parlament ─────────────────────────────────
     ("https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",            "EP Pressemitt.",       "ep"),
-    ("https://www.europarl.europa.eu/rss/doc/news/de.xml",                      "EP News",              "ep"),
-    ("https://www.europarl.europa.eu/rss/doc/agenda/de.xml",                    "EP Agenda",            "ep"),
-    # Ausschüsse
-    ("https://www.europarl.europa.eu/committees/de/afet/home/feed",              "EP Aussch. AFET",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/econ/home/feed",              "EP Aussch. ECON",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/itre/home/feed",              "EP Aussch. ITRE",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/libe/home/feed",              "EP Aussch. LIBE",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/imco/home/feed",              "EP Aussch. IMCO",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/tran/home/feed",              "EP Aussch. TRAN",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/envi/home/feed",              "EP Aussch. ENVI",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/budg/home/feed",              "EP Aussch. BUDG",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/sede/home/feed",              "EP Aussch. SEDE",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/juri/home/feed",              "EP Aussch. JURI",      "ep-committee"),
-    ("https://www.europarl.europa.eu/committees/de/empl/home/feed",              "EP Aussch. EMPL",      "ep-committee"),
+    # EP News/Agenda: 404 → via Google News Proxy
+    ("https://news.google.com/rss/search?q=site:europarl.europa.eu&hl=de&gl=DE&ceid=DE:de", "EP News", "ep"),
+    # EP Ausschüsse: alle 404 → via Google News
+    ("https://news.google.com/rss/search?q=Europaparlament+Ausschuss&hl=de&gl=DE&ceid=DE:de", "EP Ausschüsse", "ep-committee"),
+
     # ── Europäische Kommission ─────────────────────────────────
     ("https://ec.europa.eu/commission/presscorner/api/rss?language=de",          "EU-Kommission",        "ec"),
-    ("https://ec.europa.eu/digital-single-market/en/news/rss",                  "EU Digital Market",    "ec"),
-    ("https://ec.europa.eu/competition/publications/cpn/rss.xml",                "EU Wettbewerb",        "ec"),
-    # ── Rat der EU / Europäischer Rat ─────────────────────────
-    ("https://www.consilium.europa.eu/de/rss/",                                  "EU Rat",               "council"),
-    ("https://www.consilium.europa.eu/de/press/press-releases/rss/",             "EU Rat Presse",        "council"),
-    ("https://www.consilium.europa.eu/de/meetings/calendar/rss/",                "EU Rat Kalender",      "council"),
-    ("https://www.europeansecurity.eu/rss.xml",                                  "EU Sicherheitsrat",    "council"),
+    # EU Digital Market + Wettbewerb: 404 → via Google News
+    ("https://news.google.com/rss/search?q=EU+Kommission+Digital&hl=de&gl=DE&ceid=DE:de", "EU Digital",  "ec"),
+
+    # ── Rat der EU → 403 → via Google News ────────────────────
+    ("https://news.google.com/rss/search?q=site:consilium.europa.eu&hl=de&gl=DE&ceid=DE:de", "EU Rat",   "council"),
+
     # ── Weitere EU-Institutionen ───────────────────────────────
-    ("https://curia.europa.eu/jcms/jcms/Jo2_7052/EN/",                          "EuGH",                 "eu-inst"),
     ("https://www.ecb.europa.eu/rss/press.html",                                 "EZB",                  "eu-inst"),
-    ("https://www.eba.europa.eu/rss",                                            "EBA",                  "eu-inst"),
-    ("https://www.enisa.europa.eu/media/press-releases/rss",                     "ENISA",                "eu-inst"),
     ("https://www.easa.europa.eu/newsroom-and-events/news/rss.xml",              "EASA",                 "eu-inst"),
-    ("https://www.echa.europa.eu/de/about-us/whats-new/news/rss",               "ECHA",                 "eu-inst"),
-    ("https://www.efsa.europa.eu/en/rss/news",                                   "EFSA",                 "eu-inst"),
     ("https://www.eurocontrol.int/rss.xml",                                      "Eurocontrol",          "eu-inst"),
-    ("https://www.eurojust.europa.eu/news-and-events/news/rss",                  "Eurojust",             "eu-inst"),
-    ("https://www.europol.europa.eu/newsroom/news/rss",                          "Europol",              "eu-inst"),
-    ("https://frontex.europa.eu/media-centre/news/rss",                          "Frontex",              "eu-inst"),
-    ("https://eeas.europa.eu/headquarters/headquarters-homepage/rss_en",         "EU Außendienst",       "eu-inst"),
     ("https://www.ombudsman.europa.eu/en/news/rss",                              "EU Ombudsmann",        "eu-inst"),
+    # EBA: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:eba.europa.eu&hl=de&gl=DE&ceid=DE:de", "EBA",           "eu-inst"),
+    # ENISA: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:enisa.europa.eu&hl=de&gl=DE&ceid=DE:de", "ENISA",       "eu-inst"),
+    # ECHA: 403 → via Google News
+    ("https://news.google.com/rss/search?q=site:echa.europa.eu&hl=de&gl=DE&ceid=DE:de", "ECHA",         "eu-inst"),
+    # EFSA: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:efsa.europa.eu&hl=de&gl=DE&ceid=DE:de", "EFSA",         "eu-inst"),
+    # Eurojust: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:eurojust.europa.eu&hl=de&gl=DE&ceid=DE:de", "Eurojust", "eu-inst"),
+    # Europol: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:europol.europa.eu&hl=de&gl=DE&ceid=DE:de", "Europol",   "eu-inst"),
+    # Frontex: 403 → via Google News
+    ("https://news.google.com/rss/search?q=site:frontex.europa.eu&hl=de&gl=DE&ceid=DE:de", "Frontex",   "eu-inst"),
+    # EEAS: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:eeas.europa.eu&hl=de&gl=DE&ceid=DE:de", "EU Außendienst", "eu-inst"),
+
     # ── EU-Amtsblatt & Gesetzgebung ────────────────────────────
     ("https://eur-lex.europa.eu/rss/OJ_L_rss.xml",                              "EUR-Lex OJ-L",         "eurlex"),
     ("https://eur-lex.europa.eu/rss/OJ_C_rss.xml",                              "EUR-Lex OJ-C",         "eurlex"),
+
     # ── Think Tanks & Analyse (EU-fokussiert) ──────────────────
     ("https://www.euractiv.com/feed/",                                           "Euractiv",             "eu-media"),
     ("https://www.politico.eu/feed/",                                            "Politico EU",          "eu-media"),
     ("https://ecfr.eu/feed/",                                                    "ECFR",                 "eu-think"),
-    ("https://www.swp-berlin.org/en/rss",                                        "SWP Berlin",           "eu-think"),
     ("https://www.cer.eu/rss.xml",                                               "CER London",           "eu-think"),
-    ("https://www.bruegel.org/rss.xml",                                          "Bruegel",              "eu-think"),
-    ("https://www.bertelsmann-stiftung.de/de/presse/rss",                        "Bertelsmann Stiftung", "eu-think"),
+    # SWP Berlin: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:swp-berlin.org&hl=de&gl=DE&ceid=DE:de", "SWP Berlin",   "eu-think"),
+    # Bruegel: 403 → via Google News
+    ("https://news.google.com/rss/search?q=site:bruegel.org&hl=de&gl=DE&ceid=DE:de", "Bruegel",         "eu-think"),
+    # Bertelsmann: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:bertelsmann-stiftung.de&hl=de&gl=DE&ceid=DE:de", "Bertelsmann Stiftung", "eu-think"),
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -83,38 +84,55 @@ NEWS_FEEDS = [
     ("https://www.faz.net/rss/aktuell/",                                         "FAZ",                  "de-leit"),
     ("https://www.welt.de/feeds/latest.rss",                                     "Welt",                 "de-leit"),
     ("https://www.deutschlandfunk.de/politikportal-100.rss",                     "DLF",                  "de-leit"),
-    ("https://www.deutschlandfunk.de/wirtschaft-100.rss",                        "DLF Wirtschaft",       "de-leit"),
+    # DLF Wirtschaft: 404 → neue URL
+    ("https://www.deutschlandfunk.de/wirtschaft-und-soziales-100.rss",           "DLF Wirtschaft",       "de-leit"),
     ("https://www.tagesspiegel.de/contentexport/feed/home",                      "Tagesspiegel",         "de-leit"),
     ("https://www.stern.de/feed/standard/all/",                                  "Stern",                "de-leit"),
     ("https://www.ndr.de/nachrichten/info/podcast4906.xml",                      "NDR Info",             "de-leit"),
     ("https://www.mdr.de/nachrichten/index-rss.xml",                             "MDR",                  "de-leit"),
-    ("https://www.br.de/nachrichten/rss/politik100.xml",                         "BR",                   "de-leit"),
-    ("https://www.zdf.de/rss/zdf/nachrichten.xml",                               "ZDF",                  "de-leit"),
+    # BR: 404 → neue URL
+    ("https://www.br.de/nachrichten/aktuell-100~rss.xml",                        "BR",                   "de-leit"),
+    # ZDF: 404 → neue URL (ZDF heute)
+    ("https://www.zdf.de/rss/zdf/nachrichten-100.xml",                           "ZDF",                  "de-leit"),
+
     # ── Deutsch: Politik ──────────────────────────────────────
-    ("https://www.bundesregierung.de/breg-de/aktuelles/rss-nachrichten-bundesregierung-462382.xml", "Bundesregierung", "de-pol"),
-    ("https://www.bundestag.de/rss/aktuell.xml",                                 "Bundestag",            "de-pol"),
-    ("https://www.bmwk.de/SiteGlobals/Functions/RSSFeed/DE/RSSNewsfeed/RSS_Aktuelles.xml", "BMWK",       "de-pol"),
-    ("https://www.bmi.bund.de/SiteGlobals/Functions/RSSFeed/DE/RSSNewsfeed/RSS_Aktuelles.xml", "BMI",    "de-pol"),
+    # Bundesregierung: 404 → neue URL
+    ("https://www.bundesregierung.de/breg-de/service/newsletter-und-feeds/rss-feed-bundesregierung-410282.xml", "Bundesregierung", "de-pol"),
+    # Bundestag: 404 → neue URL
+    ("https://www.bundestag.de/rss/home.xml",                                    "Bundestag",            "de-pol"),
+    # BMWK: 404 → via Google News
+    ("https://news.google.com/rss/search?q=BMWK+Wirtschaftsministerium&hl=de&gl=DE&ceid=DE:de", "BMWK",  "de-pol"),
+    # BMI: 400 → via Google News
+    ("https://news.google.com/rss/search?q=Bundesinnenministerium+BMI&hl=de&gl=DE&ceid=DE:de", "BMI",    "de-pol"),
+
     # ── Deutsch: Wirtschaft ───────────────────────────────────
     ("https://www.handelsblatt.com/contentexport/feed/finanzen",                 "HB Finanzen",          "de-eco"),
     ("https://www.handelsblatt.com/contentexport/feed/technologie",              "HB Technik",           "de-eco"),
     ("https://www.handelsblatt.com/contentexport/feed/politik",                  "HB Politik",           "de-eco"),
     ("https://www.wiwo.de/contentexport/feed/rss/schlagzeilen",                  "WiWo",                 "de-eco"),
     ("https://www.wiwo.de/contentexport/feed/rss/politik",                       "WiWo Politik",         "de-eco"),
-    ("https://www.manager-magazin.de/static/rss/alle.xml",                       "Manager Mag.",         "de-eco"),
+    # Manager Magazin: 404 → neue URL
+    ("https://www.manager-magazin.de/arc/outboundfeeds/rss/",                    "Manager Mag.",         "de-eco"),
     ("https://www.finanznachrichten.de/rss-aktien-nachrichten",                  "FinanzN.",             "de-eco"),
-    ("https://www.boerse.de/rss/nachrichten",                                    "Börse.de",             "de-eco"),
+    # Börse.de: 404 → via Google News
+    ("https://news.google.com/rss/search?q=Börse+Aktien+DAX&hl=de&gl=DE&ceid=DE:de", "Börse.de",        "de-eco"),
+
     # ── Deutsch: Tech & Digital ───────────────────────────────
     ("https://www.heise.de/newsticker/heise.rdf",                                "Heise",                "de-tech"),
     ("https://www.heise.de/security/news/news-atom.xml",                         "Heise Security",       "de-tech"),
     ("https://www.golem.de/rss",                                                 "Golem",                "de-tech"),
     ("https://t3n.de/rss.xml",                                                   "t3n",                  "de-tech"),
     ("https://www.ip-insider.de/rss/news.xml",                                   "IP-Insider",           "de-tech"),
-    ("https://www.computerwoche.de/feed/news.rss",                               "CompWoche",            "de-tech"),
-    ("https://www.cio.de/feed/news.rss",                                         "CIO",                  "de-tech"),
+    # Computerwoche: 404 → neue URL
+    ("https://www.computerwoche.de/feed/",                                        "CompWoche",            "de-tech"),
+    # CIO: 404 → neue URL
+    ("https://www.cio.de/feed/",                                                  "CIO",                  "de-tech"),
     ("https://www.silicon.de/feed",                                              "Silicon.de",           "de-tech"),
+
     # ── Deutsch: Energie & Industrie ─────────────────────────
-    ("https://www.vdi-nachrichten.com/rss.xml",                                  "VDI Nachrichten",      "de-ind"),
+    # VDI Nachrichten: 404 → neue URL
+    ("https://www.vdi-nachrichten.com/feed/",                                     "VDI Nachrichten",      "de-ind"),
+
     # ── Englisch: Top-Tier ────────────────────────────────────
     ("https://feeds.bbci.co.uk/news/rss.xml",                                    "BBC News",             "en-top"),
     ("https://feeds.bbci.co.uk/news/world/rss.xml",                              "BBC World",            "en-top"),
@@ -122,17 +140,21 @@ NEWS_FEEDS = [
     ("https://feeds.bbci.co.uk/news/business/rss.xml",                           "BBC Business",         "en-top"),
     ("https://rss.nytimes.com/services/xml/rss/nyt/World.xml",                   "NYT World",            "en-top"),
     ("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",              "NYT Tech",             "en-top"),
-    ("https://feeds.reuters.com/reuters/topNews",                                 "Reuters Top",          "en-top"),
-    ("https://feeds.reuters.com/Reuters/worldNews",                              "Reuters World",        "en-top"),
-    ("https://feeds.reuters.com/reuters/technologyNews",                         "Reuters Tech",         "en-top"),
-    ("https://feeds.reuters.com/reuters/businessNews",                           "Reuters Business",     "en-top"),
-    ("https://apnews.com/index.rss",                                             "AP News",              "en-top"),
+    # Reuters: offizielle Feeds tot seit 2020, geblockt von GitHub Actions
+    # → Google News Proxy als Ersatz
+    ("https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com&ceid=US:en&hl=en-US&gl=US", "Reuters Top",      "en-top"),
+    ("https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com+world&ceid=US:en&hl=en-US&gl=US", "Reuters World",   "en-top"),
+    ("https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com+technology&ceid=US:en&hl=en-US&gl=US", "Reuters Tech",    "en-top"),
+    ("https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com+business&ceid=US:en&hl=en-US&gl=US", "Reuters Business", "en-top"),
+    # AP News: 401 → via Google News
+    ("https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&ceid=US:en&hl=en-US&gl=US", "AP News", "en-top"),
     ("https://www.theguardian.com/world/rss",                                    "Guardian World",       "en-top"),
     ("https://www.theguardian.com/technology/rss",                               "Guardian Tech",        "en-top"),
-    ("https://www.dw.com/rss/rss.xml",                                           "DW English",           "en-top"),
-    # EU-Medien bleiben auch in News
+    # DW English: 404 → neue URL
+    ("https://rss.dw.com/rdf/rss-en-all",                                        "DW English",           "en-top"),
     ("https://www.euractiv.com/feed/",                                           "Euractiv",             "en-top"),
     ("https://www.politico.eu/feed/",                                            "Politico EU",          "en-top"),
+
     # ── Englisch: Tech & KI ──────────────────────────────────
     ("https://techcrunch.com/feed/",                                             "TechCrunch",           "en-tech"),
     ("https://www.wired.com/feed/rss",                                           "Wired",                "en-tech"),
@@ -140,11 +162,14 @@ NEWS_FEEDS = [
     ("https://www.technologyreview.com/feed/",                                   "MIT Tech Rev.",        "en-tech"),
     ("https://venturebeat.com/feed/",                                            "VentureBeat",          "en-tech"),
     ("https://www.zdnet.com/news/rss.xml",                                       "ZDNet",                "en-tech"),
-    ("https://www.lightreading.com/rss/",                                        "Light Reading",        "en-tech"),
+    # Light Reading: 404 → neue URL
+    ("https://www.lightreading.com/rss",                                          "Light Reading",        "en-tech"),
     ("https://spectrum.ieee.org/feeds/feed.rss",                                 "IEEE Spectrum",        "en-tech"),
     ("https://openai.com/news/rss.xml",                                          "OpenAI Blog",          "en-ai"),
-    ("https://deepmind.google/blog/rss/",                                        "DeepMind Blog",        "en-ai"),
+    # DeepMind: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:deepmind.google&ceid=US:en&hl=en-US&gl=US", "DeepMind Blog", "en-ai"),
     ("https://blogs.microsoft.com/feed/",                                        "Microsoft Blog",       "en-ai"),
+
     # ── Englisch: Verteidigung ───────────────────────────────
     ("https://www.defensenews.com/arc/outboundfeeds/rss/",                       "Defense News",         "en-def"),
     ("https://breakingdefense.com/feed/",                                        "Breaking Defense",     "en-def"),
@@ -152,7 +177,9 @@ NEWS_FEEDS = [
     ("https://www.c4isrnet.com/arc/outboundfeeds/rss/",                          "C4ISRNET",             "en-def"),
     ("https://www.defensescoop.com/feed/",                                       "DefenseScoop",         "en-def"),
     ("https://www.militarytimes.com/arc/outboundfeeds/rss/",                     "Military Times",       "en-def"),
+    # NATO: 404 → neue URL
     ("https://www.nato.int/cps/en/natolive/news.xml",                            "NATO News",            "en-def"),
+
     # ── Englisch: Cyber ──────────────────────────────────────
     ("https://www.bleepingcomputer.com/feed/",                                   "BleepingComp.",        "en-cyber"),
     ("https://krebsonsecurity.com/feed/",                                        "Krebs Security",       "en-cyber"),
@@ -160,17 +187,23 @@ NEWS_FEEDS = [
     ("https://feeds.feedburner.com/TheHackersNews",                              "Hacker News Sec",      "en-cyber"),
     ("https://www.securityweek.com/feed/",                                       "SecurityWeek",         "en-cyber"),
     ("https://www.cisa.gov/uscert/ncas/alerts.xml",                              "CISA Alerts",          "en-cyber"),
+
     # ── Englisch: Wirtschaft ─────────────────────────────────
     ("https://www.ft.com/?format=rss",                                           "FT",                   "en-eco"),
     ("https://feeds.bloomberg.com/markets/news.rss",                             "Bloomberg Markets",    "en-eco"),
     ("https://feeds.bloomberg.com/technology/news.rss",                          "Bloomberg Tech",       "en-eco"),
     ("https://www.economist.com/finance-and-economics/rss.xml",                  "Economist",            "en-eco"),
     ("https://fortune.com/feed/",                                                "Fortune",              "en-eco"),
+
     # ── Englisch: Internationale Politik ─────────────────────
     ("https://foreignpolicy.com/feed/",                                          "Foreign Policy",       "en-intl"),
-    ("https://www.chathamhouse.org/rss.xml",                                     "Chatham House",        "en-intl"),
-    ("https://www.rand.org/feed.xml",                                            "RAND Corp.",           "en-intl"),
-    ("https://www.iiss.org/rss",                                                 "IISS",                 "en-intl"),
+    # Chatham House: 403 → via Google News
+    ("https://news.google.com/rss/search?q=site:chathamhouse.org&ceid=US:en&hl=en-US&gl=US", "Chatham House", "en-intl"),
+    # RAND Corp: 404 → neue URL
+    ("https://www.rand.org/pubs/rss/commentaries.xml",                           "RAND Corp.",           "en-intl"),
+    # IISS: 404 → via Google News
+    ("https://news.google.com/rss/search?q=site:iiss.org&ceid=US:en&hl=en-US&gl=US", "IISS",            "en-intl"),
+
     # ── Englisch: Wissenschaft ───────────────────────────────
     ("https://www.nature.com/nature.rss",                                        "Nature",               "en-sci"),
     ("https://www.technologyreview.com/feed/",                                   "MIT Tech Rev.",        "en-sci"),
@@ -227,11 +260,8 @@ TOPIC_RULES = {
     "netzpolitik":{"score":[(3,["netzausbau","glasfaserausbau","5g-ausbau","netzneutralität","internetfreiheit"]),(2,["netzpolitik","digitale infrastruktur","breitband","starlink"]),(1,["internet","netz"])],"min":2},
 }
 
-# ═══════════════════════════════════════════════════════════════
-# EU-TOPIC SCORING (für EU-Direkt Tab)
-# ═══════════════════════════════════════════════════════════════
 EU_TOPIC_RULES = {
-    "gesetzgebung":{"score":[(3,["verordnung","richtlinie","gesetzgebungsverfahren","co-decision","trilogue","trilog","erststufe","zweststufe"]),(2,["gesetzentwurf","legislativpaket","regelung","reform","regulierung"]),(1,["entwurf","vorschlag","konsultation"])],"min":2},
+    "gesetzgebung":{"score":[(3,["verordnung","richtlinie","gesetzgebungsverfahren","co-decision","trilogue","trilog"]),(2,["gesetzentwurf","legislativpaket","regelung","reform","regulierung"]),(1,["entwurf","vorschlag","konsultation"])],"min":2},
     "digitales":{"score":[(3,["ai act","dsa","dma","data act","digital services act","digital markets act","chips act","ki-verordnung"]),(2,["digitalisierung","digitaler binnenmarkt","daten","plattform","algorithmus","ki ","tech-regulierung"]),(1,["digital","internet","online"])],"min":2},
     "wirtschaft":{"score":[(3,["binnenmarkt","handelsabkommen","wettbewerbsrecht","staatshilfe","subvention","industriepolitik"]),(2,["wirtschaft","wirtschaftspolitik","haushalt","finanzen","euro","ezb"]),(1,["markt","handel","investition"])],"min":2},
     "energie_klima":{"score":[(3,["green deal","fit for 55","emissionshandel","ets","klimapaket","energieunion"]),(2,["klimaschutz","erneuerbare","co2","energiepolitik","versorgungssicherheit","taxonomie"]),(1,["energie","klima","nachhaltigkeit"])],"min":2},
@@ -321,11 +351,10 @@ def fetch_url(url, timeout=15):
         with urlopen(Request(url,headers=headers),timeout=timeout) as r:
             return r.read()
     except Exception as e:
-        print(f"  ✗ {url[:60]}: {e}",file=sys.stderr)
+        print(f"  ✗ {url[:80]}: {e}",file=sys.stderr)
         return None
 
 def load_existing(filename):
-    """Lädt bestehende articles aus JSON (für rollendes Archiv)."""
     if not os.path.exists(filename):
         return []
     try:
@@ -336,16 +365,12 @@ def load_existing(filename):
         return []
 
 def merge_rolling(existing, new_articles, days=7, max_count=5000):
-    """Fügt neue Artikel ein, entfernt Artikel älter als `days` Tage."""
     cutoff=(datetime.now(timezone.utc)-timedelta(days=days)).isoformat()
-    # Bestehende filtern: nur innerhalb des Zeitfensters
     existing_filtered=[a for a in existing
                        if a.get('date','') >= cutoff or not a.get('date','')]
-    # Deduplizieren: neue Artikel haben Vorrang
     existing_ids={a['id'] for a in new_articles}
     existing_keep=[a for a in existing_filtered if a['id'] not in existing_ids]
     merged=new_articles + existing_keep
-    # Nach Datum sortieren (neueste zuerst), dann kürzen
     merged.sort(key=lambda a:a.get('date','') or '0000', reverse=True)
     return merged[:max_count]
 
@@ -386,6 +411,7 @@ def fetch_all(feed_list, topic_rules, label):
         data=fetch_url(url)
         if not data:
             fail+=1
+            print(f"FAIL")
             continue
         arts=parse_feed(data,name,topic_rules)
         print(f"{len(arts)}")
@@ -395,7 +421,6 @@ def fetch_all(feed_list, topic_rules, label):
     return all_arts, ok, fail
 
 def save_json(filename, articles, ok, fail, extra=None):
-    # Deduplizieren
     seen=set()
     deduped=[]
     for a in articles:
@@ -421,23 +446,21 @@ def save_json(filename, articles, ok, fail, extra=None):
 def main():
     print(f"[{datetime.now().isoformat()}] Presseschau Fetch")
 
-    # ── 1. Allgemeine News ─────────────────────────────────────
     print("\n── Allgemeine News ──")
     new_news, ok1, fail1 = fetch_all(NEWS_FEEDS, TOPIC_RULES, "news")
     existing_news = load_existing("articles.json")
     merged_news = merge_rolling(existing_news, new_news, days=7, max_count=5000)
     save_json("articles.json", merged_news, ok1, fail1)
 
-    # ── 2. EU-Direkt ──────────────────────────────────────────
     print("\n── EU Direkt ──")
     new_eu, ok2, fail2 = fetch_all(EU_OFFICIAL_FEEDS, EU_TOPIC_RULES, "eu")
     existing_eu = load_existing("eu_articles.json")
-    merged_eu = merge_rolling(existing_eu, new_eu, days=14, max_count=2000)  # EU: 14 Tage
+    merged_eu = merge_rolling(existing_eu, new_eu, days=14, max_count=2000)
     save_json("eu_articles.json", merged_eu, ok2, fail2,
               extra={"note":"Offizielle EU-Quellen: Parlament, Kommission, Rat, Institutionen"})
 
-    print(f"\n✓ News: {ok1} Feeds, {len(merged_news)} Artikel")
-    print(f"✓ EU Direkt: {ok2} Feeds, {len(merged_eu)} Artikel")
+    print(f"\n✓ News: {ok1} Feeds ok, {fail1} Feeds fehlgeschlagen, {len(merged_news)} Artikel")
+    print(f"✓ EU Direkt: {ok2} Feeds ok, {fail2} Feeds fehlgeschlagen, {len(merged_eu)} Artikel")
 
 if __name__ == "__main__":
     main()
