@@ -2,7 +2,7 @@
 """
 Presseschau – Zweite Edition
 - Rollendes 7-Tage-Archiv
-- 3 Datensets: articles.json + eu_articles.json + bundestag.json + Dokumente
+- 2 Datensets: articles.json + eu_articles.json
 - URLs geprüft und gefixt (März 2026)
 """
 
@@ -503,26 +503,70 @@ def save_json(filename, articles, ok, fail, extra=None):
 # DOKUMENT-QUELLEN
 # ═══════════════════════════════════════════════════════════════
 DOCUMENT_FEEDS = [
-    # ── Bundestag ──────────────────────────────────────────────
+    # download=True → PDF wird heruntergeladen und im Repo gespeichert
+    # download=False → nur Link wird gespeichert
     ("https://www.bundestag.de/static/appdata/includes/rss/drucksachen.rss",
-     "Bundestag", "Drucksache", "bt"),
+     "Bundestag", "Drucksache", "bt", False),
     ("https://www.bundestag.de/static/appdata/includes/rss/plenarprotokolle.rss",
-     "Bundestag", "Plenarprotokoll", "bt"),
+     "Bundestag", "Plenarprotokoll", "bt", False),
     ("https://www.bundestag.de/static/appdata/includes/rss/tagesordnungen.rss",
-     "Bundestag", "Tagesordnung", "bt"),
+     "Bundestag", "Tagesordnung", "bt", True),
     ("https://www.bundestag.de/static/appdata/includes/rss/wissenschaftlichedienste.rss",
-     "Bundestag", "Wissenschaftlicher Dienst", "bt"),
-    # ── EUR-Lex (EU-Amtsblatt) ─────────────────────────────────
+     "Bundestag", "Wissenschaftlicher Dienst", "bt", True),
     ("https://eur-lex.europa.eu/rss/OJ_L_rss.xml",
-     "EUR-Lex", "Amtsblatt L (Rechtsakte)", "eurlex"),
+     "EUR-Lex", "Amtsblatt L (Rechtsakte)", "eurlex", False),
     ("https://eur-lex.europa.eu/rss/OJ_C_rss.xml",
-     "EUR-Lex", "Amtsblatt C (Mitteilungen)", "eurlex"),
+     "EUR-Lex", "Amtsblatt C (Mitteilungen)", "eurlex", False),
 ]
 
+PDF_DIR = "docs_files"
+PDF_KEEP_DAYS = 7
+LINK_KEEP_DAYS = 30
+
+def ensure_pdf_dir():
+    os.makedirs(PDF_DIR, exist_ok=True)
+
+def cleanup_old_pdfs():
+    """Löscht PDFs die älter als PDF_KEEP_DAYS Tage sind."""
+    if not os.path.exists(PDF_DIR):
+        return
+    cutoff = datetime.now(timezone.utc) - timedelta(days=PDF_KEEP_DAYS)
+    deleted = 0
+    for fname in os.listdir(PDF_DIR):
+        fpath = os.path.join(PDF_DIR, fname)
+        try:
+            mtime = datetime.fromtimestamp(os.path.getmtime(fpath), tz=timezone.utc)
+            if mtime < cutoff:
+                os.remove(fpath)
+                deleted += 1
+        except:
+            pass
+    if deleted:
+        print(f"  → {deleted} alte PDFs gelöscht")
+
+def download_pdf(url, doc_id):
+    """Lädt PDF herunter, speichert als docs_files/{id}.pdf. Gibt lokalen Pfad zurück oder None."""
+    ensure_pdf_dir()
+    fpath = os.path.join(PDF_DIR, f"{doc_id}.pdf")
+    if os.path.exists(fpath):
+        return fpath  # schon vorhanden
+    data = fetch_url(url, timeout=30)
+    if not data:
+        return None
+    if b'%PDF' not in data[:20]:
+        return None
+    try:
+        with open(fpath, 'wb') as f:
+            f.write(data)
+        return fpath
+    except:
+        return None
+
 def fetch_documents():
-    """Holt Dokument-Links aus RSS-Feeds, speichert nur Metadaten."""
+    """Holt Dokument-Links, lädt PDFs wo download=True."""
     docs = []
-    for url, source, doc_type, origin in DOCUMENT_FEEDS:
+    cleanup_old_pdfs()
+    for url, source, doc_type, origin, do_download in DOCUMENT_FEEDS:
         print(f"  [docs] {source} – {doc_type}...", end=' ', flush=True)
         data = fetch_url(url)
         if not data:
@@ -537,25 +581,31 @@ def fetch_documents():
             continue
         items = root.findall('.//item') or root.findall('.//{http://www.w3.org/2005/Atom}entry')
         count = 0
+        downloaded = 0
         for item in items:
-            def g(tag):
+            def gi(tag):
                 el = item.find(tag)
                 return el.text.strip() if el is not None and el.text else ''
-            title = g('title') or g('{http://www.w3.org/2005/Atom}title')
+            title = gi('title') or gi('{http://www.w3.org/2005/Atom}title')
             if not title or len(title) < 5: continue
-            link = g('link')
+            link = gi('link')
             if not link:
                 le = item.find('{http://www.w3.org/2005/Atom}link')
                 link = le.get('href', '') if le is not None else ''
             if not link: continue
-            pub_raw = (g('pubDate') or g('{http://www.w3.org/2005/Atom}published') or
-                       g('{http://www.w3.org/2005/Atom}updated') or '')
+            pub_raw = (gi('pubDate') or gi('{http://www.w3.org/2005/Atom}published') or
+                       gi('{http://www.w3.org/2005/Atom}updated') or '')
             pub_iso = parse_date(pub_raw)
-            desc_raw = g('description') or g('{http://www.w3.org/2005/Atom}summary') or ''
-            desc = clean_html(desc_raw)[:300]
-            # Erkennt ob Link direkt auf PDF zeigt
+            desc_raw = gi('description') or gi('{http://www.w3.org/2005/Atom}summary') or ''
+            desc = clean_html(desc_raw)[:400]
             is_pdf = link.lower().endswith('.pdf') or 'pdf' in link.lower()
             uid = hashlib.md5((source + doc_type + title + link).encode()).hexdigest()[:12]
+            local_path = None
+            if do_download and is_pdf:
+                local_path = download_pdf(link.strip(), uid)
+                if local_path:
+                    downloaded += 1
+                time.sleep(0.3)
             docs.append({
                 "id": uid,
                 "source": source,
@@ -566,9 +616,11 @@ def fetch_documents():
                 "desc": desc,
                 "date": pub_iso,
                 "is_pdf": is_pdf,
+                "local": local_path,
+                "has_file": local_path is not None,
             })
             count += 1
-        print(count)
+        print(f"{count} ({downloaded} PDFs)" if downloaded else str(count))
         time.sleep(0.2)
     return docs
 
@@ -582,15 +634,22 @@ def load_existing_docs(filename):
     except:
         return []
 
-def merge_docs(existing, new_docs, days=7):
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+def merge_docs(existing, new_docs):
+    """Links LINK_KEEP_DAYS behalten, PDFs durch cleanup_old_pdfs() verwaltet."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=LINK_KEEP_DAYS)).isoformat()
     existing_filtered = [d for d in existing
                          if d.get('date', '') >= cutoff or not d.get('date', '')]
     existing_ids = {d['id'] for d in new_docs}
     existing_keep = [d for d in existing_filtered if d['id'] not in existing_ids]
+    # has_file aktualisieren — PDF könnte inzwischen gelöscht sein
+    for d in existing_keep:
+        if d.get('local'):
+            d['has_file'] = os.path.exists(d['local'])
+        else:
+            d['has_file'] = False
     merged = new_docs + existing_keep
     merged.sort(key=lambda d: d.get('date', '') or '0000', reverse=True)
-    return merged[:2000]
+    return merged
 
 def save_docs(filename, docs):
     seen = set()
@@ -602,12 +661,15 @@ def save_docs(filename, docs):
     out = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "count": len(deduped),
+        "files_count": sum(1 for d in deduped if d.get('has_file')),
         "documents": deduped,
     }
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
     size_kb = os.path.getsize(filename) // 1024
-    print(f"  → {filename}: {len(deduped)} Dokumente, {size_kb}KB")
+    files = out['files_count']
+    print(f"  → {filename}: {len(deduped)} Dokumente ({files} mit Datei), {size_kb}KB")
+
 
 def main():
     print(f"[{datetime.now().isoformat()}] Presseschau Fetch")
@@ -635,7 +697,7 @@ def main():
     print("\n── Dokumente ──")
     new_docs = fetch_documents()
     existing_docs = load_existing_docs("documents.json")
-    merged_docs = merge_docs(existing_docs, new_docs, days=7)
+    merged_docs = merge_docs(existing_docs, new_docs)
     save_docs("documents.json", merged_docs)
 
     print(f"\n✓ News: {ok1} Feeds ok, {fail1} Feeds fehlgeschlagen, {len(merged_news)} Artikel")
