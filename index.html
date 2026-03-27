@@ -531,7 +531,7 @@ body.eu-mode #m-back{color:var(--eu)}
         <div id="docs-list" style="flex:1;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:4px"></div>
       </div>
       <div id="docs-drag-handle" style="width:6px;background:var(--border);cursor:col-resize;flex-shrink:0;position:relative;transition:background .15s"></div>
-      <div id="docs-viewer" style="flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden;min-width:180px">
+      <div id="docs-viewer" style="flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden;min-width:180px;height:100%">
         <div id="docs-viewer-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:9px">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           <p style="font-size:14px;font-weight:500">Dokument auswählen</p>
@@ -545,7 +545,7 @@ body.eu-mode #m-back{color:var(--eu)}
           <button class="btn" id="docs-next-btn" onclick="docNextPage()" style="display:none">→</button>
           <button class="btn p" onclick="openDocLink()">🔗 Öffnen</button>
         </div>
-        <iframe id="docs-viewer-iframe" style="flex:1;border:none;display:none;width:100%;min-height:0"></iframe>
+        <iframe id="docs-viewer-iframe" style="flex:1;border:none;display:none;width:100%;height:100%;min-height:0"></iframe>
         <div id="docs-canvas-wrap" style="display:none;flex:1;overflow-y:auto;background:#525659;display:none;align-items:flex-start;justify-content:center;padding:16px">
           <canvas id="docs-canvas" style="box-shadow:0 2px 12px rgba(0,0,0,.3);max-width:100%"></canvas>
         </div>
@@ -649,7 +649,11 @@ function mTab(tab){
   g('mt-bt').className='m-tab'+(tab==='bt'?' active':'');
   g('mt-docs').className='m-tab'+(tab==='docs'?' active':'');
   document.body.classList.toggle('eu-mode',tab==='eu');
-  if(tab==='docs'){g('m-chips').innerHTML='';g('m-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Dokumente nur auf Desktop verfügbar.</div>';return;}
+  if(tab==='docs'){
+    g('m-chips').innerHTML='';
+    mRenderDocs();
+    return;
+  }
   mChips();mFilter();
 }
 function mChips(){
@@ -660,6 +664,7 @@ function mChips(){
 }
 function mTopicClick(t){m_top=t;mChips();mFilter();}
 function mFilter(){
+  if(m_tab==='docs'){mRenderDocs();return;}
   const q=(g('mq')?.value||'').toLowerCase().trim();
   const pool=m_tab==='news'?ALL_NEWS:m_tab==='eu'?ALL_EU:ALL_BT;
   m_filt=pool.filter(a=>{
@@ -735,6 +740,41 @@ function mLink(){if(m_art?.link)window.open(m_art.link,'_blank','noopener');}
 function mMark(){if(!m_art)return;if(marked.has(m_art.id))marked.delete(m_art.id);else marked.add(m_art.id);mMkBtn();mRender();}
 function mRowMark(e,id){e.stopPropagation();if(marked.has(id))marked.delete(id);else marked.add(id);mRender();}
 function mMkBtn(){const b=g('m-rmk');if(!b||!m_art)return;const on=marked.has(m_art.id);b.textContent=on?'★':'☆';b.classList.toggle('on',on);}
+
+function mRenderDocs(){
+  const el=g('m-list');
+  const q=(g('mq')?.value||'').toLowerCase().trim();
+  let list=ALL_DOCS;
+  if(q) list=list.filter(d=>(d.title+' '+(d.desc||'')).toLowerCase().includes(q));
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Keine Dokumente.</div>';return;}
+  // Filter-Chips für Mobile einbauen
+  g('m-chips').innerHTML=[
+    {t:'all',l:'Alle'},
+    {t:'hasfile',l:'📁 Im Repo'},
+    {t:'bt',l:'🏛 Bundestag'},
+    {t:'eurlex',l:'🇪🇺 EUR-Lex'},
+  ].map(c=>`<span class="chip${(window._mDocFilter||'all')===c.t?' active':''}" onclick="window._mDocFilter='${c.t}';mRenderDocs()">${c.l}</span>`).join('');
+  const filter=window._mDocFilter||'all';
+  if(filter==='hasfile') list=list.filter(d=>d.has_file);
+  else if(filter!=='all') list=list.filter(d=>d.origin===filter);
+  if(q) list=list.filter(d=>(d.title+' '+(d.desc||'')).toLowerCase().includes(q));
+  el.innerHTML=list.map(doc=>{
+    const icon=doc.type.includes('Protokoll')?'📝':doc.type.includes('Tagesordnung')?'📋':doc.type.includes('Amtsblatt')?'🇪🇺':'📄';
+    const fileBadge=doc.has_file?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;margin-left:4px">📁 Im Repo</span>':'<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;margin-left:4px">🔗 Link</span>';
+    const url=doc.has_file&&doc.local?(window.location.href.replace(/\/[^\/]*$/,'/')+doc.local):doc.link;
+    return`<div class="m-row" style="border-left:3px solid #1d4ed8" onclick="window.open('${url}','_blank','noopener')">
+      <div class="m-row-body">
+        <div class="m-row-top">
+          <span class="sbadge" style="background:#eff6ff;color:#1d4ed8">${icon} ${esc(doc.type)}</span>
+          ${fileBadge}
+          <span class="m-row-date">${fd(doc.date)}</span>
+        </div>
+        <div class="m-row-title">${esc(doc.title)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function mPrev(){if(m_idx>0)mOpen(m_idx-1);}
 function mNext(){if(m_idx<m_filt.length-1)mOpen(m_idx+1);}
 
@@ -851,10 +891,13 @@ function openDoc(docId){
   renderDocs(d_doc_filter);
 
   if(doc.has_file && doc.local){
-    // Lokale PDF per iframe — same-origin, kein CORS Problem!
+    // Pfad relativ zur aktuellen Seite berechnen
+    const base = window.location.href.replace(/\/[^\/]*$/, '/');
     const iframe=g('docs-viewer-iframe');
-    iframe.src=doc.local;
+    iframe.src = base + doc.local;
     iframe.style.display='block';
+    iframe.style.flex='1';
+    iframe.style.height='100%';
   } else {
     // Nur Link — Info anzeigen
     g('docs-error').style.display='flex';
