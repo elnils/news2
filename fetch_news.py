@@ -2,7 +2,7 @@
 """
 Presseschau – Zweite Edition
 - Rollendes 7-Tage-Archiv
-- 2 Datensets: articles.json + eu_articles.json
+- 3 Datensets: articles.json + eu_articles.json + bundestag.json + Dokumente
 - URLs geprüft und gefixt (März 2026)
 """
 
@@ -499,6 +499,116 @@ def save_json(filename, articles, ok, fail, extra=None):
     print(f"  → {filename}: {len(deduped)} Artikel, {size_kb}KB")
     return deduped
 
+# ═══════════════════════════════════════════════════════════════
+# DOKUMENT-QUELLEN
+# ═══════════════════════════════════════════════════════════════
+DOCUMENT_FEEDS = [
+    # ── Bundestag ──────────────────────────────────────────────
+    ("https://www.bundestag.de/static/appdata/includes/rss/drucksachen.rss",
+     "Bundestag", "Drucksache", "bt"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/plenarprotokolle.rss",
+     "Bundestag", "Plenarprotokoll", "bt"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/tagesordnungen.rss",
+     "Bundestag", "Tagesordnung", "bt"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/wissenschaftlichedienste.rss",
+     "Bundestag", "Wissenschaftlicher Dienst", "bt"),
+    # ── EUR-Lex (EU-Amtsblatt) ─────────────────────────────────
+    ("https://eur-lex.europa.eu/rss/OJ_L_rss.xml",
+     "EUR-Lex", "Amtsblatt L (Rechtsakte)", "eurlex"),
+    ("https://eur-lex.europa.eu/rss/OJ_C_rss.xml",
+     "EUR-Lex", "Amtsblatt C (Mitteilungen)", "eurlex"),
+]
+
+def fetch_documents():
+    """Holt Dokument-Links aus RSS-Feeds, speichert nur Metadaten."""
+    docs = []
+    for url, source, doc_type, origin in DOCUMENT_FEEDS:
+        print(f"  [docs] {source} – {doc_type}...", end=' ', flush=True)
+        data = fetch_url(url)
+        if not data:
+            print("FAIL")
+            continue
+        try:
+            text = data.decode('utf-8', errors='replace')
+            text = re.sub(r'[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD]+', '', text)
+            root = ET.fromstring(text)
+        except:
+            print("PARSE ERR")
+            continue
+        items = root.findall('.//item') or root.findall('.//{http://www.w3.org/2005/Atom}entry')
+        count = 0
+        for item in items:
+            def g(tag):
+                el = item.find(tag)
+                return el.text.strip() if el is not None and el.text else ''
+            title = g('title') or g('{http://www.w3.org/2005/Atom}title')
+            if not title or len(title) < 5: continue
+            link = g('link')
+            if not link:
+                le = item.find('{http://www.w3.org/2005/Atom}link')
+                link = le.get('href', '') if le is not None else ''
+            if not link: continue
+            pub_raw = (g('pubDate') or g('{http://www.w3.org/2005/Atom}published') or
+                       g('{http://www.w3.org/2005/Atom}updated') or '')
+            pub_iso = parse_date(pub_raw)
+            desc_raw = g('description') or g('{http://www.w3.org/2005/Atom}summary') or ''
+            desc = clean_html(desc_raw)[:300]
+            # Erkennt ob Link direkt auf PDF zeigt
+            is_pdf = link.lower().endswith('.pdf') or 'pdf' in link.lower()
+            uid = hashlib.md5((source + doc_type + title + link).encode()).hexdigest()[:12]
+            docs.append({
+                "id": uid,
+                "source": source,
+                "type": doc_type,
+                "origin": origin,
+                "title": title,
+                "link": link.strip(),
+                "desc": desc,
+                "date": pub_iso,
+                "is_pdf": is_pdf,
+            })
+            count += 1
+        print(count)
+        time.sleep(0.2)
+    return docs
+
+def load_existing_docs(filename):
+    if not os.path.exists(filename):
+        return []
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            d = json.load(f)
+        return d.get('documents', [])
+    except:
+        return []
+
+def merge_docs(existing, new_docs, days=7):
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    existing_filtered = [d for d in existing
+                         if d.get('date', '') >= cutoff or not d.get('date', '')]
+    existing_ids = {d['id'] for d in new_docs}
+    existing_keep = [d for d in existing_filtered if d['id'] not in existing_ids]
+    merged = new_docs + existing_keep
+    merged.sort(key=lambda d: d.get('date', '') or '0000', reverse=True)
+    return merged[:2000]
+
+def save_docs(filename, docs):
+    seen = set()
+    deduped = []
+    for d in docs:
+        if d['id'] not in seen:
+            seen.add(d['id'])
+            deduped.append(d)
+    out = {
+        "updated": datetime.now(timezone.utc).isoformat(),
+        "count": len(deduped),
+        "documents": deduped,
+    }
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
+    size_kb = os.path.getsize(filename) // 1024
+    print(f"  → {filename}: {len(deduped)} Dokumente, {size_kb}KB")
+
 def main():
     print(f"[{datetime.now().isoformat()}] Presseschau Fetch")
 
@@ -522,9 +632,16 @@ def main():
     save_json("bundestag_articles.json", merged_bt, ok3, fail3,
               extra={"note":"Offizielle Quellen: Bundestag RSS-Feeds + Bundesregierung"})
 
+    print("\n── Dokumente ──")
+    new_docs = fetch_documents()
+    existing_docs = load_existing_docs("documents.json")
+    merged_docs = merge_docs(existing_docs, new_docs, days=7)
+    save_docs("documents.json", merged_docs)
+
     print(f"\n✓ News: {ok1} Feeds ok, {fail1} Feeds fehlgeschlagen, {len(merged_news)} Artikel")
     print(f"✓ EU Direkt: {ok2} Feeds ok, {fail2} Feeds fehlgeschlagen, {len(merged_eu)} Artikel")
     print(f"✓ Bundestag: {ok3} Feeds ok, {fail3} Feeds fehlgeschlagen, {len(merged_bt)} Artikel")
+    print(f"✓ Dokumente: {len(merged_docs)} Dokumente")
 
 if __name__ == "__main__":
     main()
