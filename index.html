@@ -346,7 +346,7 @@ body.eu-mode #m-back{color:var(--eu)}
 <!-- MOBILE -->
 <div id="mobile">
   <div id="m-topbar">
-    <div class="m-logo">Presse<span>schau</span></div>
+    <div class="m-logo">made by<span>elnils</span></div>
     <div class="m-srch">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input id="mq" placeholder="Suchen…" oninput="debounce(mFilter)">
@@ -526,7 +526,8 @@ function badge(n){const c=srcC(n);return`<span class="sbadge" style="background:
 const BT_TC={plenum:'#1d4ed8',gesetzgebung:'#7c3aed',haushalt:'#0f766e',verteidigung:'#dc2626',aussenpolitik:'#b45309',wirtschaft:'#059669',soziales:'#db2777',digitales:'#0891b2',umwelt:'#16a34a',innenpolitik:'#9333ea',bundesregierung:'#ea580c'};
 const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',aussenpolitik:'🌐 Außenpolitik',wirtschaft:'📈 Wirtschaft',soziales:'🤝 Soziales',digitales:'💻 Digitales',umwelt:'🌿 Umwelt & Klima',innenpolitik:'🔐 Innenpolitik',bundesregierung:'🏛 Bundesregierung'};
 const ALL_CHIPS_BT=[{t:'all',l:'Alle'},{t:'plenum',l:'🏛 Plenum'},{t:'gesetzgebung',l:'📜 Gesetzgebung'},{t:'haushalt',l:'💶 Haushalt'},{t:'verteidigung',l:'🛡 Verteidigung'},{t:'wirtschaft',l:'📈 Wirtschaft'},{t:'soziales',l:'🤝 Soziales'},{t:'digitales',l:'💻 Digitales'},{t:'umwelt',l:'🌿 Umwelt'},{t:'innenpolitik',l:'🔐 Innenpolitik'},{t:'aussenpolitik',l:'🌐 Außenpolitik'},{t:'bundesregierung',l:'🏛 BReg'}];
-const BT_SOURCE_LABELS={'bt-allg':'Bundestag Allg.','bt-thema':'BT Themen','breg':'Bundesregierung'};tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899'};
+const BT_SOURCE_LABELS={'bt-allg':'Bundestag Allg.','bt-thema':'BT Themen','breg':'Bundesregierung'};
+const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899'};
 const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wiss.',medizin:'🏥 Medizin'};
 const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',aussenpolitik:'#ef4444',migration:'#f97316',haushalt:'#f59e0b',rechtsstaat:'#8b5cf6'};
 const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',haushalt:'💶 Haushalt',rechtsstaat:'⚖️ Rechtsstaat'};
