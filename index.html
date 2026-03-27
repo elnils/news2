@@ -808,7 +808,7 @@ function openDoc(i, filter){
 }
 function openDocLink(){if(d_cur_doc?.link)window.open(d_cur_doc.link,'_blank','noopener');}
 
-
+function buildTopicChips(tab){
   const ch=tab==='news'?NEWS_CHIPS_D:tab==='eu'?ALL_CHIPS_EU:ALL_CHIPS_BT;
   g('topic-chips').innerHTML=ch.map(c=>'<span class="chip'+(c.t==='all'?' active':'')+'" data-t="'+c.t+'" onclick="chipClick(this,\'topic\')" ondblclick="chipDbl(this,\'topic\')">'+c.l+'</span>').join('');
 }
