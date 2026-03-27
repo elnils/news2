@@ -56,8 +56,8 @@ EU_OFFICIAL_FEEDS = [
     ("https://news.google.com/rss/search?q=site:eeas.europa.eu&hl=de&gl=DE&ceid=DE:de", "EU Außendienst", "eu-inst"),
 
     # ── EU-Amtsblatt & Gesetzgebung ────────────────────────────
-    ("https://eur-lex.europa.eu/rss/OJ_L_rss.xml",                              "EUR-Lex OJ-L",         "eurlex"),
-    ("https://eur-lex.europa.eu/rss/OJ_C_rss.xml",                              "EUR-Lex OJ-C",         "eurlex"),
+    ("https://news.google.com/rss/search?q=site:eur-lex.europa.eu&hl=de&gl=DE&ceid=DE:de", "EUR-Lex OJ-L",  "eurlex"),
+    ("https://news.google.com/rss/search?q=EU+Amtsblatt+Verordnung&hl=de&gl=DE&ceid=DE:de", "EUR-Lex OJ-C", "eurlex"),
 
     # ── Think Tanks & Analyse (EU-fokussiert) ──────────────────
     ("https://www.euractiv.com/feed/",                                           "Euractiv",             "eu-media"),
@@ -85,21 +85,21 @@ NEWS_FEEDS = [
     ("https://www.welt.de/feeds/latest.rss",                                     "Welt",                 "de-leit"),
     ("https://www.deutschlandfunk.de/politikportal-100.rss",                     "DLF",                  "de-leit"),
     # DLF Wirtschaft: 404 → neue URL
-    ("https://www.deutschlandfunk.de/wirtschaft-und-soziales-100.rss",           "DLF Wirtschaft",       "de-leit"),
+    ("https://www.deutschlandfunk.de/wirtschaft-106.rss",                        "DLF Wirtschaft",       "de-leit"),
     ("https://www.tagesspiegel.de/contentexport/feed/home",                      "Tagesspiegel",         "de-leit"),
     ("https://www.stern.de/feed/standard/all/",                                  "Stern",                "de-leit"),
     ("https://www.ndr.de/nachrichten/info/podcast4906.xml",                      "NDR Info",             "de-leit"),
     ("https://www.mdr.de/nachrichten/index-rss.xml",                             "MDR",                  "de-leit"),
     # BR: 404 → neue URL
-    ("https://www.br.de/nachrichten/aktuell-100~rss.xml",                        "BR",                   "de-leit"),
+    ("https://www.br.de/nachrichten/meldungen/rss.xml",                          "BR",                   "de-leit"),
     # ZDF: 404 → neue URL (ZDF heute)
-    ("https://www.zdf.de/rss/zdf/nachrichten-100.xml",                           "ZDF",                  "de-leit"),
+    ("https://news.google.com/rss/search?q=site:zdf.de+nachrichten&hl=de&gl=DE&ceid=DE:de", "ZDF",       "de-leit"),
 
     # ── Deutsch: Politik ──────────────────────────────────────
     # Bundesregierung: 404 → neue URL
-    ("https://www.bundesregierung.de/breg-de/service/newsletter-und-feeds/rss-feed-bundesregierung-410282.xml", "Bundesregierung", "de-pol"),
+    ("https://news.google.com/rss/search?q=site:bundesregierung.de&hl=de&gl=DE&ceid=DE:de", "Bundesregierung", "de-pol"),
     # Bundestag: 404 → neue URL
-    ("https://www.bundestag.de/rss/home.xml",                                    "Bundestag",            "de-pol"),
+    ("https://news.google.com/rss/search?q=site:bundestag.de&hl=de&gl=DE&ceid=DE:de", "Bundestag",         "de-pol"),
     # BMWK: 404 → via Google News
     ("https://news.google.com/rss/search?q=BMWK+Wirtschaftsministerium&hl=de&gl=DE&ceid=DE:de", "BMWK",  "de-pol"),
     # BMI: 400 → via Google News
@@ -112,10 +112,10 @@ NEWS_FEEDS = [
     ("https://www.wiwo.de/contentexport/feed/rss/schlagzeilen",                  "WiWo",                 "de-eco"),
     ("https://www.wiwo.de/contentexport/feed/rss/politik",                       "WiWo Politik",         "de-eco"),
     # Manager Magazin: 404 → neue URL
-    ("https://www.manager-magazin.de/arc/outboundfeeds/rss/",                    "Manager Mag.",         "de-eco"),
+    ("https://news.google.com/rss/search?q=site:manager-magazin.de&hl=de&gl=DE&ceid=DE:de", "Manager Mag.", "de-eco"),
     ("https://www.finanznachrichten.de/rss-aktien-nachrichten",                  "FinanzN.",             "de-eco"),
     # Börse.de: 404 → via Google News
-    ("https://news.google.com/rss/search?q=Börse+Aktien+DAX&hl=de&gl=DE&ceid=DE:de", "Börse.de",        "de-eco"),
+    ("https://news.google.com/rss/search?q=Boerse+Aktien+DAX&hl=de&gl=DE&ceid=DE:de", "Börse.de",          "de-eco"),
 
     # ── Deutsch: Tech & Digital ───────────────────────────────
     ("https://www.heise.de/newsticker/heise.rdf",                                "Heise",                "de-tech"),
@@ -163,7 +163,7 @@ NEWS_FEEDS = [
     ("https://venturebeat.com/feed/",                                            "VentureBeat",          "en-tech"),
     ("https://www.zdnet.com/news/rss.xml",                                       "ZDNet",                "en-tech"),
     # Light Reading: 404 → neue URL
-    ("https://www.lightreading.com/rss",                                          "Light Reading",        "en-tech"),
+    ("https://news.google.com/rss/search?q=site:lightreading.com&ceid=US:en&hl=en-US&gl=US", "Light Reading", "en-tech"),
     ("https://spectrum.ieee.org/feeds/feed.rss",                                 "IEEE Spectrum",        "en-tech"),
     ("https://openai.com/news/rss.xml",                                          "OpenAI Blog",          "en-ai"),
     # DeepMind: 404 → via Google News
@@ -178,7 +178,7 @@ NEWS_FEEDS = [
     ("https://www.defensescoop.com/feed/",                                       "DefenseScoop",         "en-def"),
     ("https://www.militarytimes.com/arc/outboundfeeds/rss/",                     "Military Times",       "en-def"),
     # NATO: 404 → neue URL
-    ("https://www.nato.int/cps/en/natolive/news.xml",                            "NATO News",            "en-def"),
+    ("https://www.nato.int/cps/en/natohq/news.xml",                              "NATO News",            "en-def"),
 
     # ── Englisch: Cyber ──────────────────────────────────────
     ("https://www.bleepingcomputer.com/feed/",                                   "BleepingComp.",        "en-cyber"),
@@ -200,7 +200,7 @@ NEWS_FEEDS = [
     # Chatham House: 403 → via Google News
     ("https://news.google.com/rss/search?q=site:chathamhouse.org&ceid=US:en&hl=en-US&gl=US", "Chatham House", "en-intl"),
     # RAND Corp: 404 → neue URL
-    ("https://www.rand.org/pubs/rss/commentaries.xml",                           "RAND Corp.",           "en-intl"),
+    ("https://news.google.com/rss/search?q=site:rand.org&ceid=US:en&hl=en-US&gl=US", "RAND Corp.",        "en-intl"),
     # IISS: 404 → via Google News
     ("https://news.google.com/rss/search?q=site:iiss.org&ceid=US:en&hl=en-US&gl=US", "IISS",            "en-intl"),
 
@@ -345,10 +345,13 @@ def parse_feed(xml_bytes, source, topic_rules):
     return arts
 
 def fetch_url(url, timeout=15):
+    from urllib.parse import quote
+    # ASCII-encode the URL properly (handles Umlaute etc.)
+    url_encoded = ''.join(c if ord(c) < 128 else quote(c) for c in url)
     headers={'User-Agent':'Mozilla/5.0 (compatible; Presseschau-Bot/1.0)',
              'Accept':'application/rss+xml,application/xml,text/xml,*/*'}
     try:
-        with urlopen(Request(url,headers=headers),timeout=timeout) as r:
+        with urlopen(Request(url_encoded,headers=headers),timeout=timeout) as r:
             return r.read()
     except Exception as e:
         print(f"  ✗ {url[:80]}: {e}",file=sys.stderr)
