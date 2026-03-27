@@ -1,7 +1,7 @@
 name: RSS Feeds holen
 on:
   schedule:
-    - cron: '*/25 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 jobs:
   fetch:
@@ -21,9 +21,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
           git add articles.json eu_articles.json bundestag_articles.json
-          git diff --cached --quiet || (
-            git pull --rebase origin main &&
-            git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]" &&
-            git push
-          )
+          git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push
