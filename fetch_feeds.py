@@ -73,8 +73,61 @@ EU_OFFICIAL_FEEDS = [
 ]
 
 # ═══════════════════════════════════════════════════════════════
-# ALLGEMEINE NEWS-QUELLEN (gehen in articles.json)
+# BUNDESTAG & BUNDESREGIERUNG (gehen in bundestag_articles.json)
 # ═══════════════════════════════════════════════════════════════
+BUNDESTAG_FEEDS = [
+    # ── Bundestag: Allgemein ───────────────────────────────────
+    ("https://www.bundestag.de/static/appdata/includes/rss/aktuellethemen.rss",  "BT Aktuelle Themen",   "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/pressemitteilungen.rss", "BT Pressemitt.",    "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/hib.rss",             "BT hib-Meldungen",    "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/wissenschaftlichedienste.rss", "BT Wiss. Dienste", "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/drucksachen.rss",     "BT Drucksachen",       "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/plenarprotokolle.rss","BT Plenarprotokolle",  "bt-allg"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/tagesordnungen.rss",  "BT Tagesordnungen",    "bt-allg"),
+    # ── Bundestag: Themen-Feeds ────────────────────────────────
+    ("https://www.bundestag.de/static/appdata/includes/rss/arbeitsoziales.rss",  "BT Arbeit & Soziales", "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/auswaertiges.rss",    "BT Auswärtiges",       "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/familie.rss",         "BT Familie & Bildung", "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/digitales.rss",       "BT Digitales",         "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/eu.rss",              "BT Europäische Union", "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/finanzen.rss",        "BT Finanzen",          "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/bildung.rss",         "BT Forschung & Tech",  "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/gesundheit.rss",      "BT Gesundheit",        "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/haushalt.rss",        "BT Haushalt",          "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/inneres.rss",         "BT Inneres",           "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/kultur.rss",          "BT Kultur & Medien",   "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/landwirtschafternaehrung.rss", "BT Landwirtschaft", "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/menschenrechte.rss",  "BT Menschenrechte",    "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/recht.rss",           "BT Recht",             "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/umwelt.rss",          "BT Umwelt & Klima",    "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/verkehr.rss",         "BT Verkehr",           "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/verteidigung.rss",    "BT Verteidigung",      "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/wirtschaft.rss",      "BT Wirtschaft & Energie", "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/entwicklung.rss",     "BT Entwicklung",       "bt-thema"),
+    ("https://www.bundestag.de/static/appdata/includes/rss/bauwohnenstadtentwicklungkommunen.rss", "BT Wohnen & Bau", "bt-thema"),
+    # ── Bundesregierung ───────────────────────────────────────
+    ("https://www.bundesregierung.de/service/rss/breg-de/1151242/feed.xml",      "BReg Kompakt",         "breg"),
+    ("https://www.bundesregierung.de/service/rss/breg-de/1151244/feed.xml",      "BReg Pressemitt.",     "breg"),
+    ("https://www.bundesregierung.de/service/rss/breg-de/1151246/feed.xml",      "BReg Artikel",         "breg"),
+    ("https://www.bundesregierung.de/service/rss/breg-de/2318648/feed.xml",      "BReg Bulletin",        "breg"),
+]
+
+# Topic-Scoring für Bundestag-Tab (parlamentarische Themen)
+BT_TOPIC_RULES = {
+    "plenum":{"score":[(3,["plenum","plenarsitzung","plenarprotokoll","tagesordnung","abstimmung","debatte","bundestagssitzung"]),(2,["bundestag","abgeordnete","fraktion","antrag","anfrage"]),(1,["parlament","sitzung"])],"min":2},
+    "gesetzgebung":{"score":[(3,["gesetzentwurf","gesetz","drucksache","lesung","verabschiedet","beschlossen","regelung"]),(2,["reform","richtlinie","verordnung","novelle","änderung","bundesrat"]),(1,["recht","gesetzlich","rechtlich"])],"min":2},
+    "haushalt":{"score":[(3,["bundeshaushalt","haushaltsdebatte","schuldenbremse","haushaltsplan","etatberatung"]),(2,["haushalt","finanzen","ausgaben","einnahmen","schulden","investitionen"]),(1,["budget","milliarden","milliarden euro"])],"min":2},
+    "verteidigung":{"score":[(3,["bundeswehr","verteidigungshaushalt","rüstung","wehrbeauftragter","sondervermögen"]),(2,["verteidigung","militär","nato","sicherheit","streitkräfte"]),(1,["soldat","mission","auslandseinsatz"])],"min":2},
+    "aussenpolitik":{"score":[(3,["auswärtiger ausschuss","außenpolitik","auswärtiges amt","botschaft","staatsbesuch"]),(2,["außenminister","international","diplomatie","ukraine","sanktionen"]),(1,["ausland","bilateral","multilateral"])],"min":2},
+    "wirtschaft":{"score":[(3,["wirtschaftsausschuss","konjunktur","industriepolitik","mittelstand","fachkräftemangel"]),(2,["wirtschaft","unternehmen","export","handel","wettbewerb","regulierung"]),(1,["markt","wirtschaftlich","ökonomisch"])],"min":2},
+    "soziales":{"score":[(3,["sozialleistungen","bürgergeld","rente","krankenversicherung","pflegereform"]),(2,["sozial","arbeit","beschäftigung","mindestlohn","tarifvertrag"]),(1,["arbeitnehmer","sozialstaat","sozialpolitik"])],"min":2},
+    "digitales":{"score":[(3,["digitalisierung","ki-strategie","dateninstitut","digitalministerium","breitbandausbau"]),(2,["digital","ki ","algorithmus","datenschutz","plattform","internet"]),(1,["technologie","innovation","online"])],"min":2},
+    "umwelt":{"score":[(3,["klimaschutzgesetz","energiewende","emissionshandel","naturschutzgesetz","co2-preis"]),(2,["klimaschutz","umwelt","erneuerbare","solar","windkraft","co2"]),(1,["klima","energie","nachhaltig"])],"min":2},
+    "innenpolitik":{"score":[(3,["innenministerium","verfassungsschutz","innere sicherheit","polizeigesetz","asylpolitik"]),(2,["innenpolitik","migration","sicherheit","bsi","kriminalität"]),(1,["innen","sicherheitsbehörde","polizei"])],"min":2},
+    "bundesregierung":{"score":[(3,["kabinett","koalitionsvertrag","regierungserklärung","kanzler","bundesminister"]),(2,["bundesregierung","koalition","regierung","ministerium","beschlossen"]),(1,["regierungshandeln","regierungspolitik"])],"min":2},
+}
+
+
 NEWS_FEEDS = [
     # ── Deutsch: Leitmedien ────────────────────────────────────
     ("https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",       "Tagesschau",           "de-leit"),
@@ -91,7 +144,7 @@ NEWS_FEEDS = [
     ("https://www.ndr.de/nachrichten/info/podcast4906.xml",                      "NDR Info",             "de-leit"),
     ("https://www.mdr.de/nachrichten/index-rss.xml",                             "MDR",                  "de-leit"),
     # BR: 404 → neue URL
-    ("https://www.br.de/nachrichten/meldungen/rss.xml",                          "BR",                   "de-leit"),
+    ("https://www.br.de/nachrichten/meldungen/nachrichten-bayerischer-rundfunk100~newsRss.xml", "BR",      "de-leit"),
     # ZDF: 404 → neue URL (ZDF heute)
     ("https://news.google.com/rss/search?q=site:zdf.de+nachrichten&hl=de&gl=DE&ceid=DE:de", "ZDF",       "de-leit"),
 
@@ -178,7 +231,7 @@ NEWS_FEEDS = [
     ("https://www.defensescoop.com/feed/",                                       "DefenseScoop",         "en-def"),
     ("https://www.militarytimes.com/arc/outboundfeeds/rss/",                     "Military Times",       "en-def"),
     # NATO: 404 → neue URL
-    ("https://www.nato.int/cps/en/natohq/news.xml",                              "NATO News",            "en-def"),
+    ("https://natowatch.org/news.xml",                                            "NATO News",            "en-def"),
 
     # ── Englisch: Cyber ──────────────────────────────────────
     ("https://www.bleepingcomputer.com/feed/",                                   "BleepingComp.",        "en-cyber"),
@@ -462,8 +515,16 @@ def main():
     save_json("eu_articles.json", merged_eu, ok2, fail2,
               extra={"note":"Offizielle EU-Quellen: Parlament, Kommission, Rat, Institutionen"})
 
+    print("\n── Bundestag & Bundesregierung ──")
+    new_bt, ok3, fail3 = fetch_all(BUNDESTAG_FEEDS, BT_TOPIC_RULES, "bt")
+    existing_bt = load_existing("bundestag_articles.json")
+    merged_bt = merge_rolling(existing_bt, new_bt, days=14, max_count=3000)
+    save_json("bundestag_articles.json", merged_bt, ok3, fail3,
+              extra={"note":"Offizielle Quellen: Bundestag RSS-Feeds + Bundesregierung"})
+
     print(f"\n✓ News: {ok1} Feeds ok, {fail1} Feeds fehlgeschlagen, {len(merged_news)} Artikel")
     print(f"✓ EU Direkt: {ok2} Feeds ok, {fail2} Feeds fehlgeschlagen, {len(merged_eu)} Artikel")
+    print(f"✓ Bundestag: {ok3} Feeds ok, {fail3} Feeds fehlgeschlagen, {len(merged_bt)} Artikel")
 
 if __name__ == "__main__":
     main()
