@@ -828,10 +828,18 @@ async function openDoc(i, filter){
   }
 
   try {
-    // PDF per fetch als ArrayBuffer laden — umgeht X-Frame-Options
-    const resp = await fetch(doc.link);
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const buf = await resp.arrayBuffer();
+    // Erst direkt versuchen, dann CORS-Proxy als Fallback
+    let buf;
+    try {
+      const resp = await fetch(doc.link);
+      if(!resp.ok) throw new Error('direct failed');
+      buf = await resp.arrayBuffer();
+    } catch {
+      const proxy = 'https://corsproxy.io/?' + encodeURIComponent(doc.link);
+      const resp = await fetch(proxy);
+      if(!resp.ok) throw new Error('proxy failed');
+      buf = await resp.arrayBuffer();
+    }
 
     // PDF.js aus globalThis (wird als module geladen)
     const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
