@@ -24,6 +24,6 @@ jobs:
           git stash
           git pull --rebase origin main
           git stash pop || true
-          git add articles.json eu_articles.json bundestag_articles.json
+          git add articles.json eu_articles.json bundestag_articles.json documents.json
           git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push
