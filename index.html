@@ -549,13 +549,17 @@ async function loadData(){
   setSt('loading','Lade…');
   const t=Date.now();
   try{
-    const[r1,r2,r3]=await Promise.all([fetch('articles.json?t='+t),fetch('eu_articles.json?t='+t),fetch('bundestag_articles.json?t='+t)]);
+    const[r1,r2,r3]=await Promise.all([
+      fetch('articles.json?t='+t),
+      fetch('eu_articles.json?t='+t),
+      fetch('bundestag_articles.json?t='+t).catch(()=>null)
+    ]);
     if(r1.ok){const d=await r1.json();ALL_NEWS=d.articles||[];
       g('tab-news-cnt').textContent=ALL_NEWS.length;g('mc-news').textContent=ALL_NEWS.length;
       if(d.updated){const u=fmt(d.updated);g('upd-info').textContent='Stand: '+u;g('footer-upd').textContent='Zuletzt: '+u;}}
     if(r2.ok){const d=await r2.json();ALL_EU=d.articles||[];
       g('tab-eu-cnt').textContent=ALL_EU.length;g('mc-eu').textContent=ALL_EU.length;}
-    if(r3.ok){const d=await r3.json();ALL_BT=d.articles||[];
+    if(r3&&r3.ok){const d=await r3.json();ALL_BT=d.articles||[];
       g('tab-bt-cnt').textContent=ALL_BT.length;g('mc-bt').textContent=ALL_BT.length;}
     setSt('ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT');
     buildSrcChips();applyFilters();refreshTrends();mFilter();
