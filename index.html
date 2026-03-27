@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Presseschau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <style>
 :root{
   --bg:#eef0f5;--surface:#fff;--surface2:#f7f8fb;--border:#e2e6f0;
@@ -170,7 +172,7 @@ body.eu-mode .sb.active{background:var(--eu);border-color:var(--eu)}
 .ds-is{font-size:9px;font-weight:700;text-transform:uppercase}
 .ds-id{font-size:9px;color:var(--muted)}
 .ds-more{padding:5px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-style:italic}
-.art-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;cursor:pointer;transition:all .13s;display:flex;gap:6px;align-items:flex-start;animation:fu .16s ease both}
+.art-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;cursor:pointer;transition:all .13s;display:flex;gap:6px;align-items:flex-start;animation:fu .16s ease both;contain:layout style}
 .art-item:hover{border-color:#c7d2e8;box-shadow:var(--shadow-md)}
 .art-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
 .art-item.marked{background:#fefce8;border-color:#fcd34d}
@@ -262,7 +264,7 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
   -webkit-overflow-scrolling:touch;
   padding:6px 8px 12px;
 }
-.m-row{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 12px 11px 14px;margin-bottom:5px;cursor:pointer;animation:fu .14s ease both;display:flex;align-items:flex-start;gap:8px}
+.m-row{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 12px 11px 14px;margin-bottom:5px;cursor:pointer;animation:fu .14s ease both;display:flex;align-items:flex-start;gap:8px;contain:layout style}
 .m-row.marked{background:#fefce8;border-color:#fcd34d}
 .m-row-body{flex:1;min-width:0}
 .m-row-top{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
@@ -347,7 +349,7 @@ body.eu-mode #m-back{color:var(--eu)}
     <div class="m-logo">Presse<span>schau</span></div>
     <div class="m-srch">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input id="mq" placeholder="Suchen…" oninput="mFilter()">
+      <input id="mq" placeholder="Suchen…" oninput="debounce(mFilter)">
     </div>
     <button id="m-reload" onclick="loadData()">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
@@ -402,7 +404,7 @@ body.eu-mode #m-back{color:var(--eu)}
 <div id="desktop">
   <div id="topbar">
     <div class="logo">Presse<span>schau</span><small>Presseschau</small></div>
-    <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Volltext suchen…" oninput="applyFilters()"></div></div>
+    <div class="topbar-mid"><div class="sw"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="q" placeholder="Volltext suchen…" oninput="debounce(applyFilters)"></div></div>
     <div class="tr">
       <span id="mark-count">0 markiert</span>
       <button class="btn" id="export-marked-btn" style="display:none" onclick="openExpMarked()">⭐ Markierte</button>
@@ -533,6 +535,9 @@ const EU_DD=[{v:'__ep',l:'🏛 Europ. Parlament'},{v:'__ec',l:'⚙️ EU-Kommiss
 let ALL_NEWS=[],ALL_EU=[],marked=new Set(),apiKey='',pendingSum=false;
 let d_filt=[],d_tab='news',d_view='split',d_top='all',d_src='all',d_sort='new',d_kws=[],d_idx=-1,d_art=null;
 let m_filt=[],m_tab='news',m_top='all',m_sort='new',m_idx=-1,m_art=null;
+let _debTimer=null,_rafId=null;
+function debounce(fn,ms=150){clearTimeout(_debTimer);_debTimer=setTimeout(fn,ms);}
+function schedRender(fn){if(_rafId)cancelAnimationFrame(_rafId);_rafId=requestAnimationFrame(fn);}
 
 /* LOAD */
 async function loadData(){
@@ -583,7 +588,7 @@ function mFilter(){
   else if(m_sort==='new')m_filt.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else m_filt.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   g('m-acnt').textContent=m_filt.length;
-  mRender();
+  schedRender(mRender);
 }
 function mSort(s){
   m_sort=s;
@@ -593,7 +598,8 @@ function mSort(s){
 function mRender(){
   const el=g('m-list');
   if(!m_filt.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Keine Artikel.</div>';return;}
-  el.innerHTML=m_filt.map((a,i)=>{
+  const chunk=m_filt.slice(0,60);
+  el.innerHTML=chunk.map((a,i)=>{
     const c=srcC(a.source);const isEU=m_tab==='eu';
     const col=isEU?'#003399':c.tc;
     const tags=(a.topics||[]).slice(0,2).map(t=>`<span class="ctag${isEU?' eu-tag':''}">${t}</span>`).join('');
@@ -607,6 +613,21 @@ function mRender(){
       </div>
     </div>`;
   }).join('');
+  if(m_filt.length>60){
+    const more=document.createElement('div');
+    more.style.cssText='text-align:center;padding:16px;font-size:13px;color:var(--muted);cursor:pointer';
+    more.textContent='+ '+(m_filt.length-60)+' weitere laden…';
+    more.onclick=()=>{
+      const all=m_filt.map((a,i)=>{
+        const c=srcC(a.source);const isEU=m_tab==='eu';const col=isEU?'#003399':c.tc;
+        const tags=(a.topics||[]).slice(0,2).map(t=>`<span class="ctag${isEU?' eu-tag':''}">${t}</span>`).join('');
+        const isM=marked.has(a.id);
+        return`<div class="m-row${isM?' marked':''}" style="border-left:3px solid ${col}" onclick="mOpen(${i})"><div class="m-chk${isM?' checked':''}" onclick="mRowMark(event,'${a.id}')"></div><div class="m-row-body"><div class="m-row-top">${badge(a.source)}<span class="m-row-date">${fd(a.date)}</span></div><div class="m-row-title">${esc(a.title)}</div>${tags?`<div class="m-row-tags">${tags}</div>`:''}</div></div>`;
+      }).join('');
+      el.innerHTML=all;
+    };
+    el.appendChild(more);
+  }
 }
 function mOpen(i){
   m_idx=i;m_art=m_filt[i];if(!m_art)return;
@@ -677,7 +698,7 @@ function applyFilters(){
     else if(d_top!=='all'){if(!(a.topics||[]).includes(d_top))return false;}
     return(d_src==='all'||a.source===d_src)&&(!d_kws.length||d_kws.every(k=>txt.includes(k)))&&(!q||txt.includes(q))&&(!ob||(a.boost||0)>0);
   });
-  sortD();g('acnt').textContent=d_filt.length;renderView();
+  sortD();g('acnt').textContent=d_filt.length;schedRender(renderView);
 }
 function sortD(){
   if(d_sort==='boost')d_filt.sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||'')));
@@ -697,7 +718,19 @@ function artHTML(a,i,mode){
   if(mode==='grid')return'<div class="gcard'+(isM?' marked':'')+'" style="border-top:3px solid '+col+'" onclick="openArtById(\''+a.id+'\')"><div class="gcard-check'+(isM?' checked':'')+'" onclick="gmark(event,\''+a.id+'\')"></div><div class="gcard-top">'+badge(a.source)+'<span class="gcard-date">'+fd(a.date)+'</span></div><div class="gcard-title">'+esc(a.title)+'</div>'+(a.desc?'<div class="gcard-desc">'+esc(a.desc.slice(0,200))+'</div>':'')+(tags?'<div class="gcard-tags">'+tags+'</div>':'')+'</div>';
   if(mode==='list')return'<div class="lrow'+(isM?' marked':'')+'" style="border-left:3px solid '+col+'" onclick="openArtById(\''+a.id+'\')"><div class="lrow-check'+(isM?' checked':'')+'" onclick="lmark(event,\''+a.id+'\')"></div><div class="lrow-main"><div class="lrow-title">'+esc(a.title)+'</div><div class="lrow-meta">'+badge(a.source)+'<span class="lrow-date">'+fd(a.date)+'</span>'+tags+'</div></div>'+(a.desc?'<div class="lrow-desc">'+esc(a.desc.slice(0,160))+'</div>':'')+'</div>';
 }
-function renderSplit(){const el=g('list-scroll');if(!d_filt.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Keine Artikel.</div>';return;}el.innerHTML=d_filt.map((a,i)=>artHTML(a,i,'split')).join('');}
+function renderSplit(){
+  const el=g('list-scroll');
+  if(!d_filt.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Keine Artikel.</div>';return;}
+  const chunk=d_filt.slice(0,80);
+  el.innerHTML=chunk.map((a,i)=>artHTML(a,i,'split')).join('');
+  if(d_filt.length>80){
+    const more=document.createElement('div');
+    more.style.cssText='text-align:center;padding:12px;font-size:12px;color:var(--muted);cursor:pointer';
+    more.textContent='+ '+(d_filt.length-80)+' weitere laden…';
+    more.onclick=()=>{el.innerHTML=d_filt.map((a,i)=>artHTML(a,i,'split')).join('');if(d_idx>=0)g('ai-'+d_idx)?.scrollIntoView({block:'nearest'});};
+    el.appendChild(more);
+  }
+}
 function renderGrid(){const el=g('grid-inner');if(!d_filt.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Keine Artikel.</div>';return;}el.innerHTML=d_filt.map((a,i)=>artHTML(a,i,'grid')).join('');}
 function renderListV(){const el=g('view-list');if(!d_filt.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Keine Artikel.</div>';return;}el.innerHTML=d_filt.map((a,i)=>artHTML(a,i,'list')).join('');}
 function renderDash(){
