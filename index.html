@@ -518,24 +518,25 @@ body.eu-mode #m-back{color:var(--eu)}
     <div id="view-list"></div>
     <div id="view-dash"><div class="dash-inner" id="dash-inner"></div></div>
     <div id="view-docs" style="display:none;flex-direction:row;width:100%;height:100%">
-      <div style="display:flex;flex-direction:column;width:380px;flex-shrink:0;height:100%;border-right:1px solid var(--border);background:var(--bg)">
+      <div id="docs-left-pane" style="display:flex;flex-direction:column;width:380px;flex-shrink:0;height:100%;min-width:180px">
         <div id="docs-filterbar">
           <span class="doc-filter-chip active" data-df="all" onclick="docFilter(this)">Alle</span>
           <span class="doc-filter-chip" data-df="bt" onclick="docFilter(this)">🏛 Bundestag</span>
           <span class="doc-filter-chip" data-df="eurlex" onclick="docFilter(this)">🇪🇺 EUR-Lex</span>
-          <span id="docs-count">0 Dok.</span>
+          <span id="docs-count" style="margin-left:auto;font-size:11px;color:var(--muted)">0 Dok.</span>
         </div>
-        <div id="docs-list"></div>
+        <div id="docs-list" style="flex:1;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:4px"></div>
       </div>
-      <div id="docs-viewer">
-        <div id="docs-viewer-empty">
+      <div id="docs-drag-handle" style="width:6px;background:var(--border);cursor:col-resize;flex-shrink:0;position:relative;transition:background .15s"></div>
+      <div id="docs-viewer" style="flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden;min-width:180px">
+        <div id="docs-viewer-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:9px">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <p>Dokument auswählen</p>
-          <small>PDF wird direkt angezeigt</small>
+          <p style="font-size:14px;font-weight:500">Dokument auswählen</p>
+          <small style="font-size:11px;opacity:.6">← Klicken zum Anzeigen</small>
         </div>
         <div id="docs-viewer-header" style="display:none;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;align-items:center;flex-wrap:wrap">
-          <span id="docs-viewer-title" style="font-size:13px;font-weight:600;flex:1;min-width:0"></span>
-          <button class="btn p" id="docs-open-btn" onclick="openDocLink()">🔗 Öffnen</button>
+          <span id="docs-viewer-title" style="font-size:13px;font-weight:600;flex:1;min-width:0;line-height:1.3"></span>
+          <button class="btn p" onclick="openDocLink()">🔗 Öffnen</button>
         </div>
         <iframe id="docs-viewer-frame" style="flex:1;border:none;display:none;width:100%;height:100%"></iframe>
       </div>
@@ -776,7 +777,8 @@ function renderDocs(filter){
   el.innerHTML=filtered.map((doc,i)=>{
     const icon=doc.is_pdf?'📄':doc.type.includes('Protokoll')?'📝':doc.type.includes('Tagesordnung')?'📋':doc.type.includes('Amtsblatt')?'🇪🇺':'📄';
     const typeClass=doc.origin==='eurlex'?'doc-type eurlex':'doc-type';
-    return`<div class="doc-item${d_cur_doc&&d_cur_doc.id===doc.id?' active':''}" onclick="openDoc(${i},'${filter}')">
+    const isActive=d_cur_doc&&d_cur_doc.id===doc.id;
+    return`<div class="doc-item${isActive?' active':''}" onclick="openDoc(${i},'${filter}')">
       <span class="doc-icon">${icon}</span>
       <div class="doc-content">
         <div class="doc-title">${esc(doc.title)}</div>
@@ -792,21 +794,34 @@ function openDoc(i, filter){
   const filtered=filter==='all'?ALL_DOCS:ALL_DOCS.filter(d=>d.origin===filter);
   d_cur_doc=filtered[i];if(!d_cur_doc)return;
   const doc=d_cur_doc;
-  // Header anzeigen
-  const hdr=g('docs-viewer-header');hdr.style.display='flex';
+  g('docs-viewer-header').style.display='flex';
   g('docs-viewer-title').textContent=doc.title;
-  // Leere Ansicht verstecken
   g('docs-viewer-empty').style.display='none';
-  // iframe
   const frame=g('docs-viewer-frame');
   frame.style.display='block';
-  // PDFs direkt, andere Links via Google Docs Viewer
+  // Bundestag PDFs direkt laden, EUR-Lex via Google Docs Viewer weil CORS
   const isPdf=doc.is_pdf||doc.link.toLowerCase().includes('.pdf');
-  frame.src=isPdf?doc.link:'https://docs.google.com/viewer?url='+encodeURIComponent(doc.link)+'&embedded=true';
-  // Aktives Item markieren
+  const isBT=doc.origin==='bt';
+  if(isPdf&&isBT){
+    frame.src=doc.link;
+  } else if(isPdf){
+    frame.src='https://docs.google.com/viewer?url='+encodeURIComponent(doc.link)+'&embedded=true';
+  } else {
+    frame.src=doc.link;
+  }
   renderDocs(filter);
 }
 function openDocLink(){if(d_cur_doc?.link)window.open(d_cur_doc.link,'_blank','noopener');}
+
+// Drag-Handle für Docs-Pane
+(function(){
+  const h=g('docs-drag-handle'), lp=g('docs-left-pane');
+  if(!h||!lp)return;
+  let drag=false,sx=0,sw=0;
+  h.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=lp.offsetWidth;h.style.background='var(--blue)';e.preventDefault();});
+  document.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.max(180,Math.min(window.innerWidth-200,sw+(e.clientX-sx)));lp.style.width=w+'px';});
+  document.addEventListener('mouseup',()=>{drag=false;h.style.background='var(--border)';});
+})();
 
 function buildTopicChips(tab){
   const ch=tab==='news'?NEWS_CHIPS_D:tab==='eu'?ALL_CHIPS_EU:ALL_CHIPS_BT;
