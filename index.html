@@ -2,7 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Presseschau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -229,6 +233,10 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .copy-hint{font-size:11px;color:var(--muted);font-style:italic}
 
 /* MOBILE */
+/* Android-Optimierungen: touch-action, min tap targets 48px, no tap delay */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+
 #mobile{
   display:none;
   flex-direction:column;
@@ -239,65 +247,226 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
   position:relative;
   z-index:1;
 }
-#m-topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;box-shadow:0 1px 6px rgba(13,18,32,.06)}
-.m-logo{font-size:15px;font-weight:700;letter-spacing:-.03em;flex-shrink:0}
+#m-topbar{
+  height:56px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  gap:8px;
+  flex-shrink:0;
+  box-shadow:0 1px 6px rgba(13,18,32,.06);
+  /* Android safe area oben */
+  padding-top:env(safe-area-inset-top);
+  height:calc(56px + env(safe-area-inset-top));
+}
+.m-logo{font-size:16px;font-weight:700;letter-spacing:-.03em;flex-shrink:0}
 .m-logo span{background:linear-gradient(135deg,#2563eb,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .m-srch{flex:1;position:relative}
-.m-srch svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
-#mq{width:100%;padding:7px 9px 7px 28px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--f);font-size:14px;color:var(--text);outline:none}
+.m-srch svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#mq{
+  width:100%;
+  padding:9px 10px 9px 32px;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  font-family:var(--f);
+  font-size:16px; /* ≥16px verhindert Auto-Zoom auf Android/iOS */
+  color:var(--text);
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+  min-height:44px; /* Android min tap target */
+}
 #mq:focus{border-color:var(--blue);background:#fff}
-#mq::placeholder{color:var(--muted)}
-#m-reload{background:none;border:none;padding:7px;cursor:pointer;color:var(--muted);display:flex;align-items:center;flex-shrink:0}
-#m-tabbar{display:flex;background:var(--surface);border-bottom:2px solid var(--border);flex-shrink:0}
-.m-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 4px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;user-select:none}
+#mq::placeholder{color:var(--muted);font-size:15px}
+#m-reload{
+  background:none;
+  border:none;
+  padding:8px;
+  cursor:pointer;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  flex-shrink:0;
+  min-width:44px;
+  min-height:44px;
+  justify-content:center;
+  border-radius:8px;
+  touch-action:manipulation;
+}
+#m-reload:active{background:var(--bg)}
+
+/* TAB BAR — Android Material style, breitere Tap-Targets */
+#m-tabbar{
+  display:flex;
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  flex-shrink:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+#m-tabbar::-webkit-scrollbar{display:none}
+.m-tab{
+  flex:1;
+  min-width:80px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  padding:9px 6px 8px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;
+  user-select:none;
+  touch-action:manipulation;
+  transition:color .15s;
+  white-space:nowrap;
+}
+.m-tab:active{background:var(--bg)}
 .m-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 .m-tab.eu.active{color:var(--eu);border-bottom-color:var(--eu)}
-.m-tab .badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.m-tab .badge{
+  font-size:10px;
+  font-weight:700;
+  padding:1px 6px;
+  border-radius:10px;
+  background:var(--bg);
+  color:var(--muted);
+  line-height:1.4;
+}
 .m-tab.active .badge{background:var(--blue-lt);color:var(--blue)}
 .m-tab.eu.active .badge{background:var(--eu-lt);color:var(--eu)}
+
+/* CHIPS — horizontal scroll, keine Scrollbar */
 #m-chips{
   display:flex;
   flex-direction:row;
   align-items:center;
   gap:6px;
-  padding:7px 10px;
+  padding:8px 12px;
   overflow-x:scroll;
   overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
   background:var(--surface);
   border-bottom:1px solid var(--border);
   flex-shrink:0;
   position:relative;
   z-index:1;
+  /* Snap für flüssiges Scrollen */
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
 }
 #m-chips::-webkit-scrollbar{display:none}
-#m-chips .chip{font-size:12px;padding:5px 13px;flex-shrink:0}
-#m-status{display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:11px;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0}
+#m-chips .chip{
+  font-size:12.5px;
+  padding:7px 14px;
+  flex-shrink:0;
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  touch-action:manipulation;
+  border-radius:20px;
+  scroll-snap-align:start;
+}
+#m-chips .chip:active{opacity:.75}
+
+/* STATUS BAR — kompakter auf kleinen Screens */
+#m-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 12px;
+  font-size:11px;
+  color:var(--text2);
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  min-height:36px;
+}
 #m-status .spill{padding:2px 7px;font-size:10.5px}
 #m-sort{margin-left:auto;display:flex}
-#m-sort .sb{padding:2px 7px;font-size:10.5px}
-#m-sort .sb:first-child{border-radius:6px 0 0 6px}
-#m-sort .sb:last-child{border-radius:0 6px 6px 0;border-left:none}
+#m-sort .sb{
+  padding:4px 9px;
+  font-size:11px;
+  min-height:32px;
+  touch-action:manipulation;
+  display:flex;
+  align-items:center;
+}
+#m-sort .sb:first-child{border-radius:7px 0 0 7px}
+#m-sort .sb:last-child{border-radius:0 7px 7px 0;border-left:none}
+
+/* ARTICLE LIST — optimiertes Scrolling für Android */
 #m-list{
   flex:1;
   overflow-y:scroll;
   overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  padding:6px 8px 12px;
+  overscroll-behavior-y:contain; /* Verhindert Browser-Pull-to-Refresh Konflikt */
+  padding:7px 10px 16px;
+  /* Android: smooth momentum scrolling */
+  scroll-behavior:auto;
 }
-.m-row{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:11px 12px 11px 14px;margin-bottom:5px;cursor:pointer;animation:fu .14s ease both;display:flex;align-items:flex-start;gap:8px;contain:layout style}
+
+/* ARTICLE ROWS — größere Touch-Targets */
+.m-row{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:12px 13px 12px 14px;
+  margin-bottom:6px;
+  cursor:pointer;
+  animation:fu .14s ease both;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  contain:layout style;
+  touch-action:manipulation;
+  /* Android ripple-ähnliches Feedback */
+  transition:background .1s, transform .1s;
+  min-height:72px; /* Mindesthöhe für guten Touch */
+}
+.m-row:active{
+  background:#f0f4ff;
+  transform:scale(0.99);
+}
 .m-row.marked{background:#fefce8;border-color:#fcd34d}
+.m-row.marked:active{background:#fef9c3}
 .m-row-body{flex:1;min-width:0}
-.m-row-top{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.m-row-top{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap}
 .m-row-date{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
-.m-row-title{font-size:14px;font-weight:600;line-height:1.35;color:var(--text);margin-bottom:4px}
+.m-row-title{font-size:14.5px;font-weight:600;line-height:1.38;color:var(--text);margin-bottom:4px}
 .m-row-tags{display:flex;gap:3px;flex-wrap:wrap}
-.m-chk{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;background:var(--surface)}
+
+/* CHECKBOX — größer für Android-Finger */
+.m-chk{
+  width:28px;
+  height:28px;
+  border-radius:7px;
+  border:1.5px solid var(--border);
+  flex-shrink:0;
+  margin-top:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  background:var(--surface);
+  touch-action:manipulation;
+  min-width:28px;
+}
 .m-chk.checked{background:#fbbf24;border-color:#f59e0b;color:#fff}
 .m-chk.checked::after{content:"★"}
+.m-chk:active{background:var(--bg)}
 
-/* MOBILE READER — fix: vollflächig, weißer Hintergrund, korrekt über allem */
+/* MOBILE READER — Android-optimiert */
 #m-reader{
   display:none;
   position:fixed;
@@ -309,47 +478,136 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
   background:#ffffff;
   flex-direction:column;
   overflow:hidden;
+  /* Hardware-Beschleunigung */
+  will-change:transform;
+  transform:translateZ(0);
 }
-#m-reader.open{
+#m-reader.open{display:flex;background:#ffffff}
+
+/* Swipe-Indikator oben */
+#m-reader.open::before{
+  content:'';
+  display:block;
+  width:40px;
+  height:4px;
+  background:var(--border);
+  border-radius:2px;
+  margin:8px auto -4px;
+  flex-shrink:0;
+}
+
+#m-rnav{
+  height:54px;
   display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  border-bottom:1px solid var(--border);
   background:#ffffff;
+  flex-shrink:0;
 }
-#m-rnav{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);background:#ffffff;flex-shrink:0}
-#m-back{display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-family:var(--f);font-size:13px;font-weight:600;color:var(--blue);padding:6px 0;flex-shrink:0}
+#m-back{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-family:var(--f);
+  font-size:14px;
+  font-weight:600;
+  color:var(--blue);
+  padding:8px 4px;
+  flex-shrink:0;
+  min-height:44px;
+  min-width:44px;
+  touch-action:manipulation;
+  border-radius:8px;
+}
+#m-back:active{background:var(--blue-lt)}
 body.eu-mode #m-back{color:var(--eu)}
 #m-rsrc{flex:1;min-width:0}
 #m-rsrc-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
 #m-rsrc-date{font-size:10px;color:var(--muted)}
-#m-rmk{background:none;border:1.5px solid var(--border);border-radius:7px;padding:6px 10px;font-size:16px;cursor:pointer;flex-shrink:0;transition:all .12s}
+#m-rmk{
+  background:none;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:18px;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all .12s;
+  min-width:44px;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:manipulation;
+}
 #m-rmk.on{background:#fef3c7;border-color:#fcd34d}
-#m-ropn{background:var(--blue);color:#fff;border:none;border-radius:7px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+#m-rmk:active{opacity:.7}
+#m-ropn{
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:9px 13px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  flex-shrink:0;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  touch-action:manipulation;
+}
+#m-ropn:active{opacity:.8}
 #m-reu{background:linear-gradient(135deg,#003399,#1a4db3);color:#fff;padding:7px 14px;display:none;align-items:center;gap:8px;font-size:11px;flex-shrink:0}
 #m-reu.show{display:flex}
 #m-rscroll{
   flex:1;
   overflow-y:scroll;
   overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  padding:16px 14px 0;
+  overscroll-behavior-y:contain;
+  padding:18px 16px 8px;
   background:#ffffff;
 }
-#m-rtitle{font-size:19px;font-weight:700;line-height:1.3;color:var(--text);margin-bottom:8px}
-#m-rtags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
-#m-rtext{font-size:15px;color:var(--text2);line-height:1.8;white-space:pre-line}
-#m-aibox{margin:16px 0;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;display:none}
-#m-aihd{background:var(--bg);padding:8px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
-#m-aihd span{font-size:12px;font-weight:600;color:var(--text2);flex:1}
-#m-aibd{padding:12px;font-size:13px;color:var(--text2);line-height:1.65}
+#m-rtitle{font-size:20px;font-weight:700;line-height:1.3;color:var(--text);margin-bottom:10px}
+#m-rtags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+#m-rtags .rtag{font-size:11px;padding:4px 10px}
+#m-rtext{font-size:15.5px;color:var(--text2);line-height:1.85;white-space:pre-line}
+#m-aibox{margin:18px 0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;display:none}
+#m-aihd{background:var(--bg);padding:10px 14px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
+#m-aihd span{font-size:13px;font-weight:600;color:var(--text2);flex:1}
+#m-aibd{padding:14px;font-size:14px;color:var(--text2);line-height:1.7}
+
+/* READER FOOTER — Android bottom nav style */
 #m-rfooter{
   display:flex;
   gap:8px;
   padding:10px 12px;
-  padding-bottom:max(10px,env(safe-area-inset-bottom));
+  padding-bottom:max(12px, env(safe-area-inset-bottom));
   border-top:1px solid var(--border);
   background:#f7f8fb;
   flex-shrink:0;
 }
-#m-rfooter button{flex:1;padding:10px 4px;font-family:var(--f);font-size:12px;font-weight:600;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);cursor:pointer}
+#m-rfooter button{
+  flex:1;
+  padding:12px 4px;
+  font-family:var(--f);
+  font-size:13px;
+  font-weight:600;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  color:var(--text2);
+  cursor:pointer;
+  min-height:48px; /* Android Material min */
+  touch-action:manipulation;
+  transition:background .1s;
+}
+#m-rfooter button:active{background:var(--bg);transform:scale(0.97)}
 
 /* BREAKPOINTS */
 @media(max-width:680px){
@@ -379,10 +637,18 @@ body.eu-mode #m-back{color:var(--eu)}
     </button>
   </div>
   <div id="m-tabbar">
-    <div class="m-tab active" id="mt-news" onclick="mTab('news')">📰 Nachrichten <span class="badge" id="mc-news">–</span></div>
-    <div class="m-tab eu" id="mt-eu" onclick="mTab('eu')">🇪🇺 EU Direkt <span class="badge" id="mc-eu">–</span></div>
-    <div class="m-tab" id="mt-bt" onclick="mTab('bt')">🏛 Bundestag <span class="badge" id="mc-bt">–</span></div>
-    <div class="m-tab" id="mt-docs" onclick="mTab('docs')">📄 Dokumente <span class="badge" id="mc-docs">–</span></div>
+    <div class="m-tab active" id="mt-news" onclick="mTab('news')">
+      <span>📰</span><span>News</span><span class="badge" id="mc-news">–</span>
+    </div>
+    <div class="m-tab eu" id="mt-eu" onclick="mTab('eu')">
+      <span>🇪🇺</span><span>EU</span><span class="badge" id="mc-eu">–</span>
+    </div>
+    <div class="m-tab" id="mt-bt" onclick="mTab('bt')">
+      <span>🏛</span><span>Bundestag</span><span class="badge" id="mc-bt">–</span>
+    </div>
+    <div class="m-tab" id="mt-docs" onclick="mTab('docs')">
+      <span>📄</span><span>Dokumente</span><span class="badge" id="mc-docs">–</span>
+    </div>
   </div>
   <div id="m-chips"></div>
   <div id="m-status">
@@ -419,8 +685,8 @@ body.eu-mode #m-back{color:var(--eu)}
     </div>
   </div>
   <div id="m-rfooter">
-    <button onclick="mPrev()">← Vor.</button>
-    <button onclick="mAI()">🤖 KI</button>
+    <button onclick="mPrev()">← Vorher.</button>
+    <button onclick="mAI()" style="background:var(--blue-lt);border-color:var(--blue);color:var(--blue)">🤖 KI</button>
     <button onclick="mNext()">Nächst. →</button>
   </div>
 </div>
@@ -593,15 +859,15 @@ const BT_TC={plenum:'#1d4ed8',gesetzgebung:'#7c3aed',haushalt:'#0f766e',verteidi
 const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',aussenpolitik:'🌐 Außenpolitik',wirtschaft:'📈 Wirtschaft',soziales:'🤝 Soziales',digitales:'💻 Digitales',umwelt:'🌿 Umwelt & Klima',innenpolitik:'🔐 Innenpolitik',bundesregierung:'🏛 Bundesregierung'};
 const ALL_CHIPS_BT=[{t:'all',l:'Alle'},{t:'plenum',l:'🏛 Plenum'},{t:'gesetzgebung',l:'📜 Gesetzgebung'},{t:'haushalt',l:'💶 Haushalt'},{t:'verteidigung',l:'🛡 Verteidigung'},{t:'wirtschaft',l:'📈 Wirtschaft'},{t:'soziales',l:'🤝 Soziales'},{t:'digitales',l:'💻 Digitales'},{t:'umwelt',l:'🌿 Umwelt'},{t:'innenpolitik',l:'🔐 Innenpolitik'},{t:'aussenpolitik',l:'🌐 Außenpolitik'},{t:'bundesregierung',l:'🏛 BReg'}];
 const BT_SOURCE_LABELS={'bt-allg':'Bundestag Allg.','bt-thema':'BT Themen','breg':'Bundesregierung'};
-const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899'};
-const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wiss.',medizin:'🏥 Medizin'};
+const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899',netzpolitik:'#0284c7'};
+const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wiss.',medizin:'🏥 Medizin',netzpolitik:'📡 Netz/Telko'};
 const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',aussenpolitik:'#ef4444',migration:'#f97316',haushalt:'#f59e0b',rechtsstaat:'#8b5cf6'};
 const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',haushalt:'💶 Haushalt',rechtsstaat:'⚖️ Rechtsstaat'};
 const INST_LABELS={'ep':'Europ. Parlament','ep-committee':'EP-Ausschuss','ec':'EU-Kommission','council':'Rat der EU','eu-inst':'EU-Institution','eurlex':'EUR-Lex','eu-media':'EU-Medien','eu-think':'Think Tank'};
-const ALL_CHIPS_NEWS=[{t:'all',l:'Alle'},{t:'ki',l:'🤖 KI'},{t:'tech',l:'💻 Technik'},{t:'verteidigung',l:'🛡 Verteidigung'},{t:'politik',l:'🏛 Politik'},{t:'wirtschaft',l:'📈 Wirtschaft'},{t:'sicherheit',l:'🔐 Cyber'},{t:'energie',l:'⚡ Energie'},{t:'eu',l:'🇪🇺 EU'},{t:'ukraine',l:'🌍 Ukraine'},{t:'nahost',l:'🌍 Nahost'},{t:'asien',l:'🌏 Asien'},{t:'usa',l:'🇺🇸 USA'},{t:'finanzen',l:'💹 Finanzen'},{t:'startup',l:'💡 Start-ups'},{t:'mobilitaet',l:'🚗 Mobilität'},{t:'wissenschaft',l:'🔬 Wissenschaft'},{t:'medizin',l:'🏥 Medizin'}];
+const ALL_CHIPS_NEWS=[{t:'all',l:'Alle'},{t:'ki',l:'🤖 KI'},{t:'tech',l:'💻 Technik'},{t:'verteidigung',l:'🛡 Verteidigung'},{t:'politik',l:'🏛 Politik'},{t:'wirtschaft',l:'📈 Wirtschaft'},{t:'sicherheit',l:'🔐 Cyber'},{t:'energie',l:'⚡ Energie'},{t:'eu',l:'🇪🇺 EU'},{t:'ukraine',l:'🌍 Ukraine'},{t:'nahost',l:'🌍 Nahost'},{t:'asien',l:'🌏 Asien'},{t:'usa',l:'🇺🇸 USA'},{t:'finanzen',l:'💹 Finanzen'},{t:'netzpolitik',l:'📡 Netz/Telko'},{t:'startup',l:'💡 Start-ups'},{t:'mobilitaet',l:'🚗 Mobilität'},{t:'wissenschaft',l:'🔬 Wissenschaft'},{t:'medizin',l:'🏥 Medizin'}];
 const ALL_CHIPS_EU=[{t:'all',l:'Alle'},{t:'gesetzgebung',l:'📜 Gesetzgebung'},{t:'digitales',l:'💻 Digital/KI'},{t:'wirtschaft',l:'📈 Wirtschaft'},{t:'energie_klima',l:'🌿 Energie/Klima'},{t:'aussenpolitik',l:'🌐 Außenpolitik'},{t:'migration',l:'👥 Migration'},{t:'haushalt',l:'💶 Haushalt'},{t:'rechtsstaat',l:'⚖️ Rechtsstaat'}];
-const NEWS_CHIPS_D=ALL_CHIPS_NEWS.slice(0,9);
-const NEWS_DD=[{v:'ukraine',l:'🌍 Ukraine'},{v:'nahost',l:'🌍 Nahost'},{v:'asien',l:'🌏 Asien'},{v:'usa',l:'🇺🇸 USA'},{v:'finanzen',l:'💹 Finanzen'},{v:'startup',l:'💡 Start-ups'},{v:'mobilitaet',l:'🚗 Mobilität'},{v:'wissenschaft',l:'🔬 Wissenschaft'},{v:'medizin',l:'🏥 Medizin'}];
+const NEWS_CHIPS_D=ALL_CHIPS_NEWS.slice(0,10);
+const NEWS_DD=[{v:'ukraine',l:'🌍 Ukraine'},{v:'nahost',l:'🌍 Nahost'},{v:'asien',l:'🌏 Asien'},{v:'usa',l:'🇺🇸 USA'},{v:'finanzen',l:'💹 Finanzen'},{v:'netzpolitik',l:'📡 Netz/Telko'},{v:'startup',l:'💡 Start-ups'},{v:'mobilitaet',l:'🚗 Mobilität'},{v:'wissenschaft',l:'🔬 Wissenschaft'},{v:'medizin',l:'🏥 Medizin'}];
 const EU_DD=[{v:'__ep',l:'🏛 Europ. Parlament'},{v:'__ec',l:'⚙️ EU-Kommission'},{v:'__council',l:'🤝 Rat der EU'},{v:'__ep-committee',l:'📋 EP-Ausschüsse'},{v:'__eu-inst',l:'🏢 EU-Institutionen'},{v:'__eurlex',l:'📖 EUR-Lex'},{v:'__eu-media',l:'📰 EU-Medien'},{v:'__eu-think',l:'💡 Think Tanks'}];
 
 let ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_DOCS=[],marked=new Set(),apiKey='',pendingSum=false;
@@ -666,12 +932,13 @@ function mTopicClick(t){m_top=t;mChips();mFilter();}
 function mFilter(){
   if(m_tab==='docs'){mRenderDocs();return;}
   const q=(g('mq')?.value||'').toLowerCase().trim();
+  const qNorm=q.replace(/&/g,' ').replace(/\s+/g,' ').trim();
   const pool=m_tab==='news'?ALL_NEWS:m_tab==='eu'?ALL_EU:ALL_BT;
   m_filt=pool.filter(a=>{
-    const txt=((a.title||'')+' '+(a.desc||'')).toLowerCase();
+    const txt=((a.title||'')+' '+(a.desc||'')+' '+(a.source||'')).toLowerCase().replace(/&/g,' ');
     if(m_top.startsWith('__')){if(a.cat!==m_top.slice(2))return false;}
     else if(m_top!=='all'){if(!(a.topics||[]).includes(m_top))return false;}
-    return !q||txt.includes(q);
+    return !qNorm||txt.includes(qNorm);
   });
   if(m_sort==='boost')m_filt.sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||'')));
   else if(m_sort==='new')m_filt.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
@@ -797,6 +1064,72 @@ async function mAI(){
 window.addEventListener('popstate',()=>{
   if(g('m-reader').classList.contains('open')){mClose();history.pushState(null,'',location.href);}
 });
+
+/* ══ ANDROID: Swipe-nach-rechts zum Schließen des Readers ══ */
+(function(){
+  const reader=g('m-reader');
+  let startX=0,startY=0,dragging=false,dx=0;
+  const THRESHOLD=80, MAX_Y_DIFF=60;
+
+  reader.addEventListener('touchstart',e=>{
+    // Nur wenn Scroll-Position am Anfang oder Swipe von linkem Rand
+    const scroll=g('m-rscroll');
+    if(!reader.classList.contains('open'))return;
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+    // Swipe nur vom linken Rand (erste 30px) oder wenn Scroll oben
+    if(startX>50 && scroll.scrollTop>10)return;
+    dragging=true;
+    dx=0;
+    reader.style.transition='none';
+  },{passive:true});
+
+  reader.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    dx=e.touches[0].clientX-startX;
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    if(dy>MAX_Y_DIFF){dragging=false;reader.style.transform='';return;}
+    if(dx<0){dragging=false;reader.style.transform='';return;}
+    // Visuelles Feedback: leichte Verschiebung nach rechts
+    reader.style.transform=`translateX(${Math.min(dx*0.4,80)}px)`;
+    reader.style.opacity=Math.max(0.7,1-dx/500);
+  },{passive:true});
+
+  reader.addEventListener('touchend',()=>{
+    if(!dragging)return;
+    dragging=false;
+    reader.style.transition='transform .2s ease, opacity .2s ease';
+    if(dx>THRESHOLD){
+      reader.style.transform='translateX(100%)';
+      reader.style.opacity='0';
+      setTimeout(()=>{
+        mClose();
+        reader.style.transform='';
+        reader.style.opacity='';
+        reader.style.transition='';
+      },200);
+    } else {
+      reader.style.transform='';
+      reader.style.opacity='';
+      setTimeout(()=>reader.style.transition='',200);
+    }
+  });
+})();
+
+/* ══ ANDROID: Keyboard-Resize — verhindert Layout-Bruch ══ */
+if('visualViewport' in window){
+  window.visualViewport.addEventListener('resize',()=>{
+    const mob=g('mobile');
+    if(!mob||window.innerWidth>680)return;
+    // Wenn Tastatur auf → Liste schrumpfen, aber kein Relayout erzwingen
+    const vh=window.visualViewport.height;
+    mob.style.height=vh+'px';
+  });
+  window.visualViewport.addEventListener('scroll',()=>{
+    // Verhindert dass Android-Chrome die Seite beim Tastatur-Öffnen verschiebt
+    window.scrollTo(0,0);
+  });
+}
 
 /* DESKTOP */
 function switchTab(tab){
@@ -936,12 +1269,18 @@ function setView(v){
 }
 function applyFilters(){
   const q=g('q').value.toLowerCase().trim();const ob=g('only-boost').checked;
+  // Normalize query: treat & as space, normalize umlauts for broader matching
+  const qNorm=q.replace(/&/g,' ').replace(/\s+/g,' ').trim();
   const pool=d_tab==='news'?ALL_NEWS:d_tab==='eu'?ALL_EU:ALL_BT;
   d_filt=pool.filter(a=>{
-    const txt=((a.title||'')+' '+(a.desc||'')).toLowerCase();
+    const txt=((a.title||'')+' '+(a.desc||'')+' '+(a.source||'')).toLowerCase();
+    const txtNorm=txt.replace(/&/g,' ');
     if(d_top.startsWith('__')){if(a.cat!==d_top.slice(2))return false;}
     else if(d_top!=='all'){if(!(a.topics||[]).includes(d_top))return false;}
-    return(d_src==='all'||a.source===d_src)&&(!d_kws.length||d_kws.every(k=>txt.includes(k)))&&(!q||txt.includes(q))&&(!ob||(a.boost||0)>0);
+    const srcMatch=d_src==='all'||a.source===d_src;
+    const kwMatch=!d_kws.length||d_kws.every(k=>txtNorm.includes(k.replace(/&/g,' ')));
+    const qMatch=!qNorm||txtNorm.includes(qNorm);
+    return srcMatch&&kwMatch&&qMatch&&(!ob||(a.boost||0)>0);
   });
   sortD();g('acnt').textContent=d_filt.length;schedRender(renderView);
 }
@@ -992,12 +1331,21 @@ function renderDash(){
     return'<div class="ds"><div class="ds-hd" style="border-left:3px solid '+col+'"><span class="ds-title">'+lbl+'</span><span class="ds-cnt">'+arts.length+'</span></div>'+items+more+'</div>';
   }).join('');
 }
-function openArtById(id){const i=d_filt.findIndex(a=>a.id===id);if(i>=0){setView('split');openArt(i);}}
-function ftopic(t){d_top=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));setView('split');applyFilters();}
+function openArtById(id){
+  const i=d_filt.findIndex(a=>a.id===id);
+  if(i<0)return;
+  // Only switch to split if currently in grid/list/dash to show reader
+  // But preserve the current view — open in split only when not already there
+  if(d_view!=='split'){
+    setView('split');
+  }
+  openArt(i);
+}
+function ftopic(t){d_top=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));applyFilters();}
 function buildSrcChips(){const pool=d_tab==='news'?ALL_NEWS:d_tab==='eu'?ALL_EU:ALL_BT;const w=g('src-chips');w.innerHTML='<span class="chip active" data-s="all" onclick="chipClick(this,\'src\')" ondblclick="chipDbl(this,\'src\')">Alle</span>';[...new Set(pool.map(a=>a.source))].sort().forEach(s=>{const sp=document.createElement('span');sp.className='chip';sp.dataset.s=s;sp.textContent=s;sp.onclick=function(){chipClick(this,'src')};sp.ondblclick=function(){chipDbl(this,'src')};w.appendChild(sp);});}
 function openArt(i){
   d_idx=i;d_art=d_filt[i];if(!d_art)return;
-  if(d_view!=='split')setView('split');
+  // Don't force view change here — openArtById handles that
   document.querySelectorAll('.art-item').forEach((el,j)=>el.classList.toggle('active',j===i));
   const a=d_art;const isEU=d_tab==='eu';const isBT=d_tab==='bt';
   g('eu-banner').style.display=isEU?'flex':'none';
