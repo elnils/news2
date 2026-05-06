@@ -186,6 +186,25 @@ NEWS_FEEDS = [
     # VDI Nachrichten: 404 → neue URL
     ("https://www.vdi-nachrichten.com/feed/",                                     "VDI Nachrichten",      "de-ind"),
 
+    # ── Deutsch: Mobilfunk & Glasfaser / Telko ───────────────
+    # Telekom Newsroom (Netze/Technologie)
+    ("https://www.telekom.com/de/medien/medieninformationen/rss",                  "Telekom",              "de-telko"),
+    # Telefónica / O2 Newsroom
+    ("https://www.telefonica.de/rss/news.rss",                                    "Telefónica DE",        "de-telko"),
+    # Vodafone Newsroom DE
+    ("https://newsroom.vodafone.de/rss/",                                         "Vodafone DE",          "de-telko"),
+    # 1&1 Unternehmen Presse → via Google News (direkter Feed oft geschützt)
+    ("https://news.google.com/rss/search?q=site:unternehmen.1und1.de+presse&hl=de&gl=DE&ceid=DE:de", "1&1",  "de-telko"),
+    # Bundesnetzagentur Pressemitteilungen
+    ("https://www.bundesnetzagentur.de/SharedDocs/RSS/DE/Pressemitteilungen.xml", "Bundesnetzagentur",    "de-telko"),
+    # VATM (Verband TK-Anbieter)
+    ("https://news.google.com/rss/search?q=VATM+Telekommunikation&hl=de&gl=DE&ceid=DE:de", "VATM",        "de-telko"),
+    # Glasfaser: Deutsche Glasfaser / GlasfaserPlus / Ausbau News
+    ("https://news.google.com/rss/search?q=Glasfaserausbau+FTTH+Deutschland&hl=de&gl=DE&ceid=DE:de", "Glasfaser News", "de-telko"),
+    ("https://news.google.com/rss/search?q=%22Deutsche+Glasfaser%22+OR+%22GlasfaserPlus%22&hl=de&gl=DE&ceid=DE:de", "Deutsche Glasfaser", "de-telko"),
+    # Heise Netze & Telekommunikation
+    ("https://www.heise.de/thema/telekommunikation-rss",                          "Heise Telko",          "de-telko"),
+
     # ── Englisch: Top-Tier ────────────────────────────────────
     ("https://feeds.bbci.co.uk/news/rss.xml",                                    "BBC News",             "en-top"),
     ("https://feeds.bbci.co.uk/news/world/rss.xml",                              "BBC World",            "en-top"),
@@ -310,7 +329,7 @@ TOPIC_RULES = {
     "wissenschaft":{"score":[(3,["peer-reviewed","forschungsergebnis","quantencomputer","crispr","durchbruch"]),(2,["universität","forschung","physik","biologie","genetik","fraunhofer","max planck"]),(1,["wissenschaft","labor","theorie","entdeckung"])],"min":2},
     "medizin":{"score":[(3,["klinische studie","impfstoff","mrna","onkologie","fda ","ema ","zulassung"]),(2,["krebs","therapie","antibiotikum","virus ","impfung","pharma","medikament"]),(1,["gesundheit","medizin","patient","diagnose"])],"min":2},
     "mobilitaet":{"score":[(3,["elektroauto","e-mobilität","autonomes fahren","verkehrswende","öpnv"]),(2,["tesla ","volkswagen","bmw ","mercedes ","deutsche bahn","wasserstoffauto"]),(1,["mobilität","transport","antrieb","ladestation"])],"min":2},
-    "netzpolitik":{"score":[(3,["netzausbau","glasfaserausbau","5g-ausbau","netzneutralität","internetfreiheit"]),(2,["netzpolitik","digitale infrastruktur","breitband","starlink"]),(1,["internet","netz"])],"min":2},
+    "netzpolitik":{"score":[(3,["netzausbau","glasfaserausbau","glasfaser","ftth","5g-ausbau","netzneutralität","internetfreiheit","bundesnetzagentur","frequenzvergabe"]),(2,["netzpolitik","digitale infrastruktur","breitband","starlink","telekom","vodafone","telefónica","telefonica","1&1 netz","o2 netz","mobilfunk","lte","5g ","mobilfunknetz"]),(1,["internet","netz","telko","isp"])],"min":2},
 }
 
 EU_TOPIC_RULES = {
@@ -360,9 +379,26 @@ def parse_date(raw):
     try: return datetime.fromisoformat(raw.replace('Z','+00:00')).astimezone(timezone.utc).isoformat()
     except: return ""
 
-def parse_feed(xml_bytes, source, topic_rules):
+def parse_feed(fetch_result, source, topic_rules):
+    if fetch_result is None:
+        return []
+    xml_bytes, http_charset = fetch_result
     try:
-        text=xml_bytes.decode('utf-8',errors='replace')
+        # 1. Try to detect encoding from XML declaration (<?xml ... encoding="..."?>)
+        xml_head = xml_bytes[:200]
+        enc_match = re.search(rb'encoding=["\']([^"\']+)["\']', xml_head)
+        xml_declared = enc_match.group(1).decode('ascii','replace').lower() if enc_match else None
+
+        # 2. Priority: XML declaration > HTTP header > UTF-8
+        charset = xml_declared or http_charset or 'utf-8'
+        # Normalize common aliases
+        charset = {'iso-8859-1':'latin-1','iso8859-1':'latin-1','windows-1252':'cp1252'}.get(charset, charset)
+
+        try:
+            text = xml_bytes.decode(charset, errors='replace')
+        except (LookupError, UnicodeDecodeError):
+            text = xml_bytes.decode('utf-8', errors='replace')
+
         text=re.sub(r'[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD]+','',text)
         root=ET.fromstring(text)
     except:
@@ -402,10 +438,17 @@ def fetch_url(url, timeout=15):
     # ASCII-encode the URL properly (handles Umlaute etc.)
     url_encoded = ''.join(c if ord(c) < 128 else quote(c) for c in url)
     headers={'User-Agent':'Mozilla/5.0 (compatible; Presseschau-Bot/1.0)',
-             'Accept':'application/rss+xml,application/xml,text/xml,*/*'}
+             'Accept':'application/rss+xml,application/xml,text/xml,*/*',
+             'Accept-Charset':'utf-8,iso-8859-1;q=0.9,*;q=0.8'}
     try:
         with urlopen(Request(url_encoded,headers=headers),timeout=timeout) as r:
-            return r.read()
+            raw = r.read()
+            # Try to detect charset from Content-Type header
+            ct = r.headers.get('Content-Type','')
+            charset = None
+            if 'charset=' in ct.lower():
+                charset = ct.lower().split('charset=')[-1].split(';')[0].strip()
+            return (raw, charset)
     except Exception as e:
         print(f"  ✗ {url[:80]}: {e}",file=sys.stderr)
         return None
@@ -422,8 +465,10 @@ def load_existing(filename):
 
 def merge_rolling(existing, new_articles, days=7, max_count=5000):
     cutoff=(datetime.now(timezone.utc)-timedelta(days=days)).isoformat()
+    # Articles without a date: keep only if very recently fetched (grace: 2 days max)
+    # by dropping them after they've cycled out — don't keep "date=''" forever
     existing_filtered=[a for a in existing
-                       if a.get('date','') >= cutoff or not a.get('date','')]
+                       if a.get('date','') >= cutoff]
     existing_ids={a['id'] for a in new_articles}
     existing_keep=[a for a in existing_filtered if a['id'] not in existing_ids]
     merged=new_articles + existing_keep
@@ -464,12 +509,15 @@ def fetch_all(feed_list, topic_rules, label):
     ok=fail=0
     for url,name,cat in feed_list:
         print(f"  [{label}] {name}...",end=' ',flush=True)
-        data=fetch_url(url)
-        if not data:
+        result=fetch_url(url)
+        if not result:
             fail+=1
             print(f"FAIL")
             continue
-        arts=parse_feed(data,name,topic_rules)
+        arts=parse_feed(result,name,topic_rules)
+        # attach category tag to each article
+        for a in arts:
+            a['cat']=cat
         print(f"{len(arts)}")
         all_arts.extend(arts)
         ok+=1
@@ -550,9 +598,10 @@ def download_pdf(url, doc_id):
     fpath = os.path.join(PDF_DIR, f"{doc_id}.pdf")
     if os.path.exists(fpath):
         return fpath  # schon vorhanden
-    data = fetch_url(url, timeout=30)
-    if not data:
+    result = fetch_url(url, timeout=30)
+    if not result:
         return None
+    data, _ = result
     if b'%PDF' not in data[:20]:
         return None
     try:
@@ -568,12 +617,21 @@ def fetch_documents():
     cleanup_old_pdfs()
     for url, source, doc_type, origin, do_download in DOCUMENT_FEEDS:
         print(f"  [docs] {source} – {doc_type}...", end=' ', flush=True)
-        data = fetch_url(url)
-        if not data:
+        result = fetch_url(url)
+        if not result:
             print("FAIL")
             continue
+        xml_bytes, http_charset = result
         try:
-            text = data.decode('utf-8', errors='replace')
+            xml_head = xml_bytes[:200]
+            enc_match = re.search(rb'encoding=["\']([^"\']+)["\']', xml_head)
+            xml_declared = enc_match.group(1).decode('ascii','replace').lower() if enc_match else None
+            charset = xml_declared or http_charset or 'utf-8'
+            charset = {'iso-8859-1':'latin-1','iso8859-1':'latin-1','windows-1252':'cp1252'}.get(charset, charset)
+            try:
+                text = xml_bytes.decode(charset, errors='replace')
+            except (LookupError, UnicodeDecodeError):
+                text = xml_bytes.decode('utf-8', errors='replace')
             text = re.sub(r'[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD]+', '', text)
             root = ET.fromstring(text)
         except:
