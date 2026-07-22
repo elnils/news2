@@ -1,0 +1,253 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     PRESSESCHAU-LOGIN-VORLAGE für PageCrypt
+     
+     ANLEITUNG:
+     1. Öffne deine verschlüsselte index.html.
+     2. Ersetze den kompletten <style>...</style>-Block durch den
+        <style>-Block unten (TEIL 1).
+     3. Ersetze das sichtbare Markup — also
+        <div id="dialogWrap">...</div>  UND  <div id="attribution">...</div>
+        — durch das Markup unten (TEIL 2).
+     4. Die <script>-Sektion mit  var pl = "..."  und der gesamten
+        Krypto-Logik NICHT anfassen. Sie bleibt unverändert.
+     
+     Die IDs (pass, submitPass, invalidPass, trycatcherror, success,
+     contentFrame, dialogWrap, passArea, securecontext, nocrypto)
+     sind identisch zum Original — das Script findet alles wie gehabt.
+     ═══════════════════════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════ TEIL 1: <style> ══════════════════ -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#eef0f5;--surface:#fff;--surface2:#f7f8fb;--border:#e2e6f0;
+  --text:#0d1220;--text2:#4a5168;--muted:#8b92a8;
+  --blue:#2563eb;--blue-lt:#eff4ff;
+  --green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --shadow:0 1px 3px rgba(13,18,32,.07),0 0 0 1px rgba(13,18,32,.04);
+  --shadow-md:0 4px 20px rgba(13,18,32,.10);
+  --shadow-lg:0 25px 60px rgba(13,18,32,.22);
+  --r:10px;--f:'Plus Jakarta Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--f);
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+
+#contentFrame{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  border:none;
+}
+
+#dialogWrap{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #e6ecfb 0%, transparent 60%),
+    var(--bg);
+}
+#dialogWrapCell{
+  width:100%;
+  max-width:420px;
+}
+
+#mainDialog{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow-lg);
+  overflow:hidden;
+  animation:fu .25s ease both;
+}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Kopfzeile mit Presseschau-Logo */
+#dialogText{
+  padding:22px 28px 18px;
+  background:linear-gradient(135deg,#f7f9ff,#eef2fb);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.ps-logo{
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-.03em;
+  line-height:1;
+}
+.ps-logo span{
+  background:linear-gradient(135deg,#2563eb,#0891b2);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.ps-sub{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+  color:var(--text2);
+  font-weight:500;
+}
+.ps-lock{
+  width:15px;height:15px;
+  flex-shrink:0;
+  color:var(--blue);
+}
+
+#passArea{
+  padding:22px 28px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+#passwordPrompt{
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted);
+}
+#pass{
+  width:100%;
+  height:auto;
+  padding:12px 14px;
+  font-family:var(--f);
+  font-size:16px;
+  color:var(--text);
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  outline:none;
+  transition:border-color .18s, box-shadow .18s, background .18s;
+}
+#pass:focus{
+  border-color:var(--blue);
+  background:#fff;
+  box-shadow:0 0 0 3px var(--blue-lt);
+}
+#pass::placeholder{color:var(--muted)}
+
+.pass-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#messageWrapper{
+  flex:1;
+  min-height:20px;
+  line-height:1.4;
+  font-size:12.5px;
+  font-weight:500;
+}
+#submitPass{
+  font-family:var(--f);
+  font-size:14px;
+  font-weight:600;
+  padding:10px 20px;
+  color:#fff;
+  background:var(--blue);
+  border:1.5px solid var(--blue);
+  border-radius:10px;
+  cursor:pointer;
+  transition:filter .15s, transform .05s;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+#submitPass:hover:not(:disabled){filter:brightness(1.08)}
+#submitPass:active:not(:disabled){transform:translateY(1px)}
+#submitPass:disabled{opacity:.6;cursor:default}
+
+.error{display:none;color:var(--red)}
+#invalidPass{color:var(--red)}
+#trycatcherror{color:var(--red)}
+#success{display:none;color:var(--green);font-weight:600}
+.notifyText{display:none}
+
+/* Fehlerhinweise (Secure-Context / Krypto) */
+#securecontext,#nocrypto{
+  padding:0 28px 22px;
+}
+#securecontext p,#nocrypto p{
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.6;
+  background:#fff7ed;
+  border:1.5px solid #fed7aa;
+  border-radius:10px;
+  padding:12px 14px;
+}
+
+#attribution{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  text-align:center;
+  padding:14px;
+  font-size:11px;
+  font-weight:500;
+  color:var(--muted);
+}
+#attribution a{
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px dotted var(--muted);
+}
+#attribution a:hover{color:var(--text2)}
+</style>
+
+
+<!-- ══════════════════ TEIL 2: sichtbares Markup ══════════════════ -->
+<!-- ersetzt  <div id="dialogWrap">...</div>  und  <div id="attribution">...</div> -->
+
+<div id="dialogWrap">
+    <div id="dialogWrapCell">
+        <div id="mainDialog">
+            <div id="dialogText">
+                <div class="ps-logo">Presse<span>schau</span></div>
+                <div class="ps-sub">
+                    <svg class="ps-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Diese Seite ist passwortgeschützt.
+                </div>
+            </div>
+            <div id="passArea">
+                <p id="passwordPrompt">Passwort</p>
+                <input id="pass" type="password" name="pass" placeholder="Passwort eingeben…" autofocus>
+                <div class="pass-row">
+                    <span id="messageWrapper">
+                        <span id="invalidPass" class="error">Falsches Passwort – bitte erneut versuchen.</span>
+                        <span id="trycatcherror" class="error">Etwas ist schiefgelaufen.</span>
+                        <span id="success" class="notifyText">✓ Entsperrt!</span>
+                        &nbsp;
+                    </span>
+                    <button id="submitPass" type="button">Öffnen</button>
+                </div>
+            </div>
+            <div id="securecontext" class="error">
+                <p>Der Passwortschutz funktioniert nur über eine sichere Verbindung. Bitte lade diese Seite über HTTPS.</p>
+            </div>
+            <div id="nocrypto" class="error">
+                <p>Dein Browser scheint veraltet zu sein. Bitte nutze einen aktuellen Browser.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="attribution">
+    Geschützt mit <a href="https://pagecrypt.lupine.dev/">PageCrypt</a>
+</div>
