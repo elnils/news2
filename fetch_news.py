@@ -177,6 +177,7 @@ LAENDER_FEEDS = list(LAENDER_DIRECT)
 LAENDER_FEEDS += [(_gn(f"site:{dom}"), f"Landtag {name}", code) for code,name,dom in LAENDER if code not in _DIRECT_CODES]
 LAENDER_FEEDS += [(_gn(f"Landesregierung+{name.replace(' ','+')}+Ministerpräsident"), f"LReg {name}", code) for code,name,_ in LAENDER]
 LAENDER_TOPIC_RULES = None   # wird unten auf BT_TOPIC_RULES gesetzt (gleiche Ressorts)
+_CONSOLIDATED = False        # Flag: siehe _apply_consolidation() am Ende der Datei
 
 # ═══════════════════════════════════════════════════════════════
 # USA: Institutionen + US-Presse (NEU → us_articles.json)
@@ -480,6 +481,45 @@ def relevance_boost(text):
     t=text.lower()
     return sum(1 for kw in HIGH_VALUE_KEYWORDS if kw in t)
 
+# ═══════════════════════════════════════════════════════════════
+# THEMEN-KONSOLIDIERUNG (v3.1)
+# 42 Einzelregeln waren zu fein für die Oberfläche. Die Regeln bleiben erhalten,
+# werden aber auf ~20 Oberthemen zusammengeführt: die Stichwortlisten der
+# zusammengelegten Themen werden vereinigt, es geht also keine Trefferqualität verloren.
+# Ein Thema wieder auftrennen = Zeile aus TOPIC_MERGE entfernen.
+# ═══════════════════════════════════════════════════════════════
+TOPIC_MERGE = {
+    "medizin":"gesundheit",
+    "arbeit":"soziales", "wohnen":"soziales", "demografie":"soziales",
+    "agrar":"umwelt",
+    "rechtsstaat":"justiz", "korruption":"justiz",
+    "innenpolitik":"sicherheit", "sicherheitspolitik":"verteidigung",
+    "verbraucher":"wirtschaft", "handel":"wirtschaft", "startup":"wirtschaft",
+    "raumfahrt":"wissenschaft",
+    "religion":"politik", "kultur":"politik", "kommunales":"politik",
+    "ukraine":"international", "nahost":"international", "asien":"international",
+    "afrika":"international", "lateinamerika":"international",
+    "nordeuropa":"international", "osteuropa":"international",
+    "aussenpolitik":"international",
+    "sport_politik":None,          # None = ersatzlos entfernen
+}
+def consolidate(rules):
+    out = {}
+    for key, rule in rules.items():
+        target = TOPIC_MERGE.get(key, key)
+        if target is None:
+            continue
+        if target not in out:
+            out[target] = {"score": [(w, list(kws)) for w, kws in rule["score"]], "min": rule.get("min", 2)}
+            continue
+        # Stichwörter je Gewichtung vereinigen
+        buckets = {w: set(kws) for w, kws in out[target]["score"]}
+        for w, kws in rule["score"]:
+            buckets.setdefault(w, set()).update(kws)
+        out[target]["score"] = [(w, sorted(buckets[w])) for w in sorted(buckets, reverse=True)]
+        out[target]["min"] = min(out[target]["min"], rule.get("min", 2))
+    return out
+
 def score_article(text, rules):
     t=text.lower()
     result={}
@@ -682,27 +722,51 @@ def compute_trends(articles):
         "recent_count":len(recent),
     }
 
+FAILED_FEEDS = []   # (label, name, url, grund) – wird am Ende zusammengefasst
+
 def fetch_all(feed_list, topic_rules, label):
+    """Ein defekter Feed darf den Lauf nie abbrechen: jeder Schritt ist einzeln abgesichert."""
     all_arts=[]
     ok=fail=0
     for url,name,cat in feed_list:
         print(f"  [{label}] {name}...",end=' ',flush=True)
-        result=fetch_url(url)
+        try:
+            result=fetch_url(url)
+        except Exception as e:
+            result=None
+            print(f"ERR {type(e).__name__}", end=' ')
         if not result:
             fail+=1
-            print(f"FAIL")
+            FAILED_FEEDS.append((label,name,url,"nicht erreichbar"))
+            print("FAIL")
             continue
-        arts=parse_feed(result,name,topic_rules)
-        # attach category tag to each article (+ v3: kind, inst)
+        try:
+            arts=parse_feed(result,name,topic_rules)
+        except Exception as e:
+            fail+=1
+            FAILED_FEEDS.append((label,name,url,f"Parser: {type(e).__name__}"))
+            print("PARSE ERR")
+            continue
         for a in arts:
             a['cat']=cat
             a['kind']=kind_for(name, cat, a.get('title',''))
             a['inst']=inst_for(cat, name)
+        if not arts:
+            FAILED_FEEDS.append((label,name,url,"0 Artikel (Filter oder leerer Feed)"))
         print(f"{len(arts)}")
         all_arts.extend(arts)
         ok+=1
         time.sleep(0.2)
     return all_arts, ok, fail
+
+def report_failed():
+    if not FAILED_FEEDS:
+        print("\n✓ Alle Feeds geliefert."); return
+    print(f"\n── {len(FAILED_FEEDS)} Feeds ohne Ergebnis ──")
+    for label,name,url,why in FAILED_FEEDS:
+        print(f"  [{label}] {name}: {why}")
+        print(f"      {url}")
+    print("  Tipp: dauerhaft tote URL durch _gn(\"site:domain.de\") bzw. _gnus(...) ersetzen.")
 
 def _norm_title(t):
     return re.sub(r'\s+',' ',re.sub(r'[^a-zäöüß0-9 ]',' ',(t or '').lower())).strip()[:60]
@@ -928,7 +992,20 @@ def save_docs(filename, docs):
     print(f"  → {filename}: {len(deduped)} Dokumente ({files} mit Datei), {size_kb}KB")
 
 
+def _apply_consolidation():
+    """Führt die Themen zusammen, sobald alle Regelsätze definiert sind."""
+    global TOPIC_RULES, EU_TOPIC_RULES, BT_TOPIC_RULES, US_TOPIC_RULES, _CONSOLIDATED
+    if _CONSOLIDATED: return
+    TOPIC_RULES    = consolidate(TOPIC_RULES)
+    EU_TOPIC_RULES = consolidate(EU_TOPIC_RULES)
+    BT_TOPIC_RULES = consolidate(BT_TOPIC_RULES)
+    US_TOPIC_RULES = consolidate(US_TOPIC_RULES)
+    _CONSOLIDATED = True
+    print(f"Themen: {len(TOPIC_RULES)} News · {len(EU_TOPIC_RULES)} EU · "
+          f"{len(BT_TOPIC_RULES)} BT/Länder · {len(US_TOPIC_RULES)} USA")
+
 def main():
+    _apply_consolidation()
     print(f"[{datetime.now().isoformat()}] Presseschau Fetch")
 
     print("\n── Allgemeine News ──")
@@ -977,6 +1054,7 @@ def main():
     print(f"✓ Länder: {ok4} Feeds ok, {fail4} fehlgeschlagen, {len(merged_l)} Artikel")
     print(f"✓ USA: {ok5} Feeds ok, {fail5} fehlgeschlagen, {len(merged_us)} Artikel")
     print(f"✓ Dokumente: {len(merged_docs)} Dokumente")
+    report_failed()
 
 if __name__ == "__main__":
     main()
