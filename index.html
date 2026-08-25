@@ -123,8 +123,22 @@ body.pro #login-btn{display:none}
 
 /* ── Body: Sidebar + Main ─────────────────────────────────── */
 #body{flex:1;display:flex;min-height:0;position:relative}
-#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:2px}
-#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:10px 8px 40px;display:block;
+  transition:width .18s ease}
+#sidebar::-webkit-scrollbar{width:6px}
+#sidebar::-webkit-scrollbar-thumb{background:#cbd2e1;border-radius:10px}
+#sidebar::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+/* Eingeklappt: schmale Leiste, nur Symbole */
+body.rail #sidebar{width:52px;padding:10px 6px 40px}
+body.rail #sidebar .nav-sec,body.rail #sidebar .nav-chip-wrap,body.rail #sidebar #nav-topics-more,
+body.rail #sidebar #saved-list,body.rail #sidebar #nav-insts,body.rail #sidebar #my-topics,
+body.rail #sidebar .sec-body>div[style],body.rail #sidebar .saved-empty{display:none}
+body.rail #sidebar .nav{justify-content:center;padding:9px 0}
+body.rail #sidebar .nav>*:not(svg){display:none}
+body.rail #sidebar .sec-body{display:block!important}
+#rail-toggle{display:inline-flex}
+@media (max-width:900px){#rail-toggle{display:none}}
 .nav-sec{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
 .nav-sec:hover{color:var(--text2)}
 .nav-sec .sarw{font-size:8px;transition:transform .15s;opacity:.7}
@@ -193,6 +207,19 @@ body.pro .pro-tag:not(.keep){display:none}
 .dl-d{font-size:12px;color:var(--text2);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dl-m{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
 .dl .tile{width:52px;height:52px;font-size:14px;color:#fff}
+/* v6.7: Inline lesen – Klick klappt den Teaser direkt im Dashboard auf */
+.inline-open{background:var(--surface2)}
+.inline-body{padding:2px 0 12px 28px;animation:fu .18s ease both}
+.inline-body .txt{font-size:13px;line-height:1.65;color:var(--text2);white-space:pre-line}
+.inline-body img.ip{float:left;width:170px;height:110px;object-fit:cover;border-radius:8px;margin:0 12px 8px 0}
+@media (max-width:620px){.inline-body img.ip{float:none;width:100%;height:150px;margin:0 0 9px}}
+.inline-body .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.inline-body .meta{font-size:10.5px;color:var(--muted);margin-bottom:7px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.top-row .chev{font-size:9px;color:var(--muted);transition:transform .15s;margin-left:auto;padding-left:8px}
+.top-row.open .chev{transform:rotate(90deg)}
+.mini-row.open{background:var(--surface2)}
+.mini-body{font-size:11.5px;line-height:1.55;color:var(--text2);padding:4px 0 8px;animation:fu .18s ease both}
+.mini-body .acts{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
 .top-list{padding:2px 14px 10px}
 .top-row{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
 .top-row:last-child{border-bottom:none}
@@ -244,7 +271,31 @@ body.demo .demo-banner{display:block}
 .sb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 body.eu-mode .sb.active{background:var(--eu);border-color:var(--eu)}
 #split{flex:1;display:flex;min-height:0}
-#list-pane{display:flex;flex-direction:column;background:var(--bg);overflow:hidden;min-width:180px;width:380px}
+#list-pane{display:flex;flex-direction:column;background:var(--bg);overflow:hidden;min-width:180px;width:340px}
+/* Kompaktmodus: mehr Schlagzeilen auf einen Blick */
+/* Kompakt: nur Schlagzeile, zwei Zeilen, kein Teaser, keine Tags */
+body.compact .art-item{padding:5px 9px}
+body.compact .ai-desc,body.compact .ai-tags,body.compact .thumb{display:none}
+body.compact .ai-top{margin-bottom:2px}
+body.compact .ai-title{font-size:12px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Inline-Modus: der leere Leser rechts verschwindet, die Liste bekommt die
+   ganze Breite und legt die Schlagzeilen in Spalten – deutlich mehr auf einen Blick. */
+body.inline #reader-pane,body.inline #drag-handle{display:none}
+body.inline #list-pane{width:auto!important;flex:1}
+body.inline #list-scroll{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:5px;align-content:start}
+body.inline .fitem.open{grid-column:1/-1}
+body.inline .archive-gate,body.inline #more-btn{grid-column:1/-1}
+@media (max-width:900px){body.inline #list-scroll{grid-template-columns:1fr}}
+.art-inline{background:var(--surface);border:1.5px solid var(--blue);border-top:none;border-radius:0 0 8px 8px;
+  margin:-5px 0 4px;padding:9px 11px;font-size:12px;line-height:1.6;color:var(--text2);animation:fu .15s ease both}
+.art-inline .acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.art-item.inl{border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--blue)}
+.art-item .thumb{float:right;width:46px;height:46px;border-radius:6px;object-fit:cover;margin:0 0 4px 8px}
+.list-tools{display:flex;gap:5px;align-items:center;padding:4px 7px 0}
+.list-tools button{background:none;border:none;font-size:10.5px;font-weight:600;color:var(--text2);cursor:pointer;padding:2px 6px;border-radius:5px}
+.list-tools button:hover{background:var(--surface)}
+.list-tools button.on{background:var(--blue);color:#fff}
+body.inline #lt-narrow,body.inline #lt-wide{display:none}
 #list-scroll{flex:1;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:4px}
 #list-scroll::-webkit-scrollbar{width:4px}#list-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
 #drag-handle{width:6px;background:var(--border);cursor:col-resize;flex-shrink:0;position:relative;transition:background .15s}
@@ -279,7 +330,7 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 #reader-tags{display:flex;gap:8px;flex-wrap:wrap}
 #reader-body{flex:1;overflow-y:auto;padding:13px 18px}
 #reader-text{font-size:14px;color:var(--text2);line-height:1.75;white-space:pre-line}
-#reader-img{width:100%;border-radius:8px;margin-bottom:12px;display:none;max-height:320px;object-fit:cover}
+#reader-img{width:100%;border-radius:8px;margin-bottom:12px;display:none;max-height:190px;object-fit:cover}
 #ai-summary-box{margin-top:14px;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;display:none}
 #ai-summary-header{background:var(--bg);padding:7px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
 #ai-summary-header span{font-size:12px;font-weight:600;color:var(--text2);flex:1}
@@ -421,8 +472,12 @@ body.can-back #back-btn{display:inline-flex}
 .chip-more{font-size:10.5px;font-weight:600;color:var(--blue);cursor:pointer;padding:3px 8px}
 #src-chips.capped{max-height:56px;overflow:hidden}
 /* v6.5: Schnellzugriff statt langer Seitenleiste */
-#quickbar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:9px 11px;margin-bottom:12px;
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);flex:0 0 auto}
+#quickbar{display:flex;gap:5px;align-items:center;padding:9px 11px;margin-bottom:12px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);flex:0 0 auto;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scroll-behavior:smooth}
+#quickbar::-webkit-scrollbar{height:5px}
+#quickbar::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+#quickbar>*{flex:0 0 auto}
 .qb-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);margin-right:4px}
 .qb-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;
   border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .12s;white-space:nowrap}
@@ -472,6 +527,13 @@ body.can-back #back-btn{display:inline-flex}
 .el-card .m{font-size:11px;color:var(--muted);margin:3px 0 8px;display:flex;gap:8px;flex-wrap:wrap}
 .poll-note{font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.45}
 /* v6: Trends */
+#trend-summary{background:var(--surface);border:1.5px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r);
+  padding:12px 15px;margin-bottom:12px;font-size:13.5px;line-height:1.65;color:var(--text2)}
+#trend-summary b{color:var(--text);font-weight:700}
+#trend-summary .hl{font-weight:700;padding:1px 6px;border-radius:10px;font-size:12px}
+#trend-summary .sum-hd{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+#trend-summary ul{margin:7px 0 0 16px;padding:0}
+#trend-summary li{margin-bottom:3px}
 #bubble-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;height:420px}
 #bubbles{width:100%;height:100%;display:block;cursor:grab}
 .bub{cursor:pointer;transition:opacity .2s}
@@ -486,6 +548,25 @@ body.can-back #back-btn{display:inline-flex}
 .tdelta{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:10px}
 .tup{background:#dcfce7;color:#15803d}.tdown{background:#fee2e2;color:#b91c1c}.tflat{background:var(--bg);color:var(--muted)}
 /* v6: Kalender-Mehrfachauswahl */
+/* v6.7: echter Monatskalender */
+.mcal{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.mcal-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mcal-hd h3{font-size:15px;font-weight:800;letter-spacing:-.02em;flex:1}
+.mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mcal-dow{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;padding:3px 0}
+.mcal-day{min-height:78px;border:1.5px solid var(--border);border-radius:8px;padding:5px 6px;cursor:pointer;transition:all .12s;overflow:hidden}
+.mcal-day:hover{border-color:var(--blue);background:var(--blue-lt)}
+.mcal-day.out{opacity:.35}
+.mcal-day.today{border-color:var(--red);background:var(--red-lt)}
+.mcal-day.sel{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
+.mcal-day .dn{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.mcal-day.today .dn{color:var(--red)}
+.mcal-ev{font-size:9.5px;line-height:1.28;margin-top:3px;padding:2px 4px;border-radius:3px;background:var(--blue-lt);color:var(--blue);
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mcal-ev.br{background:#f3e8ff;color:#6d28d9}
+.mcal-more{font-size:9px;color:var(--muted);margin-top:2px}
+@media (max-width:700px){.mcal-day{min-height:56px;padding:3px}.mcal-ev{display:none}.mcal-day .dot-row{display:flex;gap:2px;flex-wrap:wrap;margin-top:3px}
+  .mcal-day .dot-row i{width:5px;height:5px;border-radius:50%;background:var(--blue)}}
 .cal-item.sel{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
 .cal-chk{width:16px;height:16px;accent-color:var(--blue);flex-shrink:0;margin-top:2px}
 .cal-item{display:flex;gap:10px;align-items:flex-start}
@@ -610,6 +691,9 @@ body.can-back #back-btn{display:inline-flex}
 
 <!-- ═══ TOPBAR ═══ -->
 <header id="topbar">
+  <button class="icon-btn" id="rail-toggle" onclick="toggleRail()" title="Seitenleiste ein-/ausklappen" aria-label="Seitenleiste">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+  </button>
   <button class="icon-btn" id="nav-toggle" onclick="toggleNav()" aria-label="Navigation">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
@@ -645,6 +729,7 @@ body.can-back #back-btn{display:inline-flex}
     <div class="fp-row">
       <label title="Meldungen, über die mindestens drei Quellen gleichzeitig berichten"><input type="checkbox" id="fp-eil" onchange="S.prio.eil=this.checked;applyFilters()"> 📊 Meistberichtet</label>
       <label title="Nur Meldungen mit mindestens einem politischen Schlüsselbegriff"><input type="checkbox" id="fp-top" onchange="S.prio.top=this.checked;applyFilters()"> Nur relevante</label>
+      <label title="Gleiche Meldung aus mehreren Quellen nur einmal zeigen"><input type="checkbox" id="fp-dedup" checked onchange="S.dedupe=this.checked;applyFilters()"> Dubletten zusammenfassen</label>
       <label title="Sport, Spielberichte, Vereinsnews ausblenden (clientseitig – dauerhaft besser über NOISE_KEYWORDS in fetch_news.py)"><input type="checkbox" id="fp-sport" checked onchange="setSport(this.checked)"> ⚽ Sport ausblenden</label>
     </div>
     <label class="fl">Ressort</label>
@@ -703,6 +788,12 @@ body.can-back #back-btn{display:inline-flex}
     </div>
     <div class="nav" id="nav-us" onclick="setSection('us')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4M4 5h16l-3 4 3 4H4"/></svg>USA<span class="cnt" id="cnt-us">–</span>
+    </div>
+    <div class="nav locked" id="nav-docs2" onclick="proGate('docs',()=>setView('docs'))">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>Dokumente<span class="cnt" id="cnt-docs2">–</span>
+    </div>
+    <div class="nav locked" id="nav-cal2" onclick="proGate('cal',()=>setView('cal'))">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Kalender<span class="cnt" id="cnt-cal2">–</span>
     </div>
     <div class="nav-sec">Werkzeuge</div>
     <div class="nav" id="nav-wahl" onclick="setView('wahl')">
@@ -809,6 +900,7 @@ body.can-back #back-btn{display:inline-flex}
         <div class="seg"><button class="active" onclick="setTrendWin(24,this)">24 h</button><button onclick="setTrendWin(72,this)">3 Tage</button><button onclick="setTrendWin(168,this)">7 Tage</button></div>
         <div class="seg"><button class="active" onclick="setTrendMode('topics',this)">Themen</button><button onclick="setTrendMode('words',this)">Schlagwörter</button><button onclick="setTrendMode('sources',this)">Quellen</button></div>
       </div>
+      <div id="trend-summary"></div>
       <div class="dir-layout" style="grid-template-columns:1fr 320px">
         <div id="bubble-wrap"><svg id="bubbles"></svg></div>
         <div class="trend-side">
@@ -875,7 +967,16 @@ body.can-back #back-btn{display:inline-flex}
         </div>
       </div>
       <div id="split">
-        <div id="list-pane"><div id="list-scroll"></div></div>
+        <div id="list-pane">
+          <div class="list-tools">
+            <button id="lt-compact" onclick="toggleCompact()" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
+            <button id="lt-inline" class="on" onclick="setFeedInline(!S.feedInline)" title="Klick öffnet den Text direkt in der Liste; aus = Lesefenster rechts">⤢ Inline</button>
+            <span style="flex:1"></span>
+            <button id="lt-narrow" onclick="lpWidth(-60)" title="Liste schmaler">‹</button>
+            <button id="lt-wide" onclick="lpWidth(60)" title="Liste breiter">›</button>
+          </div>
+          <div id="list-scroll"></div>
+        </div>
         <div id="drag-handle"></div>
         <div id="reader-pane">
           <div id="reader-empty">
@@ -928,7 +1029,7 @@ body.can-back #back-btn{display:inline-flex}
     <!-- Kalender -->
     <section class="view plain" id="view-cal">
       <div class="plain-head"><div><h1>Kalender</h1><div class="sub" style="margin:0">Sitzungstermine aus Bundestags-Tagesordnungen und Plenarprotokollen · Zeiten in <strong id="cal-tz"></strong>.</div></div>
-        <div class="seg"><button class="active" onclick="setCalMode('list',this)">Liste</button><button onclick="setCalMode('topic',this)">Nach Thema</button><button onclick="setCalMode('parl',this)">Nach Parlament</button></div></div>
+        <div class="seg"><button class="active" onclick="setCalMode('list',this)">Liste</button><button onclick="setCalMode('month',this)">📅 Monat</button><button onclick="setCalMode('topic',this)">Nach Thema</button><button onclick="setCalMode('parl',this)">Nach Parlament</button></div></div>
       <div class="cal-export">
         <span>Export:</span>
         <button class="btn sm" onclick="dlICS(calVisible(),'presseschau-termine.ics')">⬇ Alle sichtbaren als .ics</button>
@@ -1140,7 +1241,7 @@ function setAuth(on){
   if(!on){S.range='48';g('fp-range').value='48';S.tokens=S.tokens.filter(t=>!t.not);renderTokens();
     if(S.view==='docs'||S.view==='cal')setView('dash');}
   document.querySelectorAll('.pro-card').forEach(c=>c.classList.toggle('locked',!on));
-  ['nav-docs','nav-cal','nav-dir'].forEach(id=>g(id).classList.toggle('locked',!on));
+  ['nav-docs','nav-cal','nav-docs2','nav-cal2','nav-dir'].forEach(id=>g(id)?.classList.toggle('locked',!on));
   store.set('ps_plan',S.plan);
   buildNavInsts();applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderMyTopics();updateMarkUI();markAllDirty();renderIfNeeded(S.view);
 }
@@ -1151,7 +1252,7 @@ function doLogin(){setAuth(true);closeLogin();}
    ═══════════════════════════════════════════════════════════ */
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',wahlMode:'upcoming',termMode:'today',radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1269,7 +1370,8 @@ function afterLoad(){
   const upd=META.news?.updated;
   if(upd){g('dash-upd').textContent='Stand '+fmt(upd);g('footer-upd').textContent='Zuletzt: '+fmt(upd);}
   g('cnt-news').textContent=ALL_NEWS.length;g('cnt-eu').textContent=ALL_EU.length;g('cnt-bt').textContent=ALL_BT.length;
-  g('cnt-docs').textContent=ALL_DOCS.length;g('cnt-cal').textContent=calItems().length;
+  g('cnt-docs').textContent=g('cnt-docs2').textContent=ALL_DOCS.length;
+  g('cnt-cal').textContent=g('cnt-cal2').textContent=calItems().length;
   const fails=(META.news?.feeds_fail||0)+(META.eu?.feeds_fail||0)+(META.bt?.feeds_fail||0);
   setSt(fails?'err':'ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT'+(fails?' · '+fails+' Feeds fehlgeschlagen':''));
   HAS_PRIORITY=rawPool('all').some(a=>'priority' in a);
@@ -1318,7 +1420,8 @@ function renderIfNeeded(v){
 }
 function applyView(v){
   S.view=v;renderIfNeeded(v);document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
-  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  ['dash','news','eu','bt','laender','us','docs','cal','docs2','cal2','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  if(v==='docs'||v==='cal')g('nav-'+v+'2')?.classList.add('active');
   if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
   document.body.classList.toggle('eu-mode',v==='feed'&&S.section==='eu');
   toggleNav(false);
@@ -1334,6 +1437,8 @@ function setSection(sec){
   g('reader-content').style.display='none';g('reader-empty').style.display='flex';
   setView('feed');applyFilters();
 }
+function toggleRail(){document.body.classList.toggle('rail');store.set('ps_rail',document.body.classList.contains('rail'));
+  setTimeout(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},220);}
 function toggleNav(force){document.body.classList.toggle('nav-open',force===undefined?undefined:force);}
 function toggleFilterPanel(){const p=g('filter-panel');p.classList.toggle('open');g('fp-arrow').textContent=p.classList.contains('open')?'▴':'▾';}
 function closeReader(){document.body.classList.remove('reader-open');}
@@ -1454,6 +1559,9 @@ function applyFilters(){
   const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
   const f={topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
   list=list.filter(a=>matches(a,f));
+  /* Gleiche Meldung aus mehreren Quellen nur einmal – die übrigen stecken im
+     Quellen-Zähler (📊). Über „Filter anpassen“ abschaltbar. */
+  if(S.dedupe!==false)list=dedupe(list);
   if(S.sort==='boost')list.sort((a,b)=>(topScore(b)-topScore(a))||((b.date||'').localeCompare(a.date||'')));
   else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -1474,17 +1582,49 @@ function renderFeed(){
     const col=a._set==='eu'?'#003399':a._set==='bt'?'#1d4ed8':srcC(a.source).tc;const lock=isLocked(a);const m=marked.has(a.id);
     const instK=instOf(a)||a.cat;const inst=INST_FLAT[instK]?`<span class="inst-badge">${esc(INST_FLAT[instK])}</span>`:(a.cat&&a._set!=='news'?`<span class="inst-badge">${esc(INST_LABELS[a.cat]||a.cat)}</span>`:'');
     const clu=(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster} Quellen</span>`:'';
-    return`<div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="openArt(${i})">
+    return`<div class="fitem" id="fi-${a.id}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
+      ${a.image?`<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
       <div class="ai-top">${badge(a.source)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
       <div class="ai-title">${esc(a.title)}</div>
       ${a.desc?`<div class="ai-desc">${esc(a.desc)}</div>`:''}
       <div class="ai-tags">${tagsHTML(a)}${relChip(a)}</div>
       <div class="ai-check${m?' checked':''}" onclick="toggleMark(event,'${a.id}')"></div>
-    </div>`;}).join('')+(S.filt.length>S.shown?`<button class="btn" id="more-btn" style="width:100%;justify-content:center;margin:6px 0" onclick="moreFeed()">Weitere ${Math.min(FEED_PAGE,S.filt.length-S.shown)} von ${S.filt.length-S.shown} laden</button>`:'')+archiveGate();
+    </div><div id="fin-${a.id}"></div></div>`;}).join('')+(S.filt.length>S.shown?`<button class="btn" id="more-btn" style="width:100%;justify-content:center;margin:6px 0" onclick="moreFeed()">Weitere ${Math.min(FEED_PAGE,S.filt.length-S.shown)} von ${S.filt.length-S.shown} laden</button>`:'')+archiveGate();
 }
 function archiveGate(){return S.hidden?`<div class="archive-gate"><strong>${S.hidden} weitere Meldungen im Archiv.</strong><br>Die Basis-Version zeigt die letzten ${FREE_HOURS} Stunden.<br><button class="btn p sm" style="margin-top:8px" onclick="openLogin('archive')">Archiv mit Pro freischalten</button></div>`:'';}
 
 /* ═══ READER ═══ */
+/* In der Liste: entweder inline aufklappen (Standard) oder rechts im Leser öffnen */
+function setFeedInline(on){
+  S.feedInline=on;store.set('ps_feedinline',on);
+  document.body.classList.toggle('inline',on);
+  g('lt-inline').classList.toggle('on',on);
+  if(!on&&_feedInlineId){const o=g('fin-'+_feedInlineId);if(o)o.innerHTML='';g('fi-'+_feedInlineId)?.classList.remove('open');_feedInlineId=null;}
+  renderFeed();
+}
+function toggleCompact(){document.body.classList.toggle('compact');
+  g('lt-compact').classList.toggle('on',document.body.classList.contains('compact'));
+  store.set('ps_compact',document.body.classList.contains('compact'));}
+function lpWidth(d){const lp=g('list-pane');const w=Math.max(200,Math.min(window.innerWidth-260,lp.offsetWidth+d));
+  lp.style.width=w+'px';store.set('ps_lpw',w);}
+let _feedInlineId=null;
+function feedClick(i,id){
+  if(!S.feedInline){openArt(i);return;}
+  const box=g('fin-'+id);if(!box)return;
+  const close=x=>{const o=g('fin-'+x);if(o){o.innerHTML='';o.previousElementSibling?.classList.remove('inl');}g('fi-'+x)?.classList.remove('open');};
+  if(_feedInlineId&&_feedInlineId!==id)close(_feedInlineId);
+  if(box.innerHTML){close(id);_feedInlineId=null;return;}
+  g('fi-'+id)?.classList.add('open');
+  const a=articleById(id);if(!a)return;
+  if(isLocked(a)){openLogin('media');return;}
+  _feedInlineId=id;box.previousElementSibling?.classList.add('inl');
+  S.idx=i;S.art=a;
+  box.innerHTML=`<div class="art-inline">${esc(a.desc||'Kein Vorschautext – bitte die Quelle öffnen.')}
+    <div class="acts"><button class="btn sm p" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">🔗 Öffnen</button>
+      <button class="btn sm" onclick="event.stopPropagation();setFeedInline(false);openArt(${i})">Groß lesen ▸</button>
+      <button class="btn sm" onclick="event.stopPropagation();toggleMark(event,'${a.id}')">☆ Merken</button>
+      <button class="btn sm" onclick="event.stopPropagation();copyOne('${a.id}')">📋</button></div></div>`;
+}
 function openArt(i){
   const a=S.filt[i];if(!a)return;
   if(isLocked(a)){openLogin('media');return;}
@@ -1590,9 +1730,10 @@ function renderQuickbar(){
   const el=g('quickbar');if(!el)return;
   const win=win48();
   const cnt={};win.forEach(a=>[...new Set((a.topics||[]).map(normTopic))].forEach(t=>{if(t)cnt[t]=(cnt[t]||0)+1;}));
-  const alle=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,14);
-  const eng=window.innerWidth<900&&!S.radarOpen;
-  const top=eng?alle.slice(0,6):alle;
+  /* Eine Zeile, seitlich scrollbar – so bleibt das Dashboard flach,
+     egal wie viele Themen gerade laufen. */
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const alle=top;
   const mx=top[0]?.[1]||1;
   const nx=(typeof elNext==='function')?elNext():null;
   el.innerHTML=
@@ -1601,10 +1742,8 @@ function renderQuickbar(){
       return`<span class="qb-chip${on?' sel':''}" style="${on?`background:${c};border-color:${c};color:#fff`:`border-color:${c}44;color:${c}`}"
         onclick="toggleTopic('${t}');renderQuickbar();if(S.topics.size){S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters();}"
         title="${n} Meldungen">${chipLabel(t)}<b style="opacity:.65;font-size:${(9+2*n/mx).toFixed(1)}px">${n}</b></span>`;}).join('')
-    +(alle.length>top.length?`<span class="qb-chip" style="border-style:dashed" onclick="S.radarOpen=true;renderQuickbar()">+${alle.length-top.length} weitere</span>`:'')
-    +(S.radarOpen&&window.innerWidth<900?`<span class="qb-chip" style="border-style:dashed" onclick="S.radarOpen=false;renderQuickbar()">▲ weniger</span>`:'')
     +(S.topics.size?`<span class="qb-chip" onclick="S.topics.clear();buildChips();applyFilters();renderQuickbar()">✕ Auswahl</span>`:'')
-    +(nx?`<span class="qb-vote" onclick="setView('wahl')"><b>${nx.days===0?'heute':'in '+nx.days+' Tagen'}</b> ${esc(nx.region)} wählt</span>`:'');
+    +(nx?`<span class="qb-vote" style="margin-left:0" onclick="setView('wahl')"><b>${nx.days===0?'heute':'in '+nx.days+' Tagen'}</b> ${esc(nx.region)} wählt</span>`:'');
 }
 function showThinkTanks(){
   S.section='eu';S.topic='all';S.topics.clear();S.src='all';S.inst='';
@@ -1617,14 +1756,63 @@ function renderDash(){
   const empty=t=>`<div style="padding:20px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
   /* Top-Meldungen: was viele Quellen gleichzeitig haben, dann Relevanz. */
   const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,12);
-  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" onclick="openById('${a.id}','${a._set}')">
+  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-${a.id}" onclick="toggleInline('${a.id}')">
       <span class="rank">${i+1}</span>
       <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
-      <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div></div>`).join(''):empty('Noch keine Meldungen geladen.');
+      <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div><span class="chev">▶</span></div>
+      <div id="inl-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
   renderDashSide();
   renderQuickbar();renderDashThemes();initFolds();
 }
+/* Inline lesen: Teaser, Bild und Aktionen direkt an Ort und Stelle.
+   Kein Ansichtswechsel nötig – der Feed bleibt für langes Lesen erhalten. */
+let _inlineOpen=null;
+function articleById(id){return rawPool('all').find(x=>x.id===id);}
+function toggleInline(id){
+  const box=g('inl-'+id),row=g('tr-'+id);
+  if(!box)return;
+  if(_inlineOpen&&_inlineOpen!==id){const o=g('inl-'+_inlineOpen),r=g('tr-'+_inlineOpen);if(o)o.innerHTML='';if(r)r.classList.remove('open');}
+  if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');_inlineOpen=null;return;}
+  const a=articleById(id);if(!a)return;
+  if(isLocked(a)){openLogin('media');return;}
+  _inlineOpen=id;row?.classList.add('open');
+  box.innerHTML=`<div class="inline-body">
+    <div class="meta">${badge(a.source)}${a.author?`<span>${esc(a.author)}</span>`:''}<span>${fd(a.date)}</span>${readMin(a)?`<span>${readMin(a)} Lesezeit</span>`:''}${tagsHTML(a,4)}</div>
+    ${a.image?`<img class="ip" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+    <div class="txt">${esc(a.desc||'Dieser Feed liefert keinen Vorschautext – bitte die Quelle öffnen.')}</div>
+    <div class="acts">
+      <button class="btn p sm" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">🔗 Beim Anbieter öffnen</button>
+      <button class="btn sm" onclick="event.stopPropagation();openById('${a.id}','${a._set}')">Im Feed öffnen</button>
+      <button class="btn sm" onclick="event.stopPropagation();toggleMark(event,'${a.id}')">☆ Merken</button>
+      <button class="btn sm" onclick="event.stopPropagation();copyOne('${a.id}')">📋 Titel + Link</button>
+      <span style="flex:1"></span>
+      <button class="btn sm" onclick="event.stopPropagation();toggleInline('${a.id}')">✕ Schließen</button>
+    </div></div>`;
+  row?.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function copyOne(id){const a=articleById(id);if(!a)return;navigator.clipboard.writeText(a.title+'\n'+(a.link||''));}
+/* Auch in den kleinen Kacheln rechts lässt sich aufklappen */
+function toggleMini(id,kind){
+  const box=g('mi-'+id),row=g('mr-'+id);if(!box)return;
+  if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');return;}
+  document.querySelectorAll('.dside .mini-body').forEach(b=>b.innerHTML='');
+  document.querySelectorAll('.dside .mini-row.open').forEach(r=>r.classList.remove('open'));
+  row?.classList.add('open');
+  if(kind==='doc'){
+    const d=ALL_DOCS.find(x=>x.id===id);if(!d)return;
+    box.innerHTML=`<div class="mini-body">${d.desc?esc(d.desc):'<span style="color:var(--muted)">Kein Beschreibungstext im Feed.</span>'}
+      <div class="acts"><button class="btn sm p" onclick="event.stopPropagation();openDoc('${d.id}')">${d.has_file?'📄 Anzeigen':'🔗 Öffnen'}</button>
+      <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','doc')">✕</button></div></div>`;
+    return;
+  }
+  const a=articleById(id);if(!a)return;
+  box.innerHTML=`<div class="mini-body">${esc((a.desc||'Kein Vorschautext.').slice(0,600))}
+    <div class="acts"><button class="btn sm p" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">🔗 Öffnen</button>
+    <button class="btn sm" onclick="event.stopPropagation();openById('${a.id}','${a._set}')">Im Feed</button>
+    <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','art')">✕</button></div></div>`;
+}
+
 /* Die drei kleinen Kacheln rechts */
 function renderDashSide(){
   const empty=t=>`<div style="padding:18px 0;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
@@ -1638,15 +1826,15 @@ function renderDashSide(){
     :empty(S.termMode==='week'?'Diese Woche keine Termine.':'Heute keine Termine.<br>Über „Woche" die nächsten sieben Tage ansehen.');
   // Neue Dokumente
   const docs=ALL_DOCS.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
-  g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" onclick="openDoc('${d.id}')">
+  g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" id="mr-${d.id}" onclick="toggleMini('${d.id}','doc')">
       <div class="mt">${esc(d.title)}</div>
-      <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div>`).join('')
+      <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div><div id="mi-${d.id}"></div>`).join('')
     :empty('Keine Dokumente geladen.');
   // Studien: ausschließlich Denkfabriken, keine Medien
   const tt=pool('all').filter(a=>a.cat==='eu-think').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
-  g('dash-analysis').innerHTML=tt.length?tt.map(a=>`<div class="mini-row" onclick="openById('${a.id}','${a._set}')">
+  g('dash-analysis').innerHTML=tt.length?tt.map(a=>`<div class="mini-row" id="mr-${a.id}" onclick="toggleMini('${a.id}','art')">
       <div class="mt">${esc(a.title)}</div>
-      <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')
+      <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-${a.id}"></div>`).join('')
     :empty('Noch keine Studien im Zeitraum.<br>Quellen: SWP, Bruegel, ECFR, CER, Bertelsmann.');
 }
 function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'block':'none';if(m==='themes')renderDashThemes();}
@@ -1666,7 +1854,7 @@ function renderDashThemes(){
     +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ alle zeigen</span>`:'');
   const shown=dashPick.size?all.filter(([t])=>dashPick.has(t)):all;
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
-    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" onclick="openById('${a.id}','${a._set}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-${a.id}" onclick="toggleInline('${a.id}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
 }
 
@@ -1748,10 +1936,56 @@ function calSelected(){return calVisible().filter(c=>calSel.has(c.id));}
 function toggleCal(id){calSel.has(id)?calSel.delete(id):calSel.add(id);renderCal();}
 function copyCal(){const t=calSelected().map(c=>`${c.dateLabel}, ${c.timeLabel} – ${c.title}\n${c.link}`).join('\n\n');navigator.clipboard.writeText(t);}
 function calItemHTML(c){return`<div class="cal-item${calSel.has(c.id)?' sel':''}"><input type="checkbox" class="cal-chk" ${calSel.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleCal('${c.id}')"><div class="ci-main"><div class="t">${esc(c.title)}</div><div class="m"><span class="tag">${esc(c.src)} · ${esc(c.type)}</span><span class="tag" style="color:var(--blue)">🕒 ${c.timeLabel}</span><span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[c.topic]||''}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div><div class="acts"><a class="btn sm" href="${googleCalUrl(c)}" target="_blank" rel="noopener">📅 Google Kalender</a><button class="btn sm" onclick="dlICS([calVisible().find(x=>x.id==='${c.id}')],'termin.ics')">⬇ .ics (Apple/Outlook)</button></div></div></div>`;}
+const MONN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function shiftMonth(n){const d=S.calMonth?new Date(S.calMonth):new Date();d.setDate(1);d.setMonth(d.getMonth()+n);S.calMonth=d.toISOString();renderCal();}
+function renderMonth(items){
+  const base=S.calMonth?new Date(S.calMonth):new Date();base.setDate(1);
+  const y=base.getFullYear(),m=base.getMonth();
+  const first=new Date(y,m,1),start=new Date(first);
+  start.setDate(1-((first.getDay()+6)%7));            // Woche beginnt montags
+  const today=new Date();today.setHours(0,0,0,0);
+  const byDay={};items.forEach(c=>{const k=c.date.toDateString();(byDay[k]=byDay[k]||[]).push(c);});
+  let cells='';
+  for(let i=0;i<42;i++){
+    const d=new Date(start);d.setDate(start.getDate()+i);
+    const evs=byDay[d.toDateString()]||[];
+    const out=d.getMonth()!==m;
+    cells+=`<div class="mcal-day${out?' out':''}${d.getTime()===today.getTime()?' today':''}${S.calDay===d.toDateString()?' sel':''}"
+      onclick="S.calDay='${d.toDateString()}';reRender('cal')">
+      <div class="dn">${d.getDate()}</div>
+      ${evs.slice(0,2).map(e=>`<div class="mcal-ev${e.parl==='ep'?' br':''}" title="${esc(e.title)}">${e.timeLabel!=='ganztägig'?e.timeLabel.split(' ')[0]+' ':''}${esc(e.title.slice(0,42))}</div>`).join('')}
+      ${evs.length>2?`<div class="mcal-more">+${evs.length-2} weitere</div>`:''}
+      <div class="dot-row">${evs.slice(0,6).map(()=>'<i></i>').join('')}</div></div>`;
+  }
+  const sel=S.calDay?(byDay[S.calDay]||[]):[];
+  return`<div class="mcal">
+    <div class="mcal-hd"><button class="btn sm" onclick="shiftMonth(-1)">←</button>
+      <h3>${MONN[m]} ${y}</h3>
+      <button class="btn sm" onclick="S.calMonth=null;S.calDay=null;reRender('cal')">Heute</button>
+      <button class="btn sm" onclick="shiftMonth(1)">→</button></div>
+    <div class="mcal-grid">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=>`<div class="mcal-dow">${d}</div>`).join('')}${cells}</div>
+  </div>
+  ${S.calDay?`<div class="eyebrow" style="margin:4px 0 8px">📅 ${new Date(S.calDay).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${sel.length} Termin${sel.length===1?'':'e'}</div>
+    ${sel.map(calItemHTML).join('')||'<div class="gap-note">An diesem Tag keine Termine.</div>'}`:''}`;
+}
 function renderCal(){
   const now=new Date();now.setHours(0,0,0,0);const wk=new Date(now);wk.setDate(wk.getDate()+7);
-  let items=calItems();if(S.calF==='upcoming')items=items.filter(c=>c.date>=now);else if(S.calF==='week')items=items.filter(c=>c.date>=now&&c.date<=wk);
+  let items=calItems();
+  if(S.calMode!=='month'){
+    if(S.calF==='upcoming')items=items.filter(c=>c.date>=now);else if(S.calF==='week')items=items.filter(c=>c.date>=now&&c.date<=wk);
+  }
   _calVisible=items;
+  document.querySelector('#view-cal .cal-filters').style.display=S.calMode==='month'?'none':'';
+  if(S.calMode==='month'){
+    /* Ist im aktuellen Monat nichts, zum nächsten Monat mit Terminen springen. */
+    if(!S.calMonth){
+      const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);
+      const hasNow=items.some(c=>c.date.getFullYear()===m0.getFullYear()&&c.date.getMonth()===m0.getMonth());
+      if(!hasNow){const next=items.filter(c=>c.date>=m0).sort((a,b)=>a.date-b.date)[0];
+        if(next){const d=new Date(next.date);d.setDate(1);S.calMonth=d.toISOString();}}
+    }
+    g('cal-list').className='';g('cal-list').innerHTML=renderMonth(items);
+    g('cal-bulk').classList.toggle('on',calSel.size>0);g('cal-sel-n').textContent=calSel.size;return;}
   g('cal-bulk').classList.toggle('on',calSel.size>0);g('cal-sel-n').textContent=calSel.size;
   const el=g('cal-list');
   if(S.calMode==='list'){el.className='';const cap=items.slice(0,S.calLimit||120);const byDay={};cap.forEach(c=>{(byDay[c.dateLabel]=byDay[c.dateLabel]||[]).push(c);});
@@ -1811,7 +2045,7 @@ function openBrief(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;setView('b
   r.innerHTML=`<div class="brief-read"><button class="btn sm" onclick="renderBriefs()">← Alle Briefings</button><div class="dl-eb" style="margin-top:12px"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="parl">${SET_LABEL[b.set]}</span><span class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})} · ~${b.readMin} Min</span></div><h2>${esc(b.title)}</h2>
     <div class="m-acts" style="margin:10px 0 14px"><button class="btn p sm" onclick="proGate('ai',()=>briefAI('${b.id}'))">🤖 KI-Briefing schreiben <span class="pro-tag">PRO</span></button><label class="chk" style="font-size:12px"><input type="checkbox" onchange="if(!proGate('notify'))this.checked=false"> täglich 7:00 per E-Mail <span class="eyebrow" style="text-transform:none;letter-spacing:0">(Backend-Endpunkt nötig)</span></label></div>
     <div id="brief-ai"></div>
-    ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}"><div class="t" onclick="openById('${a.id}','${a._set}')">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${relChip(a)?' · Relevanz '+a.boost:''}</div></div>`).join('')}`).join('')}</div>`;}
+    ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}" id="tr-${a.id}" style="cursor:pointer" onclick="toggleInline('${a.id}')"><div class="t">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${relChip(a)?' · Relevanz '+a.boost:''}${(a.cluster||0)>=3?' · 📊 '+a.cluster+' Quellen':''}</div></div><div id="inl-${a.id}"></div>`).join('')}`).join('')}</div>`;}
 async function briefAI(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;if(!apiKey){pendingSum=false;g('km').classList.add('open');g('api-key-input').focus();g('api-key-input').onkeydown=e=>{if(e.key==='Enter'){saveKey();briefAI(id);}};return;}
   const box=g('brief-ai');box.innerHTML='<div class="ai-thinking"><span>Schreibe Briefing…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
   const txt=b.items.filter(a=>!isLocked(a)).map((a,i)=>(i+1)+'. ['+a.source+'] '+a.title+' – '+(a.desc||'').slice(0,300)).join('\n');
@@ -1972,11 +2206,41 @@ function renderTrends(){
     return`<g class="bub" onclick="trendDetail('${encodeURIComponent(d.k)}')"><circle cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="${d.r.toFixed(1)}" fill="${c}" fill-opacity="0.14" stroke="${c}" stroke-width="1.6"/>
       ${show?`<text x="${d.x.toFixed(1)}" y="${(d.y-1).toFixed(1)}" text-anchor="middle" font-size="${Math.min(13,d.r/2.6).toFixed(0)}" font-weight="700" fill="${c}" font-family="inherit">${esc(lbl.slice(0,16))}</text>
       <text x="${d.x.toFixed(1)}" y="${(d.y+12).toFixed(1)}" text-anchor="middle" font-size="10" fill="${c}" opacity=".75" font-family="inherit">${d.n}</text>`:`<title>${esc(lbl)}: ${d.n}</title>`}</g>`;}).join('');
+  renderTrendSummary(data);
   const mv=data.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,14);
   g('trend-list').innerHTML=mv.map(d=>{const lbl=S.trendMode==='topics'?chipLabel(d.k):d.k;const sm=Math.max(1,...d.spark);
     return`<div class="trend-row" onclick="trendDetail('${encodeURIComponent(d.k)}')"><span class="tn">${esc(lbl)}</span>
       <span class="spark">${d.spark.map(v=>`<i style="height:${Math.max(2,v/sm*26)}px"></i>`).join('')}</span>
       <span class="tdelta ${d.delta>15?'tup':d.delta<-15?'tdown':'tflat'}">${d.delta>0?'+':''}${d.delta}%</span><span class="ds-cnt">${d.n}</span></div>`;}).join('');
+}
+/* Kurze Auswertung in Worten – was steigt, was fällt, wer treibt es. */
+function renderTrendSummary(data){
+  const el=g('trend-summary');if(!el)return;
+  const win=S.trendWin===24?'den letzten 24 Stunden':S.trendWin===72?'den letzten drei Tagen':'den letzten sieben Tagen';
+  if(!data.length){el.innerHTML=`<div class="sum-hd">Auswertung</div>Zu wenige Meldungen in ${win} für eine Auswertung.`;return;}
+  const lbl=k=>S.trendMode==='topics'?chipLabel(k):k.charAt(0).toUpperCase()+k.slice(1);
+  const chip=d=>`<span class="hl" style="background:${(S.trendMode==='topics'?topicColor(d.k):'#2563eb')}1e;color:${S.trendMode==='topics'?topicColor(d.k):'#2563eb'}">${esc(lbl(d.k))}</span>`;
+  const total=data.reduce((n,d)=>n+d.n,0), prevTotal=data.reduce((n,d)=>n+d.prev,0);
+  const trend=prevTotal?Math.round((total-prevTotal)/prevTotal*100):0;
+  const steiger=data.filter(d=>d.delta>=25&&d.n>=3).sort((a,b)=>b.delta-a.delta).slice(0,3);
+  const faller=data.filter(d=>d.delta<=-25&&d.prev>=3).sort((a,b)=>a.delta-b.delta).slice(0,2);
+  const neu=data.filter(d=>d.prev===0&&d.n>=3).sort((a,b)=>b.n-a.n).slice(0,3);
+  const top3=data.slice(0,3);
+  /* Wer berichtet am breitesten? */
+  const srcCnt={};data.slice(0,10).forEach(d=>d.arts.forEach(a=>srcCnt[a.source]=(srcCnt[a.source]||0)+1));
+  const topSrc=Object.entries(srcCnt).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const setCnt={};data.slice(0,10).forEach(d=>d.arts.forEach(a=>setCnt[a._set]=(setCnt[a._set]||0)+1));
+  const domSet=Object.entries(setCnt).sort((a,b)=>b[1]-a[1])[0];
+  const zeilen=[];
+  zeilen.push(`Beherrschend in ${win}: ${top3.map(chip).join(' ')} – zusammen <b>${top3.reduce((n,d)=>n+d.n,0)}</b> von ${total} Meldungen.`);
+  if(steiger.length)zeilen.push(`Deutlich zugelegt: ${steiger.map(d=>`${chip(d)} <b class="up">+${d.delta}%</b>`).join(', ')}.`);
+  if(neu.length)zeilen.push(`Neu im Zeitfenster, vorher gar nicht vertreten: ${neu.map(chip).join(' ')}.`);
+  if(faller.length)zeilen.push(`Zurückgegangen: ${faller.map(d=>`${chip(d)} <b class="down">${d.delta}%</b>`).join(', ')}.`);
+  if(topSrc.length)zeilen.push(`Am meisten dazu beigetragen: ${topSrc.map(([s,n])=>`<b>${esc(s)}</b> (${n})`).join(', ')}.`);
+  if(domSet)zeilen.push(`Schwerpunkt liegt bei <b>${SET_LABEL[domSet[0]]||domSet[0]}</b>.`);
+  el.innerHTML=`<div class="sum-hd">Auswertung · ${S.trendMode==='topics'?'Themen':S.trendMode==='words'?'Schlagwörter':'Quellen'}</div>
+    Das Meldungsaufkommen liegt <b class="${trend>0?'up':trend<0?'down':''}">${trend>0?'um '+trend+' % höher':trend<0?'um '+Math.abs(trend)+' % niedriger':'etwa gleichauf'}</b> ${trend===0?'mit der':'als in der'} Vorperiode.
+    <ul>${zeilen.map(z=>`<li>${z}</li>`).join('')}</ul>`;
 }
 function trendDetail(kEnc){
   const k=decodeURIComponent(kEnc);const d=trendData().find(x=>x.k===k);if(!d)return;
@@ -2255,6 +2519,7 @@ function initSidebarSections(){
   store.set('ps_secseen',1);
 }
 SAVED=store.get('ps_saved')||[];
+if(store.get('ps_rail'))document.body.classList.add('rail');
 initSidebarSections();
 if(!PAYWALL_ACTIVE){
   /* Vorschau-Schalter ausblenden, Pro-Badges als Hinweis „später kostenpflichtig" belassen */
@@ -2267,6 +2532,9 @@ pushNav();
 window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},250);});
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
+if(store.get('ps_compact')){document.body.classList.add('compact');g('lt-compact').classList.add('on');}
+setFeedInline(store.get('ps_feedinline')!==false);
+if(store.get('ps_lpw'))g('list-pane').style.width=store.get('ps_lpw')+'px';
 setAuth(store.get('ps_plan')==='pro');
 loadData();
 </script>
