@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Presseschau · Redaktions-Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   PRESSESCHAU v3 – Tokens (unverändert aus v2, ergänzt um --pro)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#eef0f5;--surface:#fff;--surface2:#f7f8fb;--border:#e2e6f0;
+  --text:#0d1220;--text2:#4a5168;--muted:#8b92a8;
+  --blue:#2563eb;--blue-lt:#eff4ff;
+  --eu:#003399;--eu-lt:#e8ecff;
+  --green:#16a34a;--red:#dc2626;--red-lt:#fef2f2;--amber:#d97706;--amber-lt:#fffbeb;
+  --pro:#dc2626;
+  --shadow:0 1px 3px rgba(13,18,32,.07),0 0 0 1px rgba(13,18,32,.04);
+  --shadow-md:0 4px 20px rgba(13,18,32,.10);
+  --r:10px;--f:'Plus Jakarta Sans',system-ui,sans-serif;
+  --sidebar:224px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--f);font-size:14px;height:100dvh;overflow:hidden}
+button,input,select{font-family:var(--f)}
+a{color:var(--blue);text-decoration:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ── Shared atoms ─────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.2}
+.btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.btn.p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.p:hover{background:#1d4ed8}
+.btn.danger{border-color:#fca5a5;color:var(--red)}
+.btn.sm{padding:3px 8px;font-size:11px}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--text2);display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px}
+.icon-btn:hover{background:var(--bg)}
+.chip{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .14s;user-select:none;white-space:nowrap;flex-shrink:0}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+body.eu-mode .chip.active{background:var(--eu);border-color:var(--eu)}
+.sbadge{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 5px;border-radius:4px;white-space:nowrap}
+.inst-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--eu-lt);color:var(--eu)}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tag{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.tag.c{color:var(--tc,var(--text2))}
+.pro-tag{display:inline-flex;align-items:center;font-size:9px;font-weight:800;letter-spacing:.08em;padding:1px 5px;border-radius:3px;background:var(--pro);color:#fff;line-height:1.4;vertical-align:middle}
+.pro-tag.o{background:transparent;color:var(--pro);border:1.5px solid var(--pro)}
+.eil{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;letter-spacing:.08em;padding:1px 6px;border-radius:3px;background:var(--red);color:#fff;text-transform:uppercase}
+.eil::before{content:'';width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
+.newpill{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--red-lt);color:var(--red);border:1px solid #fecaca}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot.loading{background:var(--amber);animation:pulse 1s infinite}
+.dot.ok{background:var(--green)}.dot.err{background:var(--red)}
+.lock{font-size:11px;opacity:.7}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes fu{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.ai-thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.ai-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:db .9s infinite both;margin:0 1px}
+.ai-dots span:nth-child(2){animation-delay:.15s}.ai-dots span:nth-child(3){animation-delay:.3s}
+@keyframes db{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+/* Monogramm-Kachel = Bild-Fallback (Politico "People"-Stil) */
+.tile{display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;border-radius:8px;flex-shrink:0;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 2px,transparent 2px 7px);overflow:hidden}
+.tile img{width:100%;height:100%;object-fit:cover}
+
+/* ── App-Rahmen ───────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100dvh}
+#topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;box-shadow:0 1px 8px rgba(13,18,32,.06);z-index:30}
+.logo{font-size:15px;font-weight:700;letter-spacing:-.03em;white-space:nowrap;flex-shrink:0;line-height:1.05}
+.logo span{background:linear-gradient(135deg,#2563eb,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo small{font-size:9px;font-weight:500;color:var(--muted);display:block;letter-spacing:.02em}
+#nav-toggle{display:none}
+#sb-auth{display:none;margin:0 2px 6px;justify-content:space-between}
+/* dpa-Suche: Tokens im Feld */
+.sw{flex:1;display:flex;align-items:center;gap:5px;min-width:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:3px 8px;transition:all .2s;position:relative}
+.sw:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt);background:#fff}
+.sw svg{color:var(--muted);flex-shrink:0}
+#tokens{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.tok{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 4px 2px 9px;border-radius:20px;background:var(--surface);border:1.5px solid var(--border);color:var(--text)}
+.tok.not{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
+.tok b{font-weight:800;font-size:9px;letter-spacing:.06em}
+.tok button{background:var(--bg);border:none;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:1;cursor:pointer;color:var(--muted)}
+#q{flex:1;min-width:120px;border:none;background:transparent;font-size:13px;color:var(--text);outline:none;padding:4px 2px}
+#q::placeholder{color:var(--muted)}
+.link-btn{background:none;border:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;padding:4px 6px;border-radius:6px}
+.link-btn:hover{background:var(--blue-lt)}
+.tr{display:flex;gap:6px;align-items:center;flex-shrink:0}
+#mark-count{display:none;background:var(--amber-lt);border:1.5px solid #fcd34d;color:#92400e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+/* Auth-Vorschau-Schalter */
+.auth-switch{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);padding:3px 8px;border:1.5px dashed var(--border);border-radius:20px}
+.switch{position:relative;width:34px;height:18px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#cbd2e1;border-radius:20px;cursor:pointer;transition:.2s}
+.slider::before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch input:checked+.slider{background:var(--pro)}
+.switch input:checked+.slider::before{transform:translateX(16px)}
+#auth-label{font-weight:700;color:var(--text2);min-width:32px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--pro);color:#fff;font-size:12px;font-weight:800;display:none;align-items:center;justify-content:center;letter-spacing:.02em}
+body.pro .avatar{display:flex}
+body.pro #login-btn{display:none}
+
+/* dpa "Filter anpassen"-Panel */
+#filter-panel{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;box-shadow:0 8px 20px rgba(13,18,32,.06);z-index:25}
+#filter-panel.open{display:block}
+.fp-grid{display:grid;grid-template-columns:110px 1fr;gap:10px 16px;align-items:center;max-width:900px}
+.fp-grid label.fl{font-size:12px;color:var(--text2);font-weight:500}
+.fp-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12.5px}
+.fp-row label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.fp-row label.dis{color:var(--muted);cursor:not-allowed}
+.fp-row input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px}
+.fsel{appearance:none;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238b92a8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 8px center;border:1.5px solid var(--border);color:var(--text);padding:5px 26px 5px 9px;border-radius:7px;font-size:12px;cursor:pointer;outline:none;min-width:180px}
+.fsel:disabled{color:var(--muted);cursor:not-allowed}
+.fp-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+.fp-note{font-size:11px;color:var(--muted)}
+
+/* ── Body: Sidebar + Main ─────────────────────────────────── */
+#body{flex:1;display:flex;min-height:0;position:relative}
+#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:2px}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+.nav-sec{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px;display:flex;align-items:center;gap:6px}
+.nav-sec .pro-tag{margin-left:auto}
+.nav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;user-select:none;transition:all .12s}
+.nav:hover{background:var(--bg);color:var(--text)}
+.nav.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.nav.eu.active{background:var(--eu-lt);color:var(--eu)}
+.nav svg{width:15px;height:15px;flex-shrink:0}
+.nav .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.nav.active .cnt{background:#fff}
+.nav .pro-tag{margin-left:auto}
+.nav.locked{color:var(--muted)}
+.nav.locked .cnt{display:none}
+body.pro .pro-tag:not(.keep){display:none}
+.nav-chip-wrap{display:flex;flex-wrap:wrap;gap:3px;padding:2px 8px 4px}
+.saved-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer;color:var(--text2)}
+.saved-item:hover{background:var(--bg)}
+.saved-item .dia{width:9px;height:9px;transform:rotate(45deg);border-radius:2px;flex-shrink:0}
+.saved-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved-item .nb{font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:10px;background:var(--red);color:#fff}
+.saved-item .x{opacity:0;background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px}
+.saved-item:hover .x{opacity:1}
+.saved-empty{font-size:11px;color:var(--muted);padding:4px 10px 6px;line-height:1.5}
+.saved-empty.locked{filter:grayscale(1);opacity:.7}
+
+#main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.view{display:none;flex:1;min-height:0;flex-direction:column}
+.view.active{display:flex}
+
+/* ── Dashboard (Politico) ─────────────────────────────────── */
+#view-dash{overflow-y:auto;padding:14px 16px 24px}
+.dash-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.dash-head h1{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.dash-head .upd{font-size:11px;color:var(--muted)}
+.dash-head .right{margin-left:auto;display:flex;gap:6px}
+.dgrid{display:grid;grid-template-columns:minmax(280px,1fr) 2fr;gap:12px;margin-bottom:12px}
+.dgrid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.dcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.dcard-hd{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border)}
+.dcard-hd h2{font-size:14px;font-weight:700;letter-spacing:-.01em;flex:1}
+.dcard-hd .all{font-size:11px;font-weight:600;color:var(--text2);background:var(--surface);border:1.5px solid var(--border);padding:3px 9px;border-radius:6px;cursor:pointer}
+.dcard-hd .all:hover{border-color:var(--blue);color:var(--blue)}
+.dcard.alerts .dcard-hd{background:linear-gradient(90deg,var(--red-lt),#fff 70%)}
+.dcard.alerts h2{color:var(--red);display:flex;align-items:center;gap:7px}
+.dcard.alerts h2::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+.dcard-body{padding:6px 14px 10px;display:flex;flex-direction:column}
+.dl{padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.dl:last-child{border-bottom:none}
+.dl:hover .dl-t{color:var(--blue)}
+.dl-main{flex:1;min-width:0}
+.dl-eb{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:3px}
+.dl-t{font-size:13.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em;transition:color .12s}
+.dl-d{font-size:12px;color:var(--text2);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dl-m{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.dl .tile{width:52px;height:52px;font-size:14px;color:#fff}
+.lead{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.lead .tile{width:100%;aspect-ratio:16/7;font-size:44px;color:#fff;margin-bottom:10px;border-radius:8px}
+.lead .dl-t{font-size:19px;letter-spacing:-.02em;line-height:1.22}
+.lead .dl-d{-webkit-line-clamp:3;font-size:13px}
+.lead:hover .dl-t{color:var(--blue)}
+.dash-two{display:grid;grid-template-columns:1.25fr 1fr}
+.dash-two>.dcard-body{padding-top:2px}
+.dash-two .lead{border-right:1px solid var(--border);border-bottom:none}
+.bubbles{display:flex;flex-wrap:wrap;gap:5px;padding:12px 14px}
+.bubble{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1.5px solid;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.bubble .bc{font-size:9px;opacity:.65}
+.kw-bub{padding:2px 8px;border-radius:20px;font-size:10.5px;background:var(--bg);border:1.5px solid var(--border);color:var(--text2)}
+.kw-bub strong{color:var(--text)}
+/* Gesperrte Pro-Kachel */
+.dcard.locked .dcard-body,.dcard.locked .lead{filter:blur(3px) grayscale(.6);opacity:.55;pointer-events:none;user-select:none}
+.dcard.locked::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(238,240,245,.9))}
+.lock-cta{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);z-index:2;text-align:center;display:none;flex-direction:column;align-items:center;gap:8px}
+.dcard.locked .lock-cta{display:flex}
+.lock-cta p{font-size:12px;color:var(--text2);max-width:220px;line-height:1.4}
+/* Gesperrter Artikel (Teaser) */
+.dl.locked .dl-d,.art-item.locked .ai-desc{filter:blur(4px);user-select:none}
+.dl.locked .dl-t,.art-item.locked .ai-title{color:var(--text2)}
+.cal-row{padding:9px 0;border-bottom:1px solid var(--border)}
+.cal-row:last-child{border-bottom:none}
+.cal-row .eyebrow{margin-bottom:3px}
+.cal-row .t{font-size:12.5px;font-weight:600;line-height:1.3}
+.cal-row .m{font-size:11px;margin-top:3px;display:flex;gap:8px}
+.demo-banner{background:var(--amber-lt);border:1.5px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none;line-height:1.45}
+body.demo .demo-banner{display:block}
+
+/* ── Feed (Split-Ansicht, aus v2) ─────────────────────────── */
+#filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.fl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+.chips{display:flex;gap:3px;flex-wrap:wrap}
+.vsep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
+#statusbar{padding:4px 14px;display:flex;gap:9px;align-items:center;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);background:#f9fafc;flex-shrink:0;flex-wrap:wrap}
+.spill{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);padding:2px 8px;border-radius:20px;font-size:10.5px}
+.sr{margin-left:auto;display:flex;gap:0}
+.sb{font-size:11px;font-weight:500;padding:2px 8px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2)}
+.sb:first-child{border-radius:6px 0 0 6px}.sb:last-child{border-radius:0 6px 6px 0;border-left:none}
+.sb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+body.eu-mode .sb.active{background:var(--eu);border-color:var(--eu)}
+#split{flex:1;display:flex;min-height:0}
+#list-pane{display:flex;flex-direction:column;background:var(--bg);overflow:hidden;min-width:180px;width:380px}
+#list-scroll{flex:1;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:4px}
+#list-scroll::-webkit-scrollbar{width:4px}#list-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+#drag-handle{width:6px;background:var(--border);cursor:col-resize;flex-shrink:0;position:relative;transition:background .15s}
+#drag-handle:hover,#drag-handle.dragging{background:var(--blue)}
+#drag-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:36px;border-radius:2px;background:rgba(255,255,255,.5)}
+.art-item{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px 8px 11px;cursor:pointer;transition:all .12s;animation:fu .15s ease both;position:relative}
+.art-item:hover{border-color:#c7d2e8;box-shadow:var(--shadow)}
+.art-item.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
+body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--eu-lt)}
+.art-item.marked{background:#fefce8;border-color:#fcd34d}
+.ai-top{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:4px;padding-right:22px}
+.ai-date{font-size:10px;color:var(--muted);margin-left:auto}
+.ai-title{font-size:12.5px;font-weight:600;line-height:1.32;color:var(--text)}
+.ai-desc{font-size:11px;color:var(--text2);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ai-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.ai-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px}
+.ai-check.checked{background:#fbbf24;border-color:#f59e0b;color:#fff}
+.ai-check.checked::after{content:"★"}
+.archive-gate{margin:6px 0;padding:14px;border:1.5px dashed #fca5a5;border-radius:8px;background:var(--red-lt);text-align:center;font-size:12px;color:var(--text2);line-height:1.5}
+.archive-gate strong{color:var(--red)}
+#reader-pane{flex:1;display:flex;flex-direction:column;background:var(--surface);overflow:hidden;min-width:180px}
+#reader-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:9px}
+#reader-empty svg{opacity:.2}
+#reader-empty p{font-size:14px;font-weight:500}
+#reader-empty small{font-size:11px;opacity:.6;text-align:center}
+#reader-content{display:none;flex-direction:column;height:100%}
+.eu-banner{background:linear-gradient(135deg,#003399,#1a4db3);color:#fff;padding:7px 18px;display:flex;align-items:center;gap:8px;font-size:11px;flex-shrink:0}
+#reader-header{padding:13px 18px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+#reader-source-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+#reader-date{font-size:10px;color:var(--muted)}
+#reader-title{font-size:18px;font-weight:800;line-height:1.25;letter-spacing:-.02em;margin-bottom:7px}
+#reader-tags{display:flex;gap:8px;flex-wrap:wrap}
+#reader-body{flex:1;overflow-y:auto;padding:13px 18px}
+#reader-text{font-size:14px;color:var(--text2);line-height:1.75;white-space:pre-line}
+#reader-img{width:100%;border-radius:8px;margin-bottom:12px;display:none;max-height:320px;object-fit:cover}
+#ai-summary-box{margin-top:14px;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;display:none}
+#ai-summary-header{background:var(--bg);padding:7px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
+#ai-summary-header span{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+#ai-summary-body{padding:12px;font-size:13px;color:var(--text2);line-height:1.65}
+#reader-footer{padding:8px 18px;border-top:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-shrink:0;background:var(--surface2);flex-wrap:wrap}
+#reader-back{display:none}
+
+/* ── Dokumente / Kalender ─────────────────────────────────── */
+.plain{overflow-y:auto;padding:14px 16px 24px}
+.plain h1{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:2px}
+.plain .sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.docbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.doc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;animation:fu .15s ease both}
+.doc-card .eb{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.doc-card .t{font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.doc-card .m{font-size:10.5px;color:var(--muted);margin:3px 0 8px}
+.doc-file{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text2);cursor:pointer;background:var(--surface2)}
+.doc-file:hover{border-color:var(--blue);color:var(--blue)}
+.doc-file .ext{margin-left:auto;font-size:11px}
+.doc-type{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.doc-type.eurlex{background:var(--eu-lt);color:var(--eu);border-color:#c7d0f0}
+#doc-viewer{position:fixed;inset:0;background:rgba(13,18,32,.6);z-index:800;display:none;flex-direction:column;padding:20px}
+#doc-viewer.open{display:flex}
+#doc-viewer .frame{flex:1;background:#fff;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+#doc-viewer .fh{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+#doc-viewer .fh span{flex:1;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#doc-iframe{flex:1;border:none;width:100%}
+.cal-day{margin-bottom:14px}
+.cal-day .eyebrow{color:var(--blue);margin-bottom:6px;font-size:11px}
+.cal-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 14px;margin-bottom:6px}
+.cal-item .t{font-size:13.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
+.cal-item .m{font-size:11.5px;margin-top:5px;display:flex;gap:12px;flex-wrap:wrap}
+.cal-filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.gap-note{background:var(--surface);border:1.5px dashed var(--border);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--text2);line-height:1.5;margin-bottom:12px}
+
+/* ── v4: Segment-Schalter (Übersicht / Nach Themen) ─────────── */
+.seg{display:inline-flex;border:1.5px solid var(--border);border-radius:7px;overflow:hidden;background:var(--surface)}
+.seg button{background:none;border:none;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:none}
+.seg button.active{background:var(--blue);color:#fff}
+.plain-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.plain-head .seg{margin-left:auto}
+.dash-inner{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
+.ds{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ds-hd{padding:9px 12px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.ds-title{font-size:13px;font-weight:700;flex:1}
+.ds-cnt{font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.ds-item{padding:7px 12px;border-bottom:1px solid var(--border);cursor:pointer}
+.ds-item:last-child{border-bottom:none}.ds-item:hover{background:var(--surface2)}
+.ds-it{font-size:12px;font-weight:600;line-height:1.3;color:var(--text)}
+.ds-im{font-size:10px;color:var(--muted);margin-top:2px;display:flex;gap:6px}
+.ds-more{padding:7px 12px;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;text-align:right}
+.dir-layout{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start}
+.dir-side{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px;position:sticky;top:0}
+.dir-side .fsel{width:100%;min-width:0;margin-bottom:6px}
+.dir-side input{width:100%;padding:6px 9px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:12px;outline:none;margin-bottom:6px}
+.type-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;font-size:12.5px;color:var(--text2);cursor:pointer}
+.type-row:hover{background:var(--bg)}.type-row.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.type-row .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.person{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:11px;cursor:pointer;transition:all .12s;animation:fu .15s ease both}
+.person:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.person .tile{width:46px;height:46px;font-size:15px;color:#fff;border-radius:50%}
+.person .pn{font-size:13.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.person .pm{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.party{font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:4px;color:#fff;letter-spacing:.03em}
+.parl{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.person .pc{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.person .pc span{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text2)}
+.person .pe{font-size:11px;margin-top:6px;color:var(--blue)}
+body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
+.comm{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .12s}
+.comm:hover{box-shadow:var(--shadow-md)}
+.comm .cn{font-size:13.5px;font-weight:700;line-height:1.3}
+.comm .cm{font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.contact{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;font-size:12.5px;padding:10px 12px;background:var(--surface2);border-radius:8px}
+.contact b{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.speech{padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.speech:last-child{border-bottom:none}.speech .sd{font-size:10.5px;color:var(--muted)}
+.unverified{font-size:10px;color:var(--amber);font-weight:600}
+.brief{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;animation:fu .15s ease both}
+.brief:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.brief::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--bc,var(--blue))}
+.brief .bt{font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.brief .bd{font-size:12px;color:var(--text2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.brief .bm{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:auto}
+.brief-read{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;max-width:900px}
+.brief-read h2{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.brief-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.brief-item:last-child{border-bottom:none}
+.brief-item .t{font-size:13.5px;font-weight:700;line-height:1.3;cursor:pointer}.brief-item .t:hover{color:var(--blue)}
+.brief-item .d{font-size:12.5px;color:var(--text2);line-height:1.5;margin-top:3px}
+.cal-export{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;font-size:12px}
+.cal-export code{font-size:11px;background:var(--bg);padding:2px 6px;border-radius:4px}
+.cal-item .acts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+/* v5: Institutionen-Baum */
+.tree-grp{margin-top:4px}
+.tree-hd{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none}
+.tree-hd .arw{transition:transform .15s;font-size:9px}
+.tree-grp.open .tree-hd .arw{transform:rotate(90deg)}
+.tree-body{display:none;padding-left:4px}
+.tree-grp.open .tree-body{display:block}
+.tree-item{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 16px;border-radius:7px;font-size:12px;color:var(--text2);cursor:pointer}
+.tree-item:hover{background:var(--bg);color:var(--text)}
+.tree-item.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.tree-item .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.flag{font-size:11px}
+/* v5: eigene Themen */
+.mytopic{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 6px 3px 10px;border-radius:20px;border:1.5px solid;background:#fff}
+.mytopic button{background:none;border:none;cursor:pointer;font-size:12px;line-height:1;opacity:.55;padding:0}
+.mytopic .n{font-size:9px;font-weight:800;padding:0 5px;border-radius:9px;color:#fff}
+.cluster{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+.tageslage{grid-column:1/-1;background:linear-gradient(120deg,#0d1220,#1e2a4a);color:#fff;border:none}
+.tageslage .bt,.tageslage .bd{color:#fff}
+.tageslage .bd{opacity:.8}
+.tageslage .bm{color:rgba(255,255,255,.6)}
+.tageslage::before{background:#f59e0b}
+@media (max-width:900px){.dir-layout{grid-template-columns:1fr}.dir-side{position:static}}
+#footer{height:26px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:10.5px;color:var(--muted);flex-shrink:0}
+
+/* ── Modals ───────────────────────────────────────────────── */
+.modal{display:none;position:fixed;inset:0;background:rgba(13,18,32,.45);backdrop-filter:blur(4px);z-index:900;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.modal-in{background:var(--surface);border-radius:14px;padding:22px;max-width:460px;width:100%;box-shadow:0 25px 60px rgba(13,18,32,.2);display:flex;flex-direction:column;gap:12px;position:relative;max-height:88vh;overflow-y:auto}
+.modal-in h2{font-size:17px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.modal-in p{font-size:13px;color:var(--text2);line-height:1.55}
+.modal-in input[type=text],.modal-in input[type=password],.modal-in textarea{width:100%;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none}
+.modal-in input:focus{border-color:var(--blue);background:#fff}
+.modal-in textarea{height:150px;resize:vertical;font-size:12px}
+.m-acts{display:flex;gap:8px;flex-wrap:wrap}
+.mc{position:absolute;top:14px;right:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:4px 8px;font-size:14px;cursor:pointer;color:var(--muted);line-height:1}
+.feat-list{display:grid;gap:6px;font-size:12px}
+.feat-list div{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:7px;background:var(--surface2)}
+.feat-list div.hi{background:var(--red-lt);border:1px solid #fecaca}
+.feat-list b{white-space:nowrap}
+.feat-list span{color:var(--text2)}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .1s}
+.swatch.sel{border-color:#fff;box-shadow:0 0 0 2px var(--text);transform:scale(1.08)}
+.fld label{font-size:11px;font-weight:600;color:var(--blue);display:block;margin-bottom:4px}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.chk input{accent-color:var(--blue);width:16px;height:16px}
+.prev-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 9px;border-radius:4px;border:1.5px solid}
+.km-note{font-size:11px;color:var(--muted);font-style:italic}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width:1100px){.dgrid{grid-template-columns:1fr}.dash-two{grid-template-columns:1fr}.dash-two .lead{border-right:none;border-bottom:1px solid var(--border)}}
+@media (max-width:900px){
+  #nav-toggle{display:inline-flex}
+  #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:40;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 40px rgba(13,18,32,.2)}
+  body.nav-open #sidebar{transform:none}
+  #nav-scrim{position:absolute;inset:0;background:rgba(13,18,32,.35);z-index:35;display:none}
+  body.nav-open #nav-scrim{display:block}
+  .logo small{display:none}
+  .auth-switch span:first-child{display:none}
+  #export-btn,#reload-btn{display:none}
+  #split{flex-direction:column}
+  #list-pane{width:100%!important;flex:1}
+  #drag-handle{display:none}
+  #reader-pane{position:fixed;inset:0;z-index:50;transform:translateX(100%);transition:transform .22s}
+  body.reader-open #reader-pane{transform:none}
+  #reader-back{display:inline-flex}
+  #reader-footer{gap:4px}#reader-footer .btn{padding:5px 8px;font-size:11.5px}
+  #q{font-size:16px}
+  .dash-head h1{font-size:19px}
+  #doc-viewer{padding:0}#doc-viewer .frame{border-radius:0}
+}
+@media (max-width:560px){
+  #topbar{padding:0 8px;gap:6px}
+  .link-btn{padding:4px;font-size:14px}.link-btn span,.link-btn #fp-arrow{display:none}
+  .link-btn::before{content:'⚙︎'}
+  #q{min-width:50px;padding:6px 0}
+  #tokens .tok{max-width:90px;overflow:hidden;text-overflow:ellipsis}
+  #topbar .auth-switch{display:none}
+  #login-btn{padding:5px 8px}
+  #sb-auth{display:flex}
+  #mark-count{display:none!important}
+  .logo{font-size:14px}
+  .fp-grid{grid-template-columns:1fr}
+  .fsel{min-width:0;width:100%}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══ TOPBAR ═══ -->
+<header id="topbar">
+  <button class="icon-btn" id="nav-toggle" onclick="toggleNav()" aria-label="Navigation">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="logo">Presse<span>schau</span><small>Redaktions-Dashboard</small></div>
+  <div class="sw" id="search-wrap" onclick="g('q').focus()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <div id="tokens"></div>
+    <input id="q" placeholder="Suchen · Enter = Begriff · NICHT xyz = ausschließen" data-short="Suchen…" oninput="debounce(applyFilters)" onkeydown="qKey(event)" autocomplete="off">
+    <button class="link-btn" onclick="event.stopPropagation();toggleFilterPanel()">Filter <span>anpassen</span> <span id="fp-arrow">▾</span></button>
+  </div>
+  <div class="tr">
+    <span id="mark-count">0 markiert</span>
+    <button class="btn" id="reload-btn" onclick="loadData()" title="Neu laden">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+    </button>
+    <button class="btn" id="export-btn" onclick="proGate('export',openExpAll)">↓ Export <span class="pro-tag">PRO</span></button>
+    <div class="auth-switch" title="Simuliert den Login – später durch echten Auth-State ersetzen">
+      <span>Vorschau</span>
+      <label class="switch"><input type="checkbox" id="auth-toggle" onchange="setAuth(this.checked)"><span class="slider"></span></label>
+      <span id="auth-label">Basis</span>
+    </div>
+    <button class="btn p" id="login-btn" onclick="openLogin()">Anmelden</button>
+    <div class="avatar" id="avatar" title="Angemeldet (Pro)">PS</div>
+  </div>
+</header>
+
+<!-- ═══ FILTER-PANEL (dpa) ═══ -->
+<div id="filter-panel">
+  <div class="fp-grid">
+    <label class="fl">Priorität</label>
+    <div class="fp-row">
+      <label><input type="checkbox" id="fp-eil" onchange="S.prio.eil=this.checked;applyFilters()"> <span class="eil">Eil</span> Eilmeldungen</label>
+      <label><input type="checkbox" id="fp-top" onchange="S.prio.top=this.checked;applyFilters()"> ⭐ Top-Relevanz</label>
+      <label title="Sport, Spielberichte, Vereinsnews ausblenden (clientseitig – dauerhaft besser über NOISE_KEYWORDS in fetch_news.py)"><input type="checkbox" id="fp-sport" checked onchange="setSport(this.checked)"> ⚽ Sport ausblenden</label>
+    </div>
+    <label class="fl">Ressort</label>
+    <select class="fsel" id="fp-topic" onchange="setTopic(this.value)"></select>
+    <label class="fl">Quelle</label>
+    <select class="fsel" id="fp-src" onchange="setSrc(this.value)"></select>
+    <label class="fl">Zeitraum</label>
+    <div class="fp-row">
+      <select class="fsel" id="fp-range" onchange="setRange(this.value)">
+        <option value="24">Letzte 24 Stunden</option>
+        <option value="48" selected>Letzte 48 Stunden</option>
+        <option value="168">Letzte 7 Tage</option>
+        <option value="all">Gesamtes Archiv</option>
+      </select>
+      <span class="pro-tag" id="fp-range-pro">PRO</span>
+    </div>
+    <label class="fl">Format</label>
+    <div class="fp-row">
+      <label><input type="checkbox" checked disabled> Text</label>
+      <label class="dis"><input type="checkbox" disabled> Foto</label>
+      <label class="dis"><input type="checkbox" disabled> Audio</label>
+      <label class="dis"><input type="checkbox" disabled> Video</label>
+      <span class="fp-note">Formate werden aktiv, sobald der Feed <code>enclosure</code>/<code>media:content</code> liefert.</span>
+    </div>
+  </div>
+  <div class="fp-foot">
+    <span class="fp-note" id="fp-summary"></span>
+    <div style="display:flex;gap:6px">
+      <button class="btn" onclick="resetFilters()">Zurücksetzen</button>
+      <button class="btn p" onclick="openSaveFilter()">Als Filter speichern… <span class="pro-tag" style="background:rgba(255,255,255,.25)">PRO</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="body">
+  <div id="nav-scrim" onclick="toggleNav(false)"></div>
+
+  <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
+  <nav id="sidebar">
+    <div class="auth-switch" id="sb-auth"><span>Vorschau</span><label class="switch"><input type="checkbox" id="auth-toggle-m" onchange="setAuth(this.checked)"><span class="slider"></span></label><span id="auth-label-m" style="font-weight:700">Basis</span></div>
+    <div class="nav active" id="nav-dash" onclick="setView('dash')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Dashboard
+    </div>
+    <div class="nav-sec">Feeds</div>
+    <div class="nav" id="nav-news" onclick="setSection('news')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Nachrichten<span class="cnt" id="cnt-news">–</span>
+    </div>
+    <div class="nav eu" id="nav-eu" onclick="setSection('eu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v0M15.5 8.5v0M17 12v0M15.5 15.5v0M12 17v0M8.5 15.5v0M7 12v0M8.5 8.5v0" stroke-width="2.6" stroke-linecap="round"/></svg>EU Direkt<span class="cnt" id="cnt-eu">–</span>
+    </div>
+    <div class="nav" id="nav-bt" onclick="setSection('bt')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M4 10h16L12 4zM6 10v11M10 10v11M14 10v11M18 10v11"/></svg>Bundestag<span class="cnt" id="cnt-bt">–</span>
+    </div>
+    <div class="nav" id="nav-laender" onclick="setSection('laender')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18" stroke-dasharray="3 3"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Länder<span class="cnt" id="cnt-laender">–</span>
+    </div>
+    <div class="nav" id="nav-us" onclick="setSection('us')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4M4 5h16l-3 4 3 4H4"/></svg>USA<span class="cnt" id="cnt-us">–</span>
+    </div>
+    <div class="nav" id="nav-brief" onclick="setView('brief')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg>Briefings<span class="cnt" id="cnt-brief">–</span>
+    </div>
+    <div class="nav locked" id="nav-docs" onclick="proGate('docs',()=>setView('docs'))">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>Dokumente<span class="cnt" id="cnt-docs">–</span><span class="pro-tag">PRO</span>
+    </div>
+    <div class="nav locked" id="nav-cal" onclick="proGate('cal',()=>setView('cal'))">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Kalender<span class="cnt" id="cnt-cal">–</span><span class="pro-tag">PRO</span>
+    </div>
+
+    <div class="nav-sec">Verzeichnis</div>
+    <div class="nav locked" id="nav-dir" onclick="setView('dir');setDirMode('people')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 4a4 4 0 0 1 0 8M22 21c0-3-2-6-5-7"/></svg>Personen<span class="cnt" id="cnt-people">–</span><span class="pro-tag">PRO</span>
+    </div>
+    <div class="nav" id="nav-comm" onclick="setView('dir');setDirMode('comm')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Ausschüsse<span class="cnt" id="cnt-comm">–</span>
+    </div>
+    <div class="nav" id="nav-types" onclick="setView('types')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg>Inhaltstypen<span class="cnt" id="cnt-types">–</span>
+    </div>
+    <div class="nav-sec">Themen <span id="nav-themes-set" style="font-weight:500;text-transform:none;letter-spacing:0"></span></div>
+    <div class="nav-chip-wrap" id="nav-topics"></div>
+
+    <div class="nav-sec">Institutionen</div>
+    <div id="nav-insts"></div>
+    <div class="nav-sec">Eigene Themen <span class="pro-tag">PRO</span></div>
+    <div class="nav-chip-wrap" id="my-topics"></div>
+    <div style="padding:0 8px 6px"><button class="btn sm" style="width:100%;justify-content:center" onclick="proGate('mytopics',openTopicModal)">+ Thema anlegen</button></div>
+
+    <div class="nav-sec">Gespeicherte Filter <span class="pro-tag">PRO</span></div>
+    <div id="saved-list"></div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <main id="main">
+
+    <!-- Dashboard -->
+    <section class="view active" id="view-dash">
+      <div class="demo-banner"><strong>Demo-Daten.</strong> Keine <code>articles.json</code> / <code>eu_articles.json</code> / <code>bundestag_articles.json</code> / <code>documents.json</code> erreichbar – das Layout zeigt Platzhalter. Neben deinen JSON-Dateien ablegen, dann laufen die echten Feeds.</div>
+      <div class="dash-head">
+        <h1>Dashboard</h1>
+        <span class="upd" id="dash-upd"></span>
+        <div class="right">
+          <div class="seg" id="dash-seg"><button class="active" onclick="setDashMode('overview',this)">Übersicht</button><button onclick="setDashMode('themes',this)">Nach Themen</button></div>
+          <button class="btn sm" onclick="setSection('news')">Alle Meldungen →</button>
+        </div>
+      </div>
+      <div id="dash-themes" style="display:none" class="dash-inner"></div>
+      <div id="dash-overview">
+      <div class="dgrid">
+        <div class="dcard alerts">
+          <div class="dcard-hd"><h2>Eilmeldungen</h2><button class="all" onclick="S.prio.eil=true;g('fp-eil').checked=true;setSection('all')">Alle</button></div>
+          <div class="dcard-body" id="dash-eil"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Top-Meldungen</h2><span class="eyebrow">nach Relevanz · 48 h</span><button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
+          <div class="dash-two" id="dash-top"></div>
+        </div>
+      </div>
+      <div class="dgrid3">
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Themen-Radar</h2><span class="eyebrow">48 h</span></div>
+          <div class="bubbles" id="dash-trends"></div>
+          <div class="bubbles" style="padding-top:0" id="dash-kws"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Aus den Institutionen</h2><button class="all" onclick="setSection('eu')">EU Direkt</button></div>
+          <div class="dcard-body" id="dash-eu"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Bundestag &amp; Regierung</h2><button class="all" onclick="setSection('bt')">Alle</button></div>
+          <div class="dcard-body" id="dash-bt"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Gesetzgebung</h2><span class="eyebrow">DIP · Bundestag</span><button class="all" onclick="S.kind='procedure';setView('types');renderTypes()">Alle</button></div>
+          <div class="dcard-body" id="dash-dip"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><h2>Briefings</h2><span class="eyebrow">automatisch · 24 h</span><button class="all" onclick="setView('brief')">Alle</button></div>
+          <div class="dcard-body" id="dash-brief"></div>
+        </div>
+        <div class="dcard pro-card" data-feat="cal">
+          <div class="dcard-hd"><h2>Termine</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('cal',()=>setView('cal'))">Kalender</button></div>
+          <div class="dcard-body" id="dash-cal"></div>
+          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Tagesordnungen und Sitzungstermine als Terminliste.</p><button class="btn p sm" onclick="openLogin('cal')">Pro freischalten</button></div>
+        </div>
+        <div class="dcard pro-card" data-feat="docs">
+          <div class="dcard-hd"><h2>Neue Dokumente</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('docs',()=>setView('docs'))">Alle</button></div>
+          <div class="dcard-body" id="dash-docs"></div>
+          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Drucksachen, Protokolle und Amtsblatt mit PDF-Viewer.</p><button class="btn p sm" onclick="openLogin('docs')">Pro freischalten</button></div>
+        </div>
+        <div class="dcard pro-card" data-feat="media">
+          <div class="dcard-hd"><h2>Analyse &amp; Think Tanks</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('media',()=>{setTopic('__eu-think');setSection('eu')})">Alle</button></div>
+          <div class="dcard-body" id="dash-analysis"></div>
+          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Politico Europe, Euractiv, ECFR, SWP, Bruegel und weitere.</p><button class="btn p sm" onclick="openLogin('media')">Pro freischalten</button></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- Briefings / Newsletter -->
+    <section class="view plain" id="view-brief">
+      <div class="plain-head"><div><h1>Briefings</h1><div class="sub" style="margin:0">Automatisch aus deinen Feeds je Thema zusammengestellt – plus externe Newsletter aus <code>newsletters.json</code>.</div></div>
+        <div class="seg"><button class="active" onclick="setBriefMode('auto',this)">Themen-Briefings</button><button onclick="setBriefMode('ext',this)">Newsletter</button></div></div>
+      <div id="brief-list" class="dgrid3"></div>
+      <div id="brief-read" style="display:none"></div>
+    </section>
+
+    <!-- Verzeichnis: Personen & Ausschüsse -->
+    <section class="view plain" id="view-dir">
+      <div class="plain-head"><div><h1 id="dir-title">Personen</h1><div class="sub" style="margin:0" id="dir-sub"></div></div>
+        <div class="seg"><button class="active" id="dm-people" onclick="setDirMode('people')">Personen</button><button id="dm-comm" onclick="setDirMode('comm')">Ausschüsse</button></div>
+        <button class="btn sm" onclick="proGate('export',exportContacts)">↓ Kontakte CSV <span class="pro-tag">PRO</span></button></div>
+      <div class="dir-layout">
+        <div class="dir-side">
+          <input id="dir-q" placeholder="Name, Wahlkreis, Ausschuss…" oninput="debounce(renderDir)">
+          <div class="chips" style="margin-bottom:8px" id="dir-parl"></div>
+          <select class="fsel" id="dir-comm" onchange="renderDir()"></select>
+          <select class="fsel" id="dir-party" onchange="renderDir()"></select>
+          <div class="gap-note" style="margin:6px 0 0;font-size:11px" id="dir-note"></div>
+        </div>
+        <div id="dir-list"></div>
+      </div>
+    </section>
+
+    <!-- Inhaltstypen -->
+    <section class="view plain" id="view-types">
+      <div class="plain-head"><div><h1>Inhaltstypen</h1><div class="sub" style="margin:0">Pressemitteilungen, Reden, Transkripte, Konsultationen, Agenden – aus allen Feeds und Dokumenten abgeleitet.</div></div></div>
+      <div class="dir-layout">
+        <div class="dir-side" id="types-side"></div>
+        <div id="types-list"></div>
+      </div>
+    </section>
+
+    <!-- Feed (Split) -->
+    <section class="view" id="view-feed">
+      <div id="filterbar">
+        <span class="fl" id="fb-set">Nachrichten</span>
+        <div class="vsep"></div>
+        <span class="fl">Thema</span><div class="chips" id="topic-chips"></div>
+        <div class="vsep"></div>
+        <span class="fl">Quelle</span><div class="chips" id="src-chips"></div>
+      </div>
+      <div id="statusbar">
+        <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
+        <span><strong id="acnt">0</strong> Artikel</span>
+        <span id="hidden-info" style="color:var(--red);font-weight:600;display:none"></span>
+        <div class="sr">
+          <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
+          <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
+          <button class="sb" id="sb2" onclick="setSort('boost')">⭐ Relevanz</button>
+        </div>
+      </div>
+      <div id="split">
+        <div id="list-pane"><div id="list-scroll"></div></div>
+        <div id="drag-handle"></div>
+        <div id="reader-pane">
+          <div id="reader-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <p>Artikel auswählen</p><small>← Klicken · ↑↓ Navigieren · M Markieren · S KI</small>
+          </div>
+          <div id="reader-content">
+            <div class="eu-banner" id="eu-banner" style="display:none"><span style="font-size:13px;letter-spacing:2px">★ ★ ★</span><strong>EU Direkt</strong><span id="eu-banner-inst"></span></div>
+            <div id="reader-header">
+              <div id="reader-source-row"><button class="btn sm" id="reader-back" onclick="closeReader()">← Liste</button><span id="reader-source"></span><span id="reader-inst" style="display:none"></span><span id="reader-flags"></span><span id="reader-date"></span></div>
+              <div id="reader-title"></div>
+              <div id="reader-tags"></div>
+            </div>
+            <div id="reader-body">
+              <img id="reader-img" alt="">
+              <div id="reader-text"></div>
+              <div id="ai-summary-box">
+                <div id="ai-summary-header"><span>🤖 KI-Zusammenfassung</span><button class="btn sm" onclick="summarizeArticle()">↺</button></div>
+                <div id="ai-summary-body"></div>
+              </div>
+            </div>
+            <div id="reader-footer">
+              <button class="btn p" onclick="openCurLink()">🔗 Öffnen</button>
+              <button class="btn" id="reader-mark-btn" onclick="toggleMarkCur()">☆ Markieren</button>
+              <button class="btn" onclick="proGate('ai',summarizeArticle)">🤖 KI <span class="pro-tag">PRO</span></button>
+              <span style="flex:1"></span>
+              <button class="btn" onclick="prevArt()">←</button>
+              <button class="btn" onclick="nextArt()">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dokumente -->
+    <section class="view plain" id="view-docs">
+      <div class="plain-head"><div><h1>Dokumente</h1><div class="sub" style="margin:0">Drucksachen, Plenarprotokolle, Tagesordnungen, Wissenschaftliche Dienste, EUR-Lex Amtsblatt L/C – aus <code>documents.json</code>.</div></div>
+        <div class="seg"><button class="active" onclick="setDocMode('list',this)">Liste</button><button onclick="setDocMode('type',this)">Nach Typ</button><button onclick="setDocMode('topic',this)">Nach Thema</button></div></div>
+      <div class="docbar">
+        <span class="chip active" data-df="all" onclick="docFilter('all',this)">Alle</span>
+        <span class="chip" data-df="bt" onclick="docFilter('bt',this)">🏛 Bundestag</span>
+        <span class="chip" data-df="eurlex" onclick="docFilter('eurlex',this)">🇪🇺 EUR-Lex</span>
+        <span class="chip" data-df="hasfile" onclick="docFilter('hasfile',this)">📁 Im Repo</span>
+        <input id="docs-search" placeholder="Suchen…" oninput="renderDocs()" style="flex:1;min-width:120px;padding:4px 9px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;font-size:12px;outline:none">
+        <span class="eyebrow" id="docs-count"></span>
+      </div>
+      <div id="docs-list"></div>
+    </section>
+
+    <!-- Kalender -->
+    <section class="view plain" id="view-cal">
+      <div class="plain-head"><div><h1>Kalender</h1><div class="sub" style="margin:0">Sitzungstermine aus Bundestags-Tagesordnungen und Plenarprotokollen · Zeiten in <strong id="cal-tz"></strong>.</div></div>
+        <div class="seg"><button class="active" onclick="setCalMode('list',this)">Liste</button><button onclick="setCalMode('topic',this)">Nach Thema</button><button onclick="setCalMode('parl',this)">Nach Parlament</button></div></div>
+      <div class="cal-export">
+        <span>Export:</span>
+        <button class="btn sm" onclick="dlICS(calVisible(),'presseschau-termine.ics')">⬇ Alle sichtbaren als .ics</button>
+        <button class="btn sm" onclick="window.open(calSubscribeUrl(),'_blank')">🔗 Abonnieren (calendar.ics)</button>
+        <span style="color:var(--muted)">Google: <em>Weitere Kalender → Per URL</em> · Apple: <em>Ablage → Neues Kalenderabonnement</em> · URL: <code id="cal-sub-url"></code></span>
+      </div>
+      <div class="cal-filters">
+        <span class="chip active" data-cf="upcoming" onclick="calFilter('upcoming',this)">Bevorstehend</span>
+        <span class="chip" data-cf="week" onclick="calFilter('week',this)">Diese Woche</span>
+        <span class="chip" data-cf="all" onclick="calFilter('all',this)">Alle</span>
+      </div>
+      <div class="gap-note"><strong>Datenlücke:</strong> Termine werden aus Titel und Datum der Tagesordnungen abgeleitet. Für EP-Plenarkalender, Kommissions-Agenda und Akteure (wie bei Politico) fehlen noch Feeds – siehe Konzeptdokument, Abschnitt 3.3.</div>
+      <div id="cal-list"></div>
+    </section>
+
+  </main>
+</div>
+<footer id="footer"><span>Presseschau · GitHub Actions alle 25 Min · <span id="plan-foot">Basis-Version: 48 Stunden</span></span><span id="footer-upd"></span></footer>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal" id="login-modal" onclick="if(event.target.id==='login-modal')closeLogin()"><div class="modal-in">
+  <button class="mc" onclick="closeLogin()">✕</button>
+  <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
+  <p id="login-reason"></p>
+  <div class="feat-list" id="login-feats"></div>
+  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
+  <div class="fld"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <div class="m-acts"><button class="btn p" onclick="doLogin()">Anmelden</button><button class="btn" onclick="closeLogin()">Weiter mit Basis</button></div>
+  <p class="km-note">Demo: Anmeldung schaltet die Pro-Ansicht frei. Später durch echten Auth-Provider ersetzen (setAuth wird mit dem Session-State aufgerufen).</p>
+</div></div>
+
+<div class="modal" id="sf-modal" onclick="if(event.target.id==='sf-modal')closeSF()"><div class="modal-in">
+  <button class="mc" onclick="closeSF()">✕</button>
+  <h2>Filter speichern</h2>
+  <div class="fld"><label>Name</label><input type="text" id="sf-name" placeholder="z. B. EU Digital ohne KI"></div>
+  <div class="fld"><label>Farbe wählen</label><div class="swatches" id="sf-swatches"></div></div>
+  <div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:3px">Benachrichtigungen aktivieren</div>
+    <p style="font-size:12px">Sie werden benachrichtigt, sobald ein neuer Inhalt für diesen Filter eingeht.</p>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" id="sf-app" checked> in der Seitenleiste zählen</label>
+    <label class="chk" style="margin-top:6px"><input type="checkbox" id="sf-mail"> per E-Mail erhalten <span class="eyebrow" style="font-weight:500;text-transform:none;letter-spacing:0">(benötigt Backend-Endpunkt)</span></label>
+  </div>
+  <div class="m-acts" style="justify-content:space-between;align-items:center"><span class="prev-chip" id="sf-prev"></span><button class="btn p" onclick="saveFilter()">Speichern</button></div>
+</div></div>
+
+<div class="modal" id="km" onclick="if(event.target.id==='km')closeKM()"><div class="modal-in" style="max-width:420px">
+  <h2>🤖 KI-Zusammenfassung</h2>
+  <p>Anthropic API-Key eingeben. Nur in dieser Session gespeichert.</p>
+  <input type="password" id="api-key-input" placeholder="sk-ant-…" onkeydown="if(event.key==='Enter')saveKey()">
+  <div class="m-acts"><button class="btn p" onclick="saveKey()">Speichern &amp; Zusammenfassen</button><button class="btn" onclick="closeKM()">Abbrechen</button></div>
+  <p class="km-note">console.anthropic.com</p>
+</div></div>
+
+<div class="modal" id="em" onclick="if(event.target.id==='em')closeEM()"><div class="modal-in" style="max-width:520px">
+  <button class="mc" onclick="closeEM()">✕</button>
+  <h2 id="em-title">Export</h2><p id="em-desc"></p>
+  <textarea id="em-txt" readonly></textarea>
+  <div class="m-acts">
+    <button class="btn p" onclick="copyExport(event)">📋 Kopieren</button>
+    <button class="btn" onclick="setExpFmt('full',event)">Titel + Quelle + Link</button>
+    <button class="btn" onclick="setExpFmt('head',event)">Nur Schlagzeilen</button>
+    <button class="btn" onclick="setExpFmt('links',event)">Nur Links</button>
+    <button class="btn" onclick="setExpFmt('md',event)">Markdown</button>
+    <button class="btn" onclick="dlTXT()">📄 TXT</button>
+    <button class="btn" onclick="dlCSV()">📊 CSV</button>
+    <button class="btn" onclick="sendMail()">✉️ Mail</button>
+  </div>
+  <p class="km-note">Markierungen werden nach dem Export aufgelöst.</p>
+</div></div>
+
+<div class="modal" id="topic-modal" onclick="if(event.target.id==='topic-modal')closeTopicModal()"><div class="modal-in">
+  <button class="mc" onclick="closeTopicModal()">✕</button>
+  <h2>Eigenes Thema</h2>
+  <p>Begriffe, die im Titel oder Teaser vorkommen müssen. Ein Treffer genügt (ODER). Das Thema erscheint als Filter in der Seitenleiste und zählt neue Meldungen.</p>
+  <div class="fld"><label>Name</label><input type="text" id="tm-name" placeholder="z. B. Glasfaser Bayern"></div>
+  <div class="fld"><label>Begriffe (Komma-getrennt)</label><input type="text" id="tm-kw" placeholder="glasfaser, ftth, breitband" onkeydown="if(event.key==='Enter')saveTopic()"></div>
+  <div class="fld"><label>Ausschließen (optional)</label><input type="text" id="tm-not" placeholder="telekom"></div>
+  <div class="fld"><label>Farbe</label><div class="swatches" id="tm-swatches"></div></div>
+  <div class="m-acts" style="justify-content:space-between;align-items:center"><span class="km-note" id="tm-hits"></span><button class="btn p" onclick="saveTopic()">Thema speichern</button></div>
+  <p class="km-note">Gespeichert im Browser. Mit Konto (siehe ACCOUNTS.md) wandern die Themen in die Cloudflare-D1-Datenbank und stehen auf allen Geräten bereit.</p>
+</div></div>
+<div class="modal" id="person-modal" onclick="if(event.target.id==='person-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:560px"></div></div>
+<div id="doc-viewer"><div class="frame">
+  <div class="fh"><span id="dv-title"></span><button class="btn sm p" onclick="window.open(g('doc-iframe').dataset.link,'_blank','noopener')">🔗 Öffnen</button><button class="btn sm" onclick="g('doc-viewer').classList.remove('open');g('doc-iframe').src='about:blank'">✕</button></div>
+  <iframe id="doc-iframe" title="Dokument"></iframe>
+</div></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   KONSTANTEN – unverändert aus v2 (gleiche Topic-Keys wie fetch_news.py)
+   ═══════════════════════════════════════════════════════════ */
+const PAL=[{bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},{bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},{bg:'#fff7ed',tc:'#c2410c'},{bg:'#fefce8',tc:'#a16207'},{bg:'#f5f3ff',tc:'#6d28d9'},{bg:'#fce7f3',tc:'#9d174d'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},{bg:'#d1fae5',tc:'#065f46'},{bg:'#ffe4e6',tc:'#9f1239'},{bg:'#e0e7ff',tc:'#3730a3'},{bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'}];
+const CC={};function srcC(n){if(!CC[n])CC[n]=PAL[Object.keys(CC).length%PAL.length];return CC[n];}
+function badge(n){const c=srcC(n);return`<span class="sbadge" style="background:${c.bg};color:${c.tc}">${esc(n)}</span>`;}
+const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899',netzpolitik:'#0284c7'};
+const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wissenschaft',medizin:'🏥 Medizin',netzpolitik:'📡 Netz/Telko'};
+const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',aussenpolitik:'#ef4444',migration:'#f97316',haushalt:'#f59e0b',rechtsstaat:'#8b5cf6'};
+const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',haushalt:'💶 Haushalt',rechtsstaat:'⚖️ Rechtsstaat'};
+const BT_TC={plenum:'#1d4ed8',gesetzgebung:'#7c3aed',haushalt:'#0f766e',verteidigung:'#dc2626',aussenpolitik:'#b45309',wirtschaft:'#059669',soziales:'#db2777',digitales:'#0891b2',umwelt:'#16a34a',innenpolitik:'#9333ea',bundesregierung:'#ea580c'};
+const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',aussenpolitik:'🌐 Außenpolitik',wirtschaft:'📈 Wirtschaft',soziales:'🤝 Soziales',digitales:'💻 Digitales',umwelt:'🌿 Umwelt & Klima',innenpolitik:'🔐 Innenpolitik',bundesregierung:'🏛 Bundesregierung'};
+const INST_LABELS={'ep':'Europ. Parlament','ep-committee':'EP-Ausschuss','ec':'EU-Kommission','council':'Rat der EU','eu-inst':'EU-Institution','eurlex':'EUR-Lex','eu-media':'EU-Medien','eu-think':'Think Tank','bt-allg':'Bundestag','bt-thema':'BT Themen','breg':'Bundesregierung','de-leit':'Leitmedien','de-pol':'Politik','de-eco':'Wirtschaft','de-tech':'Tech','de-ind':'Industrie','de-telko':'Telko'};
+const TC=s=>s==='eu'?{...EU_TC,...EXTRA_TC}:s==='us'?US_TC:(s==='bt'||s==='laender')?{...BT_TC,...EXTRA_TC}:{...NEWS_TC,...EXTRA_TC};
+const TL=s=>s==='eu'?{...EU_TL,...EXTRA_TL}:s==='us'?US_TL:(s==='bt'||s==='laender')?{...BT_TL,...EXTRA_TL}:{...NEWS_TL,...EXTRA_TL};
+const SET_LABEL={news:'Nachrichten',eu:'EU Direkt',bt:'Bundestag',laender:'Länder',us:'USA',all:'Alle Feeds'};
+/* v5: erweiterte Themen – Schlüssel identisch mit TOPIC_RULES in fetch_news.py */
+const EXTRA_TC={verbraucher:'#0d9488',kommunales:'#78716c',sicherheitspolitik:'#991b1b',religion:'#7c3aed',sport_politik:'#15803d',demografie:'#a16207',korruption:'#b45309',nordeuropa:'#0284c7',osteuropa:'#c2410c',gesundheit:'#ec4899',soziales:'#db2777',bildung:'#0891b2',migration:'#f97316',justiz:'#7c3aed',innenpolitik:'#9333ea',umwelt:'#16a34a',agrar:'#65a30d',wohnen:'#a16207',arbeit:'#0f766e',kultur:'#be123c',handel:'#0369a1',raumfahrt:'#4f46e5',afrika:'#d97706',lateinamerika:'#059669'};
+const EXTRA_TL={verbraucher:'🛒 Verbraucher',kommunales:'🏘 Kommunales',sicherheitspolitik:'🛰 Sicherheitspolitik',religion:'⛪ Religion',sport_politik:'🏅 Sportpolitik',demografie:'📊 Demografie',korruption:'🔍 Transparenz',nordeuropa:'🇸🇪 Nordeuropa',osteuropa:'🇵🇱 Osteuropa',gesundheit:'🏥 Gesundheit',soziales:'🤝 Soziales',bildung:'🎓 Bildung',migration:'👥 Migration',justiz:'⚖️ Justiz',innenpolitik:'🔐 Inneres',umwelt:'🌱 Umwelt',agrar:'🌾 Agrar',wohnen:'🏘 Wohnen',arbeit:'👷 Arbeit',kultur:'🎭 Kultur/Medien',handel:'🚢 Handel',raumfahrt:'🚀 Raumfahrt',afrika:'🌍 Afrika',lateinamerika:'🌎 Lateinamerika'};
+const US_TC={congress:'#1d4ed8',white_house:'#b91c1c',scotus:'#6d28d9',trade:'#0369a1',tech_policy:'#0891b2',defense:'#dc2626',economy:'#059669',elections:'#f59e0b',immigration:'#f97316',foreign_policy:'#b45309',energy:'#16a34a',health:'#ec4899'};
+const US_TL={congress:'🏛 Kongress',white_house:'🏛 Weißes Haus',scotus:'⚖️ Supreme Court',trade:'🚢 Handel',tech_policy:'💻 Tech-Politik',defense:'🛡 Verteidigung',economy:'📈 Wirtschaft',elections:'🗳 Wahlen',immigration:'👥 Migration',foreign_policy:'🌐 Außenpolitik',energy:'⚡ Energie',health:'🏥 Gesundheit'};
+/* Länder nutzen die Bundestags-Ressorts (gleiche TOPIC_RULES im Backend) */
+const LAND_L={bw:'Baden-Württemberg',by:'Bayern',be:'Berlin',bb:'Brandenburg',hb:'Bremen',hh:'Hamburg',he:'Hessen',mv:'Mecklenburg-Vorpommern',ni:'Niedersachsen',nw:'Nordrhein-Westfalen',rp:'Rheinland-Pfalz',sl:'Saarland',sn:'Sachsen',st:'Sachsen-Anhalt',sh:'Schleswig-Holstein',th:'Thüringen'};
+/* v5: Institutionen-Baum – Schlüssel = Feld `inst` aus fetch_news.py */
+const INST_TREE=[
+ {id:'de',label:'🇩🇪 Deutschland',items:[['bundestag','Bundestag'],['bundesrat','Bundesrat'],['bundesregierung','Bundesregierung'],['bverfg','Bundesverfassungsgericht'],['bgh','Bundesgerichtshof'],['bundesbank','Deutsche Bundesbank']]},
+ {id:'laender',label:'🏳️ Länder',items:Object.entries({bw:'Baden-Württemberg',by:'Bayern',be:'Berlin',bb:'Brandenburg',hb:'Bremen',hh:'Hamburg',he:'Hessen',mv:'Mecklenburg-Vorp.',ni:'Niedersachsen',nw:'Nordrhein-Westf.',rp:'Rheinland-Pfalz',sl:'Saarland',sn:'Sachsen',st:'Sachsen-Anhalt',sh:'Schleswig-Holstein',th:'Thüringen'}).map(([k,v])=>['landtag-'+k,v])},
+ {id:'eu',label:'🇪🇺 Europäische Union',items:[['ep','Europäisches Parlament'],['ec','Europäische Kommission'],['eu-council','Europäischer Rat'],['ecb','Europäische Zentralbank'],['cjeu','Europäischer Gerichtshof'],['eca','Europäischer Rechnungshof'],['eu-agency','EU-Agenturen'],['eurlex','EUR-Lex']]},
+ {id:'us',label:'🇺🇸 USA',items:[['us-house','House of Representatives'],['us-senate','Senat'],['us-congress','Kongress (allg.)'],['us-whitehouse','Weißes Haus'],['us-scotus','Supreme Court'],['us-courts','Bundesgerichte'],['us-agency','Bundesbehörden']]}];
+const INST_FLAT={};INST_TREE.forEach(g=>g.items.forEach(([k,v])=>INST_FLAT[k]=v));
+/* Fallback, solange fetch_news.py noch kein `inst` liefert */
+const CAT_INST={bundesrat:'bundesrat',bverfg:'bverfg',bgh:'bgh',bundesbank:'bundesbank',ecb:'ecb',cjeu:'cjeu',eca:'eca','eu-council':'eu-council',ec:'ec',ep:'ep','bt-allg':'bundestag','bt-thema':'bundestag',breg:'bundesregierung','us-house':'us-house','us-senate':'us-senate','us-congress':'us-congress','us-whitehouse':'us-whitehouse','us-scotus':'us-scotus','us-courts':'us-courts','us-agency':'us-agency'};
+const instOf=a=>a.inst||CAT_INST[a.cat]||(a._set==='laender'&&a.cat?'landtag-'+a.cat:'');
+/* v4: Sport-Filter (clientseitig; dauerhaft: NOISE_KEYWORDS in fetch_news.py ergänzen) */
+const SPORT_RE=/\b(bundesliga|fu(ß|ss)ball|dfb|dfl|champions league|europa league|conference league|bayern münchen|fc bayern|borussia|dortmund|schalke|eintracht|werder|leverkusen|hertha|hsv|st\. pauli|olympia|olympische|tennis|wimbledon|formel ?1|grand prix|nfl|nba|nhl|mlb|handball|eishockey|basketball|torwart|torhüter|trainer(wechsel|entlassung)|spieltag|tabellenführer|weltmeister(schaft)?|europameister(schaft)?|pokalfinale|relegation|transfermarkt|marathon|leichtathletik|biathlon|skispringen|radsport|tour de france|boxkampf|ufc|darts|golfturnier|nationalmannschaft|nationalelf|länderspiel)\b/i;
+/* v4: Themen-Klassifikator für Dokumente/Termine (die haben kein topics[]) */
+const TOPIC_KW={gesundheit:['gesundheit','kranken','pflege','arznei','pharma','klinik','ärzt'],digitales:['digital','ki ','künstliche intelligenz','daten','cyber','it-','software','plattform','online','netz'],wirtschaft:['wirtschaft','industrie','handel','unternehmen','mittelstand','konjunktur','export','zoll','tarif'],haushalt:['haushalt','budget','finanz','steuer','schulden','etat','mff'],verteidigung:['verteidigung','bundeswehr','nato','rüstung','sicherheitspolitik','militär'],energie_klima:['energie','klima','strom','gas ','wasserstoff','erneuerbar','netzausbau','wärme','co2','emission'],aussenpolitik:['außen','auswärtig','ukraine','russland','china','usa ','nahost','israel','diplomat'],migration:['migration','asyl','flüchtling','einwander','grenz'],soziales:['sozial','rente','arbeit','familie','wohnen','miete','bürgergeld','bildung'],rechtsstaat:['recht','justiz','gericht','grundgesetz','verfassung','demokratie','wahl'],umwelt:['umwelt','natur','landwirtschaft','agrar','wald','wasser'],mobilitaet:['verkehr','bahn','auto','mobilität','luftfahrt','schifffahrt','infrastruktur']};
+const TOPIC_KW_L={gesundheit:'🏥 Gesundheit',digitales:'💻 Digitales',wirtschaft:'📈 Wirtschaft',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',soziales:'🤝 Soziales',rechtsstaat:'⚖️ Rechtsstaat',umwelt:'🌱 Umwelt/Agrar',mobilitaet:'🚗 Mobilität',sonstig:'📋 Sonstiges'};
+function classify(text){const t=(text||'').toLowerCase();let best='sonstig',bs=0;for(const[k,kws]of Object.entries(TOPIC_KW)){const sc=kws.reduce((n,w)=>n+(t.includes(w)?1:0),0);if(sc>bs){bs=sc;best=k;}}return best;}
+/* v4: Inhaltstyp (Politico Directories) */
+const KINDS={procedure:'Gesetzgebungsvorgänge',press:'Pressemitteilungen',speech:'Reden & Statements',transcript:'Transkripte / Protokolle',consultation:'Konsultationen & Anhörungen',agenda:'Agenden / Tagesordnungen',document:'Drucksachen & Amtsblatt',news:'Nachrichten'};
+function kindOf(x){if(x.kind)return x.kind;const t=((x.title||'')+' '+(x.type||''));const s=(x.source||'');
+  if(/plenarprotokoll|protokoll|transcript|verbatim|wortprotokoll/i.test(t))return'transcript';
+  if(/tagesordnung|agenda|sitzungswoche|plenary session|programme/i.test(t))return'agenda';
+  if(/konsultation|consultation|anhörung|call for evidence|stellungnahme|have your say/i.test(t))return'consultation';
+  if(/^(rede|speech|statement|erklärung|grußwort|keynote)\b|\b(rede|speech) (von|by|des|der)\b/i.test(t))return'speech';
+  if(x._doc)return'document';
+  if(/pressemitt|press release|presse|hib|newsroom|presscorner/i.test(s)||['ec','ep','council','eu-inst','bt-allg','breg'].includes(x.cat))return'press';
+  return'news';}
+const PARTY_C={'CDU':'#111','CDU/CSU':'#111','CSU':'#0a5aa5','SPD':'#e3000f','Bündnis 90/Die Grünen':'#1fa12e','GRÜNE':'#1fa12e','Die Grünen':'#1fa12e','FDP':'#ffed00','AfD':'#009ee0','Die Linke':'#be3075','DIE LINKE':'#be3075','BSW':'#7b2a8b','SSW':'#0d6b9a','EPP':'#1a5fa8','S&D':'#e3000f','Renew':'#f7c600','Greens/EFA':'#1fa12e','ECR':'#0e4f8c','PfE':'#2b5aa0','The Left':'#be3075','ESN':'#1b4b7a','NI':'#777'};
+function partyC(p){for(const k in PARTY_C)if(p&&p.toLowerCase().startsWith(k.toLowerCase()))return PARTY_C[k];return'#4a5168';}
+const PARL_L={bt:'Bundestag',br:'Bundesrat',ep:'Europ. Parlament'};
+/* v5: eigene Themen des Nutzers */
+let MYTOPICS=[];
+function matchMy(a,t){const txt=((a.title||'')+' '+(a.desc||'')).toLowerCase();
+  if(t.not?.some(w=>txt.includes(w)))return false;return t.kw.some(w=>txt.includes(w));}
+
+/* ═══════════════════════════════════════════════════════════
+   FREE / PRO – die einzige Stelle, an der Gates definiert sind
+   ═══════════════════════════════════════════════════════════ */
+const PRO_CATS=new Set(['eu-media','eu-think']);   // Quellen, die nur Pro voll liest
+const FREE_HOURS=48;                               // Basis: Zeitfenster
+const FREE_MARK_LIMIT=5;                           // Basis: Merkliste
+const FEATURES={
+  archive:{t:'Archiv',d:'Meldungen älter als 48 Stunden – rollend 7 bzw. 14 Tage.'},
+  media:{t:'Analyse-Quellen',d:'Politico Europe, Euractiv, ECFR, CER, SWP, Bruegel, Bertelsmann Stiftung.'},
+  not:{t:'NICHT-Operator',d:'Begriffe aus der Suche ausschließen, z. B. „NICHT Corona".'},
+  saved:{t:'Gespeicherte Filter',d:'Suche als Filter mit Farbe speichern und in der Seitenleiste anpinnen.'},
+  notify:{t:'Benachrichtigungen',d:'Zähler für neue Meldungen je gespeichertem Filter.'},
+  export:{t:'Export',d:'Markierte oder gefilterte Artikel als TXT, CSV oder E-Mail.'},
+  ai:{t:'KI-Zusammenfassung',d:'Artikel in 3–4 Sätzen mit Implikation für Deutschland/EU.'},
+  docs:{t:'Dokumente & Verzeichnis',d:'Drucksachen, Protokolle, Amtsblatt – plus Personenprofile mit Kontakt, Ausschüssen und Reden.'},
+  cal:{t:'Kalender',d:'Tagesordnungen und Sitzungstermine als Terminliste.'},
+  mytopics:{t:'Eigene Themen',d:'Beliebige Begriffe als Thema speichern, mit Farbe und Zähler für neue Treffer.'},
+  marks:{t:'Merkliste ohne Limit',d:'In der Basis-Version sind '+FREE_MARK_LIMIT+' Markierungen möglich.'}
+};
+const isPro=()=>S.plan==='pro';
+function proGate(feat,fn){if(isPro()){fn&&fn();return true;}openLogin(feat);return false;}
+function setAuth(on){
+  S.plan=on?'pro':'free';
+  document.body.classList.toggle('pro',on);
+  g('auth-toggle').checked=on;g('auth-toggle-m').checked=on;g('auth-label').textContent=g('auth-label-m').textContent=on?'Pro':'Basis';
+  g('plan-foot').textContent=on?'Pro: rollendes Archiv':'Basis-Version: 48 Stunden';
+  g('fp-range').disabled=!on;g('fp-range-pro').style.display=on?'none':'';
+  if(!on){S.range='48';g('fp-range').value='48';S.tokens=S.tokens.filter(t=>!t.not);renderTokens();
+    if(S.view==='docs'||S.view==='cal')setView('dash');}
+  document.querySelectorAll('.pro-card').forEach(c=>c.classList.toggle('locked',!on));
+  ['nav-docs','nav-cal','nav-dir'].forEach(id=>g(id).classList.toggle('locked',!on));
+  store.set('ps_plan',S.plan);
+  buildNavInsts();applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderBriefs();renderDir();renderTypes();renderMyTopics();updateMarkUI();
+}
+function doLogin(){setAuth(true);closeLogin();}
+
+/* ═══════════════════════════════════════════════════════════
+   STATE & DATEN
+   ═══════════════════════════════════════════════════════════ */
+let DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
+let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',inst:'',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
+const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
+let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
+function g(id){return document.getElementById(id);}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fd(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
+function fmt(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
+function ageH(iso){if(!iso)return 1e9;const d=new Date(iso);return isNaN(d)?1e9:(Date.now()-d)/36e5;}
+function rel(iso){const h=ageH(iso);if(h>=1e8)return'–';if(h<1)return'vor '+Math.max(1,Math.round(h*60))+' Min';if(h<24)return'vor '+Math.round(h)+' Std';if(h<48)return'gestern';return fd(iso);}
+function words(a){return a.wordcount||((a.desc||'').trim().split(/\s+/).filter(Boolean).length);}
+function readMin(a){const w=words(a);return w?(a.wordcount?'':'~')+Math.max(1,Math.round(w/180))+' Min':'';}
+/* Abgeleitete Priorität: solange fetch_news.py kein "priority"-Feld liefert */
+/* v5: Eilmeldung = Kennzeichnung des Portals (priority aus fetch_news.py, sonst Titel-Marker).
+   Relevanz allein macht KEINE Eilmeldung mehr – das war die Quelle der Fehlalarme. */
+let HAS_PRIORITY=false;
+function isBreaking(a){
+  if(a.priority==='eil')return true;
+  if(HAS_PRIORITY)return false;                 // Backend liefert das Feld → ihm vertrauen
+  return /^\s*(\+{2,}|eil(meldung)?\s*[:\-–]|eilt\s*[:\-–]|breaking( news)?\s*[:\-–]|live\s*[:\-–])/i.test(a.title||'');
+}
+/* v5: „Top" = von mehreren unabhängigen Quellen berichtet (cluster) + Relevanz.
+   Echte Abrufzahlen liefert kein RSS-Feed – Mehrfachberichterstattung ist der belastbare Ersatz. */
+function topScore(a){return(a.cluster||1)*3+(a.boost||0)+(ageH(a.date)<6?2:0);}
+function isNew(a){return ageH(a.date)<1;}
+function isLocked(a){return!isPro()&&PRO_CATS.has(a.cat);}
+function inWindow(a){if(!isPro())return ageH(a.date)<=FREE_HOURS;return S.range==='all'||ageH(a.date)<=+S.range;}
+function initials(s){const p=(s||'?').replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean);return((p[0]?.[0]||'')+(p[1]?.[0]||p[0]?.[1]||'')).toUpperCase();}
+function tile(a,cls){const c=a._set==='eu'?{tc:'#003399'}:a._set==='bt'?{tc:'#1d4ed8'}:srcC(a.source);return a.image?`<div class="tile ${cls}" style="background:${c.tc}"><img src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()"></div>`:`<div class="tile ${cls}" style="background:${c.tc}">${initials(a.source)}</div>`;}
+function rawPool(sec){return sec==='news'?ALL_NEWS:sec==='eu'?ALL_EU:sec==='bt'?ALL_BT:sec==='laender'?ALL_LAENDER:sec==='us'?ALL_US:[...ALL_NEWS,...ALL_EU,...ALL_BT,...ALL_LAENDER,...ALL_US];}
+function isSport(a){return SPORT_RE.test((a.title||'')+' '+(a.desc||'').slice(0,200));}
+function pool(sec){const p=rawPool(sec);return S.hideSport?p.filter(a=>!isSport(a)):p;}
+function setSport(on){S.hideSport=on;store.set('ps_sport',on);applyFilters();renderDash();}
+/* Dubletten (gleiche Meldung aus mehreren Quellen / Google-Proxies) */
+function normT(t){return(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
+function dedupe(list,seen=new Set()){return list.filter(a=>{const k=normT(a.title);if(!k||seen.has(k)||seen.has(a.id))return false;seen.add(k);seen.add(a.id);return true;});}
+function tagsHTML(a,n=3){const tc=TC(a._set),tl=TL(a._set);return(a.topics||[]).slice(0,n).map(t=>`<span class="tag c" style="--tc:${tc[t]||'#6b7280'}">${esc((tl[t]||t).replace(/^\S+\s/,''))}</span>`).join('');}
+
+/* ═══ LOAD – identische Dateinamen & Felder wie v2 ═══ */
+async function loadData(){
+  setSt('loading','Lade…');const t=Date.now();
+  const get=async f=>{try{const r=await fetch(f+'?t='+t);return r.ok?await r.json():null;}catch{return null;}};
+  const[n,e,b,d,pp,nl,la,us,dp]=await Promise.all([get('articles.json'),get('eu_articles.json'),get('bundestag_articles.json'),get('documents.json'),get('people.json'),get('newsletters.json'),get('laender_articles.json'),get('us_articles.json'),get('dip.json')]);
+  PEOPLE=pp?.people||[];COMMS=pp?.committees||[];NEWSL=nl?.items||[];
+  ALL_LAENDER=(la?.articles||[]).map(a=>({...a,_set:'laender'}));
+  ALL_US=(us?.articles||[]).map(a=>({...a,_set:'us'}));
+  DIP=dp||{};
+  if(!n&&!e&&!b&&!d){useDemo();}
+  else{
+    document.body.classList.remove('demo');
+    ALL_NEWS=(n?.articles||[]).map(a=>({...a,_set:'news'}));
+    ALL_EU=(e?.articles||[]).map(a=>({...a,_set:'eu'}));
+    ALL_BT=(b?.articles||[]).map(a=>({...a,_set:'bt'}));
+    ALL_DOCS=d?.documents||[];
+    META={news:n||{},eu:e||{},bt:b||{},docs:d||{}};
+  }
+  afterLoad();
+}
+function afterLoad(){
+  const upd=META.news?.updated;
+  if(upd){g('dash-upd').textContent='Stand '+fmt(upd);g('footer-upd').textContent='Zuletzt: '+fmt(upd);}
+  g('cnt-news').textContent=ALL_NEWS.length;g('cnt-eu').textContent=ALL_EU.length;g('cnt-bt').textContent=ALL_BT.length;
+  g('cnt-docs').textContent=ALL_DOCS.length;g('cnt-cal').textContent=calItems().length;
+  const fails=(META.news?.feeds_fail||0)+(META.eu?.feeds_fail||0)+(META.bt?.feeds_fail||0);
+  setSt(fails?'err':'ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT'+(fails?' · '+fails+' Feeds fehlgeschlagen':''));
+  HAS_PRIORITY=rawPool('all').some(a=>'priority' in a);
+  if(!PEOPLE.length)demoPeople();
+  ALL_DOCS.forEach(d=>d._doc=true);
+  buildBriefs();
+  g('cnt-laender').textContent=ALL_LAENDER.length;g('cnt-us').textContent=ALL_US.length;
+  g('cnt-people').textContent=PEOPLE.length;g('cnt-comm').textContent=COMMS.length;g('cnt-brief').textContent=BRIEFS.length+NEWSL.length;
+  g('cnt-types').textContent=Object.keys(KINDS).length;
+  const dc=(DIP.counts?.procedures||0);if(dc)g('cnt-types').textContent=dc+' Vorgänge';
+  g('cal-tz').textContent=USER_TZ;g('cal-sub-url').textContent=calSubscribeUrl();
+  buildNavTopics();buildNavInsts();buildChips();buildSrc();buildFilterSelects();buildDirFilters();renderMyTopics();
+  applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderBriefs();renderDir();renderTypes();
+}
+function setSt(t,m){g('sdot').className='dot '+t;g('stxt').textContent=m;}
+
+/* ═══ NAVIGATION ═══ */
+function setView(v){
+  if((v==='docs'||v==='cal')&&!isPro()){openLogin(v);return;}
+  S.view=v;document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
+  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
+  document.body.classList.toggle('eu-mode',v==='feed'&&S.section==='eu');
+  toggleNav(false);
+}
+function setSection(sec){
+  S.section=sec;S.topic='all';S.src='all';S.inst='';S.idx=-1;S.art=null;buildNavInsts();
+  g('fb-set').textContent=SET_LABEL[sec];g('nav-themes-set').textContent='· '+SET_LABEL[sec==='all'?'news':sec];
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();
+  g('reader-content').style.display='none';g('reader-empty').style.display='flex';
+  setView('feed');applyFilters();
+}
+function toggleNav(force){document.body.classList.toggle('nav-open',force===undefined?undefined:force);}
+function toggleFilterPanel(){const p=g('filter-panel');p.classList.toggle('open');g('fp-arrow').textContent=p.classList.contains('open')?'▴':'▾';}
+function closeReader(){document.body.classList.remove('reader-open');}
+
+/* ═══ FILTER-BAUSTEINE ═══ */
+function chipsFor(sec){const tl=TL(sec);return[{t:'all',l:'Alle'},...Object.keys(tl).map(t=>({t,l:tl[t]}))];}
+function buildNavTopics(){const sec=S.section==='all'?'news':S.section;g('nav-topics').innerHTML=chipsFor(sec).slice(1,11).map(c=>`<span class="chip${S.topic===c.t?' active':''}" onclick="setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('');}
+/* v5: Institutionen als aufklappbarer Baum (Deutschland · Länder · EU · USA) */
+function instCounts(){const c={};rawPool('all').forEach(a=>{const k=instOf(a);if(k&&INST_FLAT[k])c[k]=(c[k]||0)+1;});return c;}
+function buildNavInsts(){
+  const cnt=instCounts();const open=store.get('ps_treeopen')||['de'];
+  g('nav-insts').innerHTML=INST_TREE.map(gr=>{
+    const items=gr.items.filter(([k])=>cnt[k]);const tot=items.reduce((n,[k])=>n+cnt[k],0);
+    if(!items.length)return'';
+    return`<div class="tree-grp${open.includes(gr.id)?' open':''}" id="tg-${gr.id}"><div class="tree-hd" onclick="toggleTree('${gr.id}')"><span class="arw">▶</span>${gr.label}<span class="cnt" style="margin-left:auto">${tot}</span></div>
+      <div class="tree-body">${items.map(([k,l])=>`<div class="tree-item${S.inst===k?' active':''}" onclick="instNav('${k}')">${esc(l)}<span class="cnt">${cnt[k]}</span></div>`).join('')}</div></div>`;}).join('')
+    ||'<div class="saved-empty">Noch keine Institutionsdaten. Nach dem nächsten Lauf von <code>fetch_news.py</code> (v3) erscheint hier der Baum.</div>';
+}
+function toggleTree(id){const el=g('tg-'+id);el.classList.toggle('open');const open=[...document.querySelectorAll('.tree-grp.open')].map(e=>e.id.slice(3));store.set('ps_treeopen',open);}
+function instNav(inst){
+  S.inst=inst;S.section='all';S.topic='all';S.src='all';
+  g('fb-set').textContent=INST_FLAT[inst]||inst;
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();
+}
+function buildChips(){const sec=S.section==='all'?'news':S.section;const w=g('topic-chips');
+  w.innerHTML=chipsFor(sec).slice(0,11).map(c=>`<span class="chip${S.topic===c.t?' active':''}" data-t="${c.t}" onclick="setTopic('${c.t}')">${c.l}</span>`).join('');}
+function buildSrc(){const srcs=[...new Set(pool(S.section).map(a=>a.source))].sort();const w=g('src-chips');
+  w.innerHTML=`<span class="chip${S.src==='all'?' active':''}" onclick="setSrc('all')">Alle</span>`+srcs.slice(0,14).map(s=>`<span class="chip${S.src===s?' active':''}" onclick="setSrc('${esc(s).replace(/'/g,"\\'")}')">${esc(s)}</span>`).join('')+(srcs.length>14?`<span class="chip" onclick="toggleFilterPanel()">+${srcs.length-14} weitere…</span>`:'');}
+function buildFilterSelects(){
+  const sec=S.section==='all'?'news':S.section;const tl=TL(sec);
+  const insts=[...new Set(pool(S.section).map(a=>a.cat).filter(Boolean))];
+  g('fp-topic').innerHTML='<option value="all">Alle Ressorts</option>'+Object.keys(tl).map(t=>`<option value="${t}"${S.topic===t?' selected':''}>${tl[t]}</option>`).join('')+(insts.length?'<optgroup label="Institution / Kategorie">'+insts.map(c=>`<option value="__${c}"${S.topic==='__'+c?' selected':''}>${esc(INST_LABELS[c]||c)}</option>`).join('')+'</optgroup>':'');
+  const srcs=[...new Set(pool(S.section).map(a=>a.source))].sort();
+  g('fp-src').innerHTML='<option value="all">Alle Quellen</option>'+srcs.map(s=>`<option value="${esc(s)}"${S.src===s?' selected':''}>${esc(s)}${PRO_CATS.has(pool(S.section).find(a=>a.source===s)?.cat)?' (Pro)':''}</option>`).join('');
+}
+function setTopic(t){S.topic=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));buildNavTopics();g('fp-topic').value=t;applyFilters();}
+function setSrc(s){S.src=s;buildSrc();g('fp-src').value=s;applyFilters();}
+function setRange(v){if(!isPro()){g('fp-range').value='48';openLogin('archive');return;}S.range=v;applyFilters();}
+function setSort(s){S.sort=s;['sn','so','sb2'].forEach((id,i)=>g(id).classList.toggle('active',['new','old','boost'][i]===s));applyFilters();}
+function resetFilters(){S.topic='all';S.src='all';S.inst='';buildNavInsts();S.tokens=[];S.prio={eil:false,top:false};g('fp-eil').checked=false;g('fp-top').checked=false;g('q').value='';renderTokens();buildChips();buildSrc();buildFilterSelects();buildNavTopics();applyFilters();}
+
+/* dpa-Token-Suche */
+function qKey(e){
+  if(e.key==='Backspace'&&!e.target.value&&S.tokens.length){S.tokens.pop();renderTokens();applyFilters();return;}
+  if(e.key!=='Enter')return;e.preventDefault();
+  let v=e.target.value.trim();if(!v)return;let not=false;
+  if(/^(nicht|not)\s+/i.test(v)){not=true;v=v.replace(/^(nicht|not)\s+/i,'');}else if(v.startsWith('-')){not=true;v=v.slice(1);}
+  if(not&&!isPro()){openLogin('not');return;}
+  v=v.toLowerCase();if(v&&!S.tokens.some(t=>t.v===v&&t.not===not))S.tokens.push({v,not});
+  e.target.value='';renderTokens();applyFilters();
+}
+function renderTokens(){g('tokens').innerHTML=S.tokens.map((t,i)=>`<span class="tok${t.not?' not':''}">${t.not?'<b>NICHT</b> ':''}${esc(t.v)}<button onclick="event.stopPropagation();S.tokens.splice(${i},1);renderTokens();applyFilters()" aria-label="entfernen">×</button></span>`).join('');}
+
+/* ═══ FILTER-PIPELINE ═══ */
+function matches(a,f){
+  const txt=((a.title||'')+' '+(a.desc||'')+' '+(a.source||'')).toLowerCase();
+  if(f.inst&&instOf(a)!==f.inst)return false;
+  if(f.topic&&f.topic!=='all'){
+    if(f.topic.startsWith('my:')){const t=MYTOPICS.find(x=>x.id===f.topic.slice(3));if(!t||!matchMy(a,t))return false;}
+    else if(f.topic.startsWith('__')){if(a.cat!==f.topic.slice(2))return false;}
+    else if(!(a.topics||[]).includes(f.topic))return false;}
+  if(f.src&&f.src!=='all'&&a.source!==f.src)return false;
+  if(f.prio?.eil&&!isBreaking(a))return false;
+  if(f.prio?.top&&!(a.boost||0))return false;
+  for(const t of(f.tokens||[])){const hit=txt.includes(t.v);if(t.not?hit:!hit)return false;}
+  if(f.q&&!txt.includes(f.q))return false;
+  return true;
+}
+function applyFilters(){
+  const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
+  const f={topic:S.topic,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
+  list=list.filter(a=>matches(a,f));
+  if(S.sort==='boost')list.sort((a,b)=>(topScore(b)-topScore(a))||((b.date||'').localeCompare(a.date||'')));
+  else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  S.filt=list;g('acnt').textContent=list.length;
+  const hi=g('hidden-info');hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';
+  g('fp-summary').textContent=list.length+' Treffer · '+SET_LABEL[S.section]+(S.topic!=='all'?' · '+S.topic:'')+(S.tokens.length?' · '+S.tokens.length+' Begriffe':'');
+  renderFeed();
+}
+function renderFeed(){
+  const el=g('list-scroll');
+  if(!S.filt.length){el.innerHTML='<div style="text-align:center;padding:40px 12px;color:var(--muted);font-size:13px;line-height:1.5">Keine Artikel im aktuellen Filter.<br><button class="btn sm" style="margin-top:8px" onclick="resetFilters()">Filter zurücksetzen</button></div>'+archiveGate();return;}
+  el.innerHTML=S.filt.slice(0,200).map((a,i)=>{
+    const col=a._set==='eu'?'#003399':a._set==='bt'?'#1d4ed8':srcC(a.source).tc;const lock=isLocked(a);const m=marked.has(a.id);
+    const instK=instOf(a)||a.cat;const inst=INST_FLAT[instK]?`<span class="inst-badge">${esc(INST_FLAT[instK])}</span>`:(a.cat&&a._set!=='news'?`<span class="inst-badge">${esc(INST_LABELS[a.cat]||a.cat)}</span>`:'');
+    const clu=(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster} Quellen</span>`:'';
+    return`<div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="openArt(${i})">
+      <div class="ai-top">${badge(a.source)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
+      <div class="ai-title">${esc(a.title)}</div>
+      ${a.desc?`<div class="ai-desc">${esc(a.desc)}</div>`:''}
+      <div class="ai-tags">${tagsHTML(a)}${(a.boost||0)>0?'<span class="tag" style="color:var(--amber)">★ '+a.boost+'</span>':''}</div>
+      <div class="ai-check${m?' checked':''}" onclick="toggleMark(event,'${a.id}')"></div>
+    </div>`;}).join('')+(S.filt.length>200?`<div style="text-align:center;padding:10px;font-size:11px;color:var(--muted)">${S.filt.length-200} weitere – Filter verfeinern</div>`:'')+archiveGate();
+}
+function archiveGate(){return S.hidden?`<div class="archive-gate"><strong>${S.hidden} weitere Meldungen im Archiv.</strong><br>Die Basis-Version zeigt die letzten ${FREE_HOURS} Stunden.<br><button class="btn p sm" style="margin-top:8px" onclick="openLogin('archive')">Archiv mit Pro freischalten</button></div>`:'';}
+
+/* ═══ READER ═══ */
+function openArt(i){
+  const a=S.filt[i];if(!a)return;
+  if(isLocked(a)){openLogin('media');return;}
+  S.idx=i;S.art=a;
+  document.querySelectorAll('.art-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+  const isEU=a._set==='eu';
+  g('eu-banner').style.display=isEU?'flex':'none';g('eu-banner-inst').textContent=isEU&&a.cat?'· '+(INST_LABELS[a.cat]||a.cat):'';
+  g('reader-source').innerHTML=badge(a.source);
+  const inst=g('reader-inst');if(a.cat&&a._set!=='news'){inst.style.display='';inst.innerHTML=`<span class="inst-badge">${esc(INST_LABELS[a.cat]||a.cat)}</span>`;}else inst.style.display='none';
+  g('reader-flags').innerHTML=(isBreaking(a)?'<span class="eil">Eil</span> ':'')+(isNew(a)?'<span class="newpill">Neu</span>':'');
+  g('reader-date').textContent=fd(a.date)+(a.author?' · '+a.author:'')+(readMin(a)?' · '+readMin(a)+' Lesezeit':'');
+  g('reader-title').textContent=a.title;
+  g('reader-tags').innerHTML=tagsHTML(a,6);
+  const img=g('reader-img');if(a.image){img.src=a.image;img.style.display='block';}else img.style.display='none';
+  g('reader-text').textContent=a.desc||'(Kein Vorschautext – Link öffnen)';
+  g('ai-summary-box').style.display='none';g('ai-summary-body').innerHTML='';
+  g('reader-empty').style.display='none';g('reader-content').style.display='flex';
+  g('reader-mark-btn').textContent=marked.has(a.id)?'★ Markiert':'☆ Markieren';
+  document.body.classList.add('reader-open');
+}
+function openById(id,set){
+  const a=pool('all').find(x=>x.id===id);if(!a)return;
+  if(isLocked(a)){openLogin('media');return;}
+  if(S.section!==(set||a._set)){S.section=set||a._set;g('fb-set').textContent=SET_LABEL[S.section];}
+  S.topic='all';S.src='all';buildNavTopics();buildChips();buildSrc();buildFilterSelects();
+  if(!isPro()&&!inWindow(a)){openLogin('archive');return;}
+  setView('feed');applyFilters();
+  const i=S.filt.findIndex(x=>x.id===id);if(i>=0){openArt(i);g('ai-'+i)?.scrollIntoView({block:'center'});}
+}
+function openCurLink(){if(S.art?.link)window.open(S.art.link,'_blank','noopener');}
+function prevArt(){if(S.idx>0){openArt(S.idx-1);g('ai-'+S.idx)?.scrollIntoView({block:'nearest'});}}
+function nextArt(){if(S.idx<S.filt.length-1){openArt(S.idx+1);g('ai-'+S.idx)?.scrollIntoView({block:'nearest'});}}
+
+/* ═══ MERKLISTE (Basis: Limit) ═══ */
+function toggleMark(e,id){e.stopPropagation();if(marked.has(id))marked.delete(id);else{if(!isPro()&&marked.size>=FREE_MARK_LIMIT){openLogin('marks');return;}marked.add(id);}updateMarkUI();renderFeed();if(S.art)g('reader-mark-btn').textContent=marked.has(S.art.id)?'★ Markiert':'☆ Markieren';}
+function toggleMarkCur(){if(S.art)toggleMark({stopPropagation(){}},S.art.id);}
+function updateMarkUI(){const n=marked.size;const el=g('mark-count');el.textContent=n+(isPro()?'':'/'+FREE_MARK_LIMIT)+' markiert';el.style.display=n?'':'none';}
+
+/* ═══ DASHBOARD ═══ */
+function dl(a,opts={}){
+  const lock=isLocked(a);const eb=[];
+  if(opts.set!==false)eb.push(`<span class="tag" style="color:${a._set==='eu'?'var(--eu)':a._set==='bt'?'#1d4ed8':'var(--text2)'}">${esc(a._set==='news'?a.source:INST_LABELS[a.cat]||a.source)}</span>`);
+  if(lock)eb.push('<span class="pro-tag">PRO</span>');if(isNew(a))eb.push('<span class="newpill">Neu</span>');
+  eb.push(tagsHTML(a,2));
+  return`<div class="dl${lock?' locked':''}" onclick="openById('${a.id}','${a._set}')">
+    <div class="dl-main"><div class="dl-eb">${eb.join('')}</div><div class="dl-t">${esc(a.title)}</div>${opts.desc!==false&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}<div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a)+' Lesezeit':''}${opts.src?' · '+esc(a.source):''}</div></div>
+    ${opts.tile?tile(a,''):''}</div>`;
+}
+function renderDash(){
+  const win=pool('all').filter(a=>ageH(a.date)<=48).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const empty=t=>`<div style="padding:22px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
+  const seen=new Set();
+  const eil=dedupe(win.filter(isBreaking),seen).slice(0,6);
+  g('dash-eil').innerHTML=eil.length?eil.map(a=>dl(a)).join(''):empty('Keine Eilmeldungen in den letzten 48 h.<br><span style="font-size:11px">Abgeleitet aus Relevanz ≥ 3 und Alter &lt; 3 h – bis das Backend ein <code>priority</code>-Feld liefert.</span>');
+  const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||''))),seen).slice(0,6);
+  if(top.length){const L=top[0];g('dash-top').innerHTML=`<div class="lead" onclick="openById('${L.id}','${L._set}')">${tile(L,'')}<div class="dl-eb"><span class="tag">${esc(L.source)}</span>${tagsHTML(L,3)}</div><div class="dl-t">${esc(L.title)}</div><div class="dl-d">${esc(L.desc||'')}</div><div class="dl-m">${rel(L.date)}${readMin(L)?' · '+readMin(L)+' Lesezeit':''}</div></div><div class="dcard-body">${top.slice(1).map(a=>dl(a,{desc:false,tile:true})).join('')}</div>`;}
+  else g('dash-top').innerHTML=empty('Noch keine Meldungen.');
+  const official=ALL_EU.filter(a=>!PRO_CATS.has(a.cat)).slice(0,5);
+  g('dash-eu').innerHTML=official.length?official.map(a=>dl(a,{desc:false})).join(''):empty('eu_articles.json leer.');
+  g('dash-bt').innerHTML=ALL_BT.length?ALL_BT.slice(0,5).map(a=>dl(a,{desc:false})).join(''):empty('bundestag_articles.json leer.');
+  const tr=META.news?.trends,tc=NEWS_TC,tl=NEWS_TL;
+  let tcounts=tr?.topic_counts;if(!tcounts){tcounts={};win.filter(a=>a._set==='news').forEach(a=>(a.topics||[]).forEach(t=>tcounts[t]=(tcounts[t]||0)+1));}
+  const ts=Object.entries(tcounts).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=ts[0]?.[1]||1;
+  g('dash-trends').innerHTML=ts.map(([t,c])=>`<span class="bubble" style="background:${tc[t]||'#6b7280'}18;border-color:${tc[t]||'#6b7280'}44;color:${tc[t]||'#6b7280'};font-size:${Math.round(10.5+2.5*c/mx)}px" onclick="S.section='news';setSection('news');setTopic('${t}')">${tl[t]||t}<span class="bc">${c}</span></span>`).join('')||empty('Keine Trenddaten.');
+  const kw=tr?.top_keywords?Object.entries(tr.top_keywords).slice(0,12):[];
+  g('dash-kws').innerHTML=kw.map(([w,c],i)=>`<span class="kw-bub" onclick="S.tokens.push({v:'${esc(w)}',not:false});renderTokens();setSection('news')">${i<4?'<strong>'+esc(w)+'</strong>':esc(w)} <span style="font-size:9px;color:var(--muted)">${c}</span></span>`).join('');
+  g('dash-cal').innerHTML=calItems().slice(0,4).map(c=>`<div class="cal-row"><div class="eyebrow">${c.dateLabel}</div><div class="t">${esc(c.title)}</div><div class="m"><span class="eyebrow" style="letter-spacing:.04em">${esc(c.type)}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div></div>`).join('')||empty('Keine Tagesordnungen in documents.json.');
+  g('dash-docs').innerHTML=ALL_DOCS.slice(0,4).map(d=>`<div class="cal-row" style="cursor:pointer" onclick="openDoc('${d.id}')"><div class="dl-eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="eyebrow">${rel(d.date)}</span></div><div class="t">${esc(d.title)}</div></div>`).join('')||empty('Keine Dokumente.');
+  const an=pool('all').filter(a=>PRO_CATS.has(a.cat)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  g('dash-analysis').innerHTML=an.length?an.map(a=>dl(a,{desc:false,src:true})).join(''):empty('Keine Analyse-Quellen (cat eu-media / eu-think) geladen.');
+  g('dash-brief').innerHTML=BRIEFS.slice(0,4).map(b=>`<div class="cal-row" style="cursor:pointer" onclick="openBrief('${b.id}')"><div class="dl-eb"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="eyebrow">${b.items.length} Meldungen · ~${b.readMin} Min</span></div><div class="t">${esc(b.title)}</div></div>`).join('')||empty('Noch zu wenig Meldungen für ein Briefing (≥ 3 je Thema in 24 h).');
+  const dips=(DIP.procedures||[]).slice().sort((a,b)=>(b.updated||'').localeCompare(a.updated||'')).slice(0,5);
+  g('dash-dip').innerHTML=dips.map(v=>`<div class="cal-row" style="cursor:pointer" onclick="window.open('${esc(v.link)}','_blank')"><div class="dl-eb"><span class="tag">${esc(v.type||'Vorgang')}</span>${v.topic?`<span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[v.topic]||''}</span>`:''}</div><div class="t">${esc(v.title)}</div><div class="dl-m">${esc(v.status||'')}${v.updated?' · '+rel(v.updated):''}</div></div>`).join('')
+    ||empty('<strong>dip.json fehlt.</strong> DIP-Key in <code>fetch_directory.py</code> eintragen – dann erscheinen hier Gesetzgebungsvorgänge mit Beratungsstand.');
+  renderDashThemes();
+}
+function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'grid':'none';}
+function renderDashThemes(){
+  const win=dedupe(pool('all').filter(a=>ageH(a.date)<=48).sort((a,b)=>(b.date||'').localeCompare(a.date||'')));
+  const buckets={};win.forEach(a=>{const t=(a.topics||[])[0]||'sonstig';(buckets[t]=buckets[t]||[]).push(a);});
+  const sorted=Object.entries(buckets).sort((a,b)=>b[1].length-a[1].length);
+  g('dash-themes').innerHTML=sorted.map(([t,arts])=>{const col=NEWS_TC[t]||EU_TC[t]||BT_TC[t]||'#6b7280';const lbl=NEWS_TL[t]||EU_TL[t]||BT_TL[t]||TOPIC_KW_L[t]||t;
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${lbl}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,6).map(a=>`<div class="ds-item" onclick="openById('${a.id}','${a._set}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')}${arts.length>6?`<div class="ds-more" onclick="setSection('${arts[0]._set}');setTopic('${t}')">Alle ${arts.length} →</div>`:''}</div>`;}).join('')||'<div style="padding:30px;color:var(--muted)">Keine Meldungen.</div>';
+}
+
+/* ═══ GESPEICHERTE FILTER (dpa) ═══ */
+const SWATCHES=['#dc2626','#e11d48','#7c3aed','#2563eb','#0891b2','#0f766e','#16a34a','#eab308','#f97316','#003399'];
+let sfColor=SWATCHES[0];
+function openSaveFilter(){
+  if(!proGate('saved'))return;
+  const def=S.tokens.filter(t=>!t.not).map(t=>t.v).join(' ')||(S.topic!=='all'?S.topic.replace('__',''):SET_LABEL[S.section]);
+  g('sf-name').value=def;sfColor=SWATCHES[SAVED.length%SWATCHES.length];
+  g('sf-swatches').innerHTML=SWATCHES.map(c=>`<span class="swatch${c===sfColor?' sel':''}" style="background:${c}" onclick="sfColor='${c}';document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s.style.background===this.style.background));sfPrev()"></span>`).join('');
+  sfPrev();g('sf-modal').classList.add('open');g('sf-name').focus();g('sf-name').oninput=sfPrev;
+}
+function sfPrev(){g('sf-prev').innerHTML=`<span style="width:8px;height:8px;background:${sfColor};transform:rotate(45deg);border-radius:1px"></span>${esc(g('sf-name').value||'Filter')}`;g('sf-prev').style.borderColor=sfColor;g('sf-prev').style.color=sfColor;}
+function closeSF(){g('sf-modal').classList.remove('open');}
+function saveFilter(){
+  const name=g('sf-name').value.trim();if(!name){g('sf-name').focus();return;}
+  SAVED.push({id:'f'+Date.now(),name,color:sfColor,section:S.section,topic:S.topic,src:S.src,tokens:[...S.tokens],prio:{...S.prio},notify:{app:g('sf-app').checked,mail:g('sf-mail').checked},lastSeen:new Date().toISOString()});
+  store.set('ps_saved',SAVED);renderSaved();closeSF();
+}
+function countNew(f){return pool(f.section).filter(a=>inWindow(a)&&(a.date||'')>f.lastSeen&&matches(a,f)).length;}
+function renderSaved(){
+  const el=g('saved-list');
+  if(!isPro()){el.innerHTML='<div class="saved-empty locked"><div class="saved-item" style="padding:4px 0"><span class="dia" style="background:#7c3aed"></span><span class="nm">Beispiel: EU Digital</span><span class="nb">3</span></div>Suche als Filter speichern, Farbe wählen, neue Treffer zählen – mit Pro.</div>';return;}
+  if(!SAVED.length){el.innerHTML='<div class="saved-empty">Noch keine Filter. Suche eingrenzen, dann „Als Filter speichern…".</div>';return;}
+  el.innerHTML=SAVED.map(f=>{const n=f.notify?.app?countNew(f):0;return`<div class="saved-item" onclick="applySaved('${f.id}')" title="${esc(SET_LABEL[f.section])}${f.tokens.length?' · '+f.tokens.map(t=>(t.not?'NICHT ':'')+t.v).join(', '):''}"><span class="dia" style="background:${f.color}"></span><span class="nm">${esc(f.name)}</span>${n?`<span class="nb">${n}</span>`:''}<button class="x" onclick="event.stopPropagation();delSaved('${f.id}')" aria-label="löschen">×</button></div>`;}).join('');
+}
+function applySaved(id){const f=SAVED.find(x=>x.id===id);if(!f)return;S.section=f.section;S.topic=f.topic;S.src=f.src;S.tokens=[...f.tokens];S.prio={...f.prio};g('fp-eil').checked=!!f.prio.eil;g('fp-top').checked=!!f.prio.top;f.lastSeen=new Date().toISOString();store.set('ps_saved',SAVED);g('fb-set').textContent=SET_LABEL[f.section];renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();renderSaved();}
+function delSaved(id){SAVED=SAVED.filter(f=>f.id!==id);store.set('ps_saved',SAVED);renderSaved();}
+
+/* ═══ DOKUMENTE ═══ */
+function docFilter(f,el){S.docF=f;document.querySelectorAll('[data-df]').forEach(c=>c.classList.toggle('active',c===el));renderDocs();}
+function setDocMode(m,btn){S.docMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderDocs();}
+function docCard(d){return`<div class="doc-card"><div class="eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="tag">${esc(d.source)}</span>${d.has_file?'<span class="tag" style="color:var(--green)">📁 im Repo</span>':''}<span class="eyebrow" style="margin-left:auto">${fd(d.date)}</span></div><div class="t">${esc(d.title)}</div>${d.desc?`<div class="m" style="font-size:12px;color:var(--text2)">${esc(d.desc)}</div>`:'<div class="m"></div>'}<div class="doc-file" onclick="openDoc('${d.id}')"><span>${d.is_pdf?'📄':'🔗'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.local||d.link)}</span><span class="ext">${d.has_file?'Anzeigen':'Öffnen'} ↗</span></div></div>`;}
+function grouped(list,keyFn,labelFn,itemFn,openFn){const b={};list.forEach(x=>{const k=keyFn(x);(b[k]=b[k]||[]).push(x);});
+  return Object.entries(b).sort((a,c)=>c[1].length-a[1].length).map(([k,xs])=>`<div class="ds"><div class="ds-hd"><span class="ds-title">${labelFn(k)}</span><span class="ds-cnt">${xs.length}</span></div>${xs.slice(0,8).map(x=>`<div class="ds-item" onclick="${openFn(x)}"><div class="ds-it">${esc(x.title)}</div><div class="ds-im">${itemFn(x)}</div></div>`).join('')}${xs.length>8?`<div class="ds-more">+${xs.length-8} weitere</div>`:''}</div>`).join('');}
+function renderDocs(){
+  const q=(g('docs-search').value||'').toLowerCase();
+  let list=ALL_DOCS.filter(d=>S.docF==='all'||(S.docF==='hasfile'?d.has_file:d.origin===S.docF)).filter(d=>!q||(d.title+' '+(d.desc||'')).toLowerCase().includes(q));
+  g('docs-count').textContent=list.length+' / '+ALL_DOCS.length;
+  if(S.docMode!=='list'){g('docs-list').className='dash-inner';
+    g('docs-list').innerHTML=grouped(list,d=>S.docMode==='type'?d.type:classify(d.title+' '+d.desc),k=>S.docMode==='type'?esc(k):TOPIC_KW_L[k]||k,d=>`<span>${esc(d.source)}</span><span>${fd(d.date)}</span>`,d=>`openDoc('${d.id}')`)||'<div style="padding:30px;color:var(--muted)">Keine Dokumente.</div>';return;}
+  g('docs-list').className='';
+  g('docs-list').innerHTML=list.slice(0,150).map(d=>`<div class="doc-card"><div class="eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="tag">${esc(d.source)}</span>${d.has_file?'<span class="tag" style="color:var(--green)">📁 im Repo</span>':''}<span class="eyebrow" style="margin-left:auto">${fd(d.date)}</span></div><div class="t">${esc(d.title)}</div>${d.desc?`<div class="m" style="font-size:12px;color:var(--text2)">${esc(d.desc)}</div>`:'<div class="m"></div>'}<div class="doc-file" onclick="openDoc('${d.id}')"><span>${d.is_pdf?'📄':'🔗'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.local||d.link)}</span><span class="ext">${d.has_file?'Anzeigen':'Öffnen'} ↗</span></div></div>`).join('')||'<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px">Keine Dokumente.</div>';
+}
+function openDoc(id){const d=ALL_DOCS.find(x=>x.id===id);if(!d)return;if(!proGate('docs'))return;
+  if(d.has_file&&d.local){g('dv-title').textContent=d.title;g('doc-iframe').dataset.link=d.link;g('doc-iframe').src=d.local;g('doc-viewer').classList.add('open');}
+  else window.open(d.link,'_blank','noopener');}
+
+/* ═══ KALENDER (aus Tagesordnungen abgeleitet) ═══ */
+const MON={januar:1,februar:2,märz:3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
+function parseCalDate(t){let m=t.match(/(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  m=t.match(/(\d{1,2})\.\s*(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/i);
+  if(m){const y=m[3]?+m[3]:new Date().getFullYear();return new Date(y,MON[m[2].toLowerCase()]-1,+m[1]);}return null;}
+/* Zeitzonen: Termine der Parlamente sind Europe/Berlin – Anzeige/Export in der Zeitzone des Nutzers */
+function tzOffsetMin(tz,date){const f=new Intl.DateTimeFormat('en-US',{timeZone:tz,hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});const p=Object.fromEntries(f.formatToParts(date).map(x=>[x.type,x.value]));return(Date.UTC(+p.year,+p.month-1,+p.day,+p.hour%24,+p.minute,+p.second)-date.getTime())/60000;}
+function berlinToUTC(y,m,d,h,mi){const guess=Date.UTC(y,m-1,d,h,mi);return new Date(guess-tzOffsetMin('Europe/Berlin',new Date(guess))*60000);}
+function parseCalTime(t){const m=t.match(/(\d{1,2})[:.](\d{2})\s*uhr/i)||t.match(/(\d{1,2})\s*uhr/i);if(!m)return null;const h=+m[1],mi=m[2]?+m[2]:0;return h<24?{h,mi}:null;}
+function calItems(){
+  return ALL_DOCS.filter(d=>/tagesordnung|plenarprotokoll|sitzung|agenda|plenartagung/i.test(d.type+' '+d.title)).map(d=>{const dt=parseCalDate(d.title)||(d.date?new Date(d.date):null);
+    if(!dt||isNaN(dt))return null;const tm=parseCalTime(d.title+' '+(d.desc||''));
+    const start=tm?berlinToUTC(dt.getFullYear(),dt.getMonth()+1,dt.getDate(),tm.h,tm.mi):null;
+    return{id:d.id,title:d.title,link:d.link,type:d.type,src:d.source,date:dt,start,end:start?new Date(start.getTime()+2*36e5):null,parl:d.origin==='eurlex'||/europ|ep /i.test(d.source)?'ep':'bt',topic:classify(d.title+' '+(d.desc||'')),
+      dateLabel:dt.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}),timeLabel:start?start.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',timeZone:USER_TZ})+' ('+USER_TZ.split('/').pop()+')':'ganztägig'};})
+    .filter(Boolean).sort((a,b)=>a.date-b.date);
+}
+let _calVisible=[];function calVisible(){return _calVisible;}
+function calFilter(f,el){S.calF=f;document.querySelectorAll('[data-cf]').forEach(c=>c.classList.toggle('active',c===el));renderCal();}
+function setCalMode(m,btn){S.calMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderCal();}
+function calItemHTML(c){return`<div class="cal-item"><div class="t">${esc(c.title)}</div><div class="m"><span class="tag">${esc(c.src)} · ${esc(c.type)}</span><span class="tag" style="color:var(--blue)">🕒 ${c.timeLabel}</span><span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[c.topic]||''}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div><div class="acts"><a class="btn sm" href="${googleCalUrl(c)}" target="_blank" rel="noopener">📅 Google Kalender</a><button class="btn sm" onclick="dlICS([calVisible().find(x=>x.id==='${c.id}')],'termin.ics')">⬇ .ics (Apple/Outlook)</button></div></div>`;}
+function renderCal(){
+  const now=new Date();now.setHours(0,0,0,0);const wk=new Date(now);wk.setDate(wk.getDate()+7);
+  let items=calItems();if(S.calF==='upcoming')items=items.filter(c=>c.date>=now);else if(S.calF==='week')items=items.filter(c=>c.date>=now&&c.date<=wk);
+  _calVisible=items;
+  const el=g('cal-list');
+  if(S.calMode==='list'){el.className='';const byDay={};items.forEach(c=>{(byDay[c.dateLabel]=byDay[c.dateLabel]||[]).push(c);});
+    el.innerHTML=Object.entries(byDay).map(([d,cs])=>`<div class="cal-day"><div class="eyebrow">📅 ${d}</div>${cs.map(calItemHTML).join('')}</div>`).join('')||'<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px">Keine Termine im gewählten Zeitraum.</div>';return;}
+  el.className='dash-inner';
+  el.innerHTML=grouped(items,c=>S.calMode==='parl'?c.parl:c.topic,k=>S.calMode==='parl'?(PARL_L[k]||k):(TOPIC_KW_L[k]||k),c=>`<span>${c.dateLabel}</span><span>${c.timeLabel}</span>`,c=>`window.open('${esc(c.link)}','_blank')`)||'<div style="padding:30px;color:var(--muted)">Keine Termine.</div>';
+}
+function icsDate(d){return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');}
+function ymd(d){return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+function nextDay(d){const n=new Date(d);n.setDate(n.getDate()+1);return n;}
+function icsEsc(s){return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
+function toICS(items){const now=icsDate(new Date());const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Presseschau//Kalender//DE','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Presseschau – Termine'];
+  items.forEach(c=>{L.push('BEGIN:VEVENT','UID:'+c.id+'@presseschau','DTSTAMP:'+now);
+    if(c.start)L.push('DTSTART:'+icsDate(c.start),'DTEND:'+icsDate(c.end));else L.push('DTSTART;VALUE=DATE:'+ymd(c.date),'DTEND;VALUE=DATE:'+ymd(nextDay(c.date)));
+    L.push('SUMMARY:'+icsEsc(c.title),'DESCRIPTION:'+icsEsc(c.src+' · '+c.type+'\n'+c.link),'URL:'+c.link,'END:VEVENT');});
+  L.push('END:VCALENDAR');return L.join('\r\n')+'\r\n';}
+function dlICS(items,name){if(!items.length)return;dl_(name,toICS(items.filter(Boolean)),'text/calendar;charset=utf-8');}
+function googleCalUrl(c){const dates=c.start?icsDate(c.start)+'/'+icsDate(c.end):ymd(c.date)+'/'+ymd(nextDay(c.date));
+  return'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(c.title)+'&dates='+dates+'&details='+encodeURIComponent(c.src+' · '+c.type+'\n'+c.link)+'&ctz='+encodeURIComponent(USER_TZ);}
+function calSubscribeUrl(){return location.origin.startsWith('http')?location.href.replace(/[^/]*$/,'')+'calendar.ics':'https://<dein-github-pages-host>/calendar.ics';}
+
+/* ═══ BRIEFINGS (automatisch je Thema, 24 h) + externe Newsletter ═══ */
+function buildBriefs(){
+  BRIEFS=[];const win=dedupe(pool('all').filter(a=>ageH(a.date)<=24));
+  const sets=[['news',NEWS_TL,NEWS_TC],['eu',EU_TL,EU_TC],['bt',BT_TL,BT_TC]];
+  for(const[set,tl,tc]of sets){const b={};win.filter(a=>a._set===set).forEach(a=>(a.topics||[]).slice(0,2).forEach(t=>(b[t]=b[t]||[]).push(a)));
+    for(const[t,items]of Object.entries(b)){if(items.length<3)continue;items.sort((x,y)=>((y.boost||0)-(x.boost||0))||((y.date||'').localeCompare(x.date||'')));
+      const rm=Math.max(2,Math.round(items.reduce((n,a)=>n+words(a),0)/180));
+      BRIEFS.push({id:'b-'+set+'-'+t,set,topic:t,label:(tl[t]||t).replace(/^\S+\s/,''),color:tc[t]||'#6b7280',title:'Morgenbriefing '+(tl[t]||t).replace(/^\S+\s/,'')+(set==='eu'?' · EU':set==='bt'?' · Bundestag':''),items:items.slice(0,12),readMin:rm,date:items[0].date});}}
+  BRIEFS.sort((a,b)=>b.items.length-a.items.length);
+}
+function setBriefMode(m,btn){S.briefMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderBriefs();}
+function renderBriefs(){
+  g('brief-read').style.display='none';const el=g('brief-list');el.style.display='grid';
+  if(S.briefMode==='ext'){
+    const tl=NEWSL.filter(n=>/tageslage/i.test(n.source));const rest=NEWSL.filter(n=>!/tageslage/i.test(n.source));
+  const tlHTML=tl.length?`<div class="brief tageslage" onclick="openTageslage()"><div class="dl-eb"><span class="tag" style="color:#f59e0b">Eigener Newsletter</span><span class="parl" style="background:rgba(255,255,255,.15);color:#fff;border-color:transparent">täglich</span></div><div class="bt">${esc(tl[0].title)}</div><div class="bd">${esc(tl[0].desc||'')}</div><div class="bm">Die Tageslage · ${rel(tl[0].date)} · ${tl.length} Ausgaben</div></div>`:'';
+  el.innerHTML=(tlHTML+(rest.length?rest.slice(0,40).map(n=>{const lock=n.pro&&!isPro();return`<div class="brief${lock?' locked':''}" style="--bc:${NEWS_TC[n.topic]||'#6b7280'}" onclick="${lock?`openLogin('media')`:`window.open('${esc(n.link)}','_blank')`}"><div class="dl-eb"><span class="tag">${esc(n.source)}</span>${n.pro?'<span class="pro-tag">PRO</span>':''}</div><div class="bt">${esc(n.title)}</div><div class="bd"${lock?' style="filter:blur(4px)"':''}>${esc(n.desc||'')}</div><div class="bm">${rel(n.date)}${n.desc?' · ~'+Math.max(1,Math.round(n.desc.split(/\s+/).length/180))+' Min':''}</div></div>`;}).join(''):''))
+      ||'<div class="gap-note" style="grid-column:1/-1"><strong>newsletters.json fehlt.</strong> <code>fetch_directory.py</code> erzeugt sie aus NEWSLETTER_FEEDS (Tagesspiegel Background, Table.Media, netzpolitik.org, Euractiv DE). Eigene Feeds dort ergänzen.</div>';return;}
+  el.innerHTML=BRIEFS.length?BRIEFS.map(b=>`<div class="brief" style="--bc:${b.color}" onclick="openBrief('${b.id}')"><div class="dl-eb"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="parl">${SET_LABEL[b.set]}</span></div><div class="bt">${esc(b.title)}</div><div class="bd">${b.items.slice(0,3).map(a=>esc(a.title)).join(' · ')}</div><div class="bm">${b.items.length} Meldungen · ~${b.readMin} Min · ${rel(b.date)}</div></div>`).join('')
+    :'<div class="gap-note" style="grid-column:1/-1">Noch zu wenig Meldungen in 24 h für ein Briefing (Schwelle: 3 je Thema).</div>';
+}
+function openTageslage(){
+  const items=NEWSL.filter(n=>/tageslage/i.test(n.source));if(!items.length)return;
+  setView('brief');g('brief-list').style.display='none';const r=g('brief-read');r.style.display='';
+  r.innerHTML=`<div class="brief-read"><button class="btn sm" onclick="renderBriefs()">← Alle Briefings</button>
+    <div class="dl-eb" style="margin-top:12px"><span class="tag" style="color:#f59e0b">Die Tageslage</span><span class="eyebrow">${items.length} Ausgaben</span></div>
+    <h2>${esc(items[0].title)}</h2><div class="dl-m" style="margin-bottom:12px">${fd(items[0].date)}${items[0].link?` · <a href="${esc(items[0].link)}" target="_blank" rel="noopener">Original ↗</a>`:''}</div>
+    <div style="font-size:14px;line-height:1.7;white-space:pre-line">${esc(items[0].desc||'(Feed liefert nur einen Teaser – Volltext über den Link.)')}</div>
+    <div class="eyebrow" style="margin-top:18px">Frühere Ausgaben</div>${items.slice(1,15).map(n=>`<div class="brief-item"><div class="t" onclick="window.open('${esc(n.link)}','_blank')">${esc(n.title)}</div><div class="dl-m">${fd(n.date)}</div></div>`).join('')}</div>`;}
+function openBrief(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;setView('brief');g('brief-list').style.display='none';const r=g('brief-read');r.style.display='';
+  const bySrc={};b.items.forEach(a=>(bySrc[a.source]=bySrc[a.source]||[]).push(a));
+  r.innerHTML=`<div class="brief-read"><button class="btn sm" onclick="renderBriefs()">← Alle Briefings</button><div class="dl-eb" style="margin-top:12px"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="parl">${SET_LABEL[b.set]}</span><span class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})} · ~${b.readMin} Min</span></div><h2>${esc(b.title)}</h2>
+    <div class="m-acts" style="margin:10px 0 14px"><button class="btn p sm" onclick="proGate('ai',()=>briefAI('${b.id}'))">🤖 KI-Briefing schreiben <span class="pro-tag">PRO</span></button><label class="chk" style="font-size:12px"><input type="checkbox" onchange="if(!proGate('notify'))this.checked=false"> täglich 7:00 per E-Mail <span class="eyebrow" style="text-transform:none;letter-spacing:0">(Backend-Endpunkt nötig)</span></label></div>
+    <div id="brief-ai"></div>
+    ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}"><div class="t" onclick="openById('${a.id}','${a._set}')">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${(a.boost||0)?' · ★ '+a.boost:''}</div></div>`).join('')}`).join('')}</div>`;}
+async function briefAI(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;if(!apiKey){pendingSum=false;g('km').classList.add('open');g('api-key-input').focus();g('api-key-input').onkeydown=e=>{if(e.key==='Enter'){saveKey();briefAI(id);}};return;}
+  const box=g('brief-ai');box.innerHTML='<div class="ai-thinking"><span>Schreibe Briefing…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
+  const txt=b.items.filter(a=>!isLocked(a)).map((a,i)=>(i+1)+'. ['+a.source+'] '+a.title+' – '+(a.desc||'').slice(0,300)).join('\n');
+  try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:700,messages:[{role:'user',content:'Schreibe ein knappes Morgenbriefing (Stil: Politico Morning Newsletter, deutsch) zum Thema '+b.label+'. Struktur: 1 Satz Lage, dann 3-5 Punkte mit je 1-2 Sätzen und Quelle in Klammern, zum Schluss "Was heute zählt" in 1 Satz. Nur aus diesen Meldungen:\n\n'+txt}]})});
+    const d=await resp.json();if(d.error){box.innerHTML='<div style="color:var(--red)">⚠️ '+esc(d.error.message)+'</div>';return;}
+    box.innerHTML='<div id="ai-summary-box" style="display:block;margin:0 0 8px"><div id="ai-summary-header"><span>🤖 KI-Briefing</span></div><div id="ai-summary-body" style="white-space:pre-line">'+esc(d.content?.[0]?.text||'')+'</div></div>';
+  }catch(e){box.innerHTML='<div style="color:var(--red)">⚠️ '+esc(e.message)+'</div>';}}
+
+/* ═══ EIGENE THEMEN (v5) ═══
+   Speicherung: heute localStorage. Mit Konto → userStore.save() ruft die API
+   (Cloudflare Worker + D1) auf; siehe ACCOUNTS.md. Ein Umschalten ändert nur diese Funktion. */
+const userStore={
+  async load(){try{if(window.PS_API){const r=await fetch(window.PS_API+'/me/topics',{credentials:'include'});if(r.ok)return(await r.json()).topics||[];}}catch{}return store.get('ps_mytopics')||[];},
+  async save(t){store.set('ps_mytopics',t);try{if(window.PS_API)await fetch(window.PS_API+'/me/topics',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({topics:t})});}catch{}}
+};
+let tmColor=SWATCHES[3],tmEdit=null;
+function openTopicModal(id){
+  tmEdit=id?MYTOPICS.find(t=>t.id===id):null;
+  g('tm-name').value=tmEdit?.name||'';g('tm-kw').value=(tmEdit?.kw||[]).join(', ');g('tm-not').value=(tmEdit?.not||[]).join(', ');
+  tmColor=tmEdit?.color||SWATCHES[MYTOPICS.length%SWATCHES.length];
+  g('tm-swatches').innerHTML=SWATCHES.map(c=>`<span class="swatch${c===tmColor?' sel':''}" style="background:${c}" onclick="tmColor='${c}';document.querySelectorAll('#tm-swatches .swatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel');tmHits()"></span>`).join('');
+  g('tm-kw').oninput=tmHits;g('tm-not').oninput=tmHits;tmHits();
+  g('topic-modal').classList.add('open');g('tm-name').focus();
+}
+function closeTopicModal(){g('topic-modal').classList.remove('open');}
+function tmParse(v){return(v||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);}
+function tmHits(){const t={kw:tmParse(g('tm-kw').value),not:tmParse(g('tm-not').value)};
+  g('tm-hits').textContent=t.kw.length?rawPool('all').filter(a=>matchMy(a,t)).length+' Treffer im aktuellen Bestand':'Begriffe eingeben';}
+async function saveTopic(){
+  const name=g('tm-name').value.trim(),kw=tmParse(g('tm-kw').value);
+  if(!name||!kw.length){g(name?'tm-kw':'tm-name').focus();return;}
+  const t={id:tmEdit?.id||'t'+Date.now(),name,kw,not:tmParse(g('tm-not').value),color:tmColor,lastSeen:new Date().toISOString()};
+  MYTOPICS=tmEdit?MYTOPICS.map(x=>x.id===t.id?t:x):[...MYTOPICS,t];
+  await userStore.save(MYTOPICS);renderMyTopics();closeTopicModal();
+}
+function delTopic(id){MYTOPICS=MYTOPICS.filter(t=>t.id!==id);userStore.save(MYTOPICS);renderMyTopics();if(S.topic==='my:'+id)setTopic('all');}
+function renderMyTopics(){
+  const el=g('my-topics');
+  if(!isPro()){el.innerHTML='<div class="saved-empty locked" style="padding:2px 2px 6px">Eigene Themen aus beliebigen Begriffen – mit Pro.</div>';return;}
+  el.innerHTML=MYTOPICS.map(t=>{const n=rawPool('all').filter(a=>(a.date||'')>t.lastSeen&&matchMy(a,t)).length;
+    return`<span class="mytopic${S.topic==='my:'+t.id?' active':''}" style="border-color:${t.color};color:${t.color}" onclick="pickMyTopic('${t.id}')" ondblclick="openTopicModal('${t.id}')" title="Doppelklick: bearbeiten">${esc(t.name)}${n?`<span class="n" style="background:${t.color}">${n}</span>`:''}<button onclick="event.stopPropagation();delTopic('${t.id}')">×</button></span>`;}).join('')
+    ||'<div class="saved-empty" style="padding:2px 2px 6px">Noch keine eigenen Themen.</div>';
+}
+function pickMyTopic(id){const t=MYTOPICS.find(x=>x.id===id);if(t){t.lastSeen=new Date().toISOString();userStore.save(MYTOPICS);}
+  S.section='all';g('fb-set').textContent='Alle Feeds';S.inst='';setTopic('my:'+id);setView('feed');renderMyTopics();}
+
+/* ═══ VERZEICHNIS: Personen & Ausschüsse ═══ */
+function setDirMode(m){S.dirMode=m;g('dm-people').classList.toggle('active',m==='people');g('dm-comm').classList.toggle('active',m==='comm');g('dir-title').textContent=m==='people'?'Personen':'Ausschüsse';if(S.view==='dir')setView('dir');renderDir();}
+function buildDirFilters(){
+  const parls=[{id:'all',l:'Alle'},{id:'bt',l:'🏛 Bundestag'},{id:'br',l:'🏛 Bundesrat'},{id:'ep',l:'🇪🇺 EP'}];
+  g('dir-parl').innerHTML=parls.map(p=>`<span class="chip${S.dirParl===p.id?' active':''}" onclick="S.dirParl='${p.id}';buildDirFilters();renderDir()">${p.l}</span>`).join('');
+  const comms=COMMS.filter(c=>S.dirParl==='all'||c.parliament===S.dirParl);
+  const cv=g('dir-comm').value;g('dir-comm').innerHTML='<option value="">Alle Ausschüsse</option>'+comms.map(c=>`<option value="${c.id}">${esc(c.name)} (${c.members.length})</option>`).join('');if([...g('dir-comm').options].some(o=>o.value===cv))g('dir-comm').value=cv;
+  const parties=[...new Set(PEOPLE.filter(p=>S.dirParl==='all'||p.parliament===S.dirParl).map(p=>p.party).filter(Boolean))].sort();
+  const pv=g('dir-party').value;g('dir-party').innerHTML='<option value="">Alle Fraktionen</option>'+parties.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');if([...g('dir-party').options].some(o=>o.value===pv))g('dir-party').value=pv;
+  g('dir-note').innerHTML=document.body.classList.contains('demo-people')?'<strong>Demo-Personen.</strong> <code>people.json</code> fehlt – <code>fetch_directory.py</code> ausführen (abgeordnetenwatch + EP Open Data + DIP).':'E-Mail-Adressen ohne Haken folgen dem Adressmuster des Parlaments (unverifiziert).';
+}
+function personCard(p){const c=partyC(p.party);return`<div class="person" onclick="proGate('docs',()=>openPerson('${p.id}'))"><div class="tile" style="background:${c}">${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" onerror="this.remove()">`:initials(p.name)}</div><div style="flex:1;min-width:0"><div class="pn">${esc(p.name)}</div><div class="pm">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${PARL_L[p.parliament]||p.parliament}</span>${p.constituency?`<span>${esc(p.constituency)}</span>`:''}</div>${p.committees?.length?`<div class="pc">${p.committees.slice(0,3).map(x=>`<span>${esc(x.name.replace(/^Ausschuss (für|zur?) /,''))}</span>`).join('')}${p.committees.length>3?`<span>+${p.committees.length-3}</span>`:''}</div>`:''}<div class="pe">✉ ${esc(p.email||'–')}${p.email&&!p.email_verified?' <span class="unverified">Muster</span>':''}${p.speeches?.length?` · 🎤 ${p.speeches.length} Reden`:''}</div></div></div>`;}
+function dirPeople(){const q=(g('dir-q').value||'').toLowerCase(),cm=g('dir-comm').value,pt=g('dir-party').value;
+  return PEOPLE.filter(p=>(S.dirParl==='all'||p.parliament===S.dirParl)&&(!cm||p.committees?.some(c=>c.id===cm))&&(!pt||p.party===pt)&&(!q||(p.name+' '+p.constituency+' '+p.party+' '+(p.committees||[]).map(c=>c.name).join(' ')).toLowerCase().includes(q))).sort((a,b)=>(a.last_name||a.name).localeCompare(b.last_name||b.name,'de'));}
+function renderDir(){
+  const el=g('dir-list');
+  if(S.dirMode==='comm'){const q=(g('dir-q').value||'').toLowerCase();const cs=COMMS.filter(c=>(S.dirParl==='all'||c.parliament===S.dirParl)&&(!q||c.name.toLowerCase().includes(q)));
+    g('dir-sub').textContent=cs.length+' Ausschüsse';el.className='p-grid';
+    el.innerHTML=cs.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span class="parl">${PARL_L[c.parliament]||c.parliament}</span><span>👥 ${c.members.length} Mitglieder</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')||'<div style="padding:30px;color:var(--muted)">Keine Ausschüsse.</div>';return;}
+  const ps=dirPeople();g('dir-sub').textContent=ps.length+' Personen'+(g('dir-comm').value?' · '+(g('dir-comm').selectedOptions[0]?.textContent||''):'');
+  el.className='p-grid';el.innerHTML=(ps.slice(0,120).map(personCard).join('')+(ps.length>120?`<div class="gap-note" style="grid-column:1/-1">${ps.length-120} weitere – Suche eingrenzen.</div>`:''))||'<div style="padding:30px;color:var(--muted)">Keine Treffer.</div>';
+}
+function openPerson(id){const p=PEOPLE.find(x=>x.id===id);if(!p)return;const c=partyC(p.party);
+  const m=g('person-modal');m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('person-modal').classList.remove('open')">✕</button>
+    <div style="display:flex;gap:12px;align-items:center"><div class="tile" style="width:56px;height:56px;border-radius:50%;background:${c};color:#fff;font-size:18px">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.remove()">`:initials(p.name)}</div><div><h2 style="margin:0">${esc(p.name)}</h2><div class="pm" style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${PARL_L[p.parliament]||p.parliament}</span>${p.constituency?`<span style="font-size:11px;color:var(--muted)">${esc(p.constituency)}</span>`:''}</div></div></div>
+    <div class="contact"><b>E-Mail</b><span>${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>${p.email_verified?' ✓':' <span class="unverified">Adressmuster, unverifiziert</span>'}`:'–'}</span><b>Telefon</b><span>${esc(p.phone||'–')}</span><b>Adresse</b><span>${esc(p.address||'–')}</span><b>Profil</b><span><a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link.replace(/^https?:\/\//,''))} ↗</a></span></div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Ausschüsse</div>${(p.committees||[]).map(x=>`<div class="speech"><span style="font-weight:600">${esc(x.name)}</span>${x.role?` <span class="sd">· ${esc(x.role)}</span>`:''}</div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Keine Ausschussdaten.</div>'}</div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Letzte Reden im Plenum</div>${(p.speeches||[]).slice(0,8).map(s=>`<div class="speech"><div>${esc(s.title)}</div><div class="sd">${fd(s.date).slice(0,8)} · ${esc(s.protocol||'')}${s.link?` · <a href="${esc(s.link)}" target="_blank" rel="noopener">Protokoll ↗</a>`:''}</div></div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Keine Reden geladen – DIP_API_KEY in fetch_directory.py setzen (Bundestag) bzw. EP-Plenardebatten anbinden.</div>'}</div>
+    <div class="m-acts"><a class="btn p" href="mailto:${esc(p.email)}">✉ E-Mail schreiben</a><button class="btn" onclick="S.tokens=[{v:'${esc(p.last_name||p.name).toLowerCase()}',not:false}];renderTokens();g('person-modal').classList.remove('open');setSection('all')">📰 In den Nachrichten suchen</button></div>`;
+  m.classList.add('open');}
+function exportContacts(){const ps=dirPeople();const h='\uFEFFName;Fraktion;Parlament;Wahlkreis;E-Mail;E-Mail verifiziert;Telefon;Adresse;Ausschüsse;Profil\n';
+  const r=ps.map(p=>[p.name,p.party,PARL_L[p.parliament]||p.parliament,p.constituency,p.email,p.email_verified?'ja':'nein (Muster)',p.phone,p.address,(p.committees||[]).map(c=>c.name+(c.role?' ('+c.role+')':'')).join(', '),p.link].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');
+  dl_('kontakte.csv',h+r,'text/csv;charset=utf-8');}
+function demoPeople(){document.body.classList.add('demo-people');
+  const mk=(id,parl,name,party,konst,comms,sp)=>({id,parliament:parl,name,first_name:name.split(' ')[0],last_name:name.split(' ').slice(1).join(' '),party,constituency:konst,email:name.toLowerCase().replace(/ /g,'.').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue')+'@'+(parl==='bt'?'bundestag.de':'europarl.europa.eu'),email_verified:false,phone:'',address:parl==='bt'?'Deutscher Bundestag, Platz der Republik 1, 11011 Berlin':'European Parliament, Rue Wiertz 60, B-1047 Brussels',link:'#',photo:'',committees:comms,speeches:sp});
+  COMMS=[{id:'bt-c1',parliament:'bt',name:'Ausschuss für Gesundheit',topics:['Gesundheit'],link:'#',members:[]},{id:'bt-c2',parliament:'bt',name:'Ausschuss für Digitales und Staatsmodernisierung',topics:['Digitales'],link:'#',members:[]},{id:'bt-c3',parliament:'bt',name:'Haushaltsausschuss',topics:['Haushalt'],link:'#',members:[]},{id:'ep-c1',parliament:'ep',name:'Committee on Industry, Research and Energy (ITRE)',topics:[],link:'#',members:[]},{id:'ep-c2',parliament:'ep',name:'Committee on Civil Liberties, Justice and Home Affairs (LIBE)',topics:[],link:'#',members:[]}];
+  const C=id=>{const c=COMMS.find(x=>x.id===id);return{id,name:c.name,role:'Ordentliches Mitglied'};};
+  PEOPLE=[mk('bt-1','bt','Demo Musterfrau','SPD','WK 75 Berlin-Mitte',[C('bt-c1'),C('bt-c2')],[{date:'2026-08-20',title:'Krankenhausreform – zweite Lesung',protocol:'21/44',link:'#'}]),mk('bt-2','bt','Demo Beispielmann','CDU/CSU','WK 12 Köln I',[C('bt-c3')],[]),mk('bt-3','bt','Demo Grünlich','Bündnis 90/Die Grünen','Landesliste Bayern',[C('bt-c1')],[{date:'2026-08-19',title:'Pflegepersonal – aktuelle Stunde',protocol:'21/43',link:'#'}]),mk('bt-4','bt','Demo Freidenker','FDP','Landesliste NRW',[C('bt-c2'),C('bt-c3')],[]),mk('ep-1','ep','Demo Europa','EPP','Deutschland',[C('ep-c1')],[]),mk('ep-2','ep','Demo Sociale','S&D','France',[C('ep-c2'),C('ep-c1')],[])];
+  PEOPLE.forEach(p=>p.committees.forEach(c=>COMMS.find(x=>x.id===c.id).members.push({id:p.id,role:c.role})));}
+
+/* ═══ INHALTSTYPEN (Politico Directories) ═══ */
+function dipItems(){
+  return[...(DIP.procedures||[]).map(v=>({...v,_dip:true,_kind:'procedure',source:'DIP · '+(v.type||'Vorgang'),date:v.updated||v.date,desc:[v.status,v.initiative].filter(Boolean).join(' · ')})),
+         ...(DIP.documents||[]).map(d=>({...d,_dip:true,_kind:'document',source:'DIP · '+(d.type||'Drucksache'),desc:[d.number,d.authors].filter(Boolean).join(' · ')})),
+         ...(DIP.protocols||[]).map(d=>({...d,_dip:true,_kind:'transcript',source:'DIP · Plenarprotokoll',desc:d.number||''}))];}
+function dipCard(x){const col=TOPIC_KW_L[x.topic]?'':'';return`<div class="doc-card"><div class="eb"><span class="doc-type">${esc(x.type||KINDS[x._kind])}</span>${x.wp?`<span class="tag">WP ${esc(x.wp)}</span>`:''}${x.topic?`<span class="tag">${TOPIC_KW_L[x.topic]||x.topic}</span>`:''}<span class="eyebrow" style="margin-left:auto">${fd(x.date)}</span></div><div class="t">${esc(x.title)}</div>${x.status?`<div class="m" style="font-size:12px;color:var(--text2)">Stand: ${esc(x.status)}</div>`:'<div class="m"></div>'}${x.initiative?`<div class="dl-m">Initiative: ${esc(x.initiative)}</div>`:''}<div class="doc-file" onclick="window.open('${esc(x.link)}','_blank')"><span>🔗</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.number||x.link)}</span><span class="ext">Auf dip.bundestag.de ↗</span></div></div>`;}
+function typeItems(){const arts=pool('all').map(a=>({...a}));const docs=ALL_DOCS.map(d=>({...d,_doc:true}));
+  return[...dipItems(),...arts.map(a=>{a._kind=kindOf(a);return a;}),...docs.map(d=>{d._kind=kindOf(d);return d;})];}
+function renderTypes(){const all=typeItems();const cnt={};all.forEach(x=>cnt[x._kind]=(cnt[x._kind]||0)+1);
+  g('types-side').innerHTML=Object.entries(KINDS).map(([k,l])=>`<div class="type-row${S.kind===k?' active':''}" onclick="S.kind='${k}';renderTypes()">${l}<span class="cnt">${cnt[k]||0}</span></div>`).join('')+'<div class="gap-note" style="margin-top:8px;font-size:11px">Zuordnung heuristisch aus Titel/Quelle. Für saubere Typen: Feld <code>kind</code> im Backend setzen (siehe Konzept §3).</div>';
+  const list=all.filter(x=>x._kind===S.kind).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const seen=new Set();
+  g('types-list').innerHTML=list.filter(x=>{const k=normT(x.title);if(seen.has(k))return false;seen.add(k);return true;}).slice(0,80).map(x=>x._dip?dipCard(x):x._doc?docCard(x):dl(x,{src:true})).join('')||'<div style="padding:30px;color:var(--muted)">Keine Inhalte dieses Typs.</div>';}
+
+/* ═══ LOGIN-MODAL ═══ */
+function openLogin(feat){
+  const f=FEATURES[feat];g('login-reason').innerHTML=f?`<strong>${esc(f.t)}</strong> ist Teil von Presseschau Pro. ${esc(f.d)}`:'Archiv, Analyse-Quellen, gespeicherte Filter und Werkzeuge für die Redaktion.';
+  g('login-feats').innerHTML=Object.entries(FEATURES).map(([k,v])=>`<div class="${k===feat?'hi':''}"><b>${esc(v.t)}</b><span>${esc(v.d)}</span></div>`).join('');
+  g('login-modal').classList.add('open');setTimeout(()=>g('login-mail').focus(),50);
+}
+function closeLogin(){g('login-modal').classList.remove('open');}
+
+/* ═══ KI (unverändert aus v2) ═══ */
+async function summarizeArticle(){
+  if(!S.art)return;if(!isPro()){openLogin('ai');return;}
+  if(!apiKey){pendingSum=true;g('km').classList.add('open');g('api-key-input').focus();return;}
+  const box=g('ai-summary-box'),body=g('ai-summary-body');box.style.display='block';
+  body.innerHTML='<div class="ai-thinking"><span>Analysiere…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
+  const a=S.art;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:'Fasse diesen Artikel in 3-4 Sätzen zusammen. Wichtigste Implikation für Deutschland/EU. Nur Deutsch.\n\nQuelle: '+a.source+'\nTitel: '+a.title+'\nText: '+(a.desc||'–')}]})});
+    const d=await resp.json();if(d.error){body.innerHTML='<div style="color:var(--red)">⚠️ '+esc(d.error.message)+'</div>';return;}
+    body.innerHTML='<div style="font-size:13px;line-height:1.65;white-space:pre-line">'+esc(d.content?.[0]?.text||'')+'</div>';
+  }catch(e){body.innerHTML='<div style="color:var(--red)">⚠️ '+esc(e.message)+'</div>';}
+}
+function saveKey(){apiKey=g('api-key-input').value.trim();g('km').classList.remove('open');if(apiKey&&pendingSum){pendingSum=false;summarizeArticle();}}
+function closeKM(){g('km').classList.remove('open');pendingSum=false;}
+
+/* ═══ EXPORT (unverändert aus v2, hinter proGate) ═══ */
+let exportArticles=[];
+function openExpAll(){const pool_=marked.size?pool('all').filter(a=>marked.has(a.id)):S.filt;exportArticles=pool_.filter(a=>!isLocked(a));showExp(marked.size?'⭐ Export Markierte ('+exportArticles.length+')':'Export ('+exportArticles.length+' Artikel)',marked.size?exportArticles.length+' markierte Artikel':'Alle '+exportArticles.length+' gefilterten Artikel.');}
+function showExp(title,desc){g('em-title').textContent=title;g('em-desc').textContent=desc;g('em-txt').value=fmtExp(exportArticles);g('em').classList.add('open');}
+let expFmt='full';
+function setExpFmt(f,ev){expFmt=f;g('em-txt').value=fmtExp(exportArticles);
+  if(ev){[...ev.target.parentNode.querySelectorAll('.btn')].forEach(b=>b.classList.remove('p'));ev.target.classList.add('p');}}
+function fmtExp(arts){
+  if(expFmt==='head')return arts.map(a=>a.title).join('\n');
+  if(expFmt==='links')return arts.map(a=>a.link||'').filter(Boolean).join('\n');
+  if(expFmt==='md')return arts.map(a=>'- ['+a.title.replace(/[\[\]]/g,'')+']('+(a.link||'')+') – '+a.source+', '+fd(a.date)).join('\n');
+  return arts.map((a,i)=>(i+1)+'. '+a.title+'\n   Quelle: '+a.source+' | '+fd(a.date)+'\n   Link: '+(a.link||'–')).join('\n\n');}
+function doAfterExp(){marked.clear();updateMarkUI();setTimeout(()=>{renderFeed();closeEM();},150);}
+function copyExport(ev){navigator.clipboard.writeText(g('em-txt').value).then(()=>{const b=ev.target;b.textContent='✓ Kopiert!';setTimeout(()=>b.textContent='📋 Kopieren',2000);});doAfterExp();}
+function dlTXT(){dl_('presseschau.txt',fmtExp(exportArticles),'text/plain;charset=utf-8');doAfterExp();}
+function dlCSV(){const h='\uFEFFQuelle;Datum;Themen;Titel;Link\n';const r=exportArticles.map(a=>'"'+a.source+'";"'+fd(a.date)+'";"'+(a.topics||[]).join(',')+'";"'+(a.title||'').replace(/"/g,'""')+'";"'+(a.link||'')+'"').join('\n');dl_('presseschau.csv',h+r,'text/csv;charset=utf-8');doAfterExp();}
+function sendMail(){const sub=encodeURIComponent('Presseschau – '+new Date().toLocaleDateString('de-DE'));window.open('mailto:?subject='+sub+'&body='+encodeURIComponent(fmtExp(exportArticles.slice(0,40))));doAfterExp();}
+function dl_(n,c,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=n;a.click();URL.revokeObjectURL(a.href);}
+function closeEM(){g('em').classList.remove('open');}
+
+/* ═══ DEMO-DATEN (nur wenn keine JSON erreichbar) ═══ */
+function useDemo(){
+  document.body.classList.add('demo');
+  const now=Date.now(),h=n=>new Date(now-n*36e5).toISOString();
+  const mk=(set,source,cat,title,topics,boost,ago,desc)=>({id:Math.random().toString(36).slice(2,14),_set:set,source,cat,title,link:'#',desc:desc||'Platzhalter-Teaser. Der echte Vorschautext (bis 600 Zeichen) kommt aus dem RSS-Feld description bzw. content:encoded.',date:h(ago),topics,boost});
+  ALL_NEWS=[
+    mk('news','Tagesschau','de-leit','Demo: Kabinett beschließt Gesetzentwurf zur digitalen Verwaltung',['politik','tech'],4,0.5),
+    mk('news','Heise','de-tech','Demo: Neue EU-Vorgaben für KI-Modelle treten in Kraft',['ki','eu'],3,1.2),
+    mk('news','Handelsblatt','de-eco','Demo: Industrie warnt vor Energiekosten im Winter',['wirtschaft','energie'],2,3),
+    mk('news','Spiegel','de-leit','Demo: Koalition streitet über Haushalt 2027',['politik'],1,5),
+    mk('news','Golem','de-tech','Demo: Glasfaserausbau erreicht neuen Rekordwert',['netzpolitik','tech'],2,7),
+    mk('news','FAZ','de-leit','Demo: Bundesbank senkt Wachstumsprognose',['wirtschaft','finanzen'],1,9),
+    mk('news','Telekom','de-telko','Demo: 5G-Standalone-Netz in 200 weiteren Städten',['netzpolitik'],0,12),
+    mk('news','DLF','de-leit','Demo: Debatte über Wehrpflicht gewinnt an Fahrt',['verteidigung','politik'],2,20),
+    mk('news','Zeit','de-leit','Demo: Archiv-Artikel von vorgestern (nur Pro)',['politik'],1,60),
+    mk('news','SZ','de-leit','Demo: Archiv-Artikel von letzter Woche (nur Pro)',['wirtschaft'],0,120),
+    mk('news','Spiegel','de-leit','Demo: Bundesliga – Bayern München gewinnt Spitzenspiel',['politik'],0,2),
+    mk('news','Tagesschau','de-leit','Demo: Kabinett beschließt Gesetzentwurf zur digitalen Verwaltung',['politik','tech'],3,0.7)];
+  ALL_EU=[
+    mk('eu','EU-Kommission','ec','Demo: Kommission legt Vorschlag zur Netzsicherheit vor',['digitales','gesetzgebung'],3,0.8),
+    mk('eu','EP Pressemitt.','ep','Demo: Parlament stimmt über Lieferkettenrichtlinie ab',['gesetzgebung','wirtschaft'],3,4),
+    mk('eu','EU Rat','council','Demo: Rat einigt sich auf Verhandlungsmandat',['gesetzgebung'],2,6),
+    mk('eu','EZB','eu-inst','Demo: EZB belässt Leitzins unverändert',['wirtschaft'],1,10),
+    mk('eu','Politico EU','eu-media','Demo: Analyse – Wie Brüssel den Industrieplan nachschärft',['wirtschaft','energie_klima'],2,2),
+    mk('eu','Euractiv','eu-media','Demo: Hintergrund zur Migrationsreform',['migration'],1,8),
+    mk('eu','SWP Berlin','eu-think','Demo: Studie zur europäischen Verteidigungsfähigkeit',['aussenpolitik'],2,15),
+    mk('eu','Bruegel','eu-think','Demo: Policy Brief zum EU-Haushalt',['haushalt'],1,30),
+    mk('eu','EU-Kommission','ec','Demo: Konsultation zur Überarbeitung der NIS-2-Richtlinie eröffnet',['digitales','gesetzgebung'],2,5),
+    mk('eu','EU-Kommission','ec','Rede von Präsidentin zur Lage der Union (Demo)',['aussenpolitik'],2,7)];
+  ALL_BT=[
+    mk('bt','BT hib-Meldungen','bt-allg','Demo: Ausschuss berät Gesetzentwurf zur Krankenhausreform',['gesetzgebung','soziales'],3,1.5),
+    mk('bt','BT Pressemitt.','bt-allg','Demo: Präsidentin empfängt Delegation',['plenum'],0,4),
+    mk('bt','Bundesregierung','breg','Demo: Regierungserklärung zur Sicherheitslage',['verteidigung','bundesregierung'],2,6),
+    mk('bt','BT Digitales','bt-thema','Demo: Anhörung zum Digitalgesetz',['digitales'],1,11)];
+  const d=new Date(now+3*864e5);
+  ALL_DOCS=[
+    {id:'d1',source:'Bundestag',type:'Tagesordnung',origin:'bt',title:'Demo: Tagesordnung 42. Sitzung am '+d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(),link:'#',desc:'',date:h(2),is_pdf:true,local:null,has_file:false},
+    {id:'d2',source:'Bundestag',type:'Drucksache',origin:'bt',title:'Demo: Drucksache 21/1234 – Entwurf eines Gesetzes',link:'#',desc:'Gesetzentwurf der Bundesregierung',date:h(5),is_pdf:true,local:null,has_file:false},
+    {id:'d3',source:'EUR-Lex',type:'Amtsblatt L (Rechtsakte)',origin:'eurlex',title:'Demo: Verordnung (EU) 2026/000 über …',link:'#',desc:'',date:h(9),is_pdf:false,local:null,has_file:false},
+    {id:'d4',source:'Bundestag',type:'Wissenschaftlicher Dienst',origin:'bt',title:'Demo: Ausarbeitung zu verfassungsrechtlichen Fragen',link:'#',desc:'',date:h(26),is_pdf:true,local:null,has_file:false},
+    {id:'d5',source:'Bundestag',type:'Tagesordnung',origin:'bt',title:'Demo: Anhörung Gesundheitsausschuss zur Pflegereform am '+d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()+', 11:00 Uhr',link:'#',desc:'',date:h(3),is_pdf:true,local:null,has_file:false},
+    {id:'d6',source:'Bundestag',type:'Plenarprotokoll',origin:'bt',title:'Demo: Plenarprotokoll 21/44 vom '+(new Date(now-864e5)).getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(),link:'#',desc:'Wortprotokoll der Sitzung',date:h(20),is_pdf:true,local:null,has_file:false}];
+  ALL_LAENDER=[
+    mk('laender','Landtag Bayern','by','Demo: Landtag beschließt Nachtragshaushalt',['haushalt'],1,4),
+    mk('laender','Landtag Nordrhein-Westfalen','nw','Demo: Anhörung zur Krankenhausplanung in NRW',['gesundheit'],2,9),
+    mk('laender','LReg Sachsen','sn','Demo: Ministerpräsident stellt Digitalstrategie vor',['digitales'],1,14)];
+  ALL_LAENDER.forEach(a=>a.inst='landtag-'+a.cat);
+  ALL_US=[
+    {...mk('us','Politico US','us-media','Demo: Senate advances funding bill ahead of shutdown deadline',['congress'],3,1),cluster:4},
+    {...mk('us','White House','us-whitehouse','Demo: President signs executive order on AI procurement',['white_house','tech_policy'],3,3),inst:'us-whitehouse'},
+    {...mk('us','Supreme Court','us-scotus','Demo: Court agrees to hear tariff case',['scotus','trade'],2,6),inst:'us-scotus'},
+    {...mk('us','House Floor','us-house','Demo: House Floor schedule for this week',['congress'],1,10),inst:'us-house',kind:'agenda'}];
+  ALL_US[0].inst='';ALL_BT.forEach(a=>a.inst=a.cat==='breg'?'bundesregierung':'bundestag');
+  ALL_EU.forEach(a=>a.inst=({ec:'ec',ep:'ep',council:'eu-council','eu-inst':'ecb'})[a.cat]||'');
+  ALL_NEWS[0].priority='eil';ALL_NEWS[0].cluster=5;ALL_NEWS[1].cluster=3;
+  NEWSL=[{id:'tl1',source:'Die Tageslage',title:'Die Tageslage vom '+new Date().toLocaleDateString('de-DE'),link:'#',desc:'Demo-Ausgabe. Der eigene Newsletter wird aus den RSS-Feeds erzeugt und KI-zusammengefasst – hier erscheint der Teaser aus dem Feed, per Klick die ganze Ausgabe.',date:h(6),topic:'politik',pro:false,kind:'newsletter'},
+         {id:'tl2',source:'Die Tageslage',title:'Die Tageslage vom Vortag',link:'#',desc:'Frühere Ausgabe.',date:h(30),topic:'politik',pro:false,kind:'newsletter'}];
+  META={news:{updated:new Date().toISOString(),feeds_ok:0,feeds_fail:0,trends:{topic_counts:{politik:6,tech:4,wirtschaft:4,ki:2,energie:2,netzpolitik:2},top_keywords:{gesetzentwurf:3,haushalt:2,verwaltung:2,glasfaser:1,energiekosten:1}}},eu:{},bt:{},docs:{}};
+}
+
+/* ═══ TASTATUR, DRAG, START ═══ */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='Escape'){closeLogin();closeSF();closeEM();closeKM();closeReader();g('doc-viewer').classList.remove('open');g('person-modal').classList.remove('open');}
+  if(S.view!=='feed')return;
+  if(e.key==='ArrowDown'){e.preventDefault();nextArt();}if(e.key==='ArrowUp'){e.preventDefault();prevArt();}
+  if(e.key==='Enter'&&S.art)openCurLink();if(e.key==='m'&&S.art)toggleMarkCur();if(e.key==='s'&&S.art)proGate('ai',summarizeArticle);
+  if(e.key==='1')setSection('news');if(e.key==='2')setSection('eu');if(e.key==='3')setSection('bt');if(e.key==='0')setView('dash');
+});
+(function(){const h=g('drag-handle'),lp=g('list-pane');let drag=false,sx=0,sw=0;h.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=lp.offsetWidth;h.classList.add('dragging');e.preventDefault();});document.addEventListener('mousemove',e=>{if(!drag)return;lp.style.width=Math.max(180,Math.min(window.innerWidth-260,sw+(e.clientX-sx)))+'px';});document.addEventListener('mouseup',()=>{drag=false;h.classList.remove('dragging');});})();
+if(window.innerWidth<600)g('q').placeholder=g('q').dataset.short;
+SAVED=store.get('ps_saved')||[];
+userStore.load().then(t=>{MYTOPICS=t;renderMyTopics();});
+if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
+setAuth(store.get('ps_plan')==='pro');
+loadData();
+</script>
+</body>
+</html>
