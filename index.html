@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Presseschau · Redaktions-Dashboard</title>
+<title>Presseschau · News-Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -447,7 +447,7 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
   <button class="icon-btn" id="nav-toggle" onclick="toggleNav()" aria-label="Navigation">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
-  <div class="logo">Presse<span>schau</span><small>Redaktions-Dashboard</small></div>
+  <div class="logo">Presse<span>schau</span><small>News-Dashboard</small></div>
   <div class="sw" id="search-wrap" onclick="g('q').focus()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <div id="tokens"></div>
@@ -770,7 +770,7 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
   <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
   <p id="login-reason"></p>
   <div class="feat-list" id="login-feats"></div>
-  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
+  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@deine-mail.de"></div>
   <div class="fld"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
   <div class="m-acts"><button class="btn p" onclick="doLogin()">Anmelden</button><button class="btn" onclick="closeLogin()">Weiter mit Basis</button></div>
   <p class="km-note">Demo: Anmeldung schaltet die Pro-Ansicht frei. Später durch echten Auth-Provider ersetzen (setAuth wird mit dem Session-State aufgerufen).</p>
@@ -1437,7 +1437,7 @@ function renderTypes(){const all=typeItems();const cnt={};all.forEach(x=>cnt[x._
 
 /* ═══ LOGIN-MODAL ═══ */
 function openLogin(feat){
-  const f=FEATURES[feat];g('login-reason').innerHTML=f?`<strong>${esc(f.t)}</strong> ist Teil von Presseschau Pro. ${esc(f.d)}`:'Archiv, Analyse-Quellen, gespeicherte Filter und Werkzeuge für die Redaktion.';
+  const f=FEATURES[feat];g('login-reason').innerHTML=f?`<strong>${esc(f.t)}</strong> ist Teil von Presseschau Pro. ${esc(f.d)}`:'Archiv, Analyse-Quellen, gespeicherte Filter und Werkzeuge für Dich.';
   g('login-feats').innerHTML=Object.entries(FEATURES).map(([k,v])=>`<div class="${k===feat?'hi':''}"><b>${esc(v.t)}</b><span>${esc(v.d)}</span></div>`).join('');
   g('login-modal').classList.add('open');setTimeout(()=>g('login-mail').focus(),50);
 }
