@@ -524,6 +524,68 @@ TOPIC_MERGE = {
     "aussenpolitik":"international",
     "sport_politik":None,          # None = ersatzlos entfernen
 }
+# ── Nachjustierung nach dem Zusammenfuehren ──────────────────
+# 1) ADD: Stichwoerter, die im Alltag fehlten (z. B. Landwirtschaft war zu duenn,
+#    dadurch landeten Agrarthemen bei Wirtschaft oder gar nicht).
+# 2) DEMOTE: mehrdeutige Woerter, die allein kein Thema begruenden. "Drohne" etwa
+#    steckt genauso in Rehkitzrettung wie in Luftraumverletzungen - erst zusammen
+#    mit einem zweiten Militaerbegriff ist es Verteidigung.
+TOPIC_ADD = {
+    "umwelt": [(3, ["landwirt", "landwirtin", "bauernhof", "wildtier", "wildtiere", "artensterben",
+                    "tierschutz", "nutztier", "weidetier", "rehkitz", "kitzrettung", "maehwerk",
+                    "jaeger", "jäger", "jagd", "forst", "moor", "renaturierung", "pestizid",
+                    "duenger", "dünger", "ackerbau", "viehhaltung", "milchbauern", "obstbau", "weinbau"]),
+               (2, ["hecke", "wiese", "acker", "weide", "boden", "insekten", "bienen", "vogelschutz"])],
+    "gesundheit": [(3, ["hausarzt", "hausaerzte", "notaufnahme", "rettungsdienst", "impfstoff",
+                        "epidemie", "seuche", "krankenkassenbeitrag"])],
+    "bildung": [(3, ["lehrermangel", "schulbau", "ganztagsbetreuung", "abitur", "berufsschule",
+                     "studienplatz", "kitaplatz"])],
+    "mobilitaet": [(3, ["deutschlandticket", "nahverkehr", "oepnv", "öpnv", "radweg", "tempolimit",
+                        "schienennetz", "brueckensanierung", "brückensanierung"])],
+}
+# Wort -> Thema(en), in denen es auf Gewicht 1 herabgestuft wird
+TOPIC_DEMOTE = {
+    "drohne":       ["verteidigung"],
+    "drohnen":      ["verteidigung"],
+    "schutz":       ["verteidigung", "sicherheit"],
+    "angriff":      ["verteidigung"],
+    "einsatz":      ["verteidigung"],
+    "krise":        ["wirtschaft", "finanzen"],
+    "markt":        ["wirtschaft"],
+    "produktion":   ["wirtschaft"],
+    "wachstum":     ["wirtschaft"],
+    "kosten":       ["wirtschaft", "finanzen"],
+    "preise":       ["wirtschaft"],
+    "technologie":  ["tech"],
+    "system":       ["tech"],
+    "plattform":    ["tech"],
+}
+
+# Themen, die leicht falsch anspringen, brauchen mehr Belege
+TOPIC_MIN = {"verteidigung": 3, "sicherheit": 3, "justiz": 3, "international": 3}
+
+def tune(rules):
+    for topic, m in TOPIC_MIN.items():
+        if topic in rules: rules[topic]["min"] = max(rules[topic].get("min", 2), m)
+    for topic, adds in TOPIC_ADD.items():
+        if topic not in rules: continue
+        buckets = {w: set(kws) for w, kws in rules[topic]["score"]}
+        for w, kws in adds:
+            buckets.setdefault(w, set()).update(kws)
+        rules[topic]["score"] = [(w, sorted(buckets[w])) for w in sorted(buckets, reverse=True)]
+    for word, topics in TOPIC_DEMOTE.items():
+        for topic in topics:
+            if topic not in rules: continue
+            buckets = {w: set(kws) for w, kws in rules[topic]["score"]}
+            moved = False
+            for w in list(buckets):
+                if w > 1 and word in buckets[w]:
+                    buckets[w].discard(word); moved = True
+            if moved:
+                buckets.setdefault(1, set()).add(word)
+                rules[topic]["score"] = [(w, sorted(buckets[w])) for w in sorted(buckets, reverse=True) if buckets[w]]
+    return rules
+
 def consolidate(rules):
     out = {}
     for key, rule in rules.items():
@@ -1068,10 +1130,10 @@ def _apply_consolidation():
     """Führt die Themen zusammen, sobald alle Regelsätze definiert sind."""
     global TOPIC_RULES, EU_TOPIC_RULES, BT_TOPIC_RULES, US_TOPIC_RULES, _CONSOLIDATED
     if _CONSOLIDATED: return
-    TOPIC_RULES    = consolidate(TOPIC_RULES)
-    EU_TOPIC_RULES = consolidate(EU_TOPIC_RULES)
-    BT_TOPIC_RULES = consolidate(BT_TOPIC_RULES)
-    US_TOPIC_RULES = consolidate(US_TOPIC_RULES)
+    TOPIC_RULES    = tune(consolidate(TOPIC_RULES))
+    EU_TOPIC_RULES = tune(consolidate(EU_TOPIC_RULES))
+    BT_TOPIC_RULES = tune(consolidate(BT_TOPIC_RULES))
+    US_TOPIC_RULES = tune(consolidate(US_TOPIC_RULES))
     _CONSOLIDATED = True
     print(f"Themen: {len(TOPIC_RULES)} News · {len(EU_TOPIC_RULES)} EU · "
           f"{len(BT_TOPIC_RULES)} BT/Länder · {len(US_TOPIC_RULES)} USA")
