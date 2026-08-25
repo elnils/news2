@@ -116,6 +116,7 @@ def fetch_termine():
     elections, seen = [], set()
     for tbl in tables_of(page):
         for cells in rows_of(tbl):
+          try:
             line = " | ".join(cells)
             d = parse_date(line)
             if not d: continue
@@ -136,8 +137,20 @@ def fetch_termine():
             kind = ("Landtagswahl" if level == "land" else
                     "Europawahl" if level == "eu" else
                     "Bundestagswahl" if re.search(r"bundestag", line, re.I) else "Wahl")
-            if re.search(r"kommunal|bürgerschaft|abgeordnetenhaus", line, re.I) and level == "land":
-                kind = strip(re.search(r"(kommunalwahl|bürgerschaftswahl|abgeordnetenhauswahl)", line, re.I).group(1)).title()
+            # Sonderformen: ein einziger Treffer entscheidet, kein zweiter Suchlauf.
+            # (Vorher wurde erst auf "kommunal" geprueft und dann auf "kommunalwahl" -
+            #  stand in der Zeile nur "Kommunalwahlen", war das Ergebnis None.)
+            if level == "land":
+                # Auch ohne angehaengtes "-wahl" erkennen ("Buergerschaft Hamburg")
+                SONDER = [(r"kommunalwahl\w*|kommunalwahlen", "Kommunalwahl"),
+                          (r"b[üu]rgerschaft(swahl)?\w*", "Bürgerschaftswahl"),
+                          (r"abgeordnetenhaus(wahl)?\w*", "Abgeordnetenhauswahl"),
+                          (r"volksentscheid\w*", "Volksentscheid"),
+                          (r"volksabstimmung\w*", "Volksabstimmung"),
+                          (r"oberb[üu]rgermeisterwahl\w*", "Oberbürgermeisterwahl")]
+                for pat, label in SONDER:
+                    if re.search(pat, line, re.I):
+                        kind = label; break
             eid = f"{region_id}-{d.isoformat()}"
             if eid in seen: continue
             seen.add(eid)
@@ -148,6 +161,9 @@ def fetch_termine():
                 "status": "past" if d < today else ("today" if d == today else "upcoming"),
                 "url": url, "note": "",
             })
+          except Exception as e:
+            print(f"    Zeile uebersprungen ({type(e).__name__})")
+            continue
     elections.sort(key=lambda e: e["date"])
     up = [e for e in elections if e["status"] != "past"]
     print(f"  {len(elections)} Termine erkannt, davon {len(up)} bevorstehend")
@@ -272,14 +288,23 @@ def fetch_result(election):
 # ─────────────────────────────────────────────────────────────
 def main():
     print(f"[{datetime.now().isoformat()}] Presseschau – Wahlen (Budget {TIME_BUDGET_MIN} Min)")
-    elections = fetch_termine()
+    def safe(label, fn, default):
+        try:
+            return fn()
+        except Exception as e:
+            import traceback
+            print(f"  ⚠ {label}: {type(e).__name__}: {e}")
+            traceback.print_exc(limit=2)
+            return default
+
+    elections = safe("Termine", fetch_termine, [])
     today = date.today()
 
     # Umfragen: Bund immer, Länder nur für die nächsten anstehenden Wahlen
-    polls = fetch_polls_bund()
+    polls = safe("Umfragen Bund", fetch_polls_bund, {})
     next_lands = [e["region_id"] for e in elections
                   if e["level"] == "land" and e["status"] != "past"][:6]
-    polls.update(fetch_polls_laender(next_lands))
+    polls.update(safe("Landtagsumfragen", lambda: fetch_polls_laender(next_lands), {}))
 
     # Ergebnisse: für Wahlen von heute und den letzten 2 Tagen
     print("── Ergebnisse (Wahltag + 48 Stunden) ──")
@@ -290,7 +315,7 @@ def main():
         print("  keine Wahl in den letzten 48 Stunden")
     for e in fresh:
         if out_of_time(): break
-        r = fetch_result(e)
+        r = safe(f"Ergebnis {e['title']}", lambda: fetch_result(e), None)
         if r: results[e["id"]] = r
 
     out = {
@@ -309,4 +334,13 @@ def main():
           f"{len(results)} Ergebnisse ({ok}/{len(SOURCES)} Quellen erreichbar)")
 
 if __name__ == "__main__":
-    main()
+    # Ein Fehler in einer Quelle darf den Workflow nicht rot faerben:
+    # lieber unvollstaendige Daten als abgebrochener Lauf.
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print(f"\n⚠ Wahlen-Lauf abgebrochen: {type(e).__name__}: {e}")
+        traceback.print_exc()
+        print("Vorhandene elections.json bleibt unveraendert. Der naechste Lauf versucht es erneut.")
+        sys.exit(0)
