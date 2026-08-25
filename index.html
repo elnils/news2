@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Presseschau · News-Dashboard</title>
+<title>Presseschau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -88,6 +88,8 @@ body.eu-mode .chip.active{background:var(--eu);border-color:var(--eu)}
 .tok button{background:var(--bg);border:none;border-radius:50%;width:16px;height:16px;font-size:11px;line-height:1;cursor:pointer;color:var(--muted)}
 #q{flex:1;min-width:120px;border:none;background:transparent;font-size:13px;color:var(--text);outline:none;padding:4px 2px}
 #q::placeholder{color:var(--muted)}
+.q-hits{font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-lt);padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.q-hits.none{color:var(--red);background:var(--red-lt)}
 .link-btn{background:none;border:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;padding:4px 6px;border-radius:6px}
 .link-btn:hover{background:var(--blue-lt)}
 .tr{display:flex;gap:6px;align-items:center;flex-shrink:0}
@@ -177,6 +179,13 @@ body.pro .pro-tag:not(.keep){display:none}
 .dl-d{font-size:12px;color:var(--text2);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dl-m{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
 .dl .tile{width:52px;height:52px;font-size:14px;color:#fff}
+.top-list{padding:2px 14px 10px}
+.top-row{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.top-row:last-child{border-bottom:none}
+.top-row:hover .dl-t{color:var(--blue)}
+.top-row .rank{font-size:12px;font-weight:800;color:var(--muted);min-width:17px;text-align:right;padding-top:2px;font-variant-numeric:tabular-nums}
+.top-row.first .rank{color:var(--red)}
+.top-row.first .dl-t{font-size:15.5px;letter-spacing:-.02em}
 .lead{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer}
 .lead .tile{width:100%;aspect-ratio:16/7;font-size:44px;color:#fff;margin-bottom:10px;border-radius:8px}
 .lead .dl-t{font-size:19px;letter-spacing:-.02em;line-height:1.22}
@@ -208,6 +217,7 @@ body.pro .pro-tag:not(.keep){display:none}
 body.demo .demo-banner{display:block}
 
 /* ── Feed (Split-Ansicht, aus v2) ─────────────────────────── */
+#fb-toggle{display:none}
 #filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
 .fl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
 .chips{display:flex;gap:3px;flex-wrap:wrap}
@@ -299,6 +309,14 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .plain-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .plain-head .seg{margin-left:auto}
 .dash-inner{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
+/* Themen-Dashboard: echte Spalten, Karten brechen nicht um */
+.theme-cols{column-count:4;column-gap:11px}
+@media (max-width:1500px){.theme-cols{column-count:3}}
+@media (max-width:1100px){.theme-cols{column-count:2}}
+@media (max-width:700px){.theme-cols{column-count:1}}
+.theme-cols .ds{break-inside:avoid;margin-bottom:11px;display:inline-block;width:100%}
+.theme-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:11px;padding:9px 11px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r)}
+.theme-bar .fl{margin-right:2px}
 .ds{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
 .ds-hd{padding:9px 12px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
 .ds-title{font-size:13px;font-weight:700;flex:1}
@@ -351,6 +369,55 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
 .cal-export{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;font-size:12px}
 .cal-export code{font-size:11px;background:var(--bg);padding:2px 6px;border-radius:4px}
 .cal-item .acts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+/* v6: Zurück-Navigation */
+#back-btn{display:none;align-items:center;gap:4px}
+body.can-back #back-btn{display:inline-flex}
+/* v6: Themen-Mehrfachauswahl */
+.chip.sel{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip .x{margin-left:4px;opacity:.75}
+#topic-all{border-style:dashed}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:5px;max-height:52vh;overflow-y:auto;padding:2px}
+.tgrid .chip{width:100%;text-align:left;padding:5px 10px;font-size:11.5px}
+.tsec{grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 2px 2px}
+.mode-row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text2);margin-top:8px}
+/* v6: Trends */
+#bubble-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;height:420px}
+#bubbles{width:100%;height:100%;display:block;cursor:grab}
+.bub{cursor:pointer;transition:opacity .2s}
+.bub:hover{opacity:.85}
+.trend-side{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;max-height:420px;overflow-y:auto}
+.spark{display:flex;align-items:flex-end;gap:2px;height:26px}
+.spark i{flex:1;background:var(--blue);border-radius:1px;min-height:2px;opacity:.75}
+.trend-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.trend-row:last-child{border-bottom:none}
+.trend-row:hover .tn{color:var(--blue)}
+.tn{font-size:12.5px;font-weight:600;flex:1;min-width:0}
+.tdelta{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:10px}
+.tup{background:#dcfce7;color:#15803d}.tdown{background:#fee2e2;color:#b91c1c}.tflat{background:var(--bg);color:var(--muted)}
+/* v6: Kalender-Mehrfachauswahl */
+.cal-item.sel{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-lt)}
+.cal-chk{width:16px;height:16px;accent-color:var(--blue);flex-shrink:0;margin-top:2px}
+.cal-item{display:flex;gap:10px;align-items:flex-start}
+.cal-item>.ci-main{flex:1;min-width:0}
+#cal-bulk{position:sticky;bottom:0;background:var(--surface);border:1.5px solid var(--blue);border-radius:10px;padding:9px 12px;display:none;gap:8px;align-items:center;box-shadow:var(--shadow-md);margin-top:10px;flex-wrap:wrap}
+#cal-bulk.on{display:flex}
+/* v6: Bundesland-Wappen */
+.land-ic{width:17px;height:20px;border-radius:2px 2px 6px 6px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;letter-spacing:-.03em;flex-shrink:0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+/* v6: Inhaltstypen ausklappbar */
+.acc-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;cursor:pointer;margin-bottom:5px;font-size:13px;font-weight:600}
+.acc-hd .arw{font-size:9px;transition:transform .15s;color:var(--muted)}
+.acc.open .acc-hd .arw{transform:rotate(90deg)}
+.acc.open .acc-hd{border-color:var(--blue);color:var(--blue)}
+.acc-body{display:none;padding:2px 0 10px}
+.acc.open .acc-body{display:block}
+/* v6: Gesetzespipeline */
+.pipe{display:flex;gap:2px;margin:7px 0 4px}
+.pipe i{flex:1;height:5px;border-radius:3px;background:var(--border)}
+.pipe i.on{background:var(--blue)}
+.pipe i.now{background:var(--amber);box-shadow:0 0 0 2px var(--amber-lt)}
+.pipe-l{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.wiki{font-size:12px;line-height:1.55;color:var(--text2);background:var(--surface2);border-left:3px solid var(--border);padding:8px 10px;border-radius:0 8px 8px 0;margin-top:4px}
+.wiki a{font-size:11px}
 /* v5: Institutionen-Baum */
 .tree-grp{margin-top:4px}
 .tree-hd{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none}
@@ -404,6 +471,13 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width:1100px){.dgrid{grid-template-columns:1fr}.dash-two{grid-template-columns:1fr}.dash-two .lead{border-right:none;border-bottom:1px solid var(--border)}}
 @media (max-width:900px){
+  /* Filterleiste einklappbar – standardmäßig zu, damit die Meldungen lesbar sind */
+  #fb-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 14px;background:var(--surface);border:none;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
+  #fb-toggle .arw{transition:transform .15s}
+  body.filters-open #fb-toggle .arw{transform:rotate(180deg)}
+  body.filters-open #fb-toggle{color:var(--blue)}
+  #filterbar{display:none}
+  body.filters-open #filterbar{display:flex;max-height:38vh;overflow-y:auto}
   #nav-toggle{display:inline-flex}
   #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:40;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 40px rgba(13,18,32,.2)}
   body.nav-open #sidebar{transform:none}
@@ -447,11 +521,13 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
   <button class="icon-btn" id="nav-toggle" onclick="toggleNav()" aria-label="Navigation">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
-  <div class="logo">Presse<span>schau</span><small>News-Dashboard</small></div>
+  <button class="btn" id="back-btn" onclick="goBack()" title="Zurück (Alt+←)">← Zurück</button>
+  <div class="logo">Presse<span>schau</span><small>Nachrichten-Dashboard</small></div>
   <div class="sw" id="search-wrap" onclick="g('q').focus()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <div id="tokens"></div>
-    <input id="q" placeholder="Suchen · Enter = Begriff · NICHT xyz = ausschließen" data-short="Suchen…" oninput="debounce(applyFilters)" onkeydown="qKey(event)" autocomplete="off">
+    <input id="q" placeholder="Suchen · Enter = Begriff · NICHT xyz = ausschließen" data-short="Suchen…" oninput="onSearch()" onkeydown="qKey(event)" autocomplete="off">
+    <span id="q-hits"></span>
     <button class="link-btn" onclick="event.stopPropagation();toggleFilterPanel()">Filter <span>anpassen</span> <span id="fp-arrow">▾</span></button>
   </div>
   <div class="tr">
@@ -536,6 +612,12 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
     <div class="nav" id="nav-us" onclick="setSection('us')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4M4 5h16l-3 4 3 4H4"/></svg>USA<span class="cnt" id="cnt-us">–</span>
     </div>
+    <div class="nav" id="nav-trends" onclick="setView('trends')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 7h7v7"/></svg>Trends<span class="cnt" id="cnt-trends">–</span>
+    </div>
+    <div class="nav" id="nav-news2" onclick="setView('brief');setBriefMode('ext')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5 5h14l3 7v7H2v-7z"/></svg>Newsletter<span class="cnt" id="cnt-nl">–</span>
+    </div>
     <div class="nav" id="nav-brief" onclick="setView('brief')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg>Briefings<span class="cnt" id="cnt-brief">–</span>
     </div>
@@ -583,7 +665,10 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
           <button class="btn sm" onclick="setSection('news')">Alle Meldungen →</button>
         </div>
       </div>
-      <div id="dash-themes" style="display:none" class="dash-inner"></div>
+      <div id="dash-themes" style="display:none">
+        <div class="theme-bar" id="theme-bar"></div>
+        <div class="theme-cols" id="theme-cols"></div>
+      </div>
       <div id="dash-overview">
       <div class="dgrid">
         <div class="dcard alerts">
@@ -591,8 +676,8 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
           <div class="dcard-body" id="dash-eil"></div>
         </div>
         <div class="dcard">
-          <div class="dcard-hd"><h2>Top-Meldungen</h2><span class="eyebrow">nach Relevanz · 48 h</span><button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
-          <div class="dash-two" id="dash-top"></div>
+          <div class="dcard-hd"><h2>Top-Meldungen</h2><span class="eyebrow">meistberichtet · 48 h</span><button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
+          <div class="dcard-body top-list" id="dash-top"></div>
         </div>
       </div>
       <div class="dgrid3">
@@ -636,6 +721,22 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
       </div>
     </section>
 
+    <!-- Trends -->
+    <section class="view plain" id="view-trends">
+      <div class="plain-head"><div><h1>Trends</h1><div class="sub" style="margin:0">Was gerade aufgegriffen wird – Blasengröße = Meldungen, Farbe = Datensatz. Klick öffnet die Artikel.</div></div>
+        <div class="seg"><button class="active" onclick="setTrendWin(24,this)">24 h</button><button onclick="setTrendWin(72,this)">3 Tage</button><button onclick="setTrendWin(168,this)">7 Tage</button></div>
+        <div class="seg"><button class="active" onclick="setTrendMode('topics',this)">Themen</button><button onclick="setTrendMode('words',this)">Schlagwörter</button><button onclick="setTrendMode('sources',this)">Quellen</button></div>
+      </div>
+      <div class="dir-layout" style="grid-template-columns:1fr 320px">
+        <div id="bubble-wrap"><svg id="bubbles"></svg></div>
+        <div class="trend-side">
+          <div class="eyebrow" style="margin-bottom:8px">Stärkste Bewegung</div>
+          <div id="trend-list"></div>
+        </div>
+      </div>
+      <div id="trend-detail" style="margin-top:14px"></div>
+    </section>
+
     <!-- Briefings / Newsletter -->
     <section class="view plain" id="view-brief">
       <div class="plain-head"><div><h1>Briefings</h1><div class="sub" style="margin:0">Automatisch aus deinen Feeds je Thema zusammengestellt – plus externe Newsletter aus <code>newsletters.json</code>.</div></div>
@@ -672,10 +773,11 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
 
     <!-- Feed (Split) -->
     <section class="view" id="view-feed">
+      <button id="fb-toggle" onclick="document.body.classList.toggle('filters-open')"><span id="fb-toggle-l">Themen &amp; Quellen</span> <span class="arw">▾</span></button>
       <div id="filterbar">
         <span class="fl" id="fb-set">Nachrichten</span>
         <div class="vsep"></div>
-        <span class="fl">Thema</span><div class="chips" id="topic-chips"></div>
+        <span class="fl">Thema</span><div class="chips" id="topic-chips"></div><span class="chip" id="topic-all" onclick="openTopicPicker()">＋ Alle Themen…</span>
         <div class="vsep"></div>
         <span class="fl">Quelle</span><div class="chips" id="src-chips"></div>
       </div>
@@ -757,6 +859,12 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
       </div>
       <div class="gap-note"><strong>Datenlücke:</strong> Termine werden aus Titel und Datum der Tagesordnungen abgeleitet. Für EP-Plenarkalender, Kommissions-Agenda und Akteure (wie bei Politico) fehlen noch Feeds – siehe Konzeptdokument, Abschnitt 3.3.</div>
       <div id="cal-list"></div>
+      <div id="cal-bulk"><strong id="cal-sel-n">0</strong><span>ausgewählt</span>
+        <button class="btn sm" onclick="dlICS(calSelected(),'auswahl.ics')">⬇ .ics</button>
+        <button class="btn sm" onclick="calSelected().forEach(c=>window.open(googleCalUrl(c),'_blank'))">📅 Google</button>
+        <button class="btn sm" onclick="copyCal()">📋 Als Text</button>
+        <button class="btn sm" onclick="calSel.clear();renderCal()">✕ Aufheben</button>
+      </div>
     </section>
 
   </main>
@@ -770,7 +878,7 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
   <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
   <p id="login-reason"></p>
   <div class="feat-list" id="login-feats"></div>
-  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@deine-mail.de"></div>
+  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
   <div class="fld"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
   <div class="m-acts"><button class="btn p" onclick="doLogin()">Anmelden</button><button class="btn" onclick="closeLogin()">Weiter mit Basis</button></div>
   <p class="km-note">Demo: Anmeldung schaltet die Pro-Ansicht frei. Später durch echten Auth-Provider ersetzen (setAuth wird mit dem Session-State aufgerufen).</p>
@@ -815,6 +923,18 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
   <p class="km-note">Markierungen werden nach dem Export aufgelöst.</p>
 </div></div>
 
+<div class="modal" id="topic-picker" onclick="if(event.target.id==='topic-picker')closeTopicPicker()"><div class="modal-in" style="max-width:640px">
+  <button class="mc" onclick="closeTopicPicker()">✕</button>
+  <h2>Themen wählen</h2>
+  <p>Mehrere Themen kombinieren – <strong id="tp-mode-l">mindestens eines</strong> muss zutreffen.</p>
+  <input type="text" id="tp-q" placeholder="Thema suchen…" oninput="renderTopicPicker()">
+  <div class="tgrid" id="tp-grid"></div>
+  <div class="mode-row">Verknüpfung:
+    <div class="seg"><button class="active" id="tp-or" onclick="setTopicMode('or')">ODER</button><button id="tp-and" onclick="setTopicMode('and')">UND</button></div>
+    <span class="km-note" id="tp-hits" style="margin-left:auto"></span>
+  </div>
+  <div class="m-acts"><button class="btn p" onclick="closeTopicPicker()">Fertig</button><button class="btn" onclick="S.topics.clear();renderTopicPicker();buildChips();applyFilters()">Alle abwählen</button></div>
+</div></div>
 <div class="modal" id="topic-modal" onclick="if(event.target.id==='topic-modal')closeTopicModal()"><div class="modal-in">
   <button class="mc" onclick="closeTopicModal()">✕</button>
   <h2>Eigenes Thema</h2>
@@ -839,22 +959,31 @@ body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
 const PAL=[{bg:'#eff6ff',tc:'#1d4ed8'},{bg:'#fef3c7',tc:'#92400e'},{bg:'#f0fdf4',tc:'#15803d'},{bg:'#fdf4ff',tc:'#7e22ce'},{bg:'#fff1f2',tc:'#be123c'},{bg:'#f0fdfa',tc:'#0f766e'},{bg:'#fff7ed',tc:'#c2410c'},{bg:'#fefce8',tc:'#a16207'},{bg:'#f5f3ff',tc:'#6d28d9'},{bg:'#fce7f3',tc:'#9d174d'},{bg:'#ecfeff',tc:'#0e7490'},{bg:'#e0f2fe',tc:'#0369a1'},{bg:'#d1fae5',tc:'#065f46'},{bg:'#ffe4e6',tc:'#9f1239'},{bg:'#e0e7ff',tc:'#3730a3'},{bg:'#dcfce7',tc:'#166534'},{bg:'#fef9c3',tc:'#713f12'},{bg:'#dbeafe',tc:'#1e40af'}];
 const CC={};function srcC(n){if(!CC[n])CC[n]=PAL[Object.keys(CC).length%PAL.length];return CC[n];}
 function badge(n){const c=srcC(n);return`<span class="sbadge" style="background:${c.bg};color:${c.tc}">${esc(n)}</span>`;}
-const NEWS_TC={ki:'#6366f1',tech:'#0ea5e9',verteidigung:'#ef4444',politik:'#f59e0b',wirtschaft:'#10b981',sicherheit:'#8b5cf6',energie:'#f97316',eu:'#003399',finanzen:'#14b8a6',startup:'#a855f7',ukraine:'#eab308',nahost:'#ef4444',asien:'#f97316',usa:'#6366f1',mobilitaet:'#84cc16',wissenschaft:'#06b6d4',medizin:'#ec4899',netzpolitik:'#0284c7'};
-const NEWS_TL={ki:'🤖 KI',tech:'💻 Technik',verteidigung:'🛡 Verteidigung',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',sicherheit:'🔐 Cyber',energie:'⚡ Energie',eu:'🇪🇺 EU',finanzen:'💹 Finanzen',startup:'💡 Start-ups',ukraine:'🌍 Ukraine',nahost:'🌍 Nahost',asien:'🌏 Asien',usa:'🇺🇸 USA',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wissenschaft',medizin:'🏥 Medizin',netzpolitik:'📡 Netz/Telko'};
-const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',aussenpolitik:'#ef4444',migration:'#f97316',haushalt:'#f59e0b',rechtsstaat:'#8b5cf6'};
-const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',haushalt:'💶 Haushalt',rechtsstaat:'⚖️ Rechtsstaat'};
-const BT_TC={plenum:'#1d4ed8',gesetzgebung:'#7c3aed',haushalt:'#0f766e',verteidigung:'#dc2626',aussenpolitik:'#b45309',wirtschaft:'#059669',soziales:'#db2777',digitales:'#0891b2',umwelt:'#16a34a',innenpolitik:'#9333ea',bundesregierung:'#ea580c'};
-const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',aussenpolitik:'🌐 Außenpolitik',wirtschaft:'📈 Wirtschaft',soziales:'🤝 Soziales',digitales:'💻 Digitales',umwelt:'🌿 Umwelt & Klima',innenpolitik:'🔐 Innenpolitik',bundesregierung:'🏛 Bundesregierung'};
+/* 20 Oberthemen – identisch mit TOPIC_RULES nach consolidate() in fetch_news.py.
+   Alte Schlüssel (medizin, ukraine, startup …) sind unten als Alias hinterlegt,
+   damit bereits vorhandene JSON-Dateien weiter korrekt angezeigt werden. */
+const NEWS_TC={politik:'#f59e0b',wirtschaft:'#10b981',finanzen:'#14b8a6',ki:'#6366f1',tech:'#0ea5e9',netzpolitik:'#0284c7',sicherheit:'#8b5cf6',verteidigung:'#ef4444',energie:'#f97316',umwelt:'#16a34a',gesundheit:'#ec4899',soziales:'#db2777',bildung:'#0891b2',migration:'#f97316',justiz:'#7c3aed',eu:'#003399',usa:'#6366f1',international:'#b45309',mobilitaet:'#84cc16',wissenschaft:'#06b6d4'};
+const NEWS_TL={politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',finanzen:'💹 Finanzen',ki:'🤖 KI',tech:'💻 Technik',netzpolitik:'📡 Netz/Telko',sicherheit:'🔐 Cyber',verteidigung:'🛡 Verteidigung',energie:'⚡ Energie',umwelt:'🌿 Umwelt',gesundheit:'🏥 Gesundheit',soziales:'🤝 Soziales',bildung:'🎓 Bildung',migration:'👥 Migration',justiz:'⚖️ Justiz',eu:'🇪🇺 EU',usa:'🇺🇸 USA',international:'🌍 International',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wissenschaft'};
+/* Alias: alte Themen-Schlüssel aus früheren JSON-Ständen */
+const TOPIC_ALIAS={medizin:'gesundheit',arbeit:'soziales',wohnen:'soziales',demografie:'soziales',agrar:'umwelt',rechtsstaat:'justiz',korruption:'justiz',innenpolitik:'sicherheit',sicherheitspolitik:'verteidigung',verbraucher:'wirtschaft',handel:'wirtschaft',startup:'wirtschaft',raumfahrt:'wissenschaft',religion:'politik',kultur:'politik',kommunales:'politik',ukraine:'international',nahost:'international',asien:'international',afrika:'international',lateinamerika:'international',nordeuropa:'international',osteuropa:'international',aussenpolitik:'international',energie_klima:'energie',digitales:'tech',gesetzgebung:'politik',haushalt:'finanzen',plenum:'politik',bundesregierung:'politik'};
+const normTopic=t=>TOPIC_ALIAS[t]||t;
+const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',international:'#b45309',migration:'#f97316',haushalt:'#f59e0b',justiz:'#8b5cf6'};
+const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',international:'🌐 International',migration:'👥 Migration',haushalt:'💶 Haushalt',justiz:'⚖️ Justiz'};
+const BT_TC={plenum:'#1d4ed8',gesetzgebung:'#7c3aed',haushalt:'#0f766e',verteidigung:'#dc2626',international:'#b45309',wirtschaft:'#059669',soziales:'#db2777',digitales:'#0891b2',umwelt:'#16a34a',sicherheit:'#9333ea',bundesregierung:'#ea580c'};
+const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',international:'🌐 International',wirtschaft:'📈 Wirtschaft',soziales:'🤝 Soziales',digitales:'💻 Digitales',umwelt:'🌿 Umwelt & Klima',sicherheit:'🔐 Sicherheit',bundesregierung:'🏛 Bundesregierung'};
 const INST_LABELS={'ep':'Europ. Parlament','ep-committee':'EP-Ausschuss','ec':'EU-Kommission','council':'Rat der EU','eu-inst':'EU-Institution','eurlex':'EUR-Lex','eu-media':'EU-Medien','eu-think':'Think Tank','bt-allg':'Bundestag','bt-thema':'BT Themen','breg':'Bundesregierung','de-leit':'Leitmedien','de-pol':'Politik','de-eco':'Wirtschaft','de-tech':'Tech','de-ind':'Industrie','de-telko':'Telko'};
 const TC=s=>s==='eu'?{...EU_TC,...EXTRA_TC}:s==='us'?US_TC:(s==='bt'||s==='laender')?{...BT_TC,...EXTRA_TC}:{...NEWS_TC,...EXTRA_TC};
 const TL=s=>s==='eu'?{...EU_TL,...EXTRA_TL}:s==='us'?US_TL:(s==='bt'||s==='laender')?{...BT_TL,...EXTRA_TL}:{...NEWS_TL,...EXTRA_TL};
 const SET_LABEL={news:'Nachrichten',eu:'EU Direkt',bt:'Bundestag',laender:'Länder',us:'USA',all:'Alle Feeds'};
 /* v5: erweiterte Themen – Schlüssel identisch mit TOPIC_RULES in fetch_news.py */
-const EXTRA_TC={verbraucher:'#0d9488',kommunales:'#78716c',sicherheitspolitik:'#991b1b',religion:'#7c3aed',sport_politik:'#15803d',demografie:'#a16207',korruption:'#b45309',nordeuropa:'#0284c7',osteuropa:'#c2410c',gesundheit:'#ec4899',soziales:'#db2777',bildung:'#0891b2',migration:'#f97316',justiz:'#7c3aed',innenpolitik:'#9333ea',umwelt:'#16a34a',agrar:'#65a30d',wohnen:'#a16207',arbeit:'#0f766e',kultur:'#be123c',handel:'#0369a1',raumfahrt:'#4f46e5',afrika:'#d97706',lateinamerika:'#059669'};
-const EXTRA_TL={verbraucher:'🛒 Verbraucher',kommunales:'🏘 Kommunales',sicherheitspolitik:'🛰 Sicherheitspolitik',religion:'⛪ Religion',sport_politik:'🏅 Sportpolitik',demografie:'📊 Demografie',korruption:'🔍 Transparenz',nordeuropa:'🇸🇪 Nordeuropa',osteuropa:'🇵🇱 Osteuropa',gesundheit:'🏥 Gesundheit',soziales:'🤝 Soziales',bildung:'🎓 Bildung',migration:'👥 Migration',justiz:'⚖️ Justiz',innenpolitik:'🔐 Inneres',umwelt:'🌱 Umwelt',agrar:'🌾 Agrar',wohnen:'🏘 Wohnen',arbeit:'👷 Arbeit',kultur:'🎭 Kultur/Medien',handel:'🚢 Handel',raumfahrt:'🚀 Raumfahrt',afrika:'🌍 Afrika',lateinamerika:'🌎 Lateinamerika'};
+const EXTRA_TC={};  /* alle Themen stehen jetzt in NEWS_TC */
+const EXTRA_TL={};
 const US_TC={congress:'#1d4ed8',white_house:'#b91c1c',scotus:'#6d28d9',trade:'#0369a1',tech_policy:'#0891b2',defense:'#dc2626',economy:'#059669',elections:'#f59e0b',immigration:'#f97316',foreign_policy:'#b45309',energy:'#16a34a',health:'#ec4899'};
 const US_TL={congress:'🏛 Kongress',white_house:'🏛 Weißes Haus',scotus:'⚖️ Supreme Court',trade:'🚢 Handel',tech_policy:'💻 Tech-Politik',defense:'🛡 Verteidigung',economy:'📈 Wirtschaft',elections:'🗳 Wahlen',immigration:'👥 Migration',foreign_policy:'🌐 Außenpolitik',energy:'⚡ Energie',health:'🏥 Gesundheit'};
 /* Länder nutzen die Bundestags-Ressorts (gleiche TOPIC_RULES im Backend) */
+/* v6: Bundesland-Kennung (Landesfarben) – echte Wappen wären Bild-Assets im Repo */
+const LAND_C={bw:'#000000',by:'#0066b3',be:'#e3000f',bb:'#e3000f',hb:'#e3000f',hh:'#e3000f',he:'#e3000f',mv:'#0066b3',ni:'#e3000f',nw:'#009036',rp:'#e3000f',sl:'#0066b3',sn:'#009036',st:'#e3000f',sh:'#0066b3',th:'#e3000f'};
+const landIcon=c=>`<span class="land-ic" style="background:${LAND_C[c]||'#4a5168'}">${(c||'').toUpperCase()}</span>`;
 const LAND_L={bw:'Baden-Württemberg',by:'Bayern',be:'Berlin',bb:'Brandenburg',hb:'Bremen',hh:'Hamburg',he:'Hessen',mv:'Mecklenburg-Vorpommern',ni:'Niedersachsen',nw:'Nordrhein-Westfalen',rp:'Rheinland-Pfalz',sl:'Saarland',sn:'Sachsen',st:'Sachsen-Anhalt',sh:'Schleswig-Holstein',th:'Thüringen'};
 /* v5: Institutionen-Baum – Schlüssel = Feld `inst` aus fetch_news.py */
 const INST_TREE=[
@@ -884,7 +1013,8 @@ function kindOf(x){if(x.kind)return x.kind;const t=((x.title||'')+' '+(x.type||'
   return'news';}
 const PARTY_C={'CDU':'#111','CDU/CSU':'#111','CSU':'#0a5aa5','SPD':'#e3000f','Bündnis 90/Die Grünen':'#1fa12e','GRÜNE':'#1fa12e','Die Grünen':'#1fa12e','FDP':'#ffed00','AfD':'#009ee0','Die Linke':'#be3075','DIE LINKE':'#be3075','BSW':'#7b2a8b','SSW':'#0d6b9a','EPP':'#1a5fa8','S&D':'#e3000f','Renew':'#f7c600','Greens/EFA':'#1fa12e','ECR':'#0e4f8c','PfE':'#2b5aa0','The Left':'#be3075','ESN':'#1b4b7a','NI':'#777'};
 function partyC(p){for(const k in PARTY_C)if(p&&p.toLowerCase().startsWith(k.toLowerCase()))return PARTY_C[k];return'#4a5168';}
-const PARL_L={bt:'Bundestag',br:'Bundesrat',ep:'Europ. Parlament'};
+const PARL_L={bt:'Bundestag',br:'Bundesrat',ep:'Europ. Parlament',us:'US-Kongress','us-house':'House','us-senate':'Senat'};
+const parlLabel=p=>p.parliament_label||PARL_L[p.parliament]||(p.parliament?.startsWith('lt-')?LAND_L[p.parliament.slice(3)]:p.parliament);
 /* v5: eigene Themen des Nutzers */
 let MYTOPICS=[];
 function matchMy(a,t){const txt=((a.title||'')+' '+(a.desc||'')).toLowerCase();
@@ -909,9 +1039,16 @@ const FEATURES={
   mytopics:{t:'Eigene Themen',d:'Beliebige Begriffe als Thema speichern, mit Farbe und Zähler für neue Treffer.'},
   marks:{t:'Merkliste ohne Limit',d:'In der Basis-Version sind '+FREE_MARK_LIMIT+' Markierungen möglich.'}
 };
-const isPro=()=>S.plan==='pro';
+/* ─────────────────────────────────────────────────────────────
+   PAYWALL-SCHALTER
+   false = alle Funktionen frei, Pro-Kennzeichnung bleibt sichtbar (Vorbereitung).
+   true  = Gates greifen wie geplant. Ein Wort ändern, mehr nicht.
+   ───────────────────────────────────────────────────────────── */
+const PAYWALL_ACTIVE=false;
+const isPro=()=>!PAYWALL_ACTIVE||S.plan==='pro';
 function proGate(feat,fn){if(isPro()){fn&&fn();return true;}openLogin(feat);return false;}
 function setAuth(on){
+  if(!PAYWALL_ACTIVE)on=true;          // ohne Paywall ist alles freigeschaltet
   S.plan=on?'pro':'free';
   document.body.classList.toggle('pro',on);
   g('auth-toggle').checked=on;g('auth-toggle-m').checked=on;g('auth-label').textContent=g('auth-label-m').textContent=on?'Pro':'Basis';
@@ -931,11 +1068,50 @@ function doLogin(){setAuth(true);closeLogin();}
    ═══════════════════════════════════════════════════════════ */
 let DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',inst:'',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
+/* v6.1: Suche wirkt sofort und zeigt die Treffer – vorher wurde auf dem Dashboard
+   zwar gefiltert, aber nichts angezeigt. Jetzt: erste Eingabe springt in die
+   Ergebnisliste über ALLE Datensätze, leeres Feld kehrt zur Ausgangsansicht zurück. */
+let _searchOrigin=null;
+function onSearch(){
+  const v=g('q').value.trim();
+  if(v&&S.view!=='feed'){
+    _searchOrigin={view:S.view,section:S.section};
+    S.section='all';S.inst='';g('fb-set').textContent='Alle Feeds';
+    buildNavTopics();buildChips();buildSrc();buildFilterSelects();applyView('feed');
+  }
+  if(!v&&!S.tokens.length&&_searchOrigin){
+    S.section=_searchOrigin.section;g('fb-set').textContent=SET_LABEL[S.section];
+    applyView(_searchOrigin.view);_searchOrigin=null;
+    buildChips();buildSrc();
+  }
+  debounce(applyFilters,120);
+}
+function searchHits(){
+  const el=g('q-hits');const active=g('q').value.trim()||S.tokens.length;
+  if(!active){el.className='';el.textContent='';return;}
+  el.className='q-hits'+(S.filt.length?'':' none');
+  el.textContent=S.filt.length?S.filt.length+' Treffer':'0 Treffer';
+}
 function g(id){return document.getElementById(id);}
+/* v6: Zurück-Navigation – jeder Sprung legt den vorherigen Zustand ab */
+const NAV=[];
+function snapshot(){return JSON.stringify({view:S.view,section:S.section,topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,inst:S.inst,dirMode:S.dirMode,kind:S.kind,docMode:S.docMode,calMode:S.calMode,briefMode:S.briefMode,q:g('q')?.value||'',tokens:S.tokens});}
+function pushNav(){const s=snapshot();if(NAV[NAV.length-1]!==s){NAV.push(s);if(NAV.length>40)NAV.shift();}document.body.classList.toggle('can-back',NAV.length>1);}
+function goBack(){
+  if(NAV.length<2)return;
+  NAV.pop();const st=JSON.parse(NAV[NAV.length-1]);
+  S.section=st.section;S.topic=st.topic;S.topics=new Set(st.topics);S.topicMode=st.topicMode;S.src=st.src;S.inst=st.inst;
+  S.dirMode=st.dirMode;S.kind=st.kind;S.docMode=st.docMode;S.calMode=st.calMode;S.briefMode=st.briefMode;S.tokens=st.tokens||[];
+  if(g('q'))g('q').value=st.q||'';
+  g('fb-set').textContent=S.inst?(INST_FLAT[S.inst]||S.inst):SET_LABEL[S.section];
+  renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();
+  applyView(st.view);applyFilters();if(st.view==='dir')renderDir();if(st.view==='types')renderTypes();if(st.view==='trends')renderTrends();
+  document.body.classList.toggle('can-back',NAV.length>1);
+}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fd(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
 function fmt(iso){if(!iso)return'–';try{return new Date(iso).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return'–';}}
@@ -967,7 +1143,7 @@ function setSport(on){S.hideSport=on;store.set('ps_sport',on);applyFilters();ren
 /* Dubletten (gleiche Meldung aus mehreren Quellen / Google-Proxies) */
 function normT(t){return(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
 function dedupe(list,seen=new Set()){return list.filter(a=>{const k=normT(a.title);if(!k||seen.has(k)||seen.has(a.id))return false;seen.add(k);seen.add(a.id);return true;});}
-function tagsHTML(a,n=3){const tc=TC(a._set),tl=TL(a._set);return(a.topics||[]).slice(0,n).map(t=>`<span class="tag c" style="--tc:${tc[t]||'#6b7280'}">${esc((tl[t]||t).replace(/^\S+\s/,''))}</span>`).join('');}
+function tagsHTML(a,n=3){const tc=TC(a._set),tl=TL(a._set);return[...new Set((a.topics||[]).map(normTopic))].slice(0,n).map(t=>`<span class="tag c" style="--tc:${tc[t]||'#6b7280'}">${esc((tl[t]||t).replace(/^\S+\s/,''))}</span>`).join('');}
 
 /* ═══ LOAD – identische Dateinamen & Felder wie v2 ═══ */
 async function loadData(){
@@ -1001,6 +1177,7 @@ function afterLoad(){
   ALL_DOCS.forEach(d=>d._doc=true);
   buildBriefs();
   g('cnt-laender').textContent=ALL_LAENDER.length;g('cnt-us').textContent=ALL_US.length;
+  g('cnt-nl').textContent=NEWSL.length;
   g('cnt-people').textContent=PEOPLE.length;g('cnt-comm').textContent=COMMS.length;g('cnt-brief').textContent=BRIEFS.length+NEWSL.length;
   g('cnt-types').textContent=Object.keys(KINDS).length;
   const dc=(DIP.counts?.procedures||0);if(dc)g('cnt-types').textContent=dc+' Vorgänge';
@@ -1011,13 +1188,17 @@ function afterLoad(){
 function setSt(t,m){g('sdot').className='dot '+t;g('stxt').textContent=m;}
 
 /* ═══ NAVIGATION ═══ */
-function setView(v){
-  if((v==='docs'||v==='cal')&&!isPro()){openLogin(v);return;}
+function applyView(v){
   S.view=v;document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
-  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types','trends','news2'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
   if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
   document.body.classList.toggle('eu-mode',v==='feed'&&S.section==='eu');
   toggleNav(false);
+}
+function setView(v){
+  if((v==='docs'||v==='cal')&&!isPro()){openLogin(v);return;}
+  applyView(v);pushNav();
+  if(v==='trends')renderTrends();
 }
 function setSection(sec){
   S.section=sec;S.topic='all';S.src='all';S.inst='';S.idx=-1;S.art=null;buildNavInsts();
@@ -1032,7 +1213,9 @@ function closeReader(){document.body.classList.remove('reader-open');}
 
 /* ═══ FILTER-BAUSTEINE ═══ */
 function chipsFor(sec){const tl=TL(sec);return[{t:'all',l:'Alle'},...Object.keys(tl).map(t=>({t,l:tl[t]}))];}
-function buildNavTopics(){const sec=S.section==='all'?'news':S.section;g('nav-topics').innerHTML=chipsFor(sec).slice(1,11).map(c=>`<span class="chip${S.topic===c.t?' active':''}" onclick="setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('');}
+function buildNavTopics(){const sec=S.section==='all'?'news':S.section;
+  g('nav-topics').innerHTML=chipsFor(sec).slice(1,11).map(c=>`<span class="chip${S.topics.has(c.t)?' sel':(S.topic===c.t?' active':'')}" onclick="(event.metaKey||event.ctrlKey)?toggleTopic('${c.t}'):setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('')
+  +`<span class="chip" id="nav-topic-all" onclick="openTopicPicker()">＋ alle…</span>`;}
 /* v5: Institutionen als aufklappbarer Baum (Deutschland · Länder · EU · USA) */
 function instCounts(){const c={};rawPool('all').forEach(a=>{const k=instOf(a);if(k&&INST_FLAT[k])c[k]=(c[k]||0)+1;});return c;}
 function buildNavInsts(){
@@ -1041,7 +1224,7 @@ function buildNavInsts(){
     const items=gr.items.filter(([k])=>cnt[k]);const tot=items.reduce((n,[k])=>n+cnt[k],0);
     if(!items.length)return'';
     return`<div class="tree-grp${open.includes(gr.id)?' open':''}" id="tg-${gr.id}"><div class="tree-hd" onclick="toggleTree('${gr.id}')"><span class="arw">▶</span>${gr.label}<span class="cnt" style="margin-left:auto">${tot}</span></div>
-      <div class="tree-body">${items.map(([k,l])=>`<div class="tree-item${S.inst===k?' active':''}" onclick="instNav('${k}')">${esc(l)}<span class="cnt">${cnt[k]}</span></div>`).join('')}</div></div>`;}).join('')
+      <div class="tree-body">${items.map(([k,l])=>`<div class="tree-item${S.inst===k?' active':''}" onclick="instNav('${k}')">${k.startsWith('landtag-')?landIcon(k.slice(8)):''}${esc(l)}<span class="cnt">${cnt[k]}</span></div>`).join('')}</div></div>`;}).join('')
     ||'<div class="saved-empty">Noch keine Institutionsdaten. Nach dem nächsten Lauf von <code>fetch_news.py</code> (v3) erscheint hier der Baum.</div>';
 }
 function toggleTree(id){const el=g('tg-'+id);el.classList.toggle('open');const open=[...document.querySelectorAll('.tree-grp.open')].map(e=>e.id.slice(3));store.set('ps_treeopen',open);}
@@ -1051,7 +1234,8 @@ function instNav(inst){
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();
 }
 function buildChips(){const sec=S.section==='all'?'news':S.section;const w=g('topic-chips');
-  w.innerHTML=chipsFor(sec).slice(0,11).map(c=>`<span class="chip${S.topic===c.t?' active':''}" data-t="${c.t}" onclick="setTopic('${c.t}')">${c.l}</span>`).join('');}
+  const picked=[...S.topics].map(t=>`<span class="chip sel" onclick="toggleTopic('${t}')">${chipLabel(t)}<span class="x">×</span></span>`).join('');
+  w.innerHTML=picked+chipsFor(sec).slice(0,picked?6:11).filter(c=>!S.topics.has(c.t)).map(c=>`<span class="chip${S.topic===c.t&&!S.topics.size?' active':''}" data-t="${c.t}" onclick="event.metaKey||event.ctrlKey?toggleTopic('${c.t}'):setTopic('${c.t}')" title="Strg/⌘+Klick: mehrere Themen kombinieren">${c.l}</span>`).join('');}
 function buildSrc(){const srcs=[...new Set(pool(S.section).map(a=>a.source))].sort();const w=g('src-chips');
   w.innerHTML=`<span class="chip${S.src==='all'?' active':''}" onclick="setSrc('all')">Alle</span>`+srcs.slice(0,14).map(s=>`<span class="chip${S.src===s?' active':''}" onclick="setSrc('${esc(s).replace(/'/g,"\\'")}')">${esc(s)}</span>`).join('')+(srcs.length>14?`<span class="chip" onclick="toggleFilterPanel()">+${srcs.length-14} weitere…</span>`:'');}
 function buildFilterSelects(){
@@ -1061,21 +1245,50 @@ function buildFilterSelects(){
   const srcs=[...new Set(pool(S.section).map(a=>a.source))].sort();
   g('fp-src').innerHTML='<option value="all">Alle Quellen</option>'+srcs.map(s=>`<option value="${esc(s)}"${S.src===s?' selected':''}>${esc(s)}${PRO_CATS.has(pool(S.section).find(a=>a.source===s)?.cat)?' (Pro)':''}</option>`).join('');
 }
-function setTopic(t){S.topic=t;document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===t));buildNavTopics();g('fp-topic').value=t;applyFilters();}
+function setTopic(t,add){
+  if(add){ if(S.topics.has(t))S.topics.delete(t); else S.topics.add(t); S.topic='all'; }
+  else { S.topics.clear(); S.topic=t; }
+  document.querySelectorAll('[data-t]').forEach(e=>e.classList.toggle('active',e.dataset.t===S.topic&&!S.topics.size));
+  buildNavTopics();buildChips();g('fp-topic').value=S.topic;applyFilters();pushNav();
+}
+function toggleTopic(t){setTopic(t,true);}
+/* Alle Themen aller Datensätze, gruppiert */
+function allTopics(){
+  const groups=[['Nachrichten',{...NEWS_TL,...EXTRA_TL},{...NEWS_TC,...EXTRA_TC}],['EU',EU_TL,EU_TC],['Bundestag & Länder',BT_TL,BT_TC],['USA',US_TL,US_TC]];
+  const seen=new Set(),out=[];
+  groups.forEach(([label,tl,tc])=>{const items=Object.keys(tl).filter(k=>!seen.has(k)&&!TOPIC_ALIAS[k]);items.forEach(k=>seen.add(k));
+    if(items.length)out.push([label,items.map(k=>({k,l:tl[k],c:tc[k]||'#6b7280'}))]);});
+  return out;
+}
+function openTopicPicker(){g('tp-q').value='';renderTopicPicker();g('topic-picker').classList.add('open');g('tp-q').focus();}
+function closeTopicPicker(){g('topic-picker').classList.remove('open');}
+function setTopicMode(m){S.topicMode=m;g('tp-or').classList.toggle('active',m==='or');g('tp-and').classList.toggle('active',m==='and');
+  g('tp-mode-l').textContent=m==='or'?'mindestens eines':'alle';applyFilters();renderTopicPicker();}
+function renderTopicPicker(){
+  const q=(g('tp-q').value||'').toLowerCase();
+  g('tp-grid').innerHTML=allTopics().map(([label,items])=>{
+    const f=items.filter(i=>!q||i.l.toLowerCase().includes(q)||i.k.includes(q));
+    return f.length?`<div class="tsec">${label}</div>`+f.map(i=>`<span class="chip${S.topics.has(i.k)?' sel':''}" style="${S.topics.has(i.k)?`background:${i.c};border-color:${i.c}`:`border-color:${i.c}55;color:${i.c}`}" onclick="toggleTopic('${i.k}');renderTopicPicker()">${i.l}</span>`).join(''):'';}).join('');
+  g('tp-hits').textContent=S.topics.size?S.filt.length+' Treffer · '+S.topics.size+' Themen':'kein Thema gewählt';
+}
+function chipLabel(t){const m={...NEWS_TL,...EU_TL,...BT_TL,...US_TL};return m[t]||m[normTopic(t)]||normTopic(t);}
 function setSrc(s){S.src=s;buildSrc();g('fp-src').value=s;applyFilters();}
 function setRange(v){if(!isPro()){g('fp-range').value='48';openLogin('archive');return;}S.range=v;applyFilters();}
 function setSort(s){S.sort=s;['sn','so','sb2'].forEach((id,i)=>g(id).classList.toggle('active',['new','old','boost'][i]===s));applyFilters();}
-function resetFilters(){S.topic='all';S.src='all';S.inst='';buildNavInsts();S.tokens=[];S.prio={eil:false,top:false};g('fp-eil').checked=false;g('fp-top').checked=false;g('q').value='';renderTokens();buildChips();buildSrc();buildFilterSelects();buildNavTopics();applyFilters();}
+function resetFilters(){S.topic='all';S.topics.clear();S.src='all';S.inst='';buildNavInsts();S.tokens=[];S.prio={eil:false,top:false};g('fp-eil').checked=false;g('fp-top').checked=false;g('q').value='';renderTokens();buildChips();buildSrc();buildFilterSelects();buildNavTopics();applyFilters();}
 
 /* dpa-Token-Suche */
 function qKey(e){
+  if(e.key==='Escape'){e.target.value='';S.tokens=[];renderTokens();onSearch();return;}
   if(e.key==='Backspace'&&!e.target.value&&S.tokens.length){S.tokens.pop();renderTokens();applyFilters();return;}
   if(e.key!=='Enter')return;e.preventDefault();
   let v=e.target.value.trim();if(!v)return;let not=false;
   if(/^(nicht|not)\s+/i.test(v)){not=true;v=v.replace(/^(nicht|not)\s+/i,'');}else if(v.startsWith('-')){not=true;v=v.slice(1);}
   if(not&&!isPro()){openLogin('not');return;}
   v=v.toLowerCase();if(v&&!S.tokens.some(t=>t.v===v&&t.not===not))S.tokens.push({v,not});
-  e.target.value='';renderTokens();applyFilters();
+  e.target.value='';renderTokens();
+  if(S.view!=='feed'){_searchOrigin=_searchOrigin||{view:S.view,section:S.section};S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();buildSrc();applyView('feed');}
+  applyFilters();
 }
 function renderTokens(){g('tokens').innerHTML=S.tokens.map((t,i)=>`<span class="tok${t.not?' not':''}">${t.not?'<b>NICHT</b> ':''}${esc(t.v)}<button onclick="event.stopPropagation();S.tokens.splice(${i},1);renderTokens();applyFilters()" aria-label="entfernen">×</button></span>`).join('');}
 
@@ -1083,10 +1296,15 @@ function renderTokens(){g('tokens').innerHTML=S.tokens.map((t,i)=>`<span class="
 function matches(a,f){
   const txt=((a.title||'')+' '+(a.desc||'')+' '+(a.source||'')).toLowerCase();
   if(f.inst&&instOf(a)!==f.inst)return false;
-  if(f.topic&&f.topic!=='all'){
+  if(f.topics&&f.topics.length){
+    const at=new Set((a.topics||[]).map(normTopic));
+    const hits=f.topics.filter(t=>t.startsWith('my:')?(()=>{const x=MYTOPICS.find(y=>y.id===t.slice(3));return x&&matchMy(a,x);})():at.has(normTopic(t)));
+    if(f.topicMode==='and'?hits.length!==f.topics.length:!hits.length)return false;
+  }
+  else if(f.topic&&f.topic!=='all'){
     if(f.topic.startsWith('my:')){const t=MYTOPICS.find(x=>x.id===f.topic.slice(3));if(!t||!matchMy(a,t))return false;}
     else if(f.topic.startsWith('__')){if(a.cat!==f.topic.slice(2))return false;}
-    else if(!(a.topics||[]).includes(f.topic))return false;}
+    else if(!(a.topics||[]).map(normTopic).includes(normTopic(f.topic)))return false;}
   if(f.src&&f.src!=='all'&&a.source!==f.src)return false;
   if(f.prio?.eil&&!isBreaking(a))return false;
   if(f.prio?.top&&!(a.boost||0))return false;
@@ -1096,12 +1314,12 @@ function matches(a,f){
 }
 function applyFilters(){
   const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
-  const f={topic:S.topic,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
+  const f={topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
   list=list.filter(a=>matches(a,f));
   if(S.sort==='boost')list.sort((a,b)=>(topScore(b)-topScore(a))||((b.date||'').localeCompare(a.date||'')));
   else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  S.filt=list;g('acnt').textContent=list.length;
+  S.filt=list;g('acnt').textContent=list.length;searchHits();
   const hi=g('hidden-info');hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';
   g('fp-summary').textContent=list.length+' Treffer · '+SET_LABEL[S.section]+(S.topic!=='all'?' · '+S.topic:'')+(S.tokens.length?' · '+S.tokens.length+' Begriffe':'');
   renderFeed();
@@ -1179,8 +1397,12 @@ function renderDash(){
   const eil=dedupe(win.filter(isBreaking),seen).slice(0,6);
   g('dash-eil').innerHTML=eil.length?eil.map(a=>dl(a)).join(''):empty('Keine Eilmeldungen in den letzten 48 h.<br><span style="font-size:11px">Abgeleitet aus Relevanz ≥ 3 und Alter &lt; 3 h – bis das Backend ein <code>priority</code>-Feld liefert.</span>');
   const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||''))),seen).slice(0,6);
-  if(top.length){const L=top[0];g('dash-top').innerHTML=`<div class="lead" onclick="openById('${L.id}','${L._set}')">${tile(L,'')}<div class="dl-eb"><span class="tag">${esc(L.source)}</span>${tagsHTML(L,3)}</div><div class="dl-t">${esc(L.title)}</div><div class="dl-d">${esc(L.desc||'')}</div><div class="dl-m">${rel(L.date)}${readMin(L)?' · '+readMin(L)+' Lesezeit':''}</div></div><div class="dcard-body">${top.slice(1).map(a=>dl(a,{desc:false,tile:true})).join('')}</div>`;}
-  else g('dash-top').innerHTML=empty('Noch keine Meldungen.');
+  const top2=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,8);
+  g('dash-top').innerHTML=top2.length?top2.map((a,i)=>`<div class="top-row${i===0?' first':''}" onclick="openById('${a.id}','${a._set}')">
+      <span class="rank">${i+1}</span>
+      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}${tagsHTML(a,2)}</div>
+      <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
+      <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div></div>`).join(''):empty('Noch keine Meldungen.');
   const official=ALL_EU.filter(a=>!PRO_CATS.has(a.cat)).slice(0,5);
   g('dash-eu').innerHTML=official.length?official.map(a=>dl(a,{desc:false})).join(''):empty('eu_articles.json leer.');
   g('dash-bt').innerHTML=ALL_BT.length?ALL_BT.slice(0,5).map(a=>dl(a,{desc:false})).join(''):empty('bundestag_articles.json leer.');
@@ -1200,13 +1422,25 @@ function renderDash(){
     ||empty('<strong>dip.json fehlt.</strong> DIP-Key in <code>fetch_directory.py</code> eintragen – dann erscheinen hier Gesetzgebungsvorgänge mit Beratungsstand.');
   renderDashThemes();
 }
-function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'grid':'none';}
-function renderDashThemes(){
+function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'block':'none';if(m==='themes')renderDashThemes();}
+/* Auswahl der im Themen-Dashboard gezeigten Spalten (leer = alle) */
+const dashPick=new Set();
+function toggleDashTheme(t){dashPick.has(t)?dashPick.delete(t):dashPick.add(t);renderDashThemes();}
+function themeBuckets(){
   const win=dedupe(pool('all').filter(a=>ageH(a.date)<=48).sort((a,b)=>(b.date||'').localeCompare(a.date||'')));
-  const buckets={};win.forEach(a=>{const t=(a.topics||[])[0]||'sonstig';(buckets[t]=buckets[t]||[]).push(a);});
-  const sorted=Object.entries(buckets).sort((a,b)=>b[1].length-a[1].length);
-  g('dash-themes').innerHTML=sorted.map(([t,arts])=>{const col=NEWS_TC[t]||EU_TC[t]||BT_TC[t]||'#6b7280';const lbl=NEWS_TL[t]||EU_TL[t]||BT_TL[t]||TOPIC_KW_L[t]||t;
-    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${lbl}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,6).map(a=>`<div class="ds-item" onclick="openById('${a.id}','${a._set}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')}${arts.length>6?`<div class="ds-more" onclick="setSection('${arts[0]._set}');setTopic('${t}')">Alle ${arts.length} →</div>`:''}</div>`;}).join('')||'<div style="padding:30px;color:var(--muted)">Keine Meldungen.</div>';
+  const b={};win.forEach(a=>[...new Set((a.topics||[]).map(normTopic))].slice(0,2).forEach(t=>{if(t)(b[t]=b[t]||[]).push(a);}));
+  return Object.entries(b).sort((a,c)=>c[1].length-a[1].length);
+}
+function topicColor(t){return NEWS_TC[t]||EU_TC[t]||BT_TC[t]||US_TC[t]||'#6b7280';}
+function renderDashThemes(){
+  const all=themeBuckets();
+  g('theme-bar').innerHTML='<span class="fl">Spalten</span>'+all.map(([t,arts])=>{const on=dashPick.has(t),c=topicColor(t);
+    return`<span class="chip${on?' sel':''}" style="${on?`background:${c};border-color:${c}`:`border-color:${c}55;color:${c}`}" onclick="toggleDashTheme('${t}')">${chipLabel(t)} <span style="opacity:.6">${arts.length}</span></span>`;}).join('')
+    +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ alle zeigen</span>`:'');
+  const shown=dashPick.size?all.filter(([t])=>dashPick.has(t)):all;
+  g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" onclick="openById('${a.id}','${a._set}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
+    ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
 }
 
 /* ═══ GESPEICHERTE FILTER (dpa) ═══ */
@@ -1275,11 +1509,16 @@ function calItems(){
 let _calVisible=[];function calVisible(){return _calVisible;}
 function calFilter(f,el){S.calF=f;document.querySelectorAll('[data-cf]').forEach(c=>c.classList.toggle('active',c===el));renderCal();}
 function setCalMode(m,btn){S.calMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderCal();}
-function calItemHTML(c){return`<div class="cal-item"><div class="t">${esc(c.title)}</div><div class="m"><span class="tag">${esc(c.src)} · ${esc(c.type)}</span><span class="tag" style="color:var(--blue)">🕒 ${c.timeLabel}</span><span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[c.topic]||''}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div><div class="acts"><a class="btn sm" href="${googleCalUrl(c)}" target="_blank" rel="noopener">📅 Google Kalender</a><button class="btn sm" onclick="dlICS([calVisible().find(x=>x.id==='${c.id}')],'termin.ics')">⬇ .ics (Apple/Outlook)</button></div></div>`;}
+const calSel=new Set();
+function calSelected(){return calVisible().filter(c=>calSel.has(c.id));}
+function toggleCal(id){calSel.has(id)?calSel.delete(id):calSel.add(id);renderCal();}
+function copyCal(){const t=calSelected().map(c=>`${c.dateLabel}, ${c.timeLabel} – ${c.title}\n${c.link}`).join('\n\n');navigator.clipboard.writeText(t);}
+function calItemHTML(c){return`<div class="cal-item${calSel.has(c.id)?' sel':''}"><input type="checkbox" class="cal-chk" ${calSel.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleCal('${c.id}')"><div class="ci-main"><div class="t">${esc(c.title)}</div><div class="m"><span class="tag">${esc(c.src)} · ${esc(c.type)}</span><span class="tag" style="color:var(--blue)">🕒 ${c.timeLabel}</span><span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[c.topic]||''}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div><div class="acts"><a class="btn sm" href="${googleCalUrl(c)}" target="_blank" rel="noopener">📅 Google Kalender</a><button class="btn sm" onclick="dlICS([calVisible().find(x=>x.id==='${c.id}')],'termin.ics')">⬇ .ics (Apple/Outlook)</button></div></div></div>`;}
 function renderCal(){
   const now=new Date();now.setHours(0,0,0,0);const wk=new Date(now);wk.setDate(wk.getDate()+7);
   let items=calItems();if(S.calF==='upcoming')items=items.filter(c=>c.date>=now);else if(S.calF==='week')items=items.filter(c=>c.date>=now&&c.date<=wk);
   _calVisible=items;
+  g('cal-bulk').classList.toggle('on',calSel.size>0);g('cal-sel-n').textContent=calSel.size;
   const el=g('cal-list');
   if(S.calMode==='list'){el.className='';const byDay={};items.forEach(c=>{(byDay[c.dateLabel]=byDay[c.dateLabel]||[]).push(c);});
     el.innerHTML=Object.entries(byDay).map(([d,cs])=>`<div class="cal-day"><div class="eyebrow">📅 ${d}</div>${cs.map(calItemHTML).join('')}</div>`).join('')||'<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px">Keine Termine im gewählten Zeitraum.</div>';return;}
@@ -1343,6 +1582,60 @@ async function briefAI(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;if(!ap
     box.innerHTML='<div id="ai-summary-box" style="display:block;margin:0 0 8px"><div id="ai-summary-header"><span>🤖 KI-Briefing</span></div><div id="ai-summary-body" style="white-space:pre-line">'+esc(d.content?.[0]?.text||'')+'</div></div>';
   }catch(e){box.innerHTML='<div style="color:var(--red)">⚠️ '+esc(e.message)+'</div>';}}
 
+/* ═══ TRENDS (v6): Blasen + Bewegung + verlinkte Artikel ═══ */
+function setTrendWin(h,b){S.trendWin=h;b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTrends();}
+function setTrendMode(m,b){S.trendMode=m;b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTrends();}
+const STOP=new Set('und der die das den dem des ein eine einen einem eines für mit von aus bei nach über auf ist sind wird werden hat haben sich nicht auch noch mehr als zum zur beim vom durch gegen ohne wegen sowie dass wie was wer wann warum kann können soll sollen muss müssen the and for with from that this will has have not are was were says said new news update'.split(' '));
+function trendData(){
+  const win=dedupe(pool('all').filter(a=>ageH(a.date)<=S.trendWin));
+  const prev=dedupe(pool('all').filter(a=>ageH(a.date)>S.trendWin&&ageH(a.date)<=S.trendWin*2));
+  const key=a=>S.trendMode==='sources'?[a.source]:S.trendMode==='topics'?(a.topics||[]).map(normTopic):
+    (a.title||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>4&&!STOP.has(w));
+  const count=list=>{const c={};list.forEach(a=>new Set(key(a)).forEach(k=>{if(!k)return;(c[k]=c[k]||{n:0,arts:[],sets:new Set()});c[k].n++;c[k].arts.push(a);c[k].sets.add(a._set);}));return c;};
+  const now=count(win),before=count(prev);
+  return Object.entries(now).map(([k,v])=>{
+    const p=before[k]?.n||0;
+    const hours={};v.arts.forEach(a=>{const h=Math.floor(ageH(a.date));hours[h]=(hours[h]||0)+1;});
+    const spark=Array.from({length:Math.min(12,Math.ceil(S.trendWin/2))},(_,i)=>hours[Math.floor(S.trendWin-(i+1)*S.trendWin/12)]||0);
+    return{k,n:v.n,prev:p,delta:p?Math.round((v.n-p)/p*100):(v.n>=3?100:0),arts:v.arts.sort((a,b)=>(b.date||'').localeCompare(a.date||'')),set:[...v.sets][0],spark};
+  }).filter(t=>t.n>=2).sort((a,b)=>b.n-a.n).slice(0,40);
+}
+const SET_C={news:'#2563eb',eu:'#003399',bt:'#7c3aed',laender:'#0f766e',us:'#dc2626'};
+function renderTrends(){
+  const data=trendData();g('cnt-trends').textContent=data.length;
+  const svg=g('bubbles'),W=g('bubble-wrap').clientWidth||900,H=420;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('width','100%');svg.setAttribute('height',H);
+  if(!data.length){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#8b92a8" font-size="13" font-family="inherit">Zu wenige Meldungen im Zeitfenster.</text>`;g('trend-list').innerHTML='';return;}
+  const mx=data[0].n,R=n=>10+Math.sqrt(n/mx)*Math.min(W,H)*0.16;
+  /* einfache Kollisionsauflösung – reicht für 40 Blasen und bleibt flüssig */
+  const nodes=data.map((d,i)=>({...d,r:R(d.n),x:W/2+Math.cos(i*2.4)*(60+i*7),y:H/2+Math.sin(i*2.4)*(40+i*4)}));
+  for(let it=0;it<220;it++){
+    nodes.forEach(a=>{a.x+=(W/2-a.x)*0.012;a.y+=(H/2-a.y)*0.016;});
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i],b=nodes[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.1,m=a.r+b.r+3;
+      if(d<m){const f=(m-d)/d*0.5;a.x-=dx*f;a.y-=dy*f;b.x+=dx*f;b.y+=dy*f;}}
+    nodes.forEach(a=>{a.x=Math.max(a.r+2,Math.min(W-a.r-2,a.x));a.y=Math.max(a.r+2,Math.min(H-a.r-2,a.y));});
+  }
+  svg.innerHTML=nodes.map(d=>{const c=SET_C[d.set]||'#2563eb';const lbl=S.trendMode==='topics'?chipLabel(d.k).replace(/^\S+\s/,''):d.k;
+    const show=d.r>26;
+    return`<g class="bub" onclick="trendDetail('${encodeURIComponent(d.k)}')"><circle cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="${d.r.toFixed(1)}" fill="${c}" fill-opacity="0.14" stroke="${c}" stroke-width="1.6"/>
+      ${show?`<text x="${d.x.toFixed(1)}" y="${(d.y-1).toFixed(1)}" text-anchor="middle" font-size="${Math.min(13,d.r/2.6).toFixed(0)}" font-weight="700" fill="${c}" font-family="inherit">${esc(lbl.slice(0,16))}</text>
+      <text x="${d.x.toFixed(1)}" y="${(d.y+12).toFixed(1)}" text-anchor="middle" font-size="10" fill="${c}" opacity=".75" font-family="inherit">${d.n}</text>`:`<title>${esc(lbl)}: ${d.n}</title>`}</g>`;}).join('');
+  const mv=data.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,14);
+  g('trend-list').innerHTML=mv.map(d=>{const lbl=S.trendMode==='topics'?chipLabel(d.k):d.k;const sm=Math.max(1,...d.spark);
+    return`<div class="trend-row" onclick="trendDetail('${encodeURIComponent(d.k)}')"><span class="tn">${esc(lbl)}</span>
+      <span class="spark">${d.spark.map(v=>`<i style="height:${Math.max(2,v/sm*26)}px"></i>`).join('')}</span>
+      <span class="tdelta ${d.delta>15?'tup':d.delta<-15?'tdown':'tflat'}">${d.delta>0?'+':''}${d.delta}%</span><span class="ds-cnt">${d.n}</span></div>`;}).join('');
+}
+function trendDetail(kEnc){
+  const k=decodeURIComponent(kEnc);const d=trendData().find(x=>x.k===k);if(!d)return;
+  const lbl=S.trendMode==='topics'?chipLabel(k):k;
+  g('trend-detail').innerHTML=`<div class="dcard"><div class="dcard-hd"><h2>${esc(lbl)}</h2><span class="eyebrow">${d.n} Meldungen · ${d.delta>0?'+':''}${d.delta}% ggü. Vorperiode</span>
+    ${S.trendMode==='topics'?`<button class="all" onclick="S.topics=new Set(['${k}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Im Feed öffnen</button>`:`<button class="all" onclick="S.tokens=[{v:'${esc(k).toLowerCase()}',not:false}];renderTokens();S.section='all';setView('feed');applyFilters()">Im Feed öffnen</button>`}</div>
+    <div class="dcard-body">${d.arts.slice(0,12).map(a=>dl(a,{src:true})).join('')}</div></div>`;
+  g('trend-detail').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 /* ═══ EIGENE THEMEN (v5) ═══
    Speicherung: heute localStorage. Mit Konto → userStore.save() ruft die API
    (Cloudflare Worker + D1) auf; siehe ACCOUNTS.md. Ein Umschalten ändert nur diese Funktion. */
@@ -1384,7 +1677,10 @@ function pickMyTopic(id){const t=MYTOPICS.find(x=>x.id===id);if(t){t.lastSeen=ne
 /* ═══ VERZEICHNIS: Personen & Ausschüsse ═══ */
 function setDirMode(m){S.dirMode=m;g('dm-people').classList.toggle('active',m==='people');g('dm-comm').classList.toggle('active',m==='comm');g('dir-title').textContent=m==='people'?'Personen':'Ausschüsse';if(S.view==='dir')setView('dir');renderDir();}
 function buildDirFilters(){
-  const parls=[{id:'all',l:'Alle'},{id:'bt',l:'🏛 Bundestag'},{id:'br',l:'🏛 Bundesrat'},{id:'ep',l:'🇪🇺 EP'}];
+  const inUse=new Set(PEOPLE.map(p=>p.parliament));
+  const parls=[{id:'all',l:'Alle'},{id:'bt',l:'🏛 Bundestag'},{id:'br',l:'🏛 Bundesrat'},{id:'ep',l:'🇪🇺 EP'},{id:'us',l:'🇺🇸 Kongress'},
+    ...Object.keys(LAND_L).filter(c=>inUse.has('lt-'+c)).map(c=>({id:'lt-'+c,l:LAND_L[c]}))]
+    .filter(p=>p.id==='all'||inUse.has(p.id));
   g('dir-parl').innerHTML=parls.map(p=>`<span class="chip${S.dirParl===p.id?' active':''}" onclick="S.dirParl='${p.id}';buildDirFilters();renderDir()">${p.l}</span>`).join('');
   const comms=COMMS.filter(c=>S.dirParl==='all'||c.parliament===S.dirParl);
   const cv=g('dir-comm').value;g('dir-comm').innerHTML='<option value="">Alle Ausschüsse</option>'+comms.map(c=>`<option value="${c.id}">${esc(c.name)} (${c.members.length})</option>`).join('');if([...g('dir-comm').options].some(o=>o.value===cv))g('dir-comm').value=cv;
@@ -1392,27 +1688,28 @@ function buildDirFilters(){
   const pv=g('dir-party').value;g('dir-party').innerHTML='<option value="">Alle Fraktionen</option>'+parties.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');if([...g('dir-party').options].some(o=>o.value===pv))g('dir-party').value=pv;
   g('dir-note').innerHTML=document.body.classList.contains('demo-people')?'<strong>Demo-Personen.</strong> <code>people.json</code> fehlt – <code>fetch_directory.py</code> ausführen (abgeordnetenwatch + EP Open Data + DIP).':'E-Mail-Adressen ohne Haken folgen dem Adressmuster des Parlaments (unverifiziert).';
 }
-function personCard(p){const c=partyC(p.party);return`<div class="person" onclick="proGate('docs',()=>openPerson('${p.id}'))"><div class="tile" style="background:${c}">${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" onerror="this.remove()">`:initials(p.name)}</div><div style="flex:1;min-width:0"><div class="pn">${esc(p.name)}</div><div class="pm">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${PARL_L[p.parliament]||p.parliament}</span>${p.constituency?`<span>${esc(p.constituency)}</span>`:''}</div>${p.committees?.length?`<div class="pc">${p.committees.slice(0,3).map(x=>`<span>${esc(x.name.replace(/^Ausschuss (für|zur?) /,''))}</span>`).join('')}${p.committees.length>3?`<span>+${p.committees.length-3}</span>`:''}</div>`:''}<div class="pe">✉ ${esc(p.email||'–')}${p.email&&!p.email_verified?' <span class="unverified">Muster</span>':''}${p.speeches?.length?` · 🎤 ${p.speeches.length} Reden`:''}</div></div></div>`;}
+function personCard(p){const c=partyC(p.party);return`<div class="person" onclick="proGate('docs',()=>openPerson('${p.id}'))"><div class="tile" style="background:${c}">${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" onerror="this.remove()">`:initials(p.name)}</div><div style="flex:1;min-width:0"><div class="pn">${esc(p.name)}</div><div class="pm">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${esc(parlLabel(p))}</span>${p.constituency?`<span>${esc(p.constituency)}</span>`:''}</div>${p.committees?.length?`<div class="pc">${p.committees.slice(0,3).map(x=>`<span>${esc(x.name.replace(/^Ausschuss (für|zur?) /,''))}</span>`).join('')}${p.committees.length>3?`<span>+${p.committees.length-3}</span>`:''}</div>`:''}<div class="pe">✉ ${esc(p.email||'–')}${p.email&&!p.email_verified?' <span class="unverified">Muster</span>':''}${p.speeches?.length?` · 🎤 ${p.speeches.length} Reden`:''}</div></div></div>`;}
 function dirPeople(){const q=(g('dir-q').value||'').toLowerCase(),cm=g('dir-comm').value,pt=g('dir-party').value;
   return PEOPLE.filter(p=>(S.dirParl==='all'||p.parliament===S.dirParl)&&(!cm||p.committees?.some(c=>c.id===cm))&&(!pt||p.party===pt)&&(!q||(p.name+' '+p.constituency+' '+p.party+' '+(p.committees||[]).map(c=>c.name).join(' ')).toLowerCase().includes(q))).sort((a,b)=>(a.last_name||a.name).localeCompare(b.last_name||b.name,'de'));}
 function renderDir(){
   const el=g('dir-list');
   if(S.dirMode==='comm'){const q=(g('dir-q').value||'').toLowerCase();const cs=COMMS.filter(c=>(S.dirParl==='all'||c.parliament===S.dirParl)&&(!q||c.name.toLowerCase().includes(q)));
     g('dir-sub').textContent=cs.length+' Ausschüsse';el.className='p-grid';
-    el.innerHTML=cs.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span class="parl">${PARL_L[c.parliament]||c.parliament}</span><span>👥 ${c.members.length} Mitglieder</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')||'<div style="padding:30px;color:var(--muted)">Keine Ausschüsse.</div>';return;}
+    el.innerHTML=cs.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span class="parl">${esc(PARL_L[c.parliament]||(c.parliament?.startsWith('lt-')?LAND_L[c.parliament.slice(3)]:c.parliament))}</span><span>👥 ${c.members.length} Mitglieder</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')||'<div style="padding:30px;color:var(--muted)">Keine Ausschüsse.</div>';return;}
   const ps=dirPeople();g('dir-sub').textContent=ps.length+' Personen'+(g('dir-comm').value?' · '+(g('dir-comm').selectedOptions[0]?.textContent||''):'');
   el.className='p-grid';el.innerHTML=(ps.slice(0,120).map(personCard).join('')+(ps.length>120?`<div class="gap-note" style="grid-column:1/-1">${ps.length-120} weitere – Suche eingrenzen.</div>`:''))||'<div style="padding:30px;color:var(--muted)">Keine Treffer.</div>';
 }
 function openPerson(id){const p=PEOPLE.find(x=>x.id===id);if(!p)return;const c=partyC(p.party);
   const m=g('person-modal');m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('person-modal').classList.remove('open')">✕</button>
-    <div style="display:flex;gap:12px;align-items:center"><div class="tile" style="width:56px;height:56px;border-radius:50%;background:${c};color:#fff;font-size:18px">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.remove()">`:initials(p.name)}</div><div><h2 style="margin:0">${esc(p.name)}</h2><div class="pm" style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${PARL_L[p.parliament]||p.parliament}</span>${p.constituency?`<span style="font-size:11px;color:var(--muted)">${esc(p.constituency)}</span>`:''}</div></div></div>
+    <div style="display:flex;gap:12px;align-items:center"><div class="tile" style="width:56px;height:56px;border-radius:50%;background:${c};color:#fff;font-size:18px">${p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.remove()">`:initials(p.name)}</div><div><h2 style="margin:0">${esc(p.name)}</h2><div class="pm" style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${esc(parlLabel(p))}</span>${p.constituency?`<span style="font-size:11px;color:var(--muted)">${esc(p.constituency)}</span>`:''}</div></div></div>
     <div class="contact"><b>E-Mail</b><span>${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>${p.email_verified?' ✓':' <span class="unverified">Adressmuster, unverifiziert</span>'}`:'–'}</span><b>Telefon</b><span>${esc(p.phone||'–')}</span><b>Adresse</b><span>${esc(p.address||'–')}</span><b>Profil</b><span><a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link.replace(/^https?:\/\//,''))} ↗</a></span></div>
+    ${p.wiki_extract?`<div class="wiki">${esc(p.wiki_extract)}${p.wiki_url?` <a href="${esc(p.wiki_url)}" target="_blank" rel="noopener">Wikipedia ↗</a>`:''}</div>`:''}
     <div><div class="eyebrow" style="margin-bottom:6px">Ausschüsse</div>${(p.committees||[]).map(x=>`<div class="speech"><span style="font-weight:600">${esc(x.name)}</span>${x.role?` <span class="sd">· ${esc(x.role)}</span>`:''}</div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Keine Ausschussdaten.</div>'}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Letzte Reden im Plenum</div>${(p.speeches||[]).slice(0,8).map(s=>`<div class="speech"><div>${esc(s.title)}</div><div class="sd">${fd(s.date).slice(0,8)} · ${esc(s.protocol||'')}${s.link?` · <a href="${esc(s.link)}" target="_blank" rel="noopener">Protokoll ↗</a>`:''}</div></div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Keine Reden geladen – DIP_API_KEY in fetch_directory.py setzen (Bundestag) bzw. EP-Plenardebatten anbinden.</div>'}</div>
     <div class="m-acts"><a class="btn p" href="mailto:${esc(p.email)}">✉ E-Mail schreiben</a><button class="btn" onclick="S.tokens=[{v:'${esc(p.last_name||p.name).toLowerCase()}',not:false}];renderTokens();g('person-modal').classList.remove('open');setSection('all')">📰 In den Nachrichten suchen</button></div>`;
   m.classList.add('open');}
 function exportContacts(){const ps=dirPeople();const h='\uFEFFName;Fraktion;Parlament;Wahlkreis;E-Mail;E-Mail verifiziert;Telefon;Adresse;Ausschüsse;Profil\n';
-  const r=ps.map(p=>[p.name,p.party,PARL_L[p.parliament]||p.parliament,p.constituency,p.email,p.email_verified?'ja':'nein (Muster)',p.phone,p.address,(p.committees||[]).map(c=>c.name+(c.role?' ('+c.role+')':'')).join(', '),p.link].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');
+  const r=ps.map(p=>[p.name,p.party,parlLabel(p),p.constituency,p.email,p.email_verified?'ja':'nein (Muster)',p.phone,p.address,(p.committees||[]).map(c=>c.name+(c.role?' ('+c.role+')':'')).join(', '),p.link].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');
   dl_('kontakte.csv',h+r,'text/csv;charset=utf-8');}
 function demoPeople(){document.body.classList.add('demo-people');
   const mk=(id,parl,name,party,konst,comms,sp)=>({id,parliament:parl,name,first_name:name.split(' ')[0],last_name:name.split(' ').slice(1).join(' '),party,constituency:konst,email:name.toLowerCase().replace(/ /g,'.').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue')+'@'+(parl==='bt'?'bundestag.de':'europarl.europa.eu'),email_verified:false,phone:'',address:parl==='bt'?'Deutscher Bundestag, Platz der Republik 1, 11011 Berlin':'European Parliament, Rue Wiertz 60, B-1047 Brussels',link:'#',photo:'',committees:comms,speeches:sp});
@@ -1426,18 +1723,26 @@ function dipItems(){
   return[...(DIP.procedures||[]).map(v=>({...v,_dip:true,_kind:'procedure',source:'DIP · '+(v.type||'Vorgang'),date:v.updated||v.date,desc:[v.status,v.initiative].filter(Boolean).join(' · ')})),
          ...(DIP.documents||[]).map(d=>({...d,_dip:true,_kind:'document',source:'DIP · '+(d.type||'Drucksache'),desc:[d.number,d.authors].filter(Boolean).join(' · ')})),
          ...(DIP.protocols||[]).map(d=>({...d,_dip:true,_kind:'transcript',source:'DIP · Plenarprotokoll',desc:d.number||''}))];}
-function dipCard(x){const col=TOPIC_KW_L[x.topic]?'':'';return`<div class="doc-card"><div class="eb"><span class="doc-type">${esc(x.type||KINDS[x._kind])}</span>${x.wp?`<span class="tag">WP ${esc(x.wp)}</span>`:''}${x.topic?`<span class="tag">${TOPIC_KW_L[x.topic]||x.topic}</span>`:''}<span class="eyebrow" style="margin-left:auto">${fd(x.date)}</span></div><div class="t">${esc(x.title)}</div>${x.status?`<div class="m" style="font-size:12px;color:var(--text2)">Stand: ${esc(x.status)}</div>`:'<div class="m"></div>'}${x.initiative?`<div class="dl-m">Initiative: ${esc(x.initiative)}</div>`:''}<div class="doc-file" onclick="window.open('${esc(x.link)}','_blank')"><span>🔗</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.number||x.link)}</span><span class="ext">Auf dip.bundestag.de ↗</span></div></div>`;}
+const STAGES=['eingebracht','ausschuss','bundestag','bundesrat','verkuendet'];
+const STAGE_L={eingebracht:'Eingebracht',ausschuss:'Ausschuss',bundestag:'Bundestag',bundesrat:'Bundesrat',verkuendet:'Verkündet'};
+function pipeHTML(stage){const i=Math.max(0,STAGES.indexOf(stage));
+  return`<div class="pipe">${STAGES.map((s,j)=>`<i class="${j<i?'on':j===i?'now':''}" title="${STAGE_L[s]}"></i>`).join('')}</div><div class="pipe-l">${STAGES.map((s,j)=>`<span style="${j===i?'color:var(--amber);font-weight:700':''}">${STAGE_L[s]}</span>`).join('')}</div>`;}
+function dipCard(x){return`<div class="doc-card"><div class="eb"><span class="doc-type">${esc(x.type||KINDS[x._kind])}</span>${x.wp?`<span class="tag">WP ${esc(x.wp)}</span>`:''}${x.topic?`<span class="tag">${TOPIC_KW_L[x.topic]||x.topic}</span>`:''}<span class="eyebrow" style="margin-left:auto">${fd(x.date)}</span></div><div class="t">${esc(x.title)}</div>${x.stage?pipeHTML(x.stage):''}${x.status?`<div class="m" style="font-size:12px;color:var(--text2)">Stand: ${esc(x.status)}</div>`:'<div class="m"></div>'}${(x.stations||[]).length?`<details style="margin:6px 0"><summary style="font-size:11.5px;color:var(--blue);cursor:pointer">Verlauf (${x.stations.length} Stationen)</summary>${x.stations.slice().reverse().map(st=>`<div class="speech"><div>${esc(st.title||st.type)}</div><div class="sd">${esc(st.date||'')}${st.body?' · '+esc(st.body):''}</div></div>`).join('')}</details>`:''}${x.initiative?`<div class="dl-m">Initiative: ${esc(x.initiative)}</div>`:''}<div class="doc-file" onclick="window.open('${esc(x.link)}','_blank')"><span>🔗</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.number||x.link)}</span><span class="ext">Auf dip.bundestag.de ↗</span></div></div>`;}
 function typeItems(){const arts=pool('all').map(a=>({...a}));const docs=ALL_DOCS.map(d=>({...d,_doc:true}));
   return[...dipItems(),...arts.map(a=>{a._kind=kindOf(a);return a;}),...docs.map(d=>{d._kind=kindOf(d);return d;})];}
+function toggleAcc(k){const el=g('acc-'+k);el.classList.toggle('open');
+  if(el.classList.contains('open')&&!el.dataset.filled){el.querySelector('.acc-body').innerHTML=typeBody(k);el.dataset.filled='1';}}
+function typeBody(k){const seen=new Set();
+  return typeItems().filter(x=>x._kind===k).sort((a,b)=>(b.date||'').localeCompare(a.date||''))
+    .filter(x=>{const n=normT(x.title);if(seen.has(n))return false;seen.add(n);return true;}).slice(0,60)
+    .map(x=>x._dip?dipCard(x):x._doc?docCard(x):dl(x,{src:true})).join('')||'<div style="padding:16px;color:var(--muted);font-size:12px">Keine Inhalte dieses Typs.</div>';}
 function renderTypes(){const all=typeItems();const cnt={};all.forEach(x=>cnt[x._kind]=(cnt[x._kind]||0)+1);
   g('types-side').innerHTML=Object.entries(KINDS).map(([k,l])=>`<div class="type-row${S.kind===k?' active':''}" onclick="S.kind='${k}';renderTypes()">${l}<span class="cnt">${cnt[k]||0}</span></div>`).join('')+'<div class="gap-note" style="margin-top:8px;font-size:11px">Zuordnung heuristisch aus Titel/Quelle. Für saubere Typen: Feld <code>kind</code> im Backend setzen (siehe Konzept §3).</div>';
-  const list=all.filter(x=>x._kind===S.kind).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  const seen=new Set();
-  g('types-list').innerHTML=list.filter(x=>{const k=normT(x.title);if(seen.has(k))return false;seen.add(k);return true;}).slice(0,80).map(x=>x._dip?dipCard(x):x._doc?docCard(x):dl(x,{src:true})).join('')||'<div style="padding:30px;color:var(--muted)">Keine Inhalte dieses Typs.</div>';}
+  g('types-list').innerHTML=Object.entries(KINDS).map(([k,l])=>`<div class="acc${k===S.kind?' open':''}" id="acc-${k}" ${k===S.kind?'data-filled="1"':''}><div class="acc-hd" onclick="toggleAcc('${k}')"><span class="arw">▶</span>${l}<span class="cnt" style="margin-left:auto;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--bg);color:var(--muted)">${cnt[k]||0}</span></div><div class="acc-body">${k===S.kind?typeBody(k):''}</div></div>`).join('');}
 
 /* ═══ LOGIN-MODAL ═══ */
 function openLogin(feat){
-  const f=FEATURES[feat];g('login-reason').innerHTML=f?`<strong>${esc(f.t)}</strong> ist Teil von Presseschau Pro. ${esc(f.d)}`:'Archiv, Analyse-Quellen, gespeicherte Filter und Werkzeuge für Dich.';
+  const f=FEATURES[feat];g('login-reason').innerHTML=f?`<strong>${esc(f.t)}</strong> ist Teil von Presseschau Pro. ${esc(f.d)}`:'Archiv, Analyse-Quellen, gespeicherte Filter und Werkzeuge für die tägliche Arbeit.';
   g('login-feats').innerHTML=Object.entries(FEATURES).map(([k,v])=>`<div class="${k===feat?'hi':''}"><b>${esc(v.t)}</b><span>${esc(v.d)}</span></div>`).join('');
   g('login-modal').classList.add('open');setTimeout(()=>g('login-mail').focus(),50);
 }
@@ -1542,8 +1847,11 @@ function useDemo(){
 /* ═══ TASTATUR, DRAG, START ═══ */
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='Escape'&&document.activeElement===g('q')){g('q').value='';S.tokens=[];renderTokens();onSearch();return;}
   if(e.key==='Escape'){closeLogin();closeSF();closeEM();closeKM();closeReader();g('doc-viewer').classList.remove('open');g('person-modal').classList.remove('open');}
+  if(e.key==='t'&&!e.metaKey&&!e.ctrlKey){openTopicPicker();return;}
   if(S.view!=='feed')return;
+  if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();goBack();return;}
   if(e.key==='ArrowDown'){e.preventDefault();nextArt();}if(e.key==='ArrowUp'){e.preventDefault();prevArt();}
   if(e.key==='Enter'&&S.art)openCurLink();if(e.key==='m'&&S.art)toggleMarkCur();if(e.key==='s'&&S.art)proGate('ai',summarizeArticle);
   if(e.key==='1')setSection('news');if(e.key==='2')setSection('eu');if(e.key==='3')setSection('bt');if(e.key==='0')setView('dash');
@@ -1551,6 +1859,15 @@ document.addEventListener('keydown',e=>{
 (function(){const h=g('drag-handle'),lp=g('list-pane');let drag=false,sx=0,sw=0;h.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=lp.offsetWidth;h.classList.add('dragging');e.preventDefault();});document.addEventListener('mousemove',e=>{if(!drag)return;lp.style.width=Math.max(180,Math.min(window.innerWidth-260,sw+(e.clientX-sx)))+'px';});document.addEventListener('mouseup',()=>{drag=false;h.classList.remove('dragging');});})();
 if(window.innerWidth<600)g('q').placeholder=g('q').dataset.short;
 SAVED=store.get('ps_saved')||[];
+if(!PAYWALL_ACTIVE){
+  /* Vorschau-Schalter ausblenden, Pro-Badges als Hinweis „später kostenpflichtig" belassen */
+  document.querySelector('#topbar .auth-switch')?.style.setProperty('display','none');
+  g('login-btn')?.style.setProperty('display','none');
+  g('sb-auth')?.style.setProperty('display','none');
+  g('plan-foot').textContent='Alle Funktionen frei · Pro-Kennzeichnung zeigt spätere Premium-Features';
+}
+pushNav();
+window.addEventListener('resize',()=>{if(S.view==='trends')debounce(renderTrends,200);});
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
 setAuth(store.get('ps_plan')==='pro');
