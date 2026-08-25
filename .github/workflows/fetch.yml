@@ -31,6 +31,12 @@ jobs:
       # Verzeichnis, DIP, Kalender, Newsletter.
       # Läuft nur im ersten Lauf jeder Stunde und hat ein eigenes Zeitbudget:
       # Was nicht hineinpasst (Landtage, MEP-Details, Profilfotos), macht der nächste Lauf.
+      - name: Wahlen (Termine, Umfragen, Ergebnisse)
+        timeout-minutes: 6
+        env:
+          ELECTION_BUDGET_MIN: '4'
+        run: python fetch_elections.py
+
       - name: Verzeichnis, DIP & Kalender
         timeout-minutes: 10
         env:
@@ -49,16 +55,26 @@ jobs:
           fi
 
       - name: JSON-Dateien committen
-        if: always()               # auch committen, wenn ein Schritt vorher abbrach
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git stash
-          git pull --rebase origin main
+          git stash --include-untracked || true
+          git pull --rebase origin main || true
           git stash pop || true
-          git add articles.json eu_articles.json bundestag_articles.json documents.json docs_files/ \
-                  laender_articles.json us_articles.json \
-                  people.json dip.json calendar.ics newsletters.json \
-                  people_cache.json landtage_cache.json 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
-          git push
+          # WICHTIG: einzeln adden. "git add a b c" bricht komplett ab, sobald EINE
+          # Datei fehlt – dann wird gar nichts gestaged (genau das ist passiert).
+          for f in articles.json eu_articles.json bundestag_articles.json \
+                   laender_articles.json us_articles.json documents.json \
+                   people.json dip.json calendar.ics newsletters.json elections.json \
+                   people_cache.json landtage_cache.json; do
+            [ -e "$f" ] && git add "$f" && echo "  + $f"
+          done
+          [ -d docs_files ] && git add docs_files/ || true
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen zum Committen."
+          else
+            git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+            git push
+            echo "Committet und gepusht."
+          fi
