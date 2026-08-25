@@ -15,8 +15,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Feeds holen (News + EU Direkt + Bundestag)
+      - name: Feeds holen (News + EU Direkt + Bundestag + Dokumente)
         run: python fetch_news.py
+      # Verzeichnis (Personen/Ausschüsse/Reden), calendar.ics, newsletters.json
+      # Läuft nur zur vollen Stunde zwischen 5 und 22 Uhr UTC – Personen ändern sich selten,
+      # und abgeordnetenwatch/EP-API sollen nicht alle 25 Min. befragt werden.
+      - name: Verzeichnis & Kalender (stündlich)
+        env:
+          DIP_API_KEY: ${{ secrets.DIP_API_KEY }}
+          TAGESLAGE_FEED: ${{ secrets.TAGESLAGE_FEED }}
+        run: |
+          MIN=$(date -u +%M)
+          if [ "$MIN" -lt 25 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python fetch_directory.py
+          else
+            echo "Verzeichnis übersprungen (läuft im ersten Lauf jeder Stunde)"
+          fi
       - name: JSON-Dateien committen
         run: |
           git config user.name  "github-actions[bot]"
@@ -24,6 +38,8 @@ jobs:
           git stash
           git pull --rebase origin main
           git stash pop || true
-          git add articles.json eu_articles.json bundestag_articles.json documents.json docs_files/
+          git add articles.json eu_articles.json bundestag_articles.json documents.json docs_files/ \
+                  laender_articles.json us_articles.json \
+                  people.json dip.json calendar.ics newsletters.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push
