@@ -28,6 +28,7 @@ from datetime import datetime, timezone, timedelta, date
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode, quote
 from urllib.error import URLError, HTTPError
+import traceback
 from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -47,7 +48,8 @@ LIMIT = int(os.environ.get("DIR_LIMIT", "0") or 0)
 # Öffentlicher Key des Bundestags, gültig bis Ende Mai 2027
 # Quelle: https://dip.bundestag.de/über-dip/hilfe/api · Doku: informationsblatt_zur_dip_api.pdf
 DIP_PUBLIC_KEY = "R2BZaee.DjdCyihKZMf8AOjtScubP2EVydegzjmBIQ"
-DIP_KEY = os.environ.get("DIP_API_KEY", "") or DIP_PUBLIC_KEY
+# Secret-Name egal: DIP_KEY, DIP_API_KEY oder der eingebaute öffentliche Key
+DIP_KEY = (os.environ.get("DIP_KEY") or os.environ.get("DIP_API_KEY") or DIP_PUBLIC_KEY).strip()
 TZ = ZoneInfo("Europe/Berlin")
 
 ENDPOINTS = {
@@ -99,7 +101,10 @@ def get(url, params=None, accept="application/json", retries=2, timeout=30):
 def get_json(url, params=None):
     d = get(url, params)
     if not d: return None
-    try: return json.loads(d.decode("utf-8", "replace"))
+    txt = d.decode("utf-8", "replace").lstrip()
+    if not txt or txt[0] not in "[{":
+        print(f"    kein JSON ({txt[:40]!r})"); return None
+    try: return json.loads(txt)
     except Exception as e:
         print(f"    JSON ERR {e}"); return None
 
@@ -733,6 +738,8 @@ def fetch_dip(days=90):
         "topics": by_topic, "stages": by_stage, "stage_order": STAGES,
         "procedures": procs, "documents": docs, "protocols": protocols,
     }
+    if not (procs or docs or protocols):
+        print("  ⚠ DIP lieferte nichts – dip.json bleibt unverändert."); return
     json.dump(out, open("dip.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"  → dip.json: {len(procs)} Vorgänge, {len(docs)} Drucksachen, {len(protocols)} Protokolle, {os.path.getsize('dip.json')//1024} KB")
 
@@ -767,7 +774,9 @@ def build_calendar_ics(docs_file="documents.json", out="calendar.ics"):
     print("── Kalender (calendar.ics) ──")
     try: docs = json.load(open(docs_file, encoding="utf-8")).get("documents", [])
     except Exception: print("  documents.json fehlt"); return
-    events = [e for e in (parse_event(d) for d in docs if re.search(r"tagesordnung|sitzung|plenarprotokoll", d.get("type","")+d.get("title",""), re.I)) if e]
+    events = [e for e in (parse_event(d) for d in docs if re.search(r"tagesordnung|sitzung|plenarprotokoll|ausschusstermin", d.get("type","")+d.get("title",""), re.I)) if e]
+    if not events:
+        print("  keine Termine gefunden – calendar.ics bleibt unverändert."); return
     now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Presseschau//Kalender//DE", "CALSCALE:GREGORIAN",
              "METHOD:PUBLISH", "X-WR-CALNAME:Presseschau – Sitzungen & Termine", "X-WR-TIMEZONE:Europe/Berlin"]
@@ -817,26 +826,45 @@ def fetch_newsletters():
             n += 1
         print(f"  {name}: {n}"); time.sleep(0.3)
     items.sort(key=lambda x: x["date"], reverse=True)
+    if not items:
+        print("  ⚠ Keine Newsletter-Einträge – newsletters.json bleibt unverändert."); return
     json.dump({"updated": datetime.now(timezone.utc).isoformat(), "count": len(items), "items": items},
               open("newsletters.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"  → newsletters.json: {len(items)}")
 
 # ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
+# ABSTURZSICHERUNG
+# Jede Quelle läuft gekapselt: fällt eine aus, wird das protokolliert und
+# der Lauf geht weiter. So entsteht immer eine vollständige people.json –
+# notfalls mit weniger Parlamenten, aber nie ein Abbruch.
+# ─────────────────────────────────────────────────────────────
+STAGE_ERRORS = []
+def safe(label, fn, default):
+    try:
+        return fn()
+    except Exception as e:
+        STAGE_ERRORS.append((label, f"{type(e).__name__}: {e}"))
+        print(f"  ⚠ {label} übersprungen – {type(e).__name__}: {e}")
+        traceback.print_exc(limit=3)
+        return default
+
 def main():
     print(f"[{datetime.now().isoformat()}] Presseschau Verzeichnis-Fetch")
-    bt_people, bt_comm = fetch_bundestag()
-    fetch_speeches_dip(bt_people)
-    br_people, br_comm = fetch_bundesrat()
-    lt_people, lt_comm = fetch_landtage()
-    ep_people, ep_comm = fetch_ep()
-    us_people, us_comm = fetch_us_congress()
+    bt_people, bt_comm = safe("Bundestag", fetch_bundestag, ([], []))
+    safe("Reden (DIP)", lambda: fetch_speeches_dip(bt_people), None)
+    br_people, br_comm = safe("Bundesrat", fetch_bundesrat, ([], []))
+    lt_people, lt_comm = safe("Landtage", fetch_landtage, ([], []))
+    ep_people, ep_comm = safe("Europäisches Parlament", fetch_ep, ([], []))
+    us_people, us_comm = safe("US-Kongress", fetch_us_congress, ([], []))
     people = bt_people + br_people + lt_people + ep_people + us_people
     # Fotos/Kontakt inkrementell von den Biografie-Seiten nachladen
     base_of = lambda p: {"bt": "https://www.bundestag.de", "br": BR_BASE,
                          "ep": "https://www.europarl.europa.eu"}.get(p["parliament"], "")
     print("── Profil-Anreicherung (Foto, E-Mail, Telefon) ──")
-    enrich_people([p for p in people if p["parliament"] in ("bt", "br", "ep")], base_of)
-    enrich_wikipedia(people)
+    safe("Profil-Anreicherung",
+         lambda: enrich_people([p for p in people if p["parliament"] in ("bt", "br", "ep")], base_of), None)
+    safe("Wikipedia", lambda: enrich_wikipedia(people), None)
     for p in people:
         p.pop("_mandate_id", None); p.pop("_norm", None); p.pop("land", None)
     out = {"updated": datetime.now(timezone.utc).isoformat(),
@@ -847,11 +875,30 @@ def main():
                            {"id": "us", "label": "US-Kongress", "count": len(us_people)}],
            "committees": bt_comm + br_comm + lt_comm + ep_comm + us_comm, "people": people,
            "note": "E-Mail-Adressen ohne email_verified=true folgen dem Adressmuster des Parlaments und sind unverifiziert."}
-    json.dump(out, open("people.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"→ people.json: {len(people)} Personen, {len(out['committees'])} Ausschüsse, {os.path.getsize('people.json')//1024} KB")
-    fetch_dip()
-    build_calendar_ics()
-    fetch_newsletters()
+    # Bestehende people.json nie durch eine leere ersetzen
+    if not people:
+        print("⚠ Keine Personen geladen – vorhandene people.json bleibt unverändert.")
+    else:
+        prev = 0
+        try: prev = len(json.load(open("people.json", encoding="utf-8")).get("people", []))
+        except Exception: pass
+        if prev and len(people) < prev * 0.5:
+            print(f"⚠ Nur {len(people)} statt zuvor {prev} Personen – sieht nach Ausfall aus, "
+                  f"people.json wird NICHT überschrieben.")
+        else:
+            json.dump(out, open("people.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    size = os.path.getsize("people.json") // 1024 if os.path.exists("people.json") else 0
+    print(f"→ people.json: {len(people)} Personen, {len(out['committees'])} Ausschüsse, {size} KB")
+    safe("DIP", fetch_dip, None)
+    safe("Kalender", build_calendar_ics, None)
+    safe("Newsletter", fetch_newsletters, None)
+
+    if STAGE_ERRORS:
+        print(f"\n── {len(STAGE_ERRORS)} Bausteine mit Fehler (Lauf trotzdem abgeschlossen) ──")
+        for label, err in STAGE_ERRORS:
+            print(f"  {label}: {err}")
+    else:
+        print("\n✓ Alle Bausteine ohne Fehler.")
 
 if __name__ == "__main__":
     main()
