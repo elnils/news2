@@ -227,6 +227,20 @@ US_TOPIC_RULES = {
 }
 
 NEWS_FEEDS = [
+    # ── Eilmeldungen / Breaking ───────────────────────────────
+    # Beim ersten Lauf im Log pruefen; scheitert eine URL, die Google-News-Zeile
+    # darunter aktivieren (liefert dieselben Meldungen, nur etwas verzoegert).
+    # Diese beiden Feeds enthalten ausschliesslich Eilmeldungen:
+    ("https://www.tagesschau.de/eilmeldung/index~rss2.xml",   "Tagesschau Eil", "eil"),
+    ("https://www.n-tv.de/eilmeldungen/rss",                  "n-tv Eil",       "eil"),
+    # WELT "latest" und ZDF "nachrichten" sind normale Nachrichtenfeeds und
+    # daher bewusst KEINE Eil-Quellen - sie laufen unten als regulaere Feeds mit.
+    ("https://www.welt.de/feeds/latest.rss",                  "WELT",           "de-leit"),
+    ("https://www.zdfheute.de/rss/zdf/nachrichten",           "ZDF heute",      "de-leit"),
+    # Fallbacks:
+    # (_gn("site:tagesschau.de+eilmeldung"),                  "Tagesschau Eil", "eil"),
+    # (_gn("site:n-tv.de+eilmeldung"),                        "n-tv Eil",       "eil"),
+
     # ── Deutsch: Leitmedien ────────────────────────────────────
     ("https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml",       "Tagesschau",           "de-leit"),
     ("https://www.spiegel.de/schlagzeilen/rss/0,5291,,00.xml",                   "Spiegel",              "de-leit"),
@@ -399,6 +413,13 @@ NOISE_KEYWORDS = [
     "nationalelf","länderspiel","torwart","torhüter","trainerwechsel","relegation","transfermarkt",
     "formel 1","grand prix","wimbledon","french open","us open","nfl","nba","nhl","mlb","super bowl",
     "world series","premier league","la liga","serie a","biathlon","skispringen","tour de france",
+    # Nachwuchs- und Trainerthemen (z. B. "X wird neuer U19-Coach")
+    "u15","u16","u17","u18","u19","u20","u21","u23","coach","cheftrainer","co-trainer",
+    "nachwuchstrainer","interimstrainer","trainerposten","trainerstab","sportdirektor",
+    "cheftrainerin","kader","kaderplanung","vertragsverlängerung spieler","leihe",
+    # Ergebnismeldungen
+    "unentschieden","auswärtssieg","heimsieg","punktspiel","viertelfinale","halbfinale",
+    "achtelfinale","gruppenphase","torjäger","elfmeter","abstiegskampf","aufstiegsrennen",
 ]
 
 HIGH_VALUE_KEYWORDS = [
@@ -475,11 +496,11 @@ EU_TOPIC_RULES = {
 
 def is_noise(text):
     t=text.lower()
-    return any(kw in t for kw in NOISE_KEYWORDS)
+    return any(kw_hit(kw, t) for kw in NOISE_KEYWORDS)
 
 def relevance_boost(text):
     t=text.lower()
-    return sum(1 for kw in HIGH_VALUE_KEYWORDS if kw in t)
+    return sum(1 for kw in HIGH_VALUE_KEYWORDS if kw_hit(kw, t))
 
 # ═══════════════════════════════════════════════════════════════
 # THEMEN-KONSOLIDIERUNG (v3.1)
@@ -520,6 +541,43 @@ def consolidate(rules):
         out[target]["min"] = min(out[target]["min"], rule.get("min", 2))
     return out
 
+# ═══════════════════════════════════════════════════════════════
+# STICHWORT-TREFFER MIT WORTGRENZEN (v3.2)
+#
+# Vorher wurde mit `kw in text` gesucht. Das erzeugte falsche Treffer, weil
+# Stichwörter mitten in anderen Wörtern steckten:
+#     "telekom"  → Tele|kom|munikation      → Netz/Telko bei Pandemie-Meldungen
+#     "netz"     → Gewässer|netz|, Strom|netz| → Netz/Telko bei Umweltmeldungen
+#     "mobil"    → Im|mobil|ien             → Netz/Telko bei Bankmeldungen
+#
+# Jetzt gilt:
+#   • kurze Stichwörter (≤ 8 Zeichen, ein Wort) müssen ein ganzes Wort sein,
+#     deutsche Endungen (-e, -en, -s, -er …) sind erlaubt
+#   • lange oder zusammengesetzte Stichwörter dürfen am Wortanfang stehen,
+#     damit "glasfaser" auch "Glasfaserausbau" findet
+#   • Stichwörter in AMBIGUOUS sind immer exakte Wörter
+# ═══════════════════════════════════════════════════════════════
+AMBIGUOUS = {"netz","funk","mobil","telekom","internet","isp","daten","gas","strom","bahn",
+             "recht","kultur","medien","arbeit","wasser","wald","handel","zoll","tarif",
+             "kunden","technik","digital","system","platform","plattform","energie"}
+SUFFIX = r"(?:e|en|es|s|n|er|ern|em|in|innen)?"
+_RX_CACHE = {}
+def kw_regex(kw):
+    rx = _RX_CACHE.get(kw)
+    if rx is None:
+        k = kw.strip()
+        esc = re.escape(k).replace(r"\ ", r"\s+")
+        if " " in k or "-" in k or (len(k) > 8 and k not in AMBIGUOUS):
+            pat = r"(?<![\wäöüß])" + esc                      # Wortanfang, Kompositum erlaubt
+        else:
+            pat = r"(?<![\wäöüß])" + esc + SUFFIX + r"(?![\wäöüß])"   # ganzes Wort
+        rx = re.compile(pat, re.I)
+        _RX_CACHE[kw] = rx
+    return rx
+
+def kw_hit(kw, text):
+    return bool(kw_regex(kw).search(text))
+
 def score_article(text, rules):
     t=text.lower()
     result={}
@@ -527,7 +585,7 @@ def score_article(text, rules):
         s=0
         for pts,kws in rule["score"]:
             for kw in kws:
-                if kw in t:
+                if kw_hit(kw, t):
                     s+=pts
                     break
         if s>=rule["min"]:
@@ -623,11 +681,23 @@ def parse_feed(fetch_result, source, topic_rules):
         arts.append(a)
     return arts
 
+# ── Feeds, die ausschliesslich Eilmeldungen/Breaking fuehren ──
+# Alles aus diesen Quellen bekommt priority="eil", ohne dass ein Titel-Marker noetig ist.
+# Bisher kam fast nur Handelsblatt durch, weil nur wenige Redaktionen "+++" oder
+# "Eilmeldung:" in den Titel schreiben.
+# NUR Feeds, die ausschliesslich Breaking-Meldungen enthalten. Ein normaler
+# "latest"- oder "nachrichten"-Feed gehoert hier NICHT hinein - sonst waere jede
+# Routinemeldung eine Eilmeldung. Im Zweifel weglassen: der Brennpunkt (mehrere
+# Quellen zur selben Meldung) traegt die Rubrik auch ohne Eil-Kennzeichnung.
+EIL_SOURCES = {"Tagesschau Eil", "n-tv Eil"}
+
 # ── NEU (v3): Eilmeldung nur, wenn das Portal es selbst so kennzeichnet ──
-EIL_TITLE_RE = re.compile(r'^\s*(\+{2,}|eil(meldung)?\s*[:\-–]|eilt\s*[:\-–]|breaking( news)?\s*[:\-–]|live[:\-–])', re.I)
-EIL_CAT_RE   = re.compile(r'^(eil|eilmeldung|breaking|breaking news|live)$', re.I)
+# "+++" und "Live:" sind reine Aufmachermarker und sagen nichts ueber die Dringlichkeit
+# aus - sie erzeugten die meisten Fehlalarme und sind daher raus.
+EIL_TITLE_RE = re.compile(r'^\s*(eilmeldung|eilt|breaking news)\s*[:\-–]', re.I)
+EIL_CAT_RE   = re.compile(r'^(eil|eilmeldung|breaking|breaking news)$', re.I)
 def detect_priority(title, cats):
-    if EIL_TITLE_RE.search(title or '') or re.search(r'\+\+\+\s*eil', title or '', re.I):
+    if EIL_TITLE_RE.search(title or ''):
         return "eil"
     if any(EIL_CAT_RE.match(c) for c in cats or []):
         return "eil"
@@ -751,6 +821,8 @@ def fetch_all(feed_list, topic_rules, label):
             a['cat']=cat
             a['kind']=kind_for(name, cat, a.get('title',''))
             a['inst']=inst_for(cat, name)
+            if name in EIL_SOURCES:
+                a['priority'] = 'eil'
         if not arts:
             FAILED_FEEDS.append((label,name,url,"0 Artikel (Filter oder leerer Feed)"))
         print(f"{len(arts)}")
