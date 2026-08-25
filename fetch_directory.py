@@ -36,6 +36,21 @@ UA = "Presseschau/3.0 (+github actions; kontakt siehe repo)"
 # Biografie-Seiten werden inkrementell angereichert: pro Lauf höchstens ENRICH_PER_RUN
 # Personen, danach erst wieder nach ENRICH_AFTER_DAYS. So sind nach wenigen Läufen alle
 # Profile mit Foto und Kontakt gefüllt, ohne die Server zu belasten.
+# ── ZEITBUDGET ───────────────────────────────────────────────
+# Ohne Begrenzung läuft dieses Skript sehr lange: Bundestag + 16 Landtage über
+# abgeordnetenwatch sind mehrere tausend Einzelabrufe. Deshalb bekommt jeder Lauf
+# ein hartes Budget. Was nicht mehr hineinpasst, macht der nächste Lauf – der
+# Fortschritt steht im Cache, es geht nichts verloren.
+TIME_BUDGET_MIN = int(os.environ.get("TIME_BUDGET_MIN", "8"))
+_DEADLINE = time.monotonic() + TIME_BUDGET_MIN * 60
+def time_left():   return _DEADLINE - time.monotonic()
+def out_of_time(): return time_left() <= 0
+def budget_note(what):
+    print(f"  ⏱ Zeitbudget aufgebraucht – {what} wird im nächsten Lauf fortgesetzt.")
+
+# Landtage rotieren: pro Lauf nur LANDTAGE_PER_RUN Stück, der Rest folgt.
+# 16 Landtage / 4 pro Lauf = 4 Läufe; 720 MEP-Detailprofile / 150 = 5 Läufe.
+LANDTAGE_PER_RUN = int(os.environ.get("LANDTAGE_PER_RUN", "4"))
 ENRICH_PER_RUN   = int(os.environ.get("ENRICH_PER_RUN", "40"))
 ENRICH_AFTER_DAYS = int(os.environ.get("ENRICH_AFTER_DAYS", "90"))
 CACHE_FILE = "people_cache.json"
@@ -81,7 +96,7 @@ NEWSLETTER_FEEDS = [
 # ─────────────────────────────────────────────────────────────
 # HTTP
 # ─────────────────────────────────────────────────────────────
-def get(url, params=None, accept="application/json", retries=2, timeout=30):
+def get(url, params=None, accept="application/json", retries=1, timeout=20):
     if params:
         url = url + ("&" if "?" in url else "?") + urlencode(params)
     for i in range(retries + 1):
@@ -91,7 +106,7 @@ def get(url, params=None, accept="application/json", retries=2, timeout=30):
                 data = r.read()
                 return data
         except HTTPError as e:
-            if e.code in (429, 503) and i < retries:
+            if e.code in (429, 503) and i < retries and not out_of_time():
                 time.sleep(3 * (i + 1)); continue
             print(f"    HTTP {e.code} {url[:90]}"); return None
         except (URLError, TimeoutError, OSError) as e:
@@ -181,13 +196,14 @@ def enrich_people(people, base_of):
     print(f"  Anreicherung: {len(todo)} Profile (von {len(people)})")
     done = 0
     for p in todo:
+        if out_of_time(): budget_note("Profil-Anreicherung"); break
         data = scrape_profile(p["link"], base_of(p))
         if data:
             for k, v in data.items():
                 if v: p[k] = v
             done += 1
         cache[p["id"]] = {"ts": datetime.now(timezone.utc).isoformat(), "data": data}
-        time.sleep(1.0)      # freundlich zu den Servern
+        time.sleep(0.6)      # freundlich zu den Servern
     save_cache(cache)
     print(f"  → {done}/{len(todo)} Profile ergänzt (Rest folgt im nächsten Lauf)")
 
@@ -239,7 +255,7 @@ def fetch_bundesrat():
 def aw_all(path, **params):
     """Paginiert über die abgeordnetenwatch-API (range_start/range_end)."""
     out, start, page = [], 0, 500
-    while True:
+    while not out_of_time():
         p = dict(params); p.update({"range_start": start, "range_end": page})
         d = get_json(f"{ENDPOINTS['aw']}/{path}", p)
         if not d or "data" not in d: break
@@ -247,7 +263,7 @@ def aw_all(path, **params):
         total = (d.get("meta", {}).get("result", {}) or {}).get("total", 0)
         start += page
         if start >= total or not d["data"]: break
-        time.sleep(0.4)
+        time.sleep(0.25)
     return out
 
 LANDTAG_LABELS = {"bw":"Baden-Württemberg","by":"Bayern","be":"Berlin","bb":"Brandenburg","hb":"Bremen",
@@ -255,19 +271,38 @@ LANDTAG_LABELS = {"bw":"Baden-Württemberg","by":"Bayern","be":"Berlin","bb":"Br
     "rp":"Rheinland-Pfalz","sl":"Saarland","sn":"Sachsen","st":"Sachsen-Anhalt","sh":"Schleswig-Holstein","th":"Thüringen"}
 
 def fetch_landtage():
-    """Alle 16 Landtage über dieselbe abgeordnetenwatch-Struktur wie der Bundestag."""
+    """Landtage über dieselbe abgeordnetenwatch-Struktur wie der Bundestag.
+    Pro Lauf nur LANDTAGE_PER_RUN Stück (rotierend) – nach wenigen Läufen sind alle drin.
+    Bereits geholte Landtage kommen aus landtage_cache.json, damit people.json vollständig bleibt."""
     print("── Landtage (abgeordnetenwatch) ──")
-    parls = aw_all("parliaments")
+    cache = {}
+    try: cache = json.load(open("landtage_cache.json", encoding="utf-8"))
+    except Exception: pass
+    codes = list(LANDTAG_LABELS)
+    start = int(cache.get("_next", 0)) % len(codes)
+    todo = [codes[(start + i) % len(codes)] for i in range(LANDTAGE_PER_RUN)]
+    print(f"  Diesmal: {', '.join(LANDTAG_LABELS[c] for c in todo)}")
+    parls = aw_all("parliaments") if not out_of_time() else []
     people, comms = [], []
-    for code, label in LANDTAG_LABELS.items():
+    for code in todo:
+        if out_of_time(): budget_note("Landtage"); break
+        label = LANDTAG_LABELS[code]
         pl = next((p for p in parls if p.get("label", "").strip().lower() == label.lower()), None)
         if not pl:
             print(f"  {label}: nicht gefunden"); continue
         ppl, cms = fetch_parliament(pl, prefix="lt-" + code, parliament_id="lt-" + code,
                                     label=label, address=f"Landtag {label}", memberships=False)
         print(f"  {label}: {len(ppl)} Abgeordnete")
-        people += ppl; comms += cms
-        time.sleep(0.5)
+        if ppl: cache[code] = {"people": ppl, "comms": cms, "ts": datetime.now(timezone.utc).isoformat()}
+        time.sleep(0.3)
+    cache["_next"] = (start + LANDTAGE_PER_RUN) % len(codes)
+    json.dump(cache, open("landtage_cache.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    for code in codes:                                  # alle bekannten Landtage einspielen
+        entry = cache.get(code)
+        if isinstance(entry, dict):
+            people += entry.get("people", []); comms += entry.get("comms", [])
+    print(f"  Gesamt aus Cache + Lauf: {len(people)} Abgeordnete aus "
+          f"{sum(1 for c in codes if isinstance(cache.get(c), dict))}/16 Landtagen")
     return people, comms
 
 def fetch_parliament(parliament, prefix, parliament_id, label, address, memberships=True):
@@ -307,6 +342,8 @@ def fetch_parliament(parliament, prefix, parliament_id, label, address, membersh
             comm = {"id": cid, "parliament": parliament_id, "name": c.get("label", ""),
                     "topics": [t.get("label") for t in (c.get("field_topics") or [])],
                     "link": c.get("abgeordnetenwatch_url", ""), "members": []}
+            if out_of_time():
+                budget_note("Ausschuss-Mitgliedschaften"); break
             for mm in aw_all("committee-memberships", committee=c["id"]):
                 pid = m2p.get((mm.get("candidacy_mandate") or {}).get("id"))
                 if not pid: continue
@@ -314,7 +351,7 @@ def fetch_parliament(parliament, prefix, parliament_id, label, address, membersh
                 comm["members"].append({"id": pid, "role": role})
                 people[pid]["committees"].append({"id": cid, "name": comm["name"], "role": role})
             comms.append(comm)
-            time.sleep(0.3)
+            time.sleep(0.2)
     return list(people.values()), comms
 
 # ─────────────────────────────────────────────────────────────
@@ -390,6 +427,54 @@ def fetch_us_congress():
     return people, comms
 
 # ─────────────────────────────────────────────────────────────
+# ÄNDERUNGSERKENNUNG
+# Vergleicht den neuen Stand mit der letzten people.json: Wer ist neu,
+# wer fehlt, wer hat Fraktion oder Ausschüsse gewechselt.
+# ─────────────────────────────────────────────────────────────
+def diff_people(new_people):
+    try:
+        old = json.load(open("people.json", encoding="utf-8")).get("people", [])
+    except Exception:
+        print("  (kein Vorstand zum Vergleichen – erster Lauf)")
+        return {"added": [], "removed": [], "changed": [], "checked": datetime.now(timezone.utc).isoformat()}
+    o = {p["id"]: p for p in old}
+    n = {p["id"]: p for p in new_people}
+    # Parlamente, die in diesem Lauf gar nicht geholt wurden, nicht als "weg" melden
+    live_parls = {p["parliament"] for p in new_people}
+    added   = [{"id": i, "name": n[i]["name"], "parliament": n[i]["parliament"],
+                "party": n[i].get("party", "")} for i in n if i not in o]
+    removed = [{"id": i, "name": o[i]["name"], "parliament": o[i]["parliament"],
+                "party": o[i].get("party", "")} for i in o
+               if i not in n and o[i].get("parliament") in live_parls]
+    changed = []
+    for i in n:
+        if i not in o: continue
+        a, b = o[i], n[i]
+        fields = []
+        if (a.get("party") or "") != (b.get("party") or "") and b.get("party"):
+            fields.append({"feld": "Fraktion", "vorher": a.get("party", ""), "jetzt": b["party"]})
+        ca = {c["name"] for c in a.get("committees") or []}
+        cb = {c["name"] for c in b.get("committees") or []}
+        if cb and ca != cb:
+            if cb - ca: fields.append({"feld": "Ausschuss neu", "jetzt": ", ".join(sorted(cb - ca))})
+            if ca - cb: fields.append({"feld": "Ausschuss weg", "vorher": ", ".join(sorted(ca - cb))})
+        if (a.get("constituency") or "") != (b.get("constituency") or "") and b.get("constituency"):
+            fields.append({"feld": "Wahlkreis", "vorher": a.get("constituency", ""), "jetzt": b["constituency"]})
+        if fields:
+            changed.append({"id": i, "name": b["name"], "parliament": b["parliament"], "aenderungen": fields})
+    print(f"── Änderungen ggü. letztem Stand ──")
+    print(f"  neu: {len(added)} · nicht mehr enthalten: {len(removed)} · verändert: {len(changed)}")
+    for x in added[:8]:   print(f"    + {x['name']} ({x['parliament']}, {x['party']})")
+    for x in removed[:8]: print(f"    − {x['name']} ({x['parliament']})")
+    for x in changed[:8]:
+        first = x["aenderungen"][0]
+        print(f"    ~ {x['name']}: {first['feld']} {first.get('vorher','')} → {first.get('jetzt','')}".rstrip())
+    if len(added) + len(removed) + len(changed) > 24:
+        print("    … weitere in people.json unter \"changes\"")
+    return {"added": added, "removed": removed, "changed": changed,
+            "checked": datetime.now(timezone.utc).isoformat()}
+
+# ─────────────────────────────────────────────────────────────
 # WIKIPEDIA – Kurzbiografie als Hintergrund (inkrementell wie die Profile)
 # ─────────────────────────────────────────────────────────────
 def wiki_summary(title):
@@ -412,6 +497,7 @@ def enrich_wikipedia(people, per_run=None):
         print("  Wikipedia: nichts fällig"); return
     print(f"  Wikipedia: {len(todo)} Kurzbiografien")
     for p in todo:
+        if out_of_time(): budget_note("Wikipedia"); break
         data = wiki_summary(p.get("wikipedia") or p["name"])
         for k, v in data.items():
             if v: p[k] = v
@@ -537,6 +623,7 @@ def fetch_ep_scrape():
     print("  Fallback: MEP-Suche je Land")
     people, seen = [], set()
     for cc in EU_COUNTRIES:
+        if out_of_time(): budget_note("MEP-Suche"); break
         html = html_get(EP_SEARCH.format(cc))
         found = 0
         for m in re.finditer(r'/meps/de/(\d{4,7})/([A-ZÀ-Ýa-zà-ÿ_\-\+\.\'%]+)/home', html or ""):
@@ -555,7 +642,7 @@ def fetch_ep_scrape():
                            "committees": [], "speeches": [], "_norm": norm_name(name)})
             found += 1
         print(f"    {cc}: {found}")
-        time.sleep(0.6)
+        time.sleep(0.4)
     return people, []
 
 def fetch_ep():
@@ -576,6 +663,11 @@ def fetch_ep():
     print(f"  {len(comm_map)} Ausschüsse")
 
     people = []
+    detail_budget = int(os.environ.get("EP_DETAILS_PER_RUN", "150"))
+    details_done = 0
+    # Detailprofile rotieren: wer schon dran war, steht im Cache und wird übersprungen.
+    dcache = load_cache()
+    def has_detail(mid): return bool(dcache.get("ep:" + str(mid)))
     for i, m in enumerate(meps):
         if LIMIT and i >= LIMIT: break
         mid = str(m.get("id") or m.get("identifier") or "").split("/")[-1]
@@ -589,9 +681,16 @@ def fetch_ep():
              # EP-Portraits liegen unter einer festen URL je MEP-ID
              "photo": f"https://www.europarl.europa.eu/mepphoto/{mid}.jpg",
              "committees": [], "speeches": [], "_norm": norm_name(name)}
-        # Detail: Fraktion, Ausschüsse, Kontakt (Felder defensiv gelesen)
-        det = ep_ld(f"meps/{mid}")
-        det = det[0] if det else {}
+        # Detail (Fraktion, Ausschüsse, Kontakt) nur für einen Teil pro Lauf –
+        # Grunddaten aller MEPs stehen bereits oben, die Details wachsen über die Läufe.
+        det = {}
+        cached = dcache.get("ep:" + str(mid), {}).get("data") or {}
+        if cached:
+            p.update({k: v for k, v in cached.items() if v})
+        elif details_done < detail_budget and not out_of_time():
+            d = ep_ld(f"meps/{mid}")
+            det = d[0] if d else {}
+            details_done += 1
         for ms in det.get("hasMembership") or []:
             org = str(ms.get("organization") or ms.get("membershipClassification") or "")
             oid = org.split("/")[-1]
@@ -606,8 +705,17 @@ def fetch_ep():
             if em: p["email"], p["email_verified"] = str(em).replace("mailto:", ""), True
             if cp.get("telephone"): p["phone"] = str(cp["telephone"])
         if det.get("img") or det.get("image"): p["photo"] = str(det.get("img") or det.get("image"))
+        if det:
+            dcache["ep:" + str(mid)] = {"ts": datetime.now(timezone.utc).isoformat(),
+                                        "data": {"party": p["party"], "email": p["email"],
+                                                 "email_verified": p["email_verified"], "phone": p["phone"],
+                                                 "committees": p["committees"]}}
         people.append(p)
-        time.sleep(0.25)
+        if det: time.sleep(0.2)
+    save_cache(dcache)
+    have = sum(1 for m in meps if has_detail(str(m.get("id") or m.get("identifier") or "").split("/")[-1]))
+    print(f"  {len(people)} MEPs · {details_done} neue Detailprofile · "
+          f"{have}/{len(meps)} vollständig ({max(0,-(-(len(meps)-have)//max(1,detail_budget)))} Läufe bis komplett)")
     return people, list(comm_map.values())
 
 # ─────────────────────────────────────────────────────────────
@@ -617,7 +725,7 @@ def fetch_ep():
 def dip_pages(resource, params, max_items=2000):
     """Blättert per cursor über eine DIP-Ressource."""
     out, cursor, guard = [], None, 0
-    while guard < 40:
+    while guard < 40 and not out_of_time():
         guard += 1
         p = dict(params); p.update({"format": "json", "apikey": DIP_KEY})
         if cursor: p["cursor"] = cursor
@@ -806,6 +914,7 @@ def fetch_newsletters():
     print("── Newsletter-Feeds ──")
     items = []
     for url, name, topic, pro in NEWSLETTER_FEEDS:
+        if out_of_time(): budget_note("Newsletter"); break
         raw = get(url, accept="application/rss+xml, application/xml, text/xml")
         if not raw: print(f"  {name}: FAIL"); continue
         try: root = ET.fromstring(re.sub(rb"[^\x09\x0A\x0D\x20-\xFF]", b"", raw))
@@ -850,7 +959,9 @@ def safe(label, fn, default):
         return default
 
 def main():
-    print(f"[{datetime.now().isoformat()}] Presseschau Verzeichnis-Fetch")
+    t0 = time.monotonic()
+    print(f"[{datetime.now().isoformat()}] Presseschau Verzeichnis-Fetch "
+          f"(Zeitbudget {TIME_BUDGET_MIN} Min)")
     bt_people, bt_comm = safe("Bundestag", fetch_bundestag, ([], []))
     safe("Reden (DIP)", lambda: fetch_speeches_dip(bt_people), None)
     br_people, br_comm = safe("Bundesrat", fetch_bundesrat, ([], []))
@@ -867,7 +978,10 @@ def main():
     safe("Wikipedia", lambda: enrich_wikipedia(people), None)
     for p in people:
         p.pop("_mandate_id", None); p.pop("_norm", None); p.pop("land", None)
+    changes = safe("Änderungsvergleich", lambda: diff_people(people),
+                   {"added": [], "removed": [], "changed": []})
     out = {"updated": datetime.now(timezone.utc).isoformat(),
+           "changes": changes,
            "parliaments": [{"id": "bt", "label": "Bundestag", "count": len(bt_people)},
                            {"id": "br", "label": "Bundesrat", "count": len(br_people)},
                            {"id": "lt", "label": "Landtage", "count": len(lt_people)},
@@ -889,10 +1003,14 @@ def main():
             json.dump(out, open("people.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     size = os.path.getsize("people.json") // 1024 if os.path.exists("people.json") else 0
     print(f"→ people.json: {len(people)} Personen, {len(out['committees'])} Ausschüsse, {size} KB")
+    c = out.get("changes", {})
+    if c.get("added") or c.get("removed") or c.get("changed"):
+        print(f"   Änderungen: +{len(c['added'])} / -{len(c['removed'])} / ~{len(c['changed'])}")
     safe("DIP", fetch_dip, None)
     safe("Kalender", build_calendar_ics, None)
     safe("Newsletter", fetch_newsletters, None)
 
+    print(f"\n⏱ Laufzeit: {(time.monotonic()-t0)/60:.1f} Min von {TIME_BUDGET_MIN} Min Budget")
     if STAGE_ERRORS:
         print(f"\n── {len(STAGE_ERRORS)} Bausteine mit Fehler (Lauf trotzdem abgeschlossen) ──")
         for label, err in STAGE_ERRORS:
