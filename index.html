@@ -254,6 +254,16 @@ body.pro .pro-tag:not(.keep){display:none}
 .cal-row .eyebrow{margin-bottom:3px}
 .cal-row .t{font-size:12.5px;font-weight:600;line-height:1.3}
 .cal-row .m{font-size:11px;margin-top:3px;display:flex;gap:8px}
+#load-report{flex:0 0 auto}
+.lr{background:var(--red-lt);border:1.5px solid #fca5a5;border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:12.5px;line-height:1.55}
+.lr.warn{background:var(--amber-lt);border-color:#fcd34d}
+.lr h4{font-size:13.5px;font-weight:800;margin-bottom:5px;color:var(--red)}
+.lr.warn h4{color:#92400e}
+.lr ul{margin:6px 0 0 16px}
+.lr li{margin-bottom:2px}
+.lr code{background:rgba(255,255,255,.6);padding:1px 5px;border-radius:4px;font-size:11.5px}
+.lr .fail{font-weight:700}
+.lr .okf{color:var(--green)}
 .demo-banner{flex:0 0 auto;background:var(--amber-lt);border:1.5px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none;line-height:1.45}
 body.demo .demo-banner{display:block}
 
@@ -844,7 +854,8 @@ body.can-back #back-btn{display:inline-flex}
     <!-- Dashboard -->
     <section class="view active" id="view-dash">
       <div id="election-banner"></div>
-      <div class="demo-banner"><strong>Demo-Daten.</strong> Keine <code>articles.json</code> / <code>eu_articles.json</code> / <code>bundestag_articles.json</code> / <code>documents.json</code> erreichbar – das Layout zeigt Platzhalter. Neben deinen JSON-Dateien ablegen, dann laufen die echten Feeds.</div>
+      <div class="demo-banner"><strong>Demo-Daten.</strong> Aufruf mit <code>?demo=1</code> – alle Inhalte sind Platzhalter.</div>
+      <div id="load-report"></div>
       <div class="dash-head">
         <h1>Dashboard</h1>
         <span class="upd" id="dash-upd"></span>
@@ -1250,6 +1261,10 @@ function doLogin(){setAuth(true);closeLogin();}
 /* ═══════════════════════════════════════════════════════════
    STATE & DATEN
    ═══════════════════════════════════════════════════════════ */
+const LOADLOG=[];
+/* Demo-Daten nur noch auf ausdrücklichen Wunsch: index.html?demo=1
+   Sonst erscheint eine Fehlermeldung mit der Liste der fehlenden Dateien. */
+const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
 const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
@@ -1343,7 +1358,19 @@ function tagsHTML(a,n=3){const tc=TC(a._set),tl=TL(a._set);return[...new Set((a.
 /* ═══ LOAD – identische Dateinamen & Felder wie v2 ═══ */
 async function loadData(){
   setSt('loading','Lade…');const t=Date.now();
-  const get=async f=>{try{const r=await fetch(f+'?t='+t);return r.ok?await r.json():null;}catch{return null;}};
+  /* Jede Datei einzeln mit Grund protokollieren – so ist sofort sichtbar,
+     welche Datei fehlt, statt dass stillschweigend Demo-Daten erscheinen. */
+  LOADLOG.length=0;
+  const get=async f=>{
+    try{
+      const r=await fetch(f+'?t='+t);
+      if(!r.ok){LOADLOG.push({f,ok:false,why:'HTTP '+r.status});return null;}
+      const j=await r.json();
+      const n=(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||[]).length;
+      LOADLOG.push({f,ok:true,n});
+      return j;
+    }catch(e){LOADLOG.push({f,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':'nicht erreichbar'});return null;}
+  };
   /* Wichtigste Datei zuerst, damit früh etwas zu sehen ist; der Rest fließt nach. */
   const tag=(arr,set)=>(arr||[]).map(a=>{a._set=set;return a;});
   const [n,e,b] = await Promise.all([get('articles.json'),get('eu_articles.json'),get('bundestag_articles.json')]);
@@ -1355,7 +1382,8 @@ async function loadData(){
   ALL_LAENDER=tag(la?.articles,'laender');
   ALL_US=tag(us?.articles,'us');
   DIP=dp||{};
-  if(!n&&!e&&!b&&!d){useDemo();}
+  const kein=!n&&!e&&!b&&!d;
+  if(kein&&DEMO_OK){useDemo();}
   else{
     document.body.classList.remove('demo');
     ALL_NEWS=tag(n?.articles,'news');
@@ -1366,7 +1394,24 @@ async function loadData(){
   }
   afterLoad();
 }
+function renderLoadReport(){
+  const el=g('load-report');if(!el)return;
+  const fails=LOADLOG.filter(x=>!x.ok);
+  const kern=['articles.json','eu_articles.json','bundestag_articles.json'];
+  const kernFehlt=fails.filter(x=>kern.includes(x.f));
+  if(!fails.length){el.innerHTML='';return;}
+  const schwer=kernFehlt.length>0;
+  el.innerHTML=`<div class="lr${schwer?'':' warn'}">
+    <h4>${schwer?'Nachrichtendaten fehlen':'Einzelne Dateien fehlen'}</h4>
+    ${schwer?'Die Hauptfeeds konnten nicht geladen werden. Wahrscheinlich ist der letzte Lauf von <code>fetch_news.py</code> fehlgeschlagen oder die Dateien wurden nicht committet – im Actions-Log nachsehen.':'Der Rest läuft normal weiter; die betroffenen Bereiche bleiben leer, bis die Dateien da sind.'}
+    <ul>${fails.map(x=>`<li><span class="fail">${esc(x.f)}</span> – ${esc(x.why)}</li>`).join('')}</ul>
+    <div style="margin-top:7px;font-size:11.5px;color:var(--text2)">Geladen: ${LOADLOG.filter(x=>x.ok).map(x=>`<span class="okf">${esc(x.f)}</span> (${x.n})`).join(' · ')||'nichts'}
+      <button class="btn sm" style="margin-left:8px" onclick="loadData()">Erneut laden</button>
+      ${schwer?`<button class="btn sm" onclick="location.search='?demo=1'">Mit Demo-Daten ansehen</button>`:''}</div>
+  </div>`;
+}
 function afterLoad(){
+  renderLoadReport();
   const upd=META.news?.updated;
   if(upd){g('dash-upd').textContent='Stand '+fmt(upd);g('footer-upd').textContent='Zuletzt: '+fmt(upd);}
   g('cnt-news').textContent=ALL_NEWS.length;g('cnt-eu').textContent=ALL_EU.length;g('cnt-bt').textContent=ALL_BT.length;
@@ -2075,9 +2120,14 @@ function barsHTML(parties,prev){
       <div class="bar-track"><div class="bar-fill" style="width:${(v/mx*100).toFixed(1)}%;background:${pcol(p)}"></div></div>
       <span class="pv">${v.toFixed(1).replace('.',',')}${d?`<span class="delta ${d>0?'up':'down'}">${d>0?'+':''}${d.toFixed(1).replace('.',',')}</span>`:''}</span></div>`;}).join('')}</div>`;
 }
+/* Nur am Wahltag selbst – nicht in den Tagen davor und nicht danach. */
+function elToday(){
+  const t=new Date().toISOString().slice(0,10);
+  return(ELECT?.elections||[]).filter(e=>e.date===t);
+}
 function renderElectionBanner(){
   const el=g('election-banner');if(!el)return;
-  const fresh=elFresh(),next=elNext();
+  const fresh=elToday();
   const dismissed=store.get('ps_eb_dismissed')||'';
   if(fresh.length){
     const e=fresh[0],r=(ELECT?.results||{})[e.id];
@@ -2088,25 +2138,16 @@ function renderElectionBanner(){
       <span style="font-size:11px;opacity:.85">${fd(e.date).slice(0,8)}</span>
       <button class="x" onclick="store.set('ps_eb_dismissed','${e.id}');renderElectionBanner()">✕</button></div>
       <div class="eb-body">${r?barsHTML(r.parties,(ELECT.polls||{})[e.region_id]?.parties)
-        :'<div style="font-size:12.5px;color:var(--text2)">Heute wird gewählt. Sobald Prognose oder Hochrechnung vorliegen, erscheinen sie hier – der nächste Lauf holt sie.</div>'}
+        :((ELECT.polls||{})[e.region_id]?`<div style="font-size:11.5px;color:var(--muted);margin-bottom:7px">Heute wird gewählt – bis zur ersten Prognose die letzte Umfrage:</div>`+barsHTML((ELECT.polls||{})[e.region_id].parties)
+          :'<div style="font-size:12.5px;color:var(--text2)">Heute wird gewählt. Sobald Prognose oder Hochrechnung vorliegen, erscheinen sie hier.</div>')}
         <div class="poll-note">${r?`Quelle: wahlrecht.de · Veränderung gegenüber der letzten Umfrage · <a href="${esc(r.url)}" target="_blank" rel="noopener">Details ↗</a>`:''}
         <button class="btn sm" style="margin-left:6px" onclick="setView('wahl')">Zur Wahlen-Seite</button></div></div>`;
     return;
   }
-  if(next&&next.days<=14){
-    if(dismissed==='next:'+next.id){el.className='';el.innerHTML='';return;}
-    const poll=(ELECT.polls||{})[next.region_id];
-    el.className='on';el.style.borderColor='var(--blue)';
-    el.innerHTML=`<div class="eb-hd" style="background:linear-gradient(90deg,#2563eb,#1d4ed8)"><span class="live">In ${next.days} Tagen</span><h3>${esc(next.title)}</h3>
-      <span style="font-size:11px;opacity:.85">${fd(next.date).slice(0,8)}</span>
-      <button class="x" onclick="store.set('ps_eb_dismissed','next:${next.id}');renderElectionBanner()">✕</button></div>
-      <div class="eb-body">${poll?barsHTML(poll.parties):'<div style="font-size:12.5px;color:var(--text2)">Noch keine Umfragewerte für dieses Land geladen.</div>'}
-      <div class="poll-note">${poll?`Letzte Umfrage ${fd(poll.date).slice(0,8)} · ${esc(poll.institute||'')} · Quelle wahlrecht.de`:''}
-      <button class="btn sm" style="margin-left:6px" onclick="setView('wahl')">Alle Wahlen</button></div></div>`;
-    return;
-  }
   el.className='';el.innerHTML='';
 }
+/* Der Countdown zur nächsten Wahl steht weiterhin im Themen-Radar
+   und auf der Wahlen-Seite – nur eben nicht als Banner auf der Startseite. */
 function setWahlMode(m){S.wahlMode=m;g('wm-up').classList.toggle('active',m==='upcoming');g('wm-all').classList.toggle('active',m==='all');renderWahl();}
 function renderWahl(){
   const body=g('wahl-body');
