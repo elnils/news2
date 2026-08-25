@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 """
-Presseschau – Zweite Edition
+Presseschau – Dritte Edition (v3, abwärtskompatibel)
 - Rollendes 7-Tage-Archiv
-- 2 Datensets: articles.json + eu_articles.json
-- URLs geprüft und gefixt (März 2026)
+- 5 Datensets: articles.json, eu_articles.json, bundestag_articles.json,
+                laender_articles.json (NEU), us_articles.json (NEU)
+- NEU je Artikel (additiv, alte Felder unverändert):
+    priority   "eil" wenn das Portal selbst kennzeichnet (Titel-Marker, RSS-<category>)
+    cats       eigene Kategorien/Tags des Portals aus <category>/<dc:subject>
+    image      Bild-URL aus media:content / media:thumbnail / enclosure
+    author     dc:creator / author
+    kind       press | speech | transcript | consultation | agenda | news
+    inst       Institution (bundestag, bundesrat, bverfg, ep, ec, eu-council, ecb, eca, cjeu,
+               us-house, us-senate, us-whitehouse, us-scotus, landtag-<xx>, ...) – leer bei Medien
+    cluster    Anzahl unterschiedlicher Quellen mit derselben Meldung (Basis für Top-Meldungen)
+- Themen erweitert (33 statt 18), Sport im Noise-Filter
 """
 
 import json, time, hashlib, re, sys, os
@@ -33,8 +43,13 @@ EU_OFFICIAL_FEEDS = [
     # ── Rat der EU → 403 → via Google News ────────────────────
     ("https://news.google.com/rss/search?q=site:consilium.europa.eu&hl=de&gl=DE&ceid=DE:de", "EU Rat",   "council"),
 
+    # ── Europäischer Rat / Gerichtshof / Rechnungshof (NEU) ───
+    ("https://news.google.com/rss/search?q=site:consilium.europa.eu+%22Europäischer+Rat%22&hl=de&gl=DE&ceid=DE:de", "Europäischer Rat", "eu-council"),
+    ("https://curia.europa.eu/jcms/jcms/Jo2_16799/de/?rss=1",                              "EuGH",              "cjeu"),
+    ("https://news.google.com/rss/search?q=site:eca.europa.eu&hl=de&gl=DE&ceid=DE:de",     "EU-Rechnungshof",   "eca"),
     # ── Weitere EU-Institutionen ───────────────────────────────
-    ("https://www.ecb.europa.eu/rss/press.html",                                 "EZB",                  "eu-inst"),
+    ("https://www.ecb.europa.eu/rss/press.html",                                 "EZB Pressemitt.",      "ecb"),
+    ("https://www.ecb.europa.eu/rss/pub.html",                                   "EZB Publikationen",    "ecb"),
     ("https://www.easa.europa.eu/newsroom-and-events/news/rss.xml",              "EASA",                 "eu-inst"),
     ("https://www.eurocontrol.int/rss.xml",                                      "Eurocontrol",          "eu-inst"),
     ("https://www.ombudsman.europa.eu/en/news/rss",                              "EU Ombudsmann",        "eu-inst"),
@@ -105,6 +120,17 @@ BUNDESTAG_FEEDS = [
     ("https://www.bundestag.de/static/appdata/includes/rss/wirtschaft.rss",      "BT Wirtschaft & Energie", "bt-thema"),
     ("https://www.bundestag.de/static/appdata/includes/rss/entwicklung.rss",     "BT Entwicklung",       "bt-thema"),
     ("https://www.bundestag.de/static/appdata/includes/rss/bauwohnenstadtentwicklungkommunen.rss", "BT Wohnen & Bau", "bt-thema"),
+    # ── Bundesrat (offizielle Feeds, Übersicht: bundesrat.de/DE/service-navi/rss) ──
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_Announcement.xml", "Bundesrat Aktuelles",   "bundesrat"),
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_top_plenumkompakt.xml", "BR Plenum kompakt", "bundesrat"),
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_Publication.xml",  "Bundesrat Publikationen","bundesrat"),
+    # ── Bundesgerichte (offizielle Feeds) ─────────────────────
+    ("https://www.bundesgerichtshof.de/DE/Service/RSSFeed/Function/RSS_EN.xml?nn=373238",    "BGH Entscheidungen",   "bgh"),
+    # BVerfG bietet keinen RSS-Feed, nur Suchformulare (Entscheidungs- und Pressemitteilungssuche)
+    # → Google-News-Proxy auf die Domain; liefert Pressemitteilungen zuverlässig.
+    ("https://news.google.com/rss/search?q=site:bundesverfassungsgericht.de&hl=de&gl=DE&ceid=DE:de", "BVerfG", "bverfg"),
+    # ── Bundesbank ────────────────────────────────────────────
+    ("https://www.bundesbank.de/service/rss/de/633282/feed.rss",                             "Bundesbank",           "bundesbank"),
     # ── Bundesregierung ───────────────────────────────────────
     ("https://www.bundesregierung.de/service/rss/breg-de/1151242/feed.xml",      "BReg Kompakt",         "breg"),
     ("https://www.bundesregierung.de/service/rss/breg-de/1151244/feed.xml",      "BReg Pressemitt.",     "breg"),
@@ -127,6 +153,77 @@ BT_TOPIC_RULES = {
     "bundesregierung":{"score":[(3,["kabinett","koalitionsvertrag","regierungserklärung","kanzler","bundesminister"]),(2,["bundesregierung","koalition","regierung","ministerium","beschlossen"]),(1,["regierungshandeln","regierungspolitik"])],"min":2},
 }
 
+
+# ═══════════════════════════════════════════════════════════════
+# LÄNDER: Landtage + Landesregierungen (NEU → laender_articles.json)
+# cat = Länderkürzel; direkte RSS-URLs der Landtage variieren stark → Google-News-Proxy
+# als robuster Start; wer direkte Feeds kennt, trägt sie hier ein.
+# ═══════════════════════════════════════════════════════════════
+def _gn(q): return f"https://news.google.com/rss/search?q={q}&hl=de&gl=DE&ceid=DE:de"
+LAENDER = [("bw","Baden-Württemberg","landtag-bw.de"),("by","Bayern","bayern.landtag.de"),("be","Berlin","parlament-berlin.de"),
+           ("bb","Brandenburg","landtag.brandenburg.de"),("hb","Bremen","bremische-buergerschaft.de"),("hh","Hamburg","hamburgische-buergerschaft.de"),
+           ("he","Hessen","hessischer-landtag.de"),("mv","Mecklenburg-Vorpommern","landtag-mv.de"),("ni","Niedersachsen","landtag-niedersachsen.de"),
+           ("nw","Nordrhein-Westfalen","landtag.nrw.de"),("rp","Rheinland-Pfalz","landtag.rlp.de"),("sl","Saarland","landtag-saar.de"),
+           ("sn","Sachsen","landtag.sachsen.de"),("st","Sachsen-Anhalt","landtag.sachsen-anhalt.de"),("sh","Schleswig-Holstein","landtag.ltsh.de"),("th","Thüringen","thueringer-landtag.de")]
+# Direkte Landtags-Feeds, wo vorhanden – haben Vorrang vor dem Google-Proxy.
+LAENDER_DIRECT = [
+    ("https://www.landtag.nrw.de/home/aktuelles/meldungen-und-berichte/rss-newsfeed/rss-feed/contentArea/meldungen-rss-feed.xml",
+     "Landtag Nordrhein-Westfalen", "nw"),
+    ("https://www.landtag-niedersachsen.de/rss-feeds/rss.xml", "Landtag Niedersachsen", "ni"),
+    ("https://www.bayern.landtag.de/webangebot3/views/rss/main.xhtml", "Landtag Bayern", "by"),
+]
+_DIRECT_CODES = {c for _, _, c in LAENDER_DIRECT}
+LAENDER_FEEDS = list(LAENDER_DIRECT)
+LAENDER_FEEDS += [(_gn(f"site:{dom}"), f"Landtag {name}", code) for code,name,dom in LAENDER if code not in _DIRECT_CODES]
+LAENDER_FEEDS += [(_gn(f"Landesregierung+{name.replace(' ','+')}+Ministerpräsident"), f"LReg {name}", code) for code,name,_ in LAENDER]
+LAENDER_TOPIC_RULES = None   # wird unten auf BT_TOPIC_RULES gesetzt (gleiche Ressorts)
+
+# ═══════════════════════════════════════════════════════════════
+# USA: Institutionen + US-Presse (NEU → us_articles.json)
+# ═══════════════════════════════════════════════════════════════
+def _gnus(q): return f"https://news.google.com/rss/search?q={q}&ceid=US:en&hl=en-US&gl=US"
+US_FEEDS = [
+    # Kongress (congress.gov RSS – Feeds im Log prüfen)
+    ("https://www.congress.gov/rss/house-floor-today.xml",        "House Floor",        "us-house"),
+    ("https://www.congress.gov/rss/senate-floor-today.xml",       "Senate Floor",       "us-senate"),
+    ("https://www.congress.gov/rss/presented-to-president.xml",   "Bills to President", "us-congress"),
+    ("https://www.congress.gov/rss/most-viewed-bills.xml",        "Most-viewed Bills",  "us-congress"),
+    (_gnus("site:house.gov+press"),                               "House Press",        "us-house"),
+    (_gnus("site:senate.gov+press"),                              "Senate Press",       "us-senate"),
+    # Weißes Haus
+    ("https://www.whitehouse.gov/feed/",                          "White House",        "us-whitehouse"),
+    # Gerichte
+    ("https://www.uscourts.gov/rss.xml",                          "US Courts",          "us-courts"),
+    ("https://www.law.cornell.edu/supct/cert/cert.rss",           "SCOTUS Cert (LII)",  "us-scotus"),
+    ("https://www.law.cornell.edu/supct/recent/recent.rss",       "SCOTUS Entsch. (LII)","us-scotus"),
+    (_gnus("site:supremecourt.gov"),                              "Supreme Court",      "us-scotus"),
+    # Bundesbehörden / amtliche Veröffentlichungen (govinfo.gov/feeds)
+    ("https://www.federalregister.gov/documents/search.rss?conditions%5Btype%5D%5B%5D=RULE", "Federal Register Rules", "us-agency"),
+    ("https://www.govinfo.gov/rss/bills.xml",                     "govinfo Bills",      "us-congress"),
+    ("https://www.govinfo.gov/rss/plaw.xml",                      "govinfo Public Laws","us-congress"),
+    ("https://www.govinfo.gov/rss/cpd.xml",                       "govinfo Präsident.", "us-whitehouse"),
+    # US-Presse Politik
+    ("https://rss.politico.com/politics-news.xml",                "Politico US",        "us-media"),
+    ("https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml", "NYT Politics",       "us-media"),
+    ("https://feeds.washingtonpost.com/rss/politics",             "WaPo Politics",      "us-media"),
+    ("https://thehill.com/feed/",                                 "The Hill",           "us-media"),
+    (_gnus("when:24h+allinurl:apnews.com+politics"),              "AP Politics",        "us-media"),
+    (_gnus("site:axios.com+politics"),                            "Axios",              "us-media"),
+]
+US_TOPIC_RULES = {
+    "congress":{"score":[(3,["congress","house of representatives","senate","speaker","filibuster","bill passed","floor vote"]),(2,["lawmakers","committee hearing","markup","appropriations"]),(1,["bill","vote"])],"min":2},
+    "white_house":{"score":[(3,["white house","executive order","president signed","oval office","press secretary"]),(2,["president","administration","cabinet"]),(1,["federal"])],"min":2},
+    "scotus":{"score":[(3,["supreme court","scotus","justices","ruling","opinion of the court"]),(2,["appeals court","federal judge","injunction"]),(1,["court"])],"min":2},
+    "trade":{"score":[(3,["tariff","trade war","import duties","section 232","section 301","ustr"]),(2,["trade deal","exports","imports","wto"]),(1,["trade"])],"min":2},
+    "tech_policy":{"score":[(3,["ai regulation","section 230","antitrust","ftc","fcc","chips act","export controls"]),(2,["big tech","data privacy","tiktok","semiconductor"]),(1,["tech"])],"min":2},
+    "defense":{"score":[(3,["pentagon","ndaa","defense department","department of war","military aid","nato"]),(2,["troops","weapons","missile","army","navy"]),(1,["defense"])],"min":2},
+    "economy":{"score":[(3,["federal reserve","fed rate","inflation","gdp","jobs report","treasury"]),(2,["economy","recession","debt ceiling","budget deficit"]),(1,["economic"])],"min":2},
+    "elections":{"score":[(3,["midterms","primary","election","campaign","polling","ballot"]),(2,["democrats","republicans","gop","dnc","rnc"]),(1,["voters"])],"min":2},
+    "immigration":{"score":[(3,["immigration","border","deportation","asylum","ice "]),(2,["migrants","visa","dhs"]),(1,["citizenship"])],"min":2},
+    "foreign_policy":{"score":[(3,["state department","secretary of state","sanctions","ukraine","china","israel","iran"]),(2,["diplomacy","ambassador","allies","summit"]),(1,["foreign"])],"min":2},
+    "energy":{"score":[(3,["energy department","oil","gas prices","epa","climate"]),(2,["renewable","drilling","pipeline","emissions"]),(1,["energy"])],"min":2},
+    "health":{"score":[(3,["medicare","medicaid","fda","cdc","hhs","obamacare","affordable care act"]),(2,["health care","drug prices","vaccine"]),(1,["health"])],"min":2},
+}
 
 NEWS_FEEDS = [
     # ── Deutsch: Leitmedien ────────────────────────────────────
@@ -294,6 +391,13 @@ NOISE_KEYWORDS = [
     "recipe","cooking tips","weight loss","fitness routine","travel guide",
     "hotel review","restaurant review","fashion week","celebrity","kardashian",
     "bundesliga ergebnis","spielbericht","torschütze","aufstellung","transfer gerücht",
+    # Sport (NEU) – nur eindeutige Sport-Begriffe, damit Sportpolitik nicht mitgefiltert wird
+    "bundesliga","2. liga","champions league","europa league","conference league","dfb-pokal",
+    "spieltag","tabellenführer","fc bayern","bayern münchen","borussia dortmund","bvb","schalke 04",
+    "eintracht frankfurt","werder bremen","bayer leverkusen","rb leipzig","hertha bsc","hamburger sv",
+    "nationalelf","länderspiel","torwart","torhüter","trainerwechsel","relegation","transfermarkt",
+    "formel 1","grand prix","wimbledon","french open","us open","nfl","nba","nhl","mlb","super bowl",
+    "world series","premier league","la liga","serie a","biathlon","skispringen","tour de france",
 ]
 
 HIGH_VALUE_KEYWORDS = [
@@ -329,6 +433,31 @@ TOPIC_RULES = {
     "wissenschaft":{"score":[(3,["peer-reviewed","forschungsergebnis","quantencomputer","crispr","durchbruch"]),(2,["universität","forschung","physik","biologie","genetik","fraunhofer","max planck"]),(1,["wissenschaft","labor","theorie","entdeckung"])],"min":2},
     "medizin":{"score":[(3,["klinische studie","impfstoff","mrna","onkologie","fda ","ema ","zulassung"]),(2,["krebs","therapie","antibiotikum","virus ","impfung","pharma","medikament"]),(1,["gesundheit","medizin","patient","diagnose"])],"min":2},
     "mobilitaet":{"score":[(3,["elektroauto","e-mobilität","autonomes fahren","verkehrswende","öpnv"]),(2,["tesla ","volkswagen","bmw ","mercedes ","deutsche bahn","wasserstoffauto"]),(1,["mobilität","transport","antrieb","ladestation"])],"min":2},
+    # ── NEU: erweiterte Themen (v3) ──────────────────────────
+    "gesundheit":{"score":[(3,["gesundheitsministerium","krankenhausreform","krankenkasse","pflegeversicherung","lauterbach","gesundheitswesen"]),(2,["gesundheit","krankenhaus","pflege","ärzte","apotheke","patienten"]),(1,["medizinisch","klinik"])],"min":2},
+    "soziales":{"score":[(3,["bürgergeld","rente","rentenreform","mindestlohn","sozialstaat","grundsicherung"]),(2,["sozial","arbeitslos","armut","kindergeld","elterngeld","tarif"]),(1,["gewerkschaft","sozialverband"])],"min":2},
+    "bildung":{"score":[(3,["bildungsministerium","kultusminister","schulreform","bafög","digitalpakt","hochschule"]),(2,["schule","universität","lehrer","studierende","ausbildung","kita"]),(1,["bildung"])],"min":2},
+    "migration":{"score":[(3,["asylpolitik","migrationspolitik","abschiebung","grenzkontrolle","frontex","asylreform"]),(2,["migration","asyl","flüchtlinge","einwanderung","integration"]),(1,["zuwanderung"])],"min":2},
+    "justiz":{"score":[(3,["bundesverfassungsgericht","bundesgerichtshof","eugh","urteil","verfassungsgericht","staatsanwaltschaft"]),(2,["gericht","richter","klage","verfahren","justiz","anklage"]),(1,["recht"])],"min":2},
+    "innenpolitik":{"score":[(3,["innenministerium","verfassungsschutz","innere sicherheit","polizeigesetz","extremismus","terror"]),(2,["polizei","innenminister","bka","bnd","spionage","sabotage"]),(1,["sicherheitsbehörden"])],"min":2},
+    "umwelt":{"score":[(3,["umweltministerium","naturschutz","artenschutz","klimaanpassung","hochwasser","dürre"]),(2,["umwelt","biodiversität","wald","gewässer","plastik","müll"]),(1,["ökologisch"])],"min":2},
+    "agrar":{"score":[(3,["landwirtschaftsministerium","agrarpolitik","bauernverband","tierwohl","glyphosat","gap-reform"]),(2,["landwirtschaft","bauern","ernte","düngemittel","fischerei"]),(1,["agrar"])],"min":2},
+    "wohnen":{"score":[(3,["mietpreisbremse","wohnungsbau","bauministerium","mietendeckel","wohnungsnot","baugenehmigung"]),(2,["miete","wohnung","bauen","immobilien","stadtentwicklung"]),(1,["wohnen"])],"min":2},
+    "arbeit":{"score":[(3,["arbeitsministerium","fachkräftemangel","tarifverhandlung","arbeitszeit","kurzarbeit","streik"]),(2,["arbeitsmarkt","beschäftigung","gewerkschaft","arbeitgeber","homeoffice"]),(1,["arbeit"])],"min":2},
+    "kultur":{"score":[(3,["kulturstaatsminister","rundfunkbeitrag","öffentlich-rechtlich","medienstaatsvertrag","pressefreiheit"]),(2,["kultur","medien","rundfunk","verlag","museum","theater"]),(1,["journalismus"])],"min":2},
+    "handel":{"score":[(3,["zölle","handelsabkommen","handelskrieg","wto","mercosur","lieferkettengesetz"]),(2,["export","import","handel","zoll","freihandel"]),(1,["außenhandel"])],"min":2},
+    "raumfahrt":{"score":[(3,["esa","nasa","spacex","raumfahrt","satellit","ariane"]),(2,["rakete","weltraum","orbit","starlink","iris²"]),(1,["space"])],"min":2},
+    "afrika":{"score":[(3,["afrika","nigeria","südafrika","äthiopien","sahel","kongo","kenia"]),(2,["afrikanische union","sudan","mali","niger","ghana"]),(1,["subsahara"])],"min":2},
+    "lateinamerika":{"score":[(3,["brasilien","mexiko","argentinien","venezuela","lateinamerika","kolumbien"]),(2,["chile","peru","kuba","milei","lula"]),(1,["südamerika"])],"min":2},
+    "verbraucher":{"score":[(3,["verbraucherschutz","verbraucherzentrale","produktsicherheit","rückruf","irreführende werbung"]),(2,["verbraucher","gewährleistung","abmahnung","preisbindung"]),(1,["kunden"])],"min":2},
+    "kommunales":{"score":[(3,["kommunalfinanzen","städtetag","landkreistag","gemeindebund","kommunale selbstverwaltung"]),(2,["kommune","stadtrat","landrat","bürgermeister","gemeinde"]),(1,["kommunal"])],"min":2},
+    "sicherheitspolitik":{"score":[(3,["hybride bedrohung","spionageabwehr","sabotage","desinformation","zivilschutz","bevölkerungsschutz"]),(2,["nachrichtendienst","bnd","verfassungsschutz","drohnensichtung"]),(1,["bedrohung"])],"min":2},
+    "religion":{"score":[(3,["kirchensteuer","religionsgemeinschaft","antisemitismus","islamismus","kirchentag"]),(2,["kirche","moschee","synagoge","religion","bischof"]),(1,["glaube"])],"min":2},
+    "sport_politik":{"score":[(3,["sportförderung","dopingbekämpfung","olympiabewerbung","sportausschuss","stadionsicherheit"]),(2,["dsb","dosb","sportpolitik","sportverband"]),(1,["sportstätte"])],"min":3},
+    "demografie":{"score":[(3,["demografischer wandel","geburtenrate","alterung","fachkräfteeinwanderung","bevölkerungsentwicklung"]),(2,["demografie","überalterung","zuwanderungsbedarf"]),(1,["bevölkerung"])],"min":2},
+    "korruption":{"score":[(3,["lobbyregister","korruptionsverdacht","untersuchungsausschuss","transparenzregister","interessenkonflikt"]),(2,["lobbyismus","bestechung","compliance","whistleblower"]),(1,["transparenz"])],"min":2},
+    "nordeuropa":{"score":[(3,["schweden","norwegen","finnland","dänemark","ostsee","baltikum"]),(2,["nordische","estland","lettland","litauen","island"]),(1,["skandinavien"])],"min":2},
+    "osteuropa":{"score":[(3,["polen","tschechien","ungarn","slowakei","rumänien","westbalkan"]),(2,["visegrad","bulgarien","kroatien","serbien","moldau"]),(1,["osteuropa"])],"min":2},
     "netzpolitik":{"score":[(3,["netzausbau","glasfaserausbau","glasfaser","ftth","5g-ausbau","netzneutralität","internetfreiheit","bundesnetzagentur","frequenzvergabe"]),(2,["netzpolitik","digitale infrastruktur","breitband","starlink","telekom","vodafone","telefónica","telefonica","1&1 netz","o2 netz","mobilfunk","lte","5g ","mobilfunknetz"]),(1,["internet","netz","telko","isp"])],"min":2},
 }
 
@@ -429,9 +558,58 @@ def parse_feed(fetch_result, source, topic_rules):
         topics=sorted(scored,key=lambda t:-scored[t])
         boost=relevance_boost(full_text)
         uid=hashlib.md5((source+title+link).encode()).hexdigest()[:12]
-        arts.append({"id":uid,"source":source,"title":title,"link":link.strip(),
-                     "desc":desc,"date":pub_iso,"topics":topics,"boost":boost})
+        # ── NEU (v3): Portal-eigene Kennzeichnung, Bild, Autor ──
+        cats=[]
+        for c in item.findall('category')+item.findall('{http://purl.org/dc/elements/1.1/}subject')+item.findall('{http://www.w3.org/2005/Atom}category'):
+            v=(c.text or c.get('term') or c.get('label') or '').strip()
+            if v and v not in cats: cats.append(v)
+        cats=cats[:6]
+        priority=detect_priority(title, cats)
+        img=''
+        for tag in ('{http://search.yahoo.com/mrss/}content','{http://search.yahoo.com/mrss/}thumbnail','enclosure','{http://search.yahoo.com/mrss/}group/{http://search.yahoo.com/mrss/}content'):
+            for el in item.findall(tag):
+                u=el.get('url') or ''
+                if u.startswith('http') and ('image' in (el.get('type') or 'image/') or el.get('medium')=='image'):
+                    img=u; break
+            if img: break
+        if not img:
+            m=re.search(r'<img[^>]+src=["\']([^"\']+)["\']', desc_raw or '')
+            if m: img=m.group(1)
+        author=(g('{http://purl.org/dc/elements/1.1/}creator') or g('author') or
+                g('{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name') or '')[:120]
+        a={"id":uid,"source":source,"title":title,"link":link.strip(),
+           "desc":desc,"date":pub_iso,"topics":topics,"boost":boost,
+           "priority":priority,"cats":cats,"image":img,"author":author}
+        arts.append(a)
     return arts
+
+# ── NEU (v3): Eilmeldung nur, wenn das Portal es selbst so kennzeichnet ──
+EIL_TITLE_RE = re.compile(r'^\s*(\+{2,}|eil(meldung)?\s*[:\-–]|eilt\s*[:\-–]|breaking( news)?\s*[:\-–]|live[:\-–])', re.I)
+EIL_CAT_RE   = re.compile(r'^(eil|eilmeldung|breaking|breaking news|live)$', re.I)
+def detect_priority(title, cats):
+    if EIL_TITLE_RE.search(title or '') or re.search(r'\+\+\+\s*eil', title or '', re.I):
+        return "eil"
+    if any(EIL_CAT_RE.match(c) for c in cats or []):
+        return "eil"
+    return ""
+
+# ── NEU (v3): Inhaltstyp und Institution je Feed ──
+def kind_for(source, cat, title):
+    t=(title or '').lower(); s=(source or '').lower()
+    if re.search(r'plenarprotokoll|protokoll|verbatim|transcript', t): return "transcript"
+    if re.search(r'tagesordnung|agenda|sitzungswoche|floor today', t+' '+s): return "agenda"
+    if re.search(r'konsultation|consultation|anhörung|call for evidence|have your say', t): return "consultation"
+    if re.search(r'^(rede|speech|statement|remarks|erklärung)\b', t): return "speech"
+    if re.search(r'pressemitt|press release|presse|hib|presscorner|newsroom', s) or cat in ("ec","ep","council","eu-council","ecb","eca","cjeu","bt-allg","breg","bundesrat","bverfg","bgh","us-whitehouse","us-house","us-senate","us-scotus","us-agency","us-congress"): return "press"
+    return "news"
+INST_OF_CAT = {"ep":"ep","ep-committee":"ep","ec":"ec","council":"eu-council","eu-council":"eu-council","ecb":"ecb","eca":"eca","cjeu":"cjeu",
+               "eu-inst":"eu-agency","eurlex":"eurlex","bt-allg":"bundestag","bt-thema":"bundestag","breg":"bundesregierung",
+               "bundesrat":"bundesrat","bverfg":"bverfg","bgh":"bgh","us-house":"us-house","us-senate":"us-senate","us-congress":"us-congress",
+               "us-whitehouse":"us-whitehouse","us-scotus":"us-scotus","us-agency":"us-agency"}
+def inst_for(cat, source):
+    if cat in INST_OF_CAT: return INST_OF_CAT[cat]
+    if cat in {c for c,_,_ in LAENDER}: return "landtag-"+cat if (source or '').startswith("Landtag") else "lreg-"+cat
+    return ""
 
 def fetch_url(url, timeout=15):
     from urllib.parse import quote
@@ -515,15 +693,28 @@ def fetch_all(feed_list, topic_rules, label):
             print(f"FAIL")
             continue
         arts=parse_feed(result,name,topic_rules)
-        # attach category tag to each article
+        # attach category tag to each article (+ v3: kind, inst)
         for a in arts:
             a['cat']=cat
+            a['kind']=kind_for(name, cat, a.get('title',''))
+            a['inst']=inst_for(cat, name)
         print(f"{len(arts)}")
         all_arts.extend(arts)
         ok+=1
         time.sleep(0.2)
     return all_arts, ok, fail
 
+def _norm_title(t):
+    return re.sub(r'\s+',' ',re.sub(r'[^a-zäöüß0-9 ]',' ',(t or '').lower())).strip()[:60]
+def add_clusters(articles):
+    """cluster = Zahl verschiedener Quellen mit (fast) gleicher Schlagzeile → Signal für Top-Meldungen."""
+    groups={}
+    for a in articles:
+        k=_norm_title(a.get('title'))
+        if len(k)<20: continue
+        groups.setdefault(k,set()).add(a.get('source',''))
+    for a in articles:
+        a['cluster']=len(groups.get(_norm_title(a.get('title')),()))
 def save_json(filename, articles, ok, fail, extra=None):
     seen=set()
     deduped=[]
@@ -531,6 +722,7 @@ def save_json(filename, articles, ok, fail, extra=None):
         if a['id'] not in seen:
             seen.add(a['id'])
             deduped.append(a)
+    add_clusters(deduped)
     trends=compute_trends(deduped)
     out={
         "updated":datetime.now(timezone.utc).isoformat(),
@@ -551,6 +743,13 @@ def save_json(filename, articles, ok, fail, extra=None):
 # DOKUMENT-QUELLEN
 # ═══════════════════════════════════════════════════════════════
 DOCUMENT_FEEDS = [
+    # ── Bundesrat: Termine (→ Kalender), Drucksachen, Publikationen ──
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_Event.xml",
+     "Bundesrat", "Tagesordnung", "br", False),
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_Event_Ausschuss.xml",
+     "Bundesrat", "Ausschusstermin", "br", False),
+    ("https://www.bundesrat.de/SiteGlobals/Functions/RSSFeed/RSSGenerator_PBPrintout.xml",
+     "Bundesrat", "Drucksache", "br", False),
     # download=True → PDF wird heruntergeladen und im Repo gespeichert
     # download=False → nur Link wird gespeichert
     ("https://www.bundestag.de/static/appdata/includes/rss/drucksachen.rss",
@@ -752,6 +951,20 @@ def main():
     save_json("bundestag_articles.json", merged_bt, ok3, fail3,
               extra={"note":"Offizielle Quellen: Bundestag RSS-Feeds + Bundesregierung"})
 
+    print("\n── Länder (Landtage & Landesregierungen) ──")
+    new_l, ok4, fail4 = fetch_all(LAENDER_FEEDS, BT_TOPIC_RULES, "laender")
+    existing_l = load_existing("laender_articles.json")
+    merged_l = merge_rolling(existing_l, new_l, days=7, max_count=3000)
+    save_json("laender_articles.json", merged_l, ok4, fail4,
+              extra={"note":"Landtage + Landesregierungen der 16 Länder (cat = Länderkürzel)"})
+
+    print("\n── USA (Kongress, Weißes Haus, Supreme Court, US-Presse) ──")
+    new_us, ok5, fail5 = fetch_all(US_FEEDS, US_TOPIC_RULES, "usa")
+    existing_us = load_existing("us_articles.json")
+    merged_us = merge_rolling(existing_us, new_us, days=7, max_count=3000)
+    save_json("us_articles.json", merged_us, ok5, fail5,
+              extra={"note":"US-Institutionen (congress.gov, whitehouse.gov) + US-Politikpresse"})
+
     print("\n── Dokumente ──")
     new_docs = fetch_documents()
     existing_docs = load_existing_docs("documents.json")
@@ -761,6 +974,8 @@ def main():
     print(f"\n✓ News: {ok1} Feeds ok, {fail1} Feeds fehlgeschlagen, {len(merged_news)} Artikel")
     print(f"✓ EU Direkt: {ok2} Feeds ok, {fail2} Feeds fehlgeschlagen, {len(merged_eu)} Artikel")
     print(f"✓ Bundestag: {ok3} Feeds ok, {fail3} Feeds fehlgeschlagen, {len(merged_bt)} Artikel")
+    print(f"✓ Länder: {ok4} Feeds ok, {fail4} fehlgeschlagen, {len(merged_l)} Artikel")
+    print(f"✓ USA: {ok5} Feeds ok, {fail5} fehlgeschlagen, {len(merged_us)} Artikel")
     print(f"✓ Dokumente: {len(merged_docs)} Dokumente")
 
 if __name__ == "__main__":
