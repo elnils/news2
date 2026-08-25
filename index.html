@@ -65,7 +65,7 @@ body.eu-mode .chip.active{background:var(--eu);border-color:var(--eu)}
 .ai-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:db .9s infinite both;margin:0 1px}
 .ai-dots span:nth-child(2){animation-delay:.15s}.ai-dots span:nth-child(3){animation-delay:.3s}
 @keyframes db{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-/* Monogramm-Kachel = Bild-Fallback (Presse "People"-Stil) */
+/* Monogramm-Kachel = Bild-Fallback (Politico "People"-Stil) */
 .tile{display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;border-radius:8px;flex-shrink:0;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 2px,transparent 2px 7px);overflow:hidden}
 .tile img{width:100%;height:100%;object-fit:cover}
 
@@ -158,7 +158,7 @@ body.pro .pro-tag:not(.keep){display:none}
 .view{display:none;flex:1;min-height:0;flex-direction:column}
 .view.active{display:flex}
 
-/* ── Dashboard ─────────────────────────────────── */
+/* ── Dashboard (Politico) ─────────────────────────────────── */
 #view-dash{overflow-y:auto;padding:14px 16px 24px}
 .dash-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .dash-head h1{font-size:22px;font-weight:800;letter-spacing:-.03em}
@@ -227,7 +227,7 @@ body.pro .pro-tag:not(.keep){display:none}
 .cal-row .eyebrow{margin-bottom:3px}
 .cal-row .t{font-size:12.5px;font-weight:600;line-height:1.3}
 .cal-row .m{font-size:11px;margin-top:3px;display:flex;gap:8px}
-.demo-banner{background:var(--amber-lt);border:1.5px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none;line-height:1.45}
+.demo-banner{flex:0 0 auto;background:var(--amber-lt);border:1.5px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none;line-height:1.45}
 body.demo .demo-banner{display:block}
 
 /* ── Feed (Split-Ansicht, aus v2) ─────────────────────────── */
@@ -394,6 +394,83 @@ body.can-back #back-btn{display:inline-flex}
 .tgrid .chip{width:100%;text-align:left;padding:5px 10px;font-size:11.5px}
 .tsec{grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 2px 2px}
 .mode-row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text2);margin-top:8px}
+/* v6.6: Dashboard = Nachrichten links, drei kleine Vertiefungs-Kacheln rechts */
+.dmain{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:12px;align-items:start}
+.dside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.dcard.mini .dcard-hd{padding:9px 12px}
+.dcard.mini .dcard-hd h2{font-size:13px}
+.dcard.mini .dcard-hd .all{padding:2px 7px;font-size:12px;line-height:1.1}
+.mini-seg{border-width:1.5px}
+.mini-seg button{padding:2px 7px;font-size:10.5px}
+.scrollbox{max-height:270px;overflow-y:auto;padding:4px 12px 8px}
+.scrollbox::-webkit-scrollbar{width:4px}
+.scrollbox::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+.mini-row{padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.mini-row:last-child{border-bottom:none}
+.mini-row:hover .mt{color:var(--blue)}
+.mini-row .mt{font-size:12px;font-weight:600;line-height:1.32}
+.mini-row .mm{font-size:10px;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mini-row .when{font-weight:700;color:var(--blue)}
+@media (max-width:1000px){.dmain{grid-template-columns:1fr}.dside{flex-direction:row;overflow-x:auto;gap:10px}.dside .dcard{min-width:270px;flex:0 0 auto}}
+@media (max-width:620px){.dside{flex-direction:column}.dside .dcard{min-width:0}}
+/* Themen und Quellen vollständig, aber platzsparend */
+.nav-chip-wrap{max-height:none}
+.nav-chip-wrap.capped{max-height:118px;overflow:hidden;position:relative}
+.nav-chip-wrap.capped::after{content:'';position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(transparent,var(--surface))}
+#nav-topics-more{display:flex;flex-wrap:wrap;gap:4px}
+.chip-more{font-size:10.5px;font-weight:600;color:var(--blue);cursor:pointer;padding:3px 8px}
+#src-chips.capped{max-height:56px;overflow:hidden}
+/* v6.5: Schnellzugriff statt langer Seitenleiste */
+#quickbar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:9px 11px;margin-bottom:12px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);flex:0 0 auto}
+.qb-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);margin-right:4px}
+.qb-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;
+  border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .12s;white-space:nowrap}
+.qb-chip:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.qb-vote{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:3px 11px;border-radius:20px;
+  background:var(--blue-lt);color:var(--blue);border:1.5px solid #bfd4ff;cursor:pointer;white-space:nowrap}
+.qt{flex:0 0 auto;min-width:112px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+    padding:9px 12px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:2px}
+.qt:hover{border-color:var(--blue);box-shadow:var(--shadow);transform:translateY(-1px)}
+.qt .qn{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
+.qt .ql{font-size:11px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:4px}
+.qt .qs{font-size:10px;color:var(--muted);line-height:1.3}
+.qt.alert{border-color:var(--red);background:linear-gradient(180deg,var(--red-lt),var(--surface))}
+.qt.alert .qn{color:var(--red)}
+.qt.soon{border-color:var(--blue);background:linear-gradient(180deg,var(--blue-lt),var(--surface))}
+.qt.soon .qn{color:var(--blue)}
+.qt.empty{opacity:.55}
+/* v6.4: Wahlen */
+#election-banner{display:none;flex:0 0 auto;margin-bottom:12px;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--red);box-shadow:var(--shadow-md)}
+#election-banner.on{display:block;animation:fu .3s ease both}
+.eb-hd{background:linear-gradient(90deg,var(--red),#b91c1c);color:#fff;padding:9px 14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.eb-hd .live{font-size:9px;font-weight:800;letter-spacing:.08em;background:rgba(255,255,255,.22);padding:2px 7px;border-radius:4px;display:inline-flex;align-items:center;gap:4px}
+.eb-hd .live::before{content:'';width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
+.eb-hd h3{font-size:14px;font-weight:800;letter-spacing:-.01em;flex:1}
+.eb-hd .x{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:12px}
+.eb-body{background:var(--surface);padding:12px 14px}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:78px 1fr 74px;gap:9px;align-items:center;font-size:12px}
+.bar-row .pn{font-weight:700;text-align:right;font-size:11.5px}
+.bar-track{background:var(--bg);border-radius:5px;height:17px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:5px;transition:width .5s ease}
+.bar-row .pv{font-weight:800;font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+.bar-row .delta{font-size:10px;font-weight:700;margin-left:3px}
+.up{color:var(--green)}.down{color:var(--red)}
+.cd{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.cd-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 14px;min-width:150px;flex:1;cursor:pointer;transition:all .12s}
+.cd-box:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.cd-box.next{border-color:var(--red);background:linear-gradient(180deg,var(--red-lt),var(--surface))}
+.cd-days{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.cd-box.next .cd-days{color:var(--red)}
+.cd-lbl{font-size:12px;font-weight:600;margin-top:4px;line-height:1.25}
+.cd-date{font-size:10.5px;color:var(--muted);margin-top:2px}
+.el-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.el-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.el-card.past{opacity:.62}
+.el-card .t{font-size:13.5px;font-weight:700;line-height:1.3}
+.el-card .m{font-size:11px;color:var(--muted);margin:3px 0 8px;display:flex;gap:8px;flex-wrap:wrap}
+.poll-note{font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.45}
 /* v6: Trends */
 #bubble-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;height:420px}
 #bubbles{width:100%;height:100%;display:block;cursor:grab}
@@ -566,7 +643,7 @@ body.can-back #back-btn{display:inline-flex}
   <div class="fp-grid">
     <label class="fl">Priorität</label>
     <div class="fp-row">
-      <label><input type="checkbox" id="fp-eil" onchange="S.prio.eil=this.checked;applyFilters()"> <span class="eil">Eil</span> Eilmeldungen</label>
+      <label title="Meldungen, über die mindestens drei Quellen gleichzeitig berichten"><input type="checkbox" id="fp-eil" onchange="S.prio.eil=this.checked;applyFilters()"> 📊 Meistberichtet</label>
       <label title="Nur Meldungen mit mindestens einem politischen Schlüsselbegriff"><input type="checkbox" id="fp-top" onchange="S.prio.top=this.checked;applyFilters()"> Nur relevante</label>
       <label title="Sport, Spielberichte, Vereinsnews ausblenden (clientseitig – dauerhaft besser über NOISE_KEYWORDS in fetch_news.py)"><input type="checkbox" id="fp-sport" checked onchange="setSport(this.checked)"> ⚽ Sport ausblenden</label>
     </div>
@@ -605,7 +682,7 @@ body.can-back #back-btn{display:inline-flex}
 <div id="body">
   <div id="nav-scrim" onclick="toggleNav(false)"></div>
 
-  <!-- ═══ SIDEBAR (Presse-Rail) ═══ -->
+  <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
   <nav id="sidebar">
     <div class="auth-switch" id="sb-auth"><span>Vorschau</span><label class="switch"><input type="checkbox" id="auth-toggle-m" onchange="setAuth(this.checked)"><span class="slider"></span></label><span id="auth-label-m" style="font-weight:700">Basis</span></div>
     <div class="nav active" id="nav-dash" onclick="setView('dash')">
@@ -627,6 +704,10 @@ body.can-back #back-btn{display:inline-flex}
     <div class="nav" id="nav-us" onclick="setSection('us')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4M4 5h16l-3 4 3 4H4"/></svg>USA<span class="cnt" id="cnt-us">–</span>
     </div>
+    <div class="nav-sec">Werkzeuge</div>
+    <div class="nav" id="nav-wahl" onclick="setView('wahl')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Wahlen<span class="cnt" id="cnt-wahl">–</span>
+    </div>
     <div class="nav" id="nav-trends" onclick="setView('trends')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 7h7v7"/></svg>Trends<span class="cnt" id="cnt-trends">–</span>
     </div>
@@ -643,7 +724,6 @@ body.can-back #back-btn{display:inline-flex}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Kalender<span class="cnt" id="cnt-cal">–</span><span class="pro-tag">PRO</span>
     </div>
 
-    <div class="nav-sec">Verzeichnis</div>
     <div class="nav locked" id="nav-dir" onclick="setView('dir');setDirMode('people')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 4a4 4 0 0 1 0 8M22 21c0-3-2-6-5-7"/></svg>Personen<span class="cnt" id="cnt-people">–</span><span class="pro-tag">PRO</span>
     </div>
@@ -655,6 +735,7 @@ body.can-back #back-btn{display:inline-flex}
     </div>
     <div class="nav-sec">Themen <span id="nav-themes-set" style="font-weight:500;text-transform:none;letter-spacing:0"></span></div>
     <div class="nav-chip-wrap" id="nav-topics"></div>
+    <div id="nav-topics-more" style="padding:0 8px 6px"></div>
 
     <div class="nav-sec">Institutionen</div>
     <div id="nav-insts"></div>
@@ -671,6 +752,7 @@ body.can-back #back-btn{display:inline-flex}
 
     <!-- Dashboard -->
     <section class="view active" id="view-dash">
+      <div id="election-banner"></div>
       <div class="demo-banner"><strong>Demo-Daten.</strong> Keine <code>articles.json</code> / <code>eu_articles.json</code> / <code>bundestag_articles.json</code> / <code>documents.json</code> erreichbar – das Layout zeigt Platzhalter. Neben deinen JSON-Dateien ablegen, dann laufen die echten Feeds.</div>
       <div class="dash-head">
         <h1>Dashboard</h1>
@@ -681,60 +763,44 @@ body.can-back #back-btn{display:inline-flex}
           <button class="btn sm" onclick="setSection('news')">Alle Meldungen →</button>
         </div>
       </div>
+      <div id="quickbar"></div>
       <div id="dash-themes" style="display:none">
         <div class="theme-bar" id="theme-bar"></div>
         <div class="theme-cols" id="theme-cols"></div>
       </div>
       <div id="dash-overview">
-      <div class="dgrid">
-        <div class="dcard alerts">
-          <div class="dcard-hd"><h2>Eilmeldungen</h2><button class="all" onclick="S.prio.eil=true;g('fp-eil').checked=true;setSection('all')">Alle</button></div>
-          <div class="dcard-body" id="dash-eil"></div>
-        </div>
+      <div class="dmain">
         <div class="dcard">
           <div class="dcard-hd"><h2>Top-Meldungen</h2><span class="eyebrow">meistberichtet · 48 h</span><button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
           <div class="dcard-body top-list" id="dash-top"></div>
         </div>
-      </div>
-      <div class="dgrid3">
-        <div class="dcard">
-          <div class="dcard-hd"><h2>Themen-Radar</h2><span class="eyebrow">48 h</span></div>
-          <div class="bubbles" id="dash-trends"></div>
-          <div class="bubbles" style="padding-top:0" id="dash-kws"></div>
-        </div>
-        <div class="dcard">
-          <div class="dcard-hd"><h2>Aus den Institutionen</h2><button class="all" onclick="setSection('eu')">EU Direkt</button></div>
-          <div class="dcard-body" id="dash-eu"></div>
-        </div>
-        <div class="dcard">
-          <div class="dcard-hd"><h2>Bundestag &amp; Regierung</h2><button class="all" onclick="setSection('bt')">Alle</button></div>
-          <div class="dcard-body" id="dash-bt"></div>
-        </div>
-        <div class="dcard">
-          <div class="dcard-hd"><h2>Gesetzgebung</h2><span class="eyebrow">DIP · Bundestag</span><button class="all" onclick="S.kind='procedure';setView('types');renderTypes()">Alle</button></div>
-          <div class="dcard-body" id="dash-dip"></div>
-        </div>
-        <div class="dcard">
-          <div class="dcard-hd"><h2>Briefings</h2><span class="eyebrow">automatisch · 24 h</span><button class="all" onclick="setView('brief')">Alle</button></div>
-          <div class="dcard-body" id="dash-brief"></div>
-        </div>
-        <div class="dcard pro-card" data-feat="cal">
-          <div class="dcard-hd"><h2>Termine</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('cal',()=>setView('cal'))">Kalender</button></div>
-          <div class="dcard-body" id="dash-cal"></div>
-          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Tagesordnungen und Sitzungstermine als Terminliste.</p><button class="btn p sm" onclick="openLogin('cal')">Pro freischalten</button></div>
-        </div>
-        <div class="dcard pro-card" data-feat="docs">
-          <div class="dcard-hd"><h2>Neue Dokumente</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('docs',()=>setView('docs'))">Alle</button></div>
-          <div class="dcard-body" id="dash-docs"></div>
-          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Drucksachen, Protokolle und Amtsblatt mit PDF-Viewer.</p><button class="btn p sm" onclick="openLogin('docs')">Pro freischalten</button></div>
-        </div>
-        <div class="dcard pro-card" data-feat="media">
-          <div class="dcard-hd"><h2>Analyse &amp; Think Tanks</h2><span class="pro-tag">PRO</span><button class="all" onclick="proGate('media',()=>{setTopic('__eu-think');setSection('eu')})">Alle</button></div>
-          <div class="dcard-body" id="dash-analysis"></div>
-          <div class="lock-cta"><span class="pro-tag">PRO</span><p>Politico Europe, Euractiv, ECFR, SWP, Bruegel und weitere.</p><button class="btn p sm" onclick="openLogin('media')">Pro freischalten</button></div>
-        </div>
+        <aside class="dside">
+          <div class="dcard mini" data-fold="Termine">
+            <div class="dcard-hd"><h2>Termine</h2>
+              <div class="seg mini-seg"><button class="active" id="ts-today" onclick="setTermMode('today',this)">Heute</button><button id="ts-week" onclick="setTermMode('week',this)">Woche</button></div>
+              <button class="all" onclick="setView('cal')">↗</button></div>
+            <div class="dcard-body scrollbox" id="dash-cal"></div>
+          </div>
+          <div class="dcard mini" data-fold="Dokumente">
+            <div class="dcard-hd"><h2>Neue Dokumente</h2><button class="all" onclick="setView('docs')">↗</button></div>
+            <div class="dcard-body scrollbox" id="dash-docs"></div>
+          </div>
+          <div class="dcard mini" data-fold="Studien">
+            <div class="dcard-hd"><h2>Studien &amp; Analysen</h2><span class="eyebrow" title="Nur Denkfabriken: SWP, Bruegel, ECFR, CER, Bertelsmann – keine Medien">Think Tanks</span><button class="all" onclick="showThinkTanks()">↗</button></div>
+            <div class="dcard-body scrollbox" id="dash-analysis"></div>
+          </div>
+        </aside>
       </div>
       </div>
+    </section>
+
+    <!-- Wahlen -->    <!-- Wahlen -->
+    <section class="view plain" id="view-wahl">
+      <div class="plain-head"><div><h1>Wahlen</h1><div class="sub" style="margin:0">Termine, Umfragen und Ergebnisse – Daten von wahlrecht.de. Umfragen sind Momentaufnahmen, keine Prognosen.</div></div>
+        <select class="fsel" id="wahl-region" onchange="renderWahl()" style="min-width:220px"></select>
+        <div class="seg"><button class="active" id="wm-up" onclick="setWahlMode('upcoming')">Bevorstehend</button><button id="wm-all" onclick="setWahlMode('all')">Alle Termine</button></div>
+      </div>
+      <div id="wahl-body"></div>
     </section>
 
     <!-- Trends -->
@@ -801,6 +867,7 @@ body.can-back #back-btn{display:inline-flex}
         <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
         <span><strong id="acnt">0</strong> Artikel</span>
         <span id="hidden-info" style="color:var(--red);font-weight:600;display:none"></span>
+        <span id="eil-back" style="display:none"><span class="cluster">📊 Meistberichtet</span> <button class="link-btn" style="padding:2px 6px" onclick="S.prio.eil=false;g('fp-eil').checked=false;g('fb-set').textContent=SET_LABEL[S.section];applyFilters()">Filter aufheben</button></span>
         <div class="sr">
           <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
           <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
@@ -873,7 +940,7 @@ body.can-back #back-btn{display:inline-flex}
         <span class="chip" data-cf="week" onclick="calFilter('week',this)">Diese Woche</span>
         <span class="chip" data-cf="all" onclick="calFilter('all',this)">Alle</span>
       </div>
-      <div class="gap-note"><strong>Datenlücke:</strong> Termine werden aus Titel und Datum der Tagesordnungen abgeleitet. Für EP-Plenarkalender, Kommissions-Agenda und Akteure fehlen noch Feeds – siehe Konzeptdokument, Abschnitt 3.3.</div>
+      <div class="gap-note"><strong>Datenlücke:</strong> Termine werden aus Titel und Datum der Tagesordnungen abgeleitet. Für EP-Plenarkalender, Kommissions-Agenda und Akteure (wie bei Politico) fehlen noch Feeds – siehe Konzeptdokument, Abschnitt 3.3.</div>
       <div id="cal-list"></div>
       <div id="cal-bulk"><strong id="cal-sel-n">0</strong><span>ausgewählt</span>
         <button class="btn sm" onclick="dlICS(calSelected(),'auswahl.ics')">⬇ .ics</button>
@@ -1017,7 +1084,7 @@ const SPORT_RE=/\b(bundesliga|fu(ß|ss)ball|dfb|dfl|champions league|europa leag
 const TOPIC_KW={gesundheit:['gesundheit','kranken','pflege','arznei','pharma','klinik','ärzt'],digitales:['digital','ki ','künstliche intelligenz','daten','cyber','it-','software','plattform','online','netz'],wirtschaft:['wirtschaft','industrie','handel','unternehmen','mittelstand','konjunktur','export','zoll','tarif'],haushalt:['haushalt','budget','finanz','steuer','schulden','etat','mff'],verteidigung:['verteidigung','bundeswehr','nato','rüstung','sicherheitspolitik','militär'],energie_klima:['energie','klima','strom','gas ','wasserstoff','erneuerbar','netzausbau','wärme','co2','emission'],aussenpolitik:['außen','auswärtig','ukraine','russland','china','usa ','nahost','israel','diplomat'],migration:['migration','asyl','flüchtling','einwander','grenz'],soziales:['sozial','rente','arbeit','familie','wohnen','miete','bürgergeld','bildung'],rechtsstaat:['recht','justiz','gericht','grundgesetz','verfassung','demokratie','wahl'],umwelt:['umwelt','natur','landwirtschaft','agrar','wald','wasser'],mobilitaet:['verkehr','bahn','auto','mobilität','luftfahrt','schifffahrt','infrastruktur']};
 const TOPIC_KW_L={gesundheit:'🏥 Gesundheit',digitales:'💻 Digitales',wirtschaft:'📈 Wirtschaft',haushalt:'💶 Haushalt',verteidigung:'🛡 Verteidigung',energie_klima:'🌿 Energie/Klima',aussenpolitik:'🌐 Außenpolitik',migration:'👥 Migration',soziales:'🤝 Soziales',rechtsstaat:'⚖️ Rechtsstaat',umwelt:'🌱 Umwelt/Agrar',mobilitaet:'🚗 Mobilität',sonstig:'📋 Sonstiges'};
 function classify(text){const t=(text||'').toLowerCase();let best='sonstig',bs=0;for(const[k,kws]of Object.entries(TOPIC_KW)){const sc=kws.reduce((n,w)=>n+(t.includes(w)?1:0),0);if(sc>bs){bs=sc;best=k;}}return best;}
-/* v4: Inhaltstyp (Directories) */
+/* v4: Inhaltstyp (Politico Directories) */
 const KINDS={procedure:'Gesetzgebungsvorgänge',press:'Pressemitteilungen',speech:'Reden & Statements',transcript:'Transkripte / Protokolle',consultation:'Konsultationen & Anhörungen',agenda:'Agenden / Tagesordnungen',document:'Drucksachen & Amtsblatt',news:'Nachrichten'};
 function kindOf(x){if(x.kind)return x.kind;const t=((x.title||'')+' '+(x.type||''));const s=(x.source||'');
   if(/plenarprotokoll|protokoll|transcript|verbatim|wortprotokoll/i.test(t))return'transcript';
@@ -1084,7 +1151,7 @@ function doLogin(){setAuth(true);closeLogin();}
    ═══════════════════════════════════════════════════════════ */
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',wahlMode:'upcoming',termMode:'today',radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1180,8 +1247,9 @@ async function loadData(){
   const tag=(arr,set)=>(arr||[]).map(a=>{a._set=set;return a;});
   const [n,e,b] = await Promise.all([get('articles.json'),get('eu_articles.json'),get('bundestag_articles.json')]);
   const rest = Promise.all([get('documents.json'),get('people.json'),get('newsletters.json'),
-                            get('laender_articles.json'),get('us_articles.json'),get('dip.json')]);
-  const [d,pp,nl,la,us,dp] = await rest;
+                            get('laender_articles.json'),get('us_articles.json'),get('dip.json'),get('elections.json')]);
+  const [d,pp,nl,la,us,dp,ele] = await rest;
+  ELECT=ele||null;
   PEOPLE=pp?.people||[];COMMS=pp?.committees||[];NEWSL=nl?.items||[];PCHANGES=pp?.changes||null;
   ALL_LAENDER=tag(la?.articles,'laender');
   ALL_US=tag(us?.articles,'us');
@@ -1211,6 +1279,11 @@ function afterLoad(){
   const setCnt=(id,arr,file)=>{const el=g(id);if(!el)return;
     if(arr.length){el.textContent=arr.length;el.removeAttribute('title');el.style.color='';}
     else{el.textContent='–';el.title=file+' fehlt noch – erscheint nach dem nächsten Lauf von fetch_news.py';el.style.color='var(--amber)';}};
+  const nWahl=elUpcoming().length;
+  g('cnt-wahl').textContent=nWahl||'–';
+  if(!ELECT)g('cnt-wahl').title='elections.json fehlt – fetch_elections.py ausführen';
+  else{const nx=elNext();if(nx)g('cnt-wahl').title=`Nächste Wahl: ${nx.title} in ${nx.days} Tagen`;}
+  renderElectionBanner();
   setCnt('cnt-laender',ALL_LAENDER,'laender_articles.json');
   setCnt('cnt-us',ALL_US,'us_articles.json');
   g('cnt-nl').textContent=NEWSL.length;
@@ -1234,7 +1307,7 @@ function setSt(t,m){g('sdot').className='dot '+t;g('stxt').textContent=m;}
    Jetzt wird eine Ansicht erst gebaut, wenn sie geöffnet wird, und danach nur
    noch, wenn sich die Daten geändert haben.
    ───────────────────────────────────────────────────────────── */
-const RENDERERS={dash:()=>renderDash(),docs:()=>renderDocs(),cal:()=>renderCal(),
+const RENDERERS={wahl:()=>renderWahl(),dash:()=>renderDash(),docs:()=>renderDocs(),cal:()=>renderCal(),
                  brief:()=>renderBriefs(),dir:()=>renderDir(),types:()=>renderTypes(),trends:()=>renderTrends()};
 const DIRTY=new Set(Object.keys(RENDERERS));
 function markAllDirty(){Object.keys(RENDERERS).forEach(k=>DIRTY.add(k));}
@@ -1245,7 +1318,7 @@ function renderIfNeeded(v){
 }
 function applyView(v){
   S.view=v;renderIfNeeded(v);document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
-  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types','trends','news2'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  ['dash','news','eu','bt','laender','us','docs','cal','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
   if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
   document.body.classList.toggle('eu-mode',v==='feed'&&S.section==='eu');
   toggleNav(false);
@@ -1268,8 +1341,13 @@ function closeReader(){document.body.classList.remove('reader-open');}
 /* ═══ FILTER-BAUSTEINE ═══ */
 function chipsFor(sec){const tl=TL(sec);return[{t:'all',l:'Alle'},...Object.keys(tl).map(t=>({t,l:tl[t]}))];}
 function buildNavTopics(){const sec=S.section==='all'?'news':S.section;
-  g('nav-topics').innerHTML=chipsFor(sec).slice(1,11).map(c=>`<span class="chip${S.topics.has(c.t)?' sel':(S.topic===c.t?' active':'')}" onclick="(event.metaKey||event.ctrlKey)?toggleTopic('${c.t}'):setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('')
-  +`<span class="chip" id="nav-topic-all" onclick="openTopicPicker()">＋ alle…</span>`;}
+  const all=chipsFor(sec).slice(1);
+  g('nav-topics').className='nav-chip-wrap'+(S.topicsExpanded||all.length<=8?'':' capped');
+  g('nav-topics').innerHTML=all.map(c=>`<span class="chip${S.topics.has(c.t)?' sel':(S.topic===c.t?' active':'')}" onclick="(event.metaKey||event.ctrlKey)?toggleTopic('${c.t}'):setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('')
+  ;
+  g('nav-topics-more').innerHTML=
+    (all.length>8?`<span class="chip-more" onclick="S.topicsExpanded=!S.topicsExpanded;buildNavTopics()">${S.topicsExpanded?'▲ weniger anzeigen':'▼ alle '+all.length+' Themen'}</span>`:'')
+    +`<span class="chip-more" onclick="openTopicPicker()">＋ mehrere kombinieren</span>`;}
 /* v5: Institutionen als aufklappbarer Baum (Deutschland · Länder · EU · USA) */
 function instCounts(){const c={};rawPool('all').forEach(a=>{const k=instOf(a);if(k&&INST_FLAT[k])c[k]=(c[k]||0)+1;});return c;}
 function buildNavInsts(){
@@ -1291,7 +1369,10 @@ function buildChips(){const sec=S.section==='all'?'news':S.section;const w=g('to
   const picked=[...S.topics].map(t=>`<span class="chip sel" onclick="toggleTopic('${t}')">${chipLabel(t)}<span class="x">×</span></span>`).join('');
   w.innerHTML=picked+chipsFor(sec).slice(0,picked?6:11).filter(c=>!S.topics.has(c.t)).map(c=>`<span class="chip${S.topic===c.t&&!S.topics.size?' active':''}" data-t="${c.t}" onclick="event.metaKey||event.ctrlKey?toggleTopic('${c.t}'):setTopic('${c.t}')" title="Strg/⌘+Klick: mehrere Themen kombinieren">${c.l}</span>`).join('');}
 function buildSrc(){const srcs=[...new Set(pool(S.section).map(a=>a.source))].sort();const w=g('src-chips');
-  w.innerHTML=`<span class="chip${S.src==='all'?' active':''}" onclick="setSrc('all')">Alle</span>`+srcs.slice(0,14).map(s=>`<span class="chip${S.src===s?' active':''}" onclick="setSrc('${esc(s).replace(/'/g,"\\'")}')">${esc(s)}</span>`).join('')+(srcs.length>14?`<span class="chip" onclick="toggleFilterPanel()">+${srcs.length-14} weitere…</span>`:'');}
+  const vis=S.srcExpanded?srcs:srcs.slice(0,14);
+  w.innerHTML=`<span class="chip${S.src==='all'?' active':''}" onclick="setSrc('all')">Alle</span>`
+    +vis.map(s=>`<span class="chip${S.src===s?' active':''}" onclick="setSrc('${esc(s).replace(/'/g,"\\'")}')">${esc(s)}</span>`).join('')
+    +(srcs.length>14?`<span class="chip-more" onclick="S.srcExpanded=!S.srcExpanded;buildSrc()">${S.srcExpanded?'▲ weniger':'▼ alle '+srcs.length+' Quellen'}</span>`:'');}
 function buildFilterSelects(){
   const sec=S.section==='all'?'news':S.section;const tl=TL(sec);
   const insts=[...new Set(pool(S.section).map(a=>a.cat).filter(Boolean))];
@@ -1363,7 +1444,7 @@ function matches(a,f){
     else if(f.topic.startsWith('__')){if(a.cat!==f.topic.slice(2))return false;}
     else if(!(a.topics||[]).map(normTopic).includes(normTopic(f.topic)))return false;}
   if(f.src&&f.src!=='all'&&a.source!==f.src)return false;
-  if(f.prio?.eil&&!isBreaking(a))return false;
+  if(f.prio?.eil&&!(isBreaking(a)||((a.cluster||0)>=3&&ageH(a.date)<6)))return false;
   if(f.prio?.top&&!(a.boost||0))return false;
   for(const t of(f.tokens||[])){const hit=txt.includes(t.v);if(t.not?hit:!hit)return false;}
   if(f.q&&!txt.includes(f.q))return false;
@@ -1377,6 +1458,8 @@ function applyFilters(){
   else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   S.filt=list;S.shown=FEED_PAGE;g('acnt').textContent=list.length;searchHits();
+  const eb=g('eil-back');
+  if(eb)eb.style.display=S.prio.eil?'':'none';
   const hi=g('hidden-info');hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';
   g('fp-summary').textContent=list.length+' Treffer · '+SET_LABEL[S.section]+(S.topic!=='all'?' · '+S.topic:'')+(S.tokens.length?' · '+S.tokens.length+' Begriffe':'');
   renderFeed();
@@ -1425,14 +1508,18 @@ function openArt(i){
 /* v6.2: Ein Artikel muss sich IMMER öffnen lassen – egal welche Filter gerade aktiv sind.
    Vorher konnte der Klick (z. B. aus einem Briefing) stumm ins Leere laufen, wenn noch
    Themen ausgewählt waren und der Artikel dadurch aus der Liste fiel. */
-function openById(id,set){
+function openById(id,set,ctx){
   const a=rawPool('all').find(x=>x.id===id);
   if(!a){console.warn('Artikel nicht gefunden:',id);return;}
   if(isLocked(a)){openLogin('media');return;}
   if(!isPro()&&!inWindow(a)){openLogin('archive');return;}
   S.section=set||a._set;g('fb-set').textContent=SET_LABEL[S.section]||S.section;
-  S.topic='all';S.topics.clear();S.src='all';S.inst='';S.prio={eil:false,top:false};
-  if(g('fp-eil'))g('fp-eil').checked=false;if(g('fp-top'))g('fp-top').checked=false;
+  S.topic='all';S.topics.clear();S.src='all';S.inst='';
+  /* Aus der Eilmeldungs-Kachel heraus bleibt der Eil-Filter aktiv: die Liste links
+     zeigt dann alle Eilmeldungen, man kann sie der Reihe nach durchgehen. */
+  S.prio={eil:ctx==='eil',top:false};
+  if(ctx==='eil'){S.section='all';g('fb-set').textContent='Meistberichtet';}
+  if(g('fp-eil'))g('fp-eil').checked=(ctx==='eil');if(g('fp-top'))g('fp-top').checked=false;
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();
   setView('feed');applyFilters();
   let i=S.filt.findIndex(x=>x.id===id);
@@ -1452,11 +1539,12 @@ function updateMarkUI(){const n=marked.size;const el=g('mark-count');el.textCont
 
 /* ═══ DASHBOARD ═══ */
 function dl(a,opts={}){
+  const ctx=opts.ctx?`,'${opts.ctx}'`:'';
   const lock=isLocked(a);const eb=[];
   if(opts.set!==false)eb.push(`<span class="tag" style="color:${a._set==='eu'?'var(--eu)':a._set==='bt'?'#1d4ed8':'var(--text2)'}">${esc(a._set==='news'?a.source:INST_LABELS[a.cat]||a.source)}</span>`);
   if(lock)eb.push('<span class="pro-tag">PRO</span>');if(isNew(a))eb.push('<span class="newpill">Neu</span>');
   eb.push(tagsHTML(a,2));
-  return`<div class="dl${lock?' locked':''}" onclick="openById('${a.id}','${a._set}')">
+  return`<div class="dl${lock?' locked':''}" onclick="openById('${a.id}','${a._set}'${ctx})">
     <div class="dl-main"><div class="dl-eb">${eb.join('')}</div><div class="dl-t">${esc(a.title)}</div>${opts.desc!==false&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}<div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a)+' Lesezeit':''}${opts.src?' · '+esc(a.source):''}</div></div>
     ${opts.tile?tile(a,''):''}</div>`;
 }
@@ -1487,37 +1575,79 @@ function win48(){
   _winKey=key;_winCache=dedupe(pool('all').filter(a=>ageH(a.date)<=48).sort((a,b)=>(b.date||'').localeCompare(a.date||'')));
   return _winCache;
 }
+/* Alle Eilmeldungen als Liste – auch über den Zurück-Button erreichbar */
+function showAllEil(){
+  S.section='all';S.topic='all';S.topics.clear();S.src='all';S.inst='';
+  S.prio={eil:true,top:false};if(g('fp-eil'))g('fp-eil').checked=true;
+  g('fb-set').textContent='Meistberichtet';
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();
+}
+/* Schnellzugriff: die Werkzeuge als Kacheln mit Zahl und Kontext.
+   Damit braucht die Seitenleiste die vielen Einträge nicht mehr im Blick zu halten. */
+/* Oben im Dashboard: Themen-Radar der letzten 48 Stunden als klickbare Leiste,
+   dazu die nächste Wahl, wenn eine ansteht. Alles Weitere steht links. */
+function renderQuickbar(){
+  const el=g('quickbar');if(!el)return;
+  const win=win48();
+  const cnt={};win.forEach(a=>[...new Set((a.topics||[]).map(normTopic))].forEach(t=>{if(t)cnt[t]=(cnt[t]||0)+1;}));
+  const alle=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,14);
+  const eng=window.innerWidth<900&&!S.radarOpen;
+  const top=eng?alle.slice(0,6):alle;
+  const mx=top[0]?.[1]||1;
+  const nx=(typeof elNext==='function')?elNext():null;
+  el.innerHTML=
+    `<span class="qb-lbl">Themen-Radar <span style="font-weight:500;color:var(--muted)">48 h</span></span>`
+    +top.map(([t,n])=>{const c=topicColor(t),on=S.topics.has(t);
+      return`<span class="qb-chip${on?' sel':''}" style="${on?`background:${c};border-color:${c};color:#fff`:`border-color:${c}44;color:${c}`}"
+        onclick="toggleTopic('${t}');renderQuickbar();if(S.topics.size){S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters();}"
+        title="${n} Meldungen">${chipLabel(t)}<b style="opacity:.65;font-size:${(9+2*n/mx).toFixed(1)}px">${n}</b></span>`;}).join('')
+    +(alle.length>top.length?`<span class="qb-chip" style="border-style:dashed" onclick="S.radarOpen=true;renderQuickbar()">+${alle.length-top.length} weitere</span>`:'')
+    +(S.radarOpen&&window.innerWidth<900?`<span class="qb-chip" style="border-style:dashed" onclick="S.radarOpen=false;renderQuickbar()">▲ weniger</span>`:'')
+    +(S.topics.size?`<span class="qb-chip" onclick="S.topics.clear();buildChips();applyFilters();renderQuickbar()">✕ Auswahl</span>`:'')
+    +(nx?`<span class="qb-vote" onclick="setView('wahl')"><b>${nx.days===0?'heute':'in '+nx.days+' Tagen'}</b> ${esc(nx.region)} wählt</span>`:'');
+}
+function showThinkTanks(){
+  S.section='eu';S.topic='all';S.topics.clear();S.src='all';S.inst='';
+  g('fb-set').textContent='Think Tanks';
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();setTopic('__eu-think');setView('feed');
+}
+function setTermMode(m,btn){S.termMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderDashSide();}
 function renderDash(){
   const win=win48();
-  const empty=t=>`<div style="padding:22px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
-  const seen=new Set();
-  const eil=dedupe(win.filter(isBreaking),seen).slice(0,6);
-  g('dash-eil').innerHTML=eil.length?eil.map(a=>dl(a)).join(''):empty('Keine Eilmeldungen in den letzten 48 h.<br><span style="font-size:11px">Abgeleitet aus Relevanz ≥ 3 und Alter &lt; 3 h – bis das Backend ein <code>priority</code>-Feld liefert.</span>');
-  const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>((b.boost||0)-(a.boost||0))||((b.date||'').localeCompare(a.date||''))),seen).slice(0,6);
-  const top2=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,8);
-  g('dash-top').innerHTML=top2.length?top2.map((a,i)=>`<div class="top-row${i===0?' first':''}" onclick="openById('${a.id}','${a._set}')">
+  const empty=t=>`<div style="padding:20px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
+  /* Top-Meldungen: was viele Quellen gleichzeitig haben, dann Relevanz. */
+  const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,12);
+  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" onclick="openById('${a.id}','${a._set}')">
       <span class="rank">${i+1}</span>
-      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}${tagsHTML(a,2)}</div>
+      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
-      <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div></div>`).join(''):empty('Noch keine Meldungen.');
-  const official=ALL_EU.filter(a=>!PRO_CATS.has(a.cat)).slice(0,5);
-  g('dash-eu').innerHTML=official.length?official.map(a=>dl(a,{desc:false})).join(''):empty('eu_articles.json leer.');
-  g('dash-bt').innerHTML=ALL_BT.length?ALL_BT.slice(0,5).map(a=>dl(a,{desc:false})).join(''):empty('bundestag_articles.json leer.');
-  const tr=META.news?.trends,tc=NEWS_TC,tl=NEWS_TL;
-  let tcounts=tr?.topic_counts;if(!tcounts){tcounts={};win.filter(a=>a._set==='news').forEach(a=>(a.topics||[]).forEach(t=>tcounts[t]=(tcounts[t]||0)+1));}
-  const ts=Object.entries(tcounts).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=ts[0]?.[1]||1;
-  g('dash-trends').innerHTML=ts.map(([t,c])=>`<span class="bubble" style="background:${tc[t]||'#6b7280'}18;border-color:${tc[t]||'#6b7280'}44;color:${tc[t]||'#6b7280'};font-size:${Math.round(10.5+2.5*c/mx)}px" onclick="S.section='news';setSection('news');setTopic('${t}')">${tl[t]||t}<span class="bc">${c}</span></span>`).join('')||empty('Keine Trenddaten.');
-  const kw=tr?.top_keywords?Object.entries(tr.top_keywords).slice(0,12):[];
-  g('dash-kws').innerHTML=kw.map(([w,c],i)=>`<span class="kw-bub" onclick="S.tokens.push({v:'${esc(w)}',not:false});renderTokens();setSection('news')">${i<4?'<strong>'+esc(w)+'</strong>':esc(w)} <span style="font-size:9px;color:var(--muted)">${c}</span></span>`).join('');
-  g('dash-cal').innerHTML=calItems().slice(0,4).map(c=>`<div class="cal-row"><div class="eyebrow">${c.dateLabel}</div><div class="t">${esc(c.title)}</div><div class="m"><span class="eyebrow" style="letter-spacing:.04em">${esc(c.type)}</span><a href="${esc(c.link)}" target="_blank" rel="noopener">Details ↗</a></div></div>`).join('')||empty('Keine Tagesordnungen in documents.json.');
-  g('dash-docs').innerHTML=ALL_DOCS.slice(0,4).map(d=>`<div class="cal-row" style="cursor:pointer" onclick="openDoc('${d.id}')"><div class="dl-eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="eyebrow">${rel(d.date)}</span></div><div class="t">${esc(d.title)}</div></div>`).join('')||empty('Keine Dokumente.');
-  const an=pool('all').filter(a=>PRO_CATS.has(a.cat)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-  g('dash-analysis').innerHTML=an.length?an.map(a=>dl(a,{desc:false,src:true})).join(''):empty('Keine Analyse-Quellen (cat eu-media / eu-think) geladen.');
-  g('dash-brief').innerHTML=BRIEFS.slice(0,4).map(b=>`<div class="cal-row" style="cursor:pointer" onclick="openBrief('${b.id}')"><div class="dl-eb"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="eyebrow">${b.items.length} Meldungen · ~${b.readMin} Min</span></div><div class="t">${esc(b.title)}</div></div>`).join('')||empty('Noch zu wenig Meldungen für ein Briefing (≥ 3 je Thema in 24 h).');
-  const dips=(DIP.procedures||[]).slice().sort((a,b)=>(b.updated||'').localeCompare(a.updated||'')).slice(0,5);
-  g('dash-dip').innerHTML=dips.map(v=>`<div class="cal-row" style="cursor:pointer" onclick="window.open('${esc(v.link)}','_blank')"><div class="dl-eb"><span class="tag">${esc(v.type||'Vorgang')}</span>${v.topic?`<span class="tag c" style="--tc:#6b7280">${TOPIC_KW_L[v.topic]||''}</span>`:''}</div><div class="t">${esc(v.title)}</div><div class="dl-m">${esc(v.status||'')}${v.updated?' · '+rel(v.updated):''}</div></div>`).join('')
-    ||empty('<strong>dip.json fehlt.</strong> DIP-Key in <code>fetch_directory.py</code> eintragen – dann erscheinen hier Gesetzgebungsvorgänge mit Beratungsstand.');
-  renderDashThemes();initFolds();
+      <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div></div>`).join(''):empty('Noch keine Meldungen geladen.');
+  renderDashSide();
+  renderQuickbar();renderDashThemes();initFolds();
+}
+/* Die drei kleinen Kacheln rechts */
+function renderDashSide(){
+  const empty=t=>`<div style="padding:18px 0;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
+  // Termine: heute oder diese Woche
+  const heute=new Date();heute.setHours(0,0,0,0);
+  const bis=new Date(heute);bis.setDate(bis.getDate()+(S.termMode==='week'?7:1));
+  const items=(typeof calItems==='function'?calItems():[]).filter(c=>c.date>=heute&&c.date<bis);
+  g('dash-cal').innerHTML=items.length?items.slice(0,20).map(c=>`<div class="mini-row" onclick="window.open('${esc(c.link)}','_blank')">
+      <div class="mt">${esc(c.title)}</div>
+      <div class="mm"><span class="when">${S.termMode==='week'?c.dateLabel.split(',')[0]+' ':''}${c.timeLabel}</span><span>${esc(c.src)}</span></div></div>`).join('')
+    :empty(S.termMode==='week'?'Diese Woche keine Termine.':'Heute keine Termine.<br>Über „Woche" die nächsten sieben Tage ansehen.');
+  // Neue Dokumente
+  const docs=ALL_DOCS.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
+  g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" onclick="openDoc('${d.id}')">
+      <div class="mt">${esc(d.title)}</div>
+      <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div>`).join('')
+    :empty('Keine Dokumente geladen.');
+  // Studien: ausschließlich Denkfabriken, keine Medien
+  const tt=pool('all').filter(a=>a.cat==='eu-think').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
+  g('dash-analysis').innerHTML=tt.length?tt.map(a=>`<div class="mini-row" onclick="openById('${a.id}','${a._set}')">
+      <div class="mt">${esc(a.title)}</div>
+      <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')
+    :empty('Noch keine Studien im Zeitraum.<br>Quellen: SWP, Bruegel, ECFR, CER, Bertelsmann.');
 }
 function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'block':'none';if(m==='themes')renderDashThemes();}
 /* Auswahl der im Themen-Dashboard gezeigten Spalten (leer = alle) */
@@ -1685,10 +1815,97 @@ function openBrief(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;setView('b
 async function briefAI(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;if(!apiKey){pendingSum=false;g('km').classList.add('open');g('api-key-input').focus();g('api-key-input').onkeydown=e=>{if(e.key==='Enter'){saveKey();briefAI(id);}};return;}
   const box=g('brief-ai');box.innerHTML='<div class="ai-thinking"><span>Schreibe Briefing…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
   const txt=b.items.filter(a=>!isLocked(a)).map((a,i)=>(i+1)+'. ['+a.source+'] '+a.title+' – '+(a.desc||'').slice(0,300)).join('\n');
-  try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:700,messages:[{role:'user',content:'Schreibe ein knappes Morgenbriefing (Stil: Morning Newsletter, deutsch) zum Thema '+b.label+'. Struktur: 1 Satz Lage, dann 3-5 Punkte mit je 1-2 Sätzen und Quelle in Klammern, zum Schluss "Was heute zählt" in 1 Satz. Nur aus diesen Meldungen:\n\n'+txt}]})});
+  try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:700,messages:[{role:'user',content:'Schreibe ein knappes Morgenbriefing (Stil: Politico Morning Newsletter, deutsch) zum Thema '+b.label+'. Struktur: 1 Satz Lage, dann 3-5 Punkte mit je 1-2 Sätzen und Quelle in Klammern, zum Schluss "Was heute zählt" in 1 Satz. Nur aus diesen Meldungen:\n\n'+txt}]})});
     const d=await resp.json();if(d.error){box.innerHTML='<div style="color:var(--red)">⚠️ '+esc(d.error.message)+'</div>';return;}
     box.innerHTML='<div id="ai-summary-box" style="display:block;margin:0 0 8px"><div id="ai-summary-header"><span>🤖 KI-Briefing</span></div><div id="ai-summary-body" style="white-space:pre-line">'+esc(d.content?.[0]?.text||'')+'</div></div>';
   }catch(e){box.innerHTML='<div style="color:var(--red)">⚠️ '+esc(e.message)+'</div>';}}
+
+/* ═══ WAHLEN (v6.4) ═══════════════════════════════════════════
+   Daten aus elections.json (fetch_elections.py). Fehlt die Datei, erklärt die
+   Ansicht, was zu tun ist – nichts bricht.                                     */
+let ELECT=null;
+const PARTY_COL={'CDU/CSU':'#111111','CDU':'#111111','CSU':'#0a5aa5','SPD':'#e3000f','GRÜNE':'#1fa12e',
+ 'FDP':'#f0d000','LINKE':'#be3075','AfD':'#009ee0','BSW':'#7b2a8b','FW':'#f28c00','SSW':'#0d6b9a',
+ 'PIRATEN':'#ff820a','Sonstige':'#9ca3af'};
+const pcol=p=>PARTY_COL[p]||'#6b7280';
+function elUpcoming(){return(ELECT?.elections||[]).filter(e=>e.status!=='past');}
+function elNext(){return elUpcoming()[0]||null;}
+function elFresh(){ /* Wahl heute oder in den letzten 48 Stunden */
+  return(ELECT?.elections||[]).filter(e=>{const d=(Date.now()-new Date(e.date+'T18:00:00').getTime())/36e5;return d>=-6&&d<=48;});}
+function barsHTML(parties,prev){
+  const items=Object.entries(parties||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(5,...items.map(([,v])=>v));
+  return`<div class="bars">${items.map(([p,v])=>{
+    const d=prev&&prev[p]!=null?+(v-prev[p]).toFixed(1):null;
+    return`<div class="bar-row"><span class="pn" style="color:${pcol(p)}">${esc(p)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/mx*100).toFixed(1)}%;background:${pcol(p)}"></div></div>
+      <span class="pv">${v.toFixed(1).replace('.',',')}${d?`<span class="delta ${d>0?'up':'down'}">${d>0?'+':''}${d.toFixed(1).replace('.',',')}</span>`:''}</span></div>`;}).join('')}</div>`;
+}
+function renderElectionBanner(){
+  const el=g('election-banner');if(!el)return;
+  const fresh=elFresh(),next=elNext();
+  const dismissed=store.get('ps_eb_dismissed')||'';
+  if(fresh.length){
+    const e=fresh[0],r=(ELECT?.results||{})[e.id];
+    if(dismissed===e.id){el.className='';el.innerHTML='';return;}
+    const label=r?({ergebnis:'Ergebnis',hochrechnung:'Hochrechnung',prognose:'Prognose'}[r.kind]||'Ergebnis'):'Wahltag';
+    el.className='on';
+    el.innerHTML=`<div class="eb-hd"><span class="live">${label}</span><h3>${esc(e.title)}</h3>
+      <span style="font-size:11px;opacity:.85">${fd(e.date).slice(0,8)}</span>
+      <button class="x" onclick="store.set('ps_eb_dismissed','${e.id}');renderElectionBanner()">✕</button></div>
+      <div class="eb-body">${r?barsHTML(r.parties,(ELECT.polls||{})[e.region_id]?.parties)
+        :'<div style="font-size:12.5px;color:var(--text2)">Heute wird gewählt. Sobald Prognose oder Hochrechnung vorliegen, erscheinen sie hier – der nächste Lauf holt sie.</div>'}
+        <div class="poll-note">${r?`Quelle: wahlrecht.de · Veränderung gegenüber der letzten Umfrage · <a href="${esc(r.url)}" target="_blank" rel="noopener">Details ↗</a>`:''}
+        <button class="btn sm" style="margin-left:6px" onclick="setView('wahl')">Zur Wahlen-Seite</button></div></div>`;
+    return;
+  }
+  if(next&&next.days<=14){
+    if(dismissed==='next:'+next.id){el.className='';el.innerHTML='';return;}
+    const poll=(ELECT.polls||{})[next.region_id];
+    el.className='on';el.style.borderColor='var(--blue)';
+    el.innerHTML=`<div class="eb-hd" style="background:linear-gradient(90deg,#2563eb,#1d4ed8)"><span class="live">In ${next.days} Tagen</span><h3>${esc(next.title)}</h3>
+      <span style="font-size:11px;opacity:.85">${fd(next.date).slice(0,8)}</span>
+      <button class="x" onclick="store.set('ps_eb_dismissed','next:${next.id}');renderElectionBanner()">✕</button></div>
+      <div class="eb-body">${poll?barsHTML(poll.parties):'<div style="font-size:12.5px;color:var(--text2)">Noch keine Umfragewerte für dieses Land geladen.</div>'}
+      <div class="poll-note">${poll?`Letzte Umfrage ${fd(poll.date).slice(0,8)} · ${esc(poll.institute||'')} · Quelle wahlrecht.de`:''}
+      <button class="btn sm" style="margin-left:6px" onclick="setView('wahl')">Alle Wahlen</button></div></div>`;
+    return;
+  }
+  el.className='';el.innerHTML='';
+}
+function setWahlMode(m){S.wahlMode=m;g('wm-up').classList.toggle('active',m==='upcoming');g('wm-all').classList.toggle('active',m==='all');renderWahl();}
+function renderWahl(){
+  const body=g('wahl-body');
+  if(!ELECT){body.innerHTML='<div class="gap-note"><strong>elections.json fehlt.</strong> <code>fetch_elections.py</code> in den Workflow aufnehmen – danach stehen hier Wahltermine, Umfragewerte je Land und am Wahlabend Prognose und Hochrechnung.</div>';return;}
+  const sel=g('wahl-region');
+  if(!sel.options.length){
+    const regions=[...new Map((ELECT.elections||[]).map(e=>[e.region_id,e.region])).entries()];
+    sel.innerHTML='<option value="">Alle Ebenen · Bund, Länder, EU</option><option value="bund">Bund</option>'
+      +regions.filter(([id])=>id!=='bund').map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join('');
+  }
+  const reg=sel.value;
+  let list=(ELECT.elections||[]).filter(e=>!reg||e.region_id===reg);
+  if(S.wahlMode!=='all')list=list.filter(e=>e.status!=='past');
+  const up=list.filter(e=>e.status!=='past').slice(0,4);
+  const poll=(ELECT.polls||{})[reg||'bund'];
+  body.innerHTML=
+    (up.length?`<div class="cd">${up.map((e,i)=>`<div class="cd-box${i===0?' next':''}" onclick="g('wahl-region').value='${e.region_id}';renderWahl()">
+        <div class="cd-days">${e.days===0?'heute':e.days}</div><div class="cd-lbl">${e.days===0?'':'Tage bis '}${esc(e.title)}</div>
+        <div class="cd-date">${fd(e.date).slice(0,8)}</div></div>`).join('')}</div>`:'')
+    +(poll?`<div class="dcard" style="margin-bottom:12px"><div class="dcard-hd"><h2>Sonntagsfrage ${esc(reg?(LAND_L[reg]||reg):'Bund')}</h2>
+        <span class="eyebrow">${esc(poll.institute||'')} · ${fd(poll.date).slice(0,8)}</span>
+        <a class="all" href="${esc(poll.url)}" target="_blank" rel="noopener">Quelle ↗</a></div>
+      <div class="dcard-body">${barsHTML(poll.parties)}
+        <div class="poll-note">Umfragen bilden Stimmungen ab und sind keine Vorhersagen. Unterschiedliche Institute kommen zu unterschiedlichen Werten; die Fehlerspanne liegt üblicherweise bei zwei bis drei Prozentpunkten.</div></div></div>`
+      :`<div class="gap-note" style="margin-bottom:12px">Für diese Auswahl liegen keine Umfragewerte vor. Landtagsumfragen werden für die nächsten anstehenden Wahlen geholt.</div>`)
+    +`<div class="eyebrow" style="margin:4px 0 8px">${S.wahlMode==='all'?'Alle Termine':'Bevorstehende Wahlen'} (${list.length})</div>
+      <div class="el-list">${list.map(e=>{const r=(ELECT.results||{})[e.id];
+        return`<div class="el-card${e.status==='past'?' past':''}"><div class="t">${esc(e.title)}</div>
+        <div class="m"><span>${fd(e.date).slice(0,8)}</span><span>${e.status==='past'?'vorbei':e.days===0?'heute':'in '+e.days+' Tagen'}</span>${r?'<span style="color:var(--red);font-weight:700">Ergebnis vorhanden</span>':''}</div>
+        ${r?barsHTML(r.parties):''}
+        <a class="btn sm" href="${esc(e.url)}" target="_blank" rel="noopener">Details ↗</a></div>`;}).join('')
+        ||'<div class="gap-note">Keine Termine in dieser Auswahl.</div>'}</div>`;
+}
 
 /* ═══ TRENDS (v6): Blasen + Bewegung + verlinkte Artikel ═══ */
 function setTrendWin(h,b){S.trendWin=h;b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderTrends();}
@@ -1871,7 +2088,7 @@ function demoPeople(){document.body.classList.add('demo-people');
   PEOPLE=[mk('bt-1','bt','Demo Musterfrau','SPD','WK 75 Berlin-Mitte',[C('bt-c1'),C('bt-c2')],[{date:'2026-08-20',title:'Krankenhausreform – zweite Lesung',protocol:'21/44',link:'#'}]),mk('bt-2','bt','Demo Beispielmann','CDU/CSU','WK 12 Köln I',[C('bt-c3')],[]),mk('bt-3','bt','Demo Grünlich','Bündnis 90/Die Grünen','Landesliste Bayern',[C('bt-c1')],[{date:'2026-08-19',title:'Pflegepersonal – aktuelle Stunde',protocol:'21/43',link:'#'}]),mk('bt-4','bt','Demo Freidenker','FDP','Landesliste NRW',[C('bt-c2'),C('bt-c3')],[]),mk('ep-1','ep','Demo Europa','EPP','Deutschland',[C('ep-c1')],[]),mk('ep-2','ep','Demo Sociale','S&D','France',[C('ep-c2'),C('ep-c1')],[])];
   PEOPLE.forEach(p=>p.committees.forEach(c=>COMMS.find(x=>x.id===c.id).members.push({id:p.id,role:c.role})));}
 
-/* ═══ INHALTSTYPEN (Directories) ═══ */
+/* ═══ INHALTSTYPEN (Politico Directories) ═══ */
 function dipItems(){
   return[...(DIP.procedures||[]).map(v=>({...v,_dip:true,_kind:'procedure',source:'DIP · '+(v.type||'Vorgang'),date:v.updated||v.date,desc:[v.status,v.initiative].filter(Boolean).join(' · ')})),
          ...(DIP.documents||[]).map(d=>({...d,_dip:true,_kind:'document',source:'DIP · '+(d.type||'Drucksache'),desc:[d.number,d.authors].filter(Boolean).join(' · ')})),
@@ -2028,11 +2245,14 @@ function initSidebarSections(){
     let n=sec.nextSibling;
     while(n&&!(n.classList&&n.classList.contains('nav-sec'))){const next=n.nextSibling;body.appendChild(n);n=next;}
     sec.after(body);
-    if(closed.has(key))sec.classList.add('closed');
+    /* Werkzeuge beim ersten Besuch zu – die Kacheln oben im Dashboard führen dorthin */
+    const defClosed=/werkzeuge/i.test(sec.textContent||'');
+    if(closed.has(key)||(defClosed&&!store.get('ps_secseen')))sec.classList.add('closed');
     sec.onclick=()=>{sec.classList.toggle('closed');
       const c=new Set(store.get('ps_secclosed')||[]);sec.classList.contains('closed')?c.add(key):c.delete(key);
       store.set('ps_secclosed',[...c]);};
   });
+  store.set('ps_secseen',1);
 }
 SAVED=store.get('ps_saved')||[];
 initSidebarSections();
@@ -2044,7 +2264,7 @@ if(!PAYWALL_ACTIVE){
   g('plan-foot').textContent='Alle Funktionen frei · Pro-Kennzeichnung zeigt spätere Premium-Features';
 }
 pushNav();
-window.addEventListener('resize',()=>{if(S.view==='trends')debounce(renderTrends,200);});
+window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},250);});
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
 setAuth(store.get('ps_plan')==='pro');
