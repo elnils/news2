@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
 <title>Presseschau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -173,7 +177,7 @@ body.pro .pro-tag:not(.keep){display:none}
 .view.active{display:flex}
 
 /* ── Dashboard (Politico) ─────────────────────────────────── */
-#view-dash{overflow-y:auto;padding:14px 16px 24px}
+#view-dash{overflow-y:auto;overflow-x:hidden;padding:14px 16px 24px}
 .dash-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .dash-head h1{font-size:22px;font-weight:800;letter-spacing:-.03em}
 .dash-head .upd{font-size:11px;color:var(--muted)}
@@ -301,6 +305,41 @@ body.inline .archive-gate,body.inline #more-btn{grid-column:1/-1}
 .art-inline .acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
 .art-item.inl{border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--blue)}
 .art-item .thumb{float:right;width:46px;height:46px;border-radius:6px;object-fit:cover;margin:0 0 4px 8px}
+/* ── Zeitungsansicht ────────────────────────────────────────
+   Angelehnt an FT und Politico Pro: ein Aufmacher mit Bild, darunter
+   Spalten mit kleineren Bildern. Bilder sichtbar, aber nicht dominant. */
+body.paper #list-scroll{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:0;
+  align-content:start;background:var(--surface);border-radius:var(--r);padding:14px 16px}
+body.paper .fitem{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:13px 15px 14px;margin:0}
+body.paper .fitem:nth-child(4n){border-right:none}
+body.paper .fitem.open{grid-column:1/-1;border-right:none}
+body.paper .art-item{background:none;border:none!important;border-radius:0;padding:0;box-shadow:none!important}
+body.paper .art-item:hover .ai-title{color:var(--blue)}
+body.paper .ai-top{gap:6px;margin-bottom:5px;padding-right:0}
+body.paper .ai-top .sbadge{background:none!important;padding:0;font-size:10px;letter-spacing:.06em}
+body.paper .ai-date{font-size:10px}
+body.paper .ai-title{font-size:15px;font-weight:700;line-height:1.26;letter-spacing:-.015em;margin-bottom:5px}
+body.paper .ai-desc{font-size:12.5px;line-height:1.5;-webkit-line-clamp:3;color:var(--text2)}
+body.paper .ai-tags{margin-top:6px}
+body.paper .art-item .thumb{float:none;width:100%;height:118px;border-radius:6px;margin:0 0 9px}
+body.paper .ai-check{top:2px;right:2px}
+/* Aufmacher: erste Karte über zwei Spalten, größeres Bild */
+/* Meldungen ohne Bild: reine Textkachel mit etwas kräftigerer Zeile,
+   damit die Seite nicht von leeren Flächen durchlöchert wird. */
+body.paper .fitem.txt .ai-title{font-size:16px}
+body.paper .fitem.txt .ai-desc{-webkit-line-clamp:4}
+body.paper .fitem.txt{background:linear-gradient(180deg,var(--surface2),transparent 60%)}
+body.paper .fitem.lead{grid-column:span 2;border-right:1px solid var(--border)}
+body.paper .fitem.lead .art-item .thumb{height:210px}
+body.paper .fitem.lead .ai-title{font-size:22px;line-height:1.18;letter-spacing:-.03em}
+body.paper .fitem.lead .ai-desc{font-size:13.5px;-webkit-line-clamp:4}
+@media (max-width:1200px){body.paper .fitem:nth-child(4n){border-right:1px solid var(--border)}
+  body.paper .fitem:nth-child(3n){border-right:none}}
+@media (max-width:900px){body.paper #list-scroll{grid-template-columns:1fr;padding:10px 12px}
+  body.paper .fitem{border-right:none!important;padding:12px 0}
+  body.paper .fitem.lead{grid-column:1}
+  body.paper .fitem.lead .art-item .thumb{height:170px}
+  body.paper .fitem.lead .ai-title{font-size:19px}}
 .list-tools{display:flex;gap:5px;align-items:center;padding:4px 7px 0}
 .list-tools button{background:none;border:none;font-size:10.5px;font-weight:600;color:var(--text2);cursor:pointer;padding:2px 6px;border-radius:5px}
 .list-tools button:hover{background:var(--surface)}
@@ -349,7 +388,7 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 #reader-back{display:none}
 
 /* ── Dokumente / Kalender ─────────────────────────────────── */
-.plain{overflow-y:auto;padding:14px 16px 24px}
+.plain{overflow-y:auto;overflow-x:hidden;padding:14px 16px 24px}
 .plain h1{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:2px}
 .plain .sub{font-size:12px;color:var(--muted);margin-bottom:12px}
 .docbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
@@ -420,6 +459,7 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .person .pc span{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text2)}
 .person .pe{font-size:11px;margin-top:6px;color:var(--blue)}
 body:not(.pro) .person .pe{filter:blur(4px);user-select:none}
+.comm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;padding:10px 12px}
 .comm{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .12s}
 .comm:hover{box-shadow:var(--shadow-md)}
 .comm .cn{font-size:13.5px;font-weight:700;line-height:1.3}
@@ -451,10 +491,137 @@ body.can-back #back-btn{display:inline-flex}
 .chip.sel{background:var(--blue);border-color:var(--blue);color:#fff}
 .chip .x{margin-left:4px;opacity:.75}
 #topic-all{border-style:dashed}
+#topic-panel{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px 12px;flex:0 0 auto}
+body.topics-open #topic-panel{display:block}
+body.topics-open #tp-arw{display:inline-block;transform:rotate(180deg)}
+.tp-head{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.tp-head input{flex:1;min-width:140px;padding:6px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;outline:none}
+#tp-grid2{max-height:30vh}
+@media (max-width:900px){#tp-grid2{max-height:44vh}}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:5px;max-height:52vh;overflow-y:auto;padding:2px}
 .tgrid .chip{width:100%;text-align:left;padding:5px 10px;font-size:11.5px}
 .tsec{grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 2px 2px}
 .mode-row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text2);margin-top:8px}
+/* ═══ ARBEITSBEREICHE ═══════════════════════════════════════ */
+#ws-switch{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.ws{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:600;
+  color:var(--text2);cursor:pointer;transition:all .12s;user-select:none}
+.ws svg{width:17px;height:17px;flex-shrink:0}
+.ws:hover{background:var(--bg);color:var(--text)}
+.ws.active{background:var(--text);color:#fff}
+.ws.active svg{color:#fff}
+.ws b{margin-left:auto;font-size:10px;font-weight:800;background:var(--red);color:#fff;padding:1px 6px;border-radius:10px}
+.ws b:empty{display:none}
+.ws.active b{background:rgba(255,255,255,.25)}
+.ws-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 10px 5px}
+.wsnav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12.5px;color:var(--text2);cursor:pointer}
+.wsnav:hover{background:var(--bg);color:var(--text)}
+.wsnav.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.wsnav .ic{width:16px;text-align:center;font-size:12px;opacity:.8}
+.wsnav .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
+body.rail #ws-switch .ws span,body.rail #ws-nav,body.rail #ws-context{display:none}
+body.rail .ws{justify-content:center;padding:10px 0}
+/* Kontextleiste einklappbar */
+.ctx-grp .ws-title{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.ctx-grp .ws-title:hover{color:var(--text2)}
+.ctx-grp .sarw{font-size:8px;transition:transform .15s;opacity:.7}
+.ctx-grp.closed .sarw{transform:rotate(-90deg)}
+.ctx-grp.closed .ctx-body{display:none}
+/* Inhaltsarten */
+.kind-bar{display:flex;gap:5px;flex-wrap:wrap;padding:9px 14px 2px;border-bottom:1px solid var(--border)}
+.kindbadge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;
+  border-radius:10px;border:1px solid transparent;white-space:nowrap}
+.kind-split{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 12px}
+.story-help{font-size:11.5px;line-height:1.55;color:var(--muted);padding:10px 14px;border-top:1px solid var(--border);background:var(--surface2)}
+.story-help b{color:var(--text2)}
+/* Monitor */
+.mon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.mon-card{background:var(--surface);border:1.5px solid var(--border);border-left:4px solid var(--mc);border-radius:var(--r);
+  padding:14px;cursor:pointer;transition:all .12s}
+.mon-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.mon-hd{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.mon-hd h3{font-size:15px;font-weight:800;letter-spacing:-.02em;flex:1;min-width:0}
+.mon-dot{width:9px;height:9px;border-radius:50%;background:var(--mc);flex-shrink:0}
+.mon-new{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;background:var(--red-lt);color:var(--red)}
+.mon-sev{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.sev{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--bg);color:var(--text2)}
+.sev.crit{background:var(--red-lt);color:var(--red)}.sev.imp{background:var(--amber-lt);color:#92400e}
+.sev.new{background:var(--blue-lt);color:var(--blue)}
+.sev.up{background:#dcfce7;color:#15803d}.sev.down{background:#fee2e2;color:#b91c1c}
+.mon-story{padding:6px 0;border-top:1px solid var(--border)}
+.mon-story b{display:block;font-size:12.5px;font-weight:600;line-height:1.32}
+.mon-story span{font-size:10.5px;color:var(--muted)}
+.mon-foot{display:flex;gap:10px;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+.mon-empty{font-size:11.5px;color:var(--muted);padding:12px 0;text-align:center;line-height:1.5}
+.mon-detail{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
+.mon-side{display:flex;flex-direction:column;gap:12px}
+.trendbig{font-size:30px;font-weight:800;letter-spacing:-.04em;padding:6px 0}
+.trendbig.up{color:var(--green)}.trendbig.down{color:var(--red)}
+.story{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.story:last-child{border-bottom:none}
+.story:hover .dl-t{color:var(--blue)}
+.sev-bar{width:3px;border-radius:2px;flex-shrink:0}
+/* Policy */
+.stage-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;padding:9px 11px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r)}
+.proc-list{display:flex;flex-direction:column;gap:8px}
+.proc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;
+  display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:14px;align-items:center;transition:all .12s}
+.proc:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.proc-t{font-size:14px;font-weight:700;line-height:1.3;margin:3px 0}
+.proc-status{display:flex;align-items:center;gap:11px;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:12px 14px;margin-bottom:12px;flex-wrap:wrap}
+.stage-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.stage-dot.big{width:16px;height:16px}
+.ps-l{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.ps-v{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.ps-s{font-size:12px;color:var(--text2)}
+.tl{display:flex;gap:0;margin-bottom:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 14px 12px}
+.tl-step{flex:1;position:relative;text-align:center}
+.tl-step::before{content:'';position:absolute;top:6px;left:0;right:50%;height:2px;background:var(--border)}
+.tl-step::after{content:'';position:absolute;top:6px;left:50%;right:0;height:2px;background:var(--border)}
+.tl-step:first-child::before,.tl-step:last-child::after{display:none}
+.tl-step.done::before,.tl-step.done::after,.tl-step.now::before{background:var(--blue)}
+.tl-dot{position:relative;z-index:1;display:block;width:14px;height:14px;border-radius:50%;background:var(--surface);
+  border:2px solid var(--border);margin:0 auto 7px}
+.tl-step.done .tl-dot{background:var(--blue);border-color:var(--blue)}
+.tl-step.now .tl-dot{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-lt)}
+.tl-l{font-size:10.5px;font-weight:600;color:var(--muted)}
+.tl-step.now .tl-l{color:var(--amber);font-weight:800}
+.tl-step.done .tl-l{color:var(--text2)}
+.proc-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
+.station{display:grid;grid-template-columns:88px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.station:last-child{border-bottom:none}
+.st-d{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.st-t{font-weight:600;line-height:1.35}
+.st-b{font-size:11px;color:var(--muted)}
+/* Quellen / Organisationen */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.src-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .12s}
+.src-card:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.sc-hd{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sc-hd .cnt{margin-left:auto;font-size:11px;font-weight:800;color:var(--muted)}
+.sc-m{font-size:11px;color:var(--muted)}
+.sc-t{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.sc-last{font-size:11.5px;color:var(--text2);margin-top:7px;line-height:1.4}
+/* Reporting */
+.rep-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:12px;align-items:start}
+.rep-list{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:6px}
+.rep-item{padding:9px 10px;border-radius:8px;cursor:pointer}
+.rep-item:hover{background:var(--bg)}
+.rep-item.active{background:var(--blue-lt)}
+.ri-t{font-size:12.5px;font-weight:600;line-height:1.3}
+.ri-m{font-size:10.5px;color:var(--muted);margin-top:2px}
+.rep-doc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 24px;max-width:820px}
+.rep-head{border-bottom:2px solid var(--text);padding-bottom:12px;margin-bottom:16px}
+.rep-head h2{font-size:22px;font-weight:800;letter-spacing:-.03em}
+.rep-sec{margin-bottom:18px}
+.rep-sec h3{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);
+  border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px}
+.rep-sec p{font-size:13.5px;line-height:1.7;color:var(--text2)}
+.rep-sec ul{margin:0 0 0 18px}
+.rep-sec li{font-size:13px;line-height:1.65;color:var(--text2);margin-bottom:4px}
+@media (max-width:1000px){.mon-detail,.proc-grid,.rep-layout{grid-template-columns:1fr}
+  .proc{grid-template-columns:1fr}.proc-stage{display:none}}
 /* v6.6: Dashboard = Nachrichten links, drei kleine Vertiefungs-Kacheln rechts */
 .dmain{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:12px;align-items:start}
 .dside{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -482,7 +649,7 @@ body.can-back #back-btn{display:inline-flex}
 .chip-more{font-size:10.5px;font-weight:600;color:var(--blue);cursor:pointer;padding:3px 8px}
 #src-chips.capped{max-height:56px;overflow:hidden}
 /* v6.5: Schnellzugriff statt langer Seitenleiste */
-#quickbar{display:flex;gap:5px;align-items:center;padding:9px 11px;margin-bottom:12px;
+#quickbar{display:flex;gap:5px;align-items:center;max-width:100%;min-width:0;padding:9px 11px;margin-bottom:12px;
   background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);flex:0 0 auto;
   overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scroll-behavior:smooth}
 #quickbar::-webkit-scrollbar{height:5px}
@@ -522,6 +689,8 @@ body.can-back #back-btn{display:inline-flex}
 .bar-row .pv{font-weight:800;font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
 .bar-row .delta{font-size:10px;font-weight:700;margin-left:3px}
 .up{color:var(--green)}.down{color:var(--red)}
+.wahl-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;padding:9px 11px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r)}
+.wahl-chips .chip{font-size:11.5px}
 .cd{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
 .cd-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 14px;min-width:150px;flex:1;cursor:pointer;transition:all .12s}
 .cd-box:hover{border-color:var(--blue);box-shadow:var(--shadow)}
@@ -675,13 +844,68 @@ body.can-back #back-btn{display:inline-flex}
   #reader-pane{position:fixed;inset:0;z-index:50;transform:translateX(100%);transition:transform .22s}
   body.reader-open #reader-pane{transform:none}
   #reader-back{display:inline-flex}
+  #reader-header{padding:10px 14px 8px}
+  #reader-title{font-size:17px}
+  #reader-body{padding:12px 14px}
+  #reader-text{font-size:15px;line-height:1.72}
   #reader-footer{gap:4px}#reader-footer .btn{padding:5px 8px;font-size:11.5px}
   #q{font-size:16px}
   .dash-head h1{font-size:19px}
   #doc-viewer{padding:0}#doc-viewer .frame{border-radius:0}
 }
+/* ── Mobil (iPhone/Android) ─────────────────────────────────
+   Randbereiche (Notch, Home-Indikator), Fingergrößen, kein Zoom beim Tippen,
+   flüssiges Scrollen, keine überstehenden Elemente. */
+@media (max-width:900px){
+  body{overscroll-behavior-y:none}
+  #app{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  #topbar{padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top))}
+  #footer{padding-bottom:env(safe-area-inset-bottom);height:auto;min-height:26px}
+  #sidebar{padding-bottom:calc(48px + env(safe-area-inset-bottom))}
+  /* Fingerfreundliche Ziele: mindestens 40 px */
+  .nav,.tree-item,.type-row,.saved-item{min-height:42px}
+  .chip,.qb-chip,.mytopic{padding:8px 13px;font-size:12.5px;min-height:38px;display:inline-flex;align-items:center}
+  .chip-more{padding:9px 10px;min-height:38px;display:inline-flex;align-items:center}
+  .btn{padding:9px 13px;font-size:12.5px;min-height:38px}
+  .btn.sm{padding:8px 11px;min-height:36px}
+  .dcard-hd .all{padding:8px 11px;min-height:36px;display:inline-flex;align-items:center}
+  .dcard-hd .fold{padding:9px 8px;min-width:32px}
+  .list-tools button{padding:8px 10px;min-height:36px}
+  .seg button{min-height:38px}
+  .icon-btn{width:40px;height:40px}
+  .seg button{padding:8px 12px}
+  .art-item{padding:10px 11px}
+  body.compact .art-item{padding:8px 10px}
+  .ai-check{width:22px;height:22px;top:6px;right:6px}
+  .mini-row,.ds-item,.top-row,.dl,.trend-row{padding-top:11px;padding-bottom:11px}
+  /* Kein Auto-Zoom in iOS-Eingabefeldern (braucht mind. 16px) */
+  input,select,textarea{font-size:16px}
+  .fsel{font-size:16px;padding:9px 28px 9px 11px}
+  /* Flüssiges Scrollen, kein Ketten-Scroll in den Rahmen */
+  #list-scroll,#view-dash,.plain,.scrollbox,#quickbar,#sidebar,#reader-body{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* Modale Fenster bis unten nutzbar */
+  .modal{align-items:flex-end;padding:0}
+  .modal-in{max-height:88dvh;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  .mc{top:12px;right:12px;padding:8px 12px}
+  /* Nichts darf horizontal überstehen */
+  .dl-t,.ai-title,.mt,.ds-it,.top-row .dl-t{overflow-wrap:anywhere}
+  #doc-viewer{padding:0}
+  .cal-export{font-size:11.5px}
+  .cal-export code{word-break:break-all}
+  /* Leser als Vollbild-Ebene mit Rand-Abstand */
+  #reader-pane{padding-bottom:env(safe-area-inset-bottom)}
+  #reader-footer{position:sticky;bottom:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+}
 @media (max-width:560px){
-  #topbar{padding:0 8px;gap:6px}
+  #topbar{padding:0 6px;gap:5px;padding-top:env(safe-area-inset-top)}
+  .dmain{gap:9px}
+  #view-dash,.plain{padding-left:10px;padding-right:10px}
+  .qb-lbl{display:none}
+  .plain-head{gap:7px}
+  .plain h1{font-size:19px}
+  .wahl-chips{padding:8px}
+  .mcal-grid{gap:2px}
+  .list-tools{flex-wrap:wrap}
   .link-btn{padding:4px;font-size:14px}.link-btn span,.link-btn #fp-arrow{display:none}
   .link-btn::before{content:'⚙︎'}
   #q{min-width:50px;padding:6px 0}
@@ -707,7 +931,7 @@ body.can-back #back-btn{display:inline-flex}
   <button class="icon-btn" id="nav-toggle" onclick="toggleNav()" aria-label="Navigation">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
-  <button class="btn" id="back-btn" onclick="goBack()" title="Zurück (Alt+←)">← Zurück</button>
+  <button class="btn" id="back-btn" onclick="goHome()" title="Zurück zum Dashboard (Alt+←)">← Dashboard</button>
   <div class="logo">Presse<span>schau</span><small>Nachrichten-Dashboard</small></div>
   <div class="sw" id="search-wrap" onclick="g('q').focus()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -779,73 +1003,20 @@ body.can-back #back-btn{display:inline-flex}
 
   <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
   <nav id="sidebar">
-    <div class="auth-switch" id="sb-auth"><span>Vorschau</span><label class="switch"><input type="checkbox" id="auth-toggle-m" onchange="setAuth(this.checked)"><span class="slider"></span></label><span id="auth-label-m" style="font-weight:700">Basis</span></div>
-    <div class="nav active" id="nav-dash" onclick="setView('dash')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Dashboard
-    </div>
-    <div class="nav-sec">Feeds</div>
-    <div class="nav" id="nav-news" onclick="setSection('news')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Nachrichten<span class="cnt" id="cnt-news">–</span>
-    </div>
-    <div class="nav eu" id="nav-eu" onclick="setSection('eu')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v0M15.5 8.5v0M17 12v0M15.5 15.5v0M12 17v0M8.5 15.5v0M7 12v0M8.5 8.5v0" stroke-width="2.6" stroke-linecap="round"/></svg>EU Direkt<span class="cnt" id="cnt-eu">–</span>
-    </div>
-    <div class="nav" id="nav-bt" onclick="setSection('bt')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M4 10h16L12 4zM6 10v11M10 10v11M14 10v11M18 10v11"/></svg>Bundestag<span class="cnt" id="cnt-bt">–</span>
-    </div>
-    <div class="nav" id="nav-laender" onclick="setSection('laender')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18" stroke-dasharray="3 3"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Bundesländer<span class="cnt" id="cnt-laender">–</span>
-    </div>
-    <div class="nav" id="nav-us" onclick="setSection('us')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V4M4 5h16l-3 4 3 4H4"/></svg>USA<span class="cnt" id="cnt-us">–</span>
-    </div>
-    <div class="nav locked" id="nav-docs2" onclick="proGate('docs',()=>setView('docs'))">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>Dokumente<span class="cnt" id="cnt-docs2">–</span>
-    </div>
-    <div class="nav locked" id="nav-cal2" onclick="proGate('cal',()=>setView('cal'))">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Kalender<span class="cnt" id="cnt-cal2">–</span>
-    </div>
-    <div class="nav-sec">Werkzeuge</div>
-    <div class="nav" id="nav-wahl" onclick="setView('wahl')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Wahlen<span class="cnt" id="cnt-wahl">–</span>
-    </div>
-    <div class="nav" id="nav-trends" onclick="setView('trends')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 7h7v7"/></svg>Trends<span class="cnt" id="cnt-trends">–</span>
-    </div>
-    <div class="nav" id="nav-news2" onclick="setView('brief');setBriefMode('ext')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5 5h14l3 7v7H2v-7z"/></svg>Newsletter<span class="cnt" id="cnt-nl">–</span>
-    </div>
-    <div class="nav" id="nav-brief" onclick="setView('brief')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg>Briefings<span class="cnt" id="cnt-brief">–</span>
-    </div>
-    <div class="nav locked" id="nav-docs" onclick="proGate('docs',()=>setView('docs'))">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>Dokumente<span class="cnt" id="cnt-docs">–</span><span class="pro-tag">PRO</span>
-    </div>
-    <div class="nav locked" id="nav-cal" onclick="proGate('cal',()=>setView('cal'))">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Kalender<span class="cnt" id="cnt-cal">–</span><span class="pro-tag">PRO</span>
+    <!-- Arbeitsbereiche: die oberste Ebene der Plattform -->
+    <div id="ws-switch">
+      <div class="ws" data-ws="dash"       onclick="setWorkspace('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></div>
+      <div class="ws" data-ws="monitor"    onclick="setWorkspace('monitor')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h6"/></svg><span>Monitor</span><b id="ws-monitor-badge"></b></div>
+      <div class="ws" data-ws="policy"     onclick="setWorkspace('policy')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>Policy</span><b id="ws-policy-badge"></b></div>
+      <div class="ws" data-ws="stakeholder" onclick="setWorkspace('stakeholder')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5M17 5.5a3.2 3.2 0 0 1 0 6M21.5 20c0-2.7-1.7-5-4.2-6"/></svg><span>Stakeholder</span></div>
+      <div class="ws" data-ws="reporting"  onclick="setWorkspace('reporting')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>Reporting</span></div>
     </div>
 
-    <div class="nav locked" id="nav-dir" onclick="setView('dir');setDirMode('people')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 4a4 4 0 0 1 0 8M22 21c0-3-2-6-5-7"/></svg>Personen<span class="cnt" id="cnt-people">–</span><span class="pro-tag">PRO</span>
-    </div>
-    <div class="nav" id="nav-comm" onclick="setView('dir');setDirMode('comm')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Ausschüsse<span class="cnt" id="cnt-comm">–</span>
-    </div>
-    <div class="nav" id="nav-types" onclick="setView('types')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg>Inhaltstypen<span class="cnt" id="cnt-types">–</span>
-    </div>
-    <div class="nav-sec">Themen <span id="nav-themes-set" style="font-weight:500;text-transform:none;letter-spacing:0"></span></div>
-    <div class="nav-chip-wrap" id="nav-topics"></div>
-    <div id="nav-topics-more" style="padding:0 8px 6px"></div>
+    <!-- Zweite Ebene: nur innerhalb des gewählten Arbeitsbereichs -->
+    <div id="ws-nav"></div>
 
-    <div class="nav-sec">Institutionen</div>
-    <div id="nav-insts"></div>
-    <div class="nav-sec">Eigene Themen <span class="pro-tag">PRO</span></div>
-    <div class="nav-chip-wrap" id="my-topics"></div>
-    <div style="padding:0 8px 6px"><button class="btn sm" style="width:100%;justify-content:center" onclick="proGate('mytopics',openTopicModal)">+ Thema anlegen</button></div>
-
-    <div class="nav-sec">Gespeicherte Filter <span class="pro-tag">PRO</span></div>
-    <div id="saved-list"></div>
+    <!-- Kontextfilter: erscheinen nur dort, wo sie gebraucht werden -->
+    <div id="ws-context"></div>
   </nav>
 
   <!-- ═══ MAIN ═══ -->
@@ -899,11 +1070,20 @@ body.can-back #back-btn{display:inline-flex}
     <!-- Wahlen -->    <!-- Wahlen -->
     <section class="view plain" id="view-wahl">
       <div class="plain-head"><div><h1>Wahlen</h1><div class="sub" style="margin:0">Termine, Umfragen und Ergebnisse – Daten von wahlrecht.de. Umfragen sind Momentaufnahmen, keine Prognosen.</div></div>
-        <select class="fsel" id="wahl-region" onchange="renderWahl()" style="min-width:220px"></select>
+        <select class="fsel" id="wahl-region" onchange="renderWahl()" style="display:none"></select>
         <div class="seg"><button class="active" id="wm-up" onclick="setWahlMode('upcoming')">Bevorstehend</button><button id="wm-all" onclick="setWahlMode('all')">Alle Termine</button></div>
       </div>
+      <div class="wahl-chips" id="wahl-chips"></div>
       <div id="wahl-body"></div>
     </section>
+
+    <section class="view plain" id="view-monitor"></section>
+    <section class="view plain" id="view-stories"></section>
+    <section class="view plain" id="view-sources"></section>
+    <section class="view plain" id="view-policy"></section>
+    <section class="view plain" id="view-institutions"></section>
+    <section class="view plain" id="view-orgs"></section>
+    <section class="view plain" id="view-reports"></section>
 
     <!-- Trends -->
     <section class="view plain" id="view-trends">
@@ -960,17 +1140,25 @@ body.can-back #back-btn{display:inline-flex}
     <section class="view" id="view-feed">
       <button id="fb-toggle" onclick="document.body.classList.toggle('filters-open')"><span id="fb-toggle-l">Themen &amp; Quellen</span> <span class="arw">▾</span></button>
       <div id="filterbar">
-        <span class="fl" id="fb-set">Nachrichten</span>
+        <span class="fl" id="fb-set">Nachrichten</span><span class="chips" id="sub-chips"></span>
         <div class="vsep"></div>
-        <span class="fl">Thema</span><div class="chips" id="topic-chips"></div><span class="chip" id="topic-all" onclick="openTopicPicker()">＋ Alle Themen…</span>
+        <span class="fl">Thema</span><div class="chips" id="topic-chips"></div><span class="chip" id="topic-all" onclick="toggleTopicPanel()">＋ Alle Ressorts <span id="tp-arw">▾</span></span>
         <div class="vsep"></div>
         <span class="fl">Quelle</span><div class="chips" id="src-chips"></div>
+      </div>
+      <div id="topic-panel">
+        <div class="tp-head"><input type="text" id="tp-q2" placeholder="Ressort suchen…" oninput="renderTopicPanel()">
+          <div class="seg"><button class="active" id="tp2-or" onclick="setTopicMode('or');renderTopicPanel()">ODER</button><button id="tp2-and" onclick="setTopicMode('and');renderTopicPanel()">UND</button></div>
+          <span class="km-note" id="tp-hits2"></span>
+          <button class="btn sm" onclick="S.topics.clear();buildChips();applyFilters();renderTopicPanel()">Zurücksetzen</button>
+          <button class="btn sm" onclick="toggleTopicPanel(false)">Fertig</button></div>
+        <div class="tgrid" id="tp-grid2"></div>
       </div>
       <div id="statusbar">
         <div class="spill"><span class="dot loading" id="sdot"></span><span id="stxt">Lade…</span></div>
         <span><strong id="acnt">0</strong> Artikel</span>
         <span id="hidden-info" style="color:var(--red);font-weight:600;display:none"></span>
-        <span id="eil-back" style="display:none"><span class="cluster">📊 Meistberichtet</span> <button class="link-btn" style="padding:2px 6px" onclick="S.prio.eil=false;g('fp-eil').checked=false;g('fb-set').textContent=SET_LABEL[S.section];applyFilters()">Filter aufheben</button></span>
+        <span id="eil-back" style="display:none"><span class="cluster">📊 Meistberichtet</span> <button class="link-btn" style="padding:2px 6px" onclick="S.prio.eil=false;g('fp-eil').checked=false;setC('fb-set',SET_LABEL[S.section]);applyFilters()">Filter aufheben</button></span>
         <div class="sr">
           <button class="sb active" id="sn" onclick="setSort('new')">↓ Neueste</button>
           <button class="sb" id="so" onclick="setSort('old')">↑ Älteste</button>
@@ -980,7 +1168,10 @@ body.can-back #back-btn{display:inline-flex}
       <div id="split">
         <div id="list-pane">
           <div class="list-tools">
-            <button id="lt-compact" onclick="toggleCompact()" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
+            <button id="lt-paper" class="on" onclick="setLayout('paper')" title="Zeitungsansicht mit Bildern">📰 Zeitung</button>
+            <button id="lt-compact" onclick="setLayout('compact')" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
+            <button id="lt-cards" onclick="setLayout('cards')" title="Karten mit Teaser">▦ Karten</button>
+            <span style="width:1px;height:18px;background:var(--border);margin:0 3px"></span>
             <button id="lt-inline" class="on" onclick="setFeedInline(!S.feedInline)" title="Klick öffnet den Text direkt in der Liste; aus = Lesefenster rechts">⤢ Inline</button>
             <span style="flex:1"></span>
             <button id="lt-narrow" onclick="lpWidth(-60)" title="Liste schmaler">‹</button>
@@ -1141,6 +1332,8 @@ body.can-back #back-btn{display:inline-flex}
   <div class="m-acts" style="justify-content:space-between;align-items:center"><span class="km-note" id="tm-hits"></span><button class="btn p" onclick="saveTopic()">Thema speichern</button></div>
   <p class="km-note">Gespeichert im Browser. Mit Konto (siehe ACCOUNTS.md) wandern die Themen in die Cloudflare-D1-Datenbank und stehen auf allen Geräten bereit.</p>
 </div></div>
+<div class="modal" id="story-modal" onclick="if(event.target.id==='story-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:620px"></div></div>
+<div class="modal" id="monitor-modal" onclick="if(event.target.id==='monitor-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:560px"></div></div>
 <div class="modal" id="person-modal" onclick="if(event.target.id==='person-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:560px"></div></div>
 <div id="doc-viewer"><div class="frame">
   <div class="fh"><span id="dv-title"></span><button class="btn sm p" onclick="window.open(g('doc-iframe').dataset.link,'_blank','noopener')">🔗 Öffnen</button><button class="btn sm" onclick="g('doc-viewer').classList.remove('open');g('doc-iframe').src='about:blank'">✕</button></div>
@@ -1157,10 +1350,10 @@ function badge(n){const c=srcC(n);return`<span class="sbadge" style="background:
 /* 20 Oberthemen – identisch mit TOPIC_RULES nach consolidate() in fetch_news.py.
    Alte Schlüssel (medizin, ukraine, startup …) sind unten als Alias hinterlegt,
    damit bereits vorhandene JSON-Dateien weiter korrekt angezeigt werden. */
-const NEWS_TC={politik:'#f59e0b',wirtschaft:'#10b981',finanzen:'#14b8a6',ki:'#6366f1',tech:'#0ea5e9',netzpolitik:'#0284c7',sicherheit:'#8b5cf6',verteidigung:'#ef4444',energie:'#f97316',umwelt:'#16a34a',gesundheit:'#ec4899',soziales:'#db2777',bildung:'#0891b2',migration:'#f97316',justiz:'#7c3aed',eu:'#003399',usa:'#6366f1',international:'#b45309',mobilitaet:'#84cc16',wissenschaft:'#06b6d4'};
-const NEWS_TL={politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',finanzen:'💹 Finanzen',ki:'🤖 KI',tech:'💻 Technik',netzpolitik:'📡 Netz/Telko',sicherheit:'🔐 Cyber',verteidigung:'🛡 Verteidigung',energie:'⚡ Energie',umwelt:'🌿 Umwelt',gesundheit:'🏥 Gesundheit',soziales:'🤝 Soziales',bildung:'🎓 Bildung',migration:'👥 Migration',justiz:'⚖️ Justiz',eu:'🇪🇺 EU',usa:'🇺🇸 USA',international:'🌍 International',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wissenschaft'};
+const NEWS_TC={landwirtschaft:'#65a30d',arbeit:'#0f766e',wohnen:'#a16207',kultur:'#be123c',politik:'#f59e0b',wirtschaft:'#10b981',finanzen:'#14b8a6',ki:'#6366f1',tech:'#0ea5e9',netzpolitik:'#0284c7',sicherheit:'#8b5cf6',verteidigung:'#ef4444',energie:'#f97316',umwelt:'#16a34a',gesundheit:'#ec4899',soziales:'#db2777',bildung:'#0891b2',migration:'#f97316',justiz:'#7c3aed',eu:'#003399',usa:'#6366f1',international:'#b45309',mobilitaet:'#84cc16',wissenschaft:'#06b6d4'};
+const NEWS_TL={landwirtschaft:'🌾 Landwirtschaft',arbeit:'👷 Arbeit',wohnen:'🏘 Bauen & Wohnen',kultur:'🎭 Kultur & Medien',politik:'🏛 Politik',wirtschaft:'📈 Wirtschaft',finanzen:'💹 Finanzen',ki:'🤖 KI',tech:'💻 Technik',netzpolitik:'📡 Netz/Telko',sicherheit:'🔐 Cyber',verteidigung:'🛡 Verteidigung',energie:'⚡ Energie',umwelt:'🌿 Umwelt',gesundheit:'🏥 Gesundheit',soziales:'🤝 Soziales',bildung:'🎓 Bildung',migration:'👥 Migration',justiz:'⚖️ Justiz',eu:'🇪🇺 EU',usa:'🇺🇸 USA',international:'🌍 International',mobilitaet:'🚗 Mobilität',wissenschaft:'🔬 Wissenschaft'};
 /* Alias: alte Themen-Schlüssel aus früheren JSON-Ständen */
-const TOPIC_ALIAS={medizin:'gesundheit',arbeit:'soziales',wohnen:'soziales',demografie:'soziales',agrar:'umwelt',rechtsstaat:'justiz',korruption:'justiz',innenpolitik:'sicherheit',sicherheitspolitik:'verteidigung',verbraucher:'wirtschaft',handel:'wirtschaft',startup:'wirtschaft',raumfahrt:'wissenschaft',religion:'politik',kultur:'politik',kommunales:'politik',ukraine:'international',nahost:'international',asien:'international',afrika:'international',lateinamerika:'international',nordeuropa:'international',osteuropa:'international',aussenpolitik:'international',energie_klima:'energie',digitales:'tech',gesetzgebung:'politik',haushalt:'finanzen',plenum:'politik',bundesregierung:'politik'};
+const TOPIC_ALIAS={medizin:'gesundheit',demografie:'soziales',agrar:'landwirtschaft',rechtsstaat:'justiz',korruption:'justiz',innenpolitik:'sicherheit',sicherheitspolitik:'verteidigung',verbraucher:'wirtschaft',handel:'wirtschaft',startup:'wirtschaft',raumfahrt:'wissenschaft',religion:'politik',kommunales:'politik',ukraine:'international',nahost:'international',asien:'international',afrika:'international',lateinamerika:'international',nordeuropa:'international',osteuropa:'international',aussenpolitik:'international',energie_klima:'energie',digitales:'tech',gesetzgebung:'politik',haushalt:'finanzen',plenum:'politik',bundesregierung:'politik'};
 const normTopic=t=>TOPIC_ALIAS[t]||t;
 const EU_TC={gesetzgebung:'#003399',digitales:'#0ea5e9',wirtschaft:'#10b981',energie_klima:'#16a34a',international:'#b45309',migration:'#f97316',haushalt:'#f59e0b',justiz:'#8b5cf6'};
 const EU_TL={gesetzgebung:'📜 Gesetzgebung',digitales:'💻 Digital/KI',wirtschaft:'📈 Wirtschaft',energie_klima:'🌿 Energie/Klima',international:'🌐 International',migration:'👥 Migration',haushalt:'💶 Haushalt',justiz:'⚖️ Justiz'};
@@ -1169,7 +1362,7 @@ const BT_TL={plenum:'🏛 Plenum',gesetzgebung:'📜 Gesetzgebung',haushalt:'�
 const INST_LABELS={'ep':'Europ. Parlament','ep-committee':'EP-Ausschuss','ec':'EU-Kommission','council':'Rat der EU','eu-inst':'EU-Institution','eurlex':'EUR-Lex','eu-media':'EU-Medien','eu-think':'Think Tank','bt-allg':'Bundestag','bt-thema':'BT Themen','breg':'Bundesregierung','de-leit':'Leitmedien','de-pol':'Politik','de-eco':'Wirtschaft','de-tech':'Tech','de-ind':'Industrie','de-telko':'Telko'};
 const TC=s=>s==='eu'?{...EU_TC,...EXTRA_TC}:s==='us'?US_TC:(s==='bt'||s==='laender')?{...BT_TC,...EXTRA_TC}:{...NEWS_TC,...EXTRA_TC};
 const TL=s=>s==='eu'?{...EU_TL,...EXTRA_TL}:s==='us'?US_TL:(s==='bt'||s==='laender')?{...BT_TL,...EXTRA_TL}:{...NEWS_TL,...EXTRA_TL};
-const SET_LABEL={news:'Nachrichten',eu:'EU Direkt',bt:'Bundestag',laender:'Bundesländer',us:'USA',all:'Alle Feeds'};
+const SET_LABEL={news:'Nachrichten',eu:'EU Direkt',bt:'Bundestag',br:'Bundesrat',gerichte:'Gerichte & Bundesbank',laender:'Bundesländer',us:'USA',all:'Alle Feeds'};
 /* v5: erweiterte Themen – Schlüssel identisch mit TOPIC_RULES in fetch_news.py */
 const EXTRA_TC={};  /* alle Themen stehen jetzt in NEWS_TC */
 const EXTRA_TL={};
@@ -1185,7 +1378,8 @@ const INST_TREE=[
  {id:'de',label:'🇩🇪 Deutschland',items:[['bundestag','Bundestag'],['bundesrat','Bundesrat'],['bundesregierung','Bundesregierung'],['bverfg','Bundesverfassungsgericht'],['bgh','Bundesgerichtshof'],['bundesbank','Deutsche Bundesbank']]},
  {id:'laender',label:'🏳️ Bundesländer',items:Object.entries({bw:'Baden-Württemberg',by:'Bayern',be:'Berlin',bb:'Brandenburg',hb:'Bremen',hh:'Hamburg',he:'Hessen',mv:'Mecklenburg-Vorp.',ni:'Niedersachsen',nw:'Nordrhein-Westf.',rp:'Rheinland-Pfalz',sl:'Saarland',sn:'Sachsen',st:'Sachsen-Anhalt',sh:'Schleswig-Holstein',th:'Thüringen'}).map(([k,v])=>['landtag-'+k,v])},
  {id:'eu',label:'🇪🇺 Europäische Union',items:[['ep','Europäisches Parlament'],['ec','Europäische Kommission'],['eu-council','Europäischer Rat'],['ecb','Europäische Zentralbank'],['cjeu','Europäischer Gerichtshof'],['eca','Europäischer Rechnungshof'],['eu-agency','EU-Agenturen'],['eurlex','EUR-Lex']]},
- {id:'us',label:'🇺🇸 USA',items:[['us-house','House of Representatives'],['us-senate','Senat'],['us-congress','Kongress (allg.)'],['us-whitehouse','Weißes Haus'],['us-scotus','Supreme Court'],['us-courts','Bundesgerichte'],['us-agency','Bundesbehörden']]}];
+ {id:'us',label:'🇺🇸 USA',items:[['us-house','House of Representatives'],['us-senate','Senat'],['us-congress','Kongress (allg.)'],['us-whitehouse','Weißes Haus'],['us-scotus','Supreme Court'],['us-courts','Bundesgerichte'],['us-agency','Bundesbehörden'],['us-sonstige','US-Presse & Weitere']]}];
+INST_TREE[2].items.push(['eu-sonstige','EU-Medien & Weitere']);
 const INST_FLAT={};INST_TREE.forEach(g=>g.items.forEach(([k,v])=>INST_FLAT[k]=v));
 /* Fallback, solange fetch_news.py noch kein `inst` liefert */
 const CAT_INST={bundesrat:'bundesrat',bverfg:'bverfg',bgh:'bgh',bundesbank:'bundesbank',ecb:'ecb',cjeu:'cjeu',eca:'eca','eu-council':'eu-council',ec:'ec',ep:'ep','bt-allg':'bundestag','bt-thema':'bundestag',breg:'bundesregierung','us-house':'us-house','us-senate':'us-senate','us-congress':'us-congress','us-whitehouse':'us-whitehouse','us-scotus':'us-scotus','us-courts':'us-courts','us-agency':'us-agency'};
@@ -1246,13 +1440,16 @@ function setAuth(on){
   if(!PAYWALL_ACTIVE)on=true;          // ohne Paywall ist alles freigeschaltet
   S.plan=on?'pro':'free';
   document.body.classList.toggle('pro',on);
-  g('auth-toggle').checked=on;g('auth-toggle-m').checked=on;g('auth-label').textContent=g('auth-label-m').textContent=on?'Pro':'Basis';
-  g('plan-foot').textContent=on?'Pro: rollendes Archiv':'Basis-Version: 48 Stunden';
-  g('fp-range').disabled=!on;g('fp-range-pro').style.display=on?'none':'';
+  const setIf=(id,f)=>{const e=g(id);if(e)f(e);};
+  setIf('auth-toggle',e=>e.checked=on);setIf('auth-toggle-m',e=>e.checked=on);
+  setIf('auth-label',e=>e.textContent=on?'Pro':'Basis');setIf('auth-label-m',e=>e.textContent=on?'Pro':'Basis');
+  setIf('plan-foot',e=>e.textContent=on?'Pro: rollendes Archiv':'Basis-Version: 48 Stunden');
+  setIf('fp-range',e=>e.disabled=!on);setIf('fp-range-pro',e=>e.style.display=on?'none':'');
   if(!on){S.range='48';g('fp-range').value='48';S.tokens=S.tokens.filter(t=>!t.not);renderTokens();
     if(S.view==='docs'||S.view==='cal')setView('dash');}
   document.querySelectorAll('.pro-card').forEach(c=>c.classList.toggle('locked',!on));
   ['nav-docs','nav-cal','nav-docs2','nav-cal2','nav-dir'].forEach(id=>g(id)?.classList.toggle('locked',!on));
+  document.querySelectorAll('.pro-card').forEach(c=>c.classList.toggle('locked',!on&&PAYWALL_ACTIVE));
   store.set('ps_plan',S.plan);
   buildNavInsts();applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderMyTopics();updateMarkUI();markAllDirty();renderIfNeeded(S.view);
 }
@@ -1267,7 +1464,8 @@ const LOADLOG=[];
 const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyTopic:null,policyQ:'',
+ calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1279,18 +1477,19 @@ function onSearch(){
   const v=g('q').value.trim();
   if(v&&S.view!=='feed'){
     _searchOrigin={view:S.view,section:S.section};
-    S.section='all';S.inst='';g('fb-set').textContent='Alle Feeds';
+    S.section='all';S.inst='';setC('fb-set','Alle Feeds');
     buildNavTopics();buildChips();buildSrc();buildFilterSelects();applyView('feed');
   }
   if(!v&&!S.tokens.length&&_searchOrigin){
-    S.section=_searchOrigin.section;g('fb-set').textContent=SET_LABEL[S.section];
+    S.section=_searchOrigin.section;setC('fb-set',SET_LABEL[S.section]);
     applyView(_searchOrigin.view);_searchOrigin=null;
     buildChips();buildSrc();
   }
   debounce(applyFilters,120);
 }
 function searchHits(){
-  const el=g('q-hits');const active=g('q').value.trim()||S.tokens.length;
+  const el=g('q-hits');if(!el)return;
+  const active=g('q').value.trim()||S.tokens.length;
   if(!active){el.className='';el.textContent='';return;}
   el.className='q-hits'+(S.filt.length?'':' none');
   el.textContent=S.filt.length?S.filt.length+' Treffer':'0 Treffer';
@@ -1299,14 +1498,27 @@ function g(id){return document.getElementById(id);}
 /* v6: Zurück-Navigation – jeder Sprung legt den vorherigen Zustand ab */
 const NAV=[];
 function snapshot(){return JSON.stringify({view:S.view,section:S.section,topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,inst:S.inst,dirMode:S.dirMode,kind:S.kind,docMode:S.docMode,calMode:S.calMode,briefMode:S.briefMode,q:g('q')?.value||'',tokens:S.tokens});}
-function pushNav(){const s=snapshot();if(NAV[NAV.length-1]!==s){NAV.push(s);if(NAV.length>40)NAV.shift();}document.body.classList.toggle('can-back',NAV.length>1);}
+function pushNav(){const s=snapshot();if(NAV[NAV.length-1]!==s){NAV.push(s);if(NAV.length>40)NAV.shift();}
+  document.body.classList.toggle('can-back',S.view!=='dash');}
+/* Ein Klick, ein Ziel: zurück aufs Dashboard. Das schrittweise Zurückgehen
+   durch die Filterhistorie war schwer nachvollziehbar. */
+function goHome(){
+  S.topics.clear();S.topic='all';S.src='all';S.inst='';S.prio={eil:false,top:false};
+  S.tokens=[];if(g('q'))g('q').value='';
+  if(g('fp-eil'))g('fp-eil').checked=false;if(g('fp-top'))g('fp-top').checked=false;
+  S.section='news';g('fb-set').textContent=SET_LABEL.news;
+  renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();
+  applyView('dash');applyFilters();markAllDirty();renderIfNeeded('dash');
+  document.body.classList.remove('can-back');NAV.length=0;pushNav();
+  g('view-dash').scrollTop=0;
+}
 function goBack(){
   if(NAV.length<2)return;
   NAV.pop();const st=JSON.parse(NAV[NAV.length-1]);
   S.section=st.section;S.topic=st.topic;S.topics=new Set(st.topics);S.topicMode=st.topicMode;S.src=st.src;S.inst=st.inst;
   S.dirMode=st.dirMode;S.kind=st.kind;S.docMode=st.docMode;S.calMode=st.calMode;S.briefMode=st.briefMode;S.tokens=st.tokens||[];
   if(g('q'))g('q').value=st.q||'';
-  g('fb-set').textContent=S.inst?(INST_FLAT[S.inst]||S.inst):SET_LABEL[S.section];
+  setC('fb-set',S.inst?(INST_FLAT[S.inst]||S.inst):SET_LABEL[S.section]);
   renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();
   applyView(st.view);applyFilters();if(st.view==='dir')renderDir();if(st.view==='types')renderTypes();if(st.view==='trends')renderTrends();
   document.body.classList.toggle('can-back',NAV.length>1);
@@ -1335,7 +1547,21 @@ function isLocked(a){return!isPro()&&PRO_CATS.has(a.cat);}
 function inWindow(a){if(!isPro())return ageH(a.date)<=FREE_HOURS;return S.range==='all'||ageH(a.date)<=+S.range;}
 function initials(s){const p=(s||'?').replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean);return((p[0]?.[0]||'')+(p[1]?.[0]||p[0]?.[1]||'')).toUpperCase();}
 function tile(a,cls){const c=a._set==='eu'?{tc:'#003399'}:a._set==='bt'?{tc:'#1d4ed8'}:srcC(a.source);return a.image?`<div class="tile ${cls}" style="background:${c.tc}"><img src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()"></div>`:`<div class="tile ${cls}" style="background:${c.tc}">${initials(a.source)}</div>`;}
-function rawPool(sec){return sec==='news'?ALL_NEWS:sec==='eu'?ALL_EU:sec==='bt'?ALL_BT:sec==='laender'?ALL_LAENDER:sec==='us'?ALL_US:[...ALL_NEWS,...ALL_EU,...ALL_BT,...ALL_LAENDER,...ALL_US];}
+/* „Bundestag" enthält im Backend auch Bundesrat, Gerichte und Bundesbank –
+   die gehören dort nicht hin. Deshalb hier sauber getrennt:
+   bt = Parlament und Regierung · br = Bundesrat · gerichte = BGH/BVerfG/Bundesbank */
+const BR_CATS=new Set(['bundesrat']);
+const GER_CATS=new Set(['bgh','bverfg','bundesbank']);
+function rawPool(sec){
+  if(sec==='news')return ALL_NEWS;
+  if(sec==='eu')return ALL_EU;
+  if(sec==='bt')return ALL_BT.filter(a=>!BR_CATS.has(a.cat)&&!GER_CATS.has(a.cat));
+  if(sec==='br')return ALL_BT.filter(a=>BR_CATS.has(a.cat));
+  if(sec==='gerichte')return ALL_BT.filter(a=>GER_CATS.has(a.cat));
+  if(sec==='laender')return ALL_LAENDER;
+  if(sec==='us')return ALL_US;
+  return[...ALL_NEWS,...ALL_EU,...ALL_BT,...ALL_LAENDER,...ALL_US];
+}
 function isSport(a){return a._sp!==undefined?a._sp:(a._sp=SPORT_RE.test((a.title||'')+' '+(a.desc||'').slice(0,200)));}
 const _poolCache={};
 function pool(sec){
@@ -1365,11 +1591,16 @@ async function loadData(){
     try{
       const r=await fetch(f+'?t='+t);
       if(!r.ok){LOADLOG.push({f,ok:false,why:'HTTP '+r.status});return null;}
-      const j=await r.json();
+      const txt=await r.text();
+      if(txt.trimStart().startsWith('<<<<<<<')||(txt.includes('\n=======\n')&&txt.includes('>>>>>>>'))){
+        LOADLOG.push({f,ok:false,why:'Git-Konfliktmarker in der Datei – der Commit-Schritt hat zwei Stände vermischt'});return null;}
+      if(txt.trimStart().startsWith('<')){
+        LOADLOG.push({f,ok:false,why:'HTML statt JSON – liegt die Datei wirklich neben index.html?'});return null;}
+      const j=JSON.parse(txt);
       const n=(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||[]).length;
       LOADLOG.push({f,ok:true,n});
       return j;
-    }catch(e){LOADLOG.push({f,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':'nicht erreichbar'});return null;}
+    }catch(e){LOADLOG.push({f,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON (Datei unvollständig oder beschädigt)':'nicht erreichbar'});return null;}
   };
   /* Wichtigste Datei zuerst, damit früh etwas zu sehen ist; der Rest fließt nach. */
   const tag=(arr,set)=>(arr||[]).map(a=>{a._set=set;return a;});
@@ -1399,24 +1630,32 @@ function renderLoadReport(){
   const fails=LOADLOG.filter(x=>!x.ok);
   const kern=['articles.json','eu_articles.json','bundestag_articles.json'];
   const kernFehlt=fails.filter(x=>kern.includes(x.f));
-  if(!fails.length){el.innerHTML='';return;}
-  const schwer=kernFehlt.length>0;
+  /* Nur melden, wenn die Nachrichten fehlen. Eine noch nicht eingerichtete
+     Nebendatei (z. B. newsletters.json) ist kein Fehler und wird still ignoriert
+     – der betroffene Bereich sagt selbst, dass er leer ist. */
+  if(!kernFehlt.length){el.innerHTML='';return;}
+  const schwer=true;
   el.innerHTML=`<div class="lr${schwer?'':' warn'}">
     <h4>${schwer?'Nachrichtendaten fehlen':'Einzelne Dateien fehlen'}</h4>
-    ${schwer?'Die Hauptfeeds konnten nicht geladen werden. Wahrscheinlich ist der letzte Lauf von <code>fetch_news.py</code> fehlgeschlagen oder die Dateien wurden nicht committet – im Actions-Log nachsehen.':'Der Rest läuft normal weiter; die betroffenen Bereiche bleiben leer, bis die Dateien da sind.'}
+    ${schwer?(fails.some(x=>/Konfliktmarker/.test(x.why))
+        ? 'In den Dateien stehen Git-Konfliktmarker. Das kam vom <code>git stash pop</code> im Workflow – die aktualisierte <code>fetch.yml</code> behebt das und stellt beim nächsten Lauf den letzten gültigen Stand wieder her.'
+        : 'Die Hauptfeeds konnten nicht geladen werden. Wahrscheinlich ist der letzte Lauf von <code>fetch_news.py</code> fehlgeschlagen oder die Dateien wurden nicht committet – im Actions-Log nachsehen.'):'Der Rest läuft normal weiter; die betroffenen Bereiche bleiben leer, bis die Dateien da sind.'}
     <ul>${fails.map(x=>`<li><span class="fail">${esc(x.f)}</span> – ${esc(x.why)}</li>`).join('')}</ul>
     <div style="margin-top:7px;font-size:11.5px;color:var(--text2)">Geladen: ${LOADLOG.filter(x=>x.ok).map(x=>`<span class="okf">${esc(x.f)}</span> (${x.n})`).join(' · ')||'nichts'}
       <button class="btn sm" style="margin-left:8px" onclick="loadData()">Erneut laden</button>
       ${schwer?`<button class="btn sm" onclick="location.search='?demo=1'">Mit Demo-Daten ansehen</button>`:''}</div>
   </div>`;
 }
+/* Zaehler nur setzen, wenn das Element im aktuellen Arbeitsbereich existiert */
+function setC(id,v){const e=g(id);if(e)e.textContent=v;}
 function afterLoad(){
   renderLoadReport();
   const upd=META.news?.updated;
-  if(upd){g('dash-upd').textContent='Stand '+fmt(upd);g('footer-upd').textContent='Zuletzt: '+fmt(upd);}
-  g('cnt-news').textContent=ALL_NEWS.length;g('cnt-eu').textContent=ALL_EU.length;g('cnt-bt').textContent=ALL_BT.length;
-  g('cnt-docs').textContent=g('cnt-docs2').textContent=ALL_DOCS.length;
-  g('cnt-cal').textContent=g('cnt-cal2').textContent=calItems().length;
+  if(upd){setC('dash-upd','Stand '+fmt(upd));setC('footer-upd','Zuletzt: '+fmt(upd));}
+  setC('cnt-news',ALL_NEWS.length);setC('cnt-eu',ALL_EU.length);
+  setC('cnt-bt',rawPool('bt').length);setC('cnt-br',rawPool('br').length);
+  setC('cnt-docs',ALL_DOCS.length);setC('cnt-docs2',ALL_DOCS.length);
+  setC('cnt-cal',calItems().length);setC('cnt-cal2',calItems().length);
   const fails=(META.news?.feeds_fail||0)+(META.eu?.feeds_fail||0)+(META.bt?.feeds_fail||0);
   setSt(fails?'err':'ok',ALL_NEWS.length+' News · '+ALL_EU.length+' EU · '+ALL_BT.length+' BT'+(fails?' · '+fails+' Feeds fehlgeschlagen':''));
   HAS_PRIORITY=rawPool('all').some(a=>'priority' in a);
@@ -1427,24 +1666,22 @@ function afterLoad(){
     if(arr.length){el.textContent=arr.length;el.removeAttribute('title');el.style.color='';}
     else{el.textContent='–';el.title=file+' fehlt noch – erscheint nach dem nächsten Lauf von fetch_news.py';el.style.color='var(--amber)';}};
   const nWahl=elUpcoming().length;
-  g('cnt-wahl').textContent=nWahl||'–';
-  if(!ELECT)g('cnt-wahl').title='elections.json fehlt – fetch_elections.py ausführen';
-  else{const nx=elNext();if(nx)g('cnt-wahl').title=`Nächste Wahl: ${nx.title} in ${nx.days} Tagen`;}
+  setC('cnt-wahl',nWahl||'–');
   renderElectionBanner();
   setCnt('cnt-laender',ALL_LAENDER,'laender_articles.json');
   setCnt('cnt-us',ALL_US,'us_articles.json');
-  g('cnt-nl').textContent=NEWSL.length;
-  g('cnt-people').textContent=PEOPLE.length;g('cnt-comm').textContent=COMMS.length;
+  setC('cnt-nl',NEWSL.length);
+  setC('cnt-people',PEOPLE.length);setC('cnt-comm',COMMS.length);
   const nch=PCHANGES?((PCHANGES.added||[]).length+(PCHANGES.removed||[]).length+(PCHANGES.changed||[]).length):0;
-  if(nch){const el=g('cnt-people');el.textContent=PEOPLE.length;el.title=nch+' Änderungen seit dem letzten Lauf – siehe Verzeichnis › Änderungen';}
-  g('cnt-types').textContent=Object.keys(KINDS).length;
-  const dc=(DIP.counts?.procedures||0);if(dc)g('cnt-types').textContent=dc+' Vorgänge';
-  g('cal-tz').textContent=USER_TZ;g('cal-sub-url').textContent=calSubscribeUrl();
+  if(nch){const el=g('cnt-people');if(el){el.textContent=PEOPLE.length;el.title=nch+' Änderungen seit dem letzten Lauf';}}
+  setC('cnt-types',Object.keys(KINDS).length);
+  const dc=(DIP.counts?.procedures||0);if(dc)setC('cnt-types',dc+' Vorgänge');
+  setC('cal-tz',USER_TZ);setC('cal-sub-url',calSubscribeUrl());
   buildNavTopics();buildNavInsts();buildChips();buildSrc();buildFilterSelects();buildDirFilters();renderMyTopics();
   markAllDirty();applyFilters();renderSaved();
   renderIfNeeded(S.view);          // nur die gerade sichtbare Ansicht
 }
-function setSt(t,m){g('sdot').className='dot '+t;g('stxt').textContent=m;}
+function setSt(t,m){const d=g('sdot');if(d)d.className='dot '+t;setC('stxt',m);}
 
 /* ═══ NAVIGATION ═══ */
 /* ─────────────────────────────────────────────────────────────
@@ -1454,7 +1691,9 @@ function setSt(t,m){g('sdot').className='dot '+t;g('stxt').textContent=m;}
    Jetzt wird eine Ansicht erst gebaut, wenn sie geöffnet wird, und danach nur
    noch, wenn sich die Daten geändert haben.
    ───────────────────────────────────────────────────────────── */
-const RENDERERS={wahl:()=>renderWahl(),dash:()=>renderDash(),docs:()=>renderDocs(),cal:()=>renderCal(),
+const RENDERERS={monitor:()=>renderMonitor(),stories:()=>renderStories(),sources:()=>renderSources(),
+  policy:()=>renderPolicy(),institutions:()=>renderInstitutions(),orgs:()=>renderOrgs(),reports:()=>renderReports(),
+  wahl:()=>renderWahl(),dash:()=>renderDash(),docs:()=>renderDocs(),cal:()=>renderCal(),
                  brief:()=>renderBriefs(),dir:()=>renderDir(),types:()=>renderTypes(),trends:()=>renderTrends()};
 const DIRTY=new Set(Object.keys(RENDERERS));
 function markAllDirty(){Object.keys(RENDERERS).forEach(k=>DIRTY.add(k));}
@@ -1464,12 +1703,17 @@ function renderIfNeeded(v){
   try{RENDERERS[v]();}catch(e){DIRTY.add(v);console.error('Render '+v,e);}
 }
 function applyView(v){
-  S.view=v;renderIfNeeded(v);document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
-  ['dash','news','eu','bt','laender','us','docs','cal','docs2','cal2','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));
+  S.view=v;renderIfNeeded(v);
+  if(VIEW_WS[v]&&VIEW_WS[v]!==S.ws){S.ws=VIEW_WS[v];
+    document.querySelectorAll('#ws-switch .ws').forEach(e=>e.classList.toggle('active',e.dataset.ws===S.ws));}
+  renderWsNav();renderWsContext();document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
+  ['dash','news','eu','bt','br','laender','us','docs','cal','docs2','cal2','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));  /* Alt-Navigation: Elemente existieren in v6 nicht mehr, Aufruf bleibt gefahrlos */
   if(v==='docs'||v==='cal')g('nav-'+v+'2')?.classList.add('active');
   if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
   document.body.classList.toggle('eu-mode',v==='feed'&&S.section==='eu');
-  toggleNav(false);
+  /* Die Navigationsleiste nur auf schmalen Bildschirmen schließen – am Rechner
+     bleibt sie stehen. Vorher klappte sie bei jedem Wechsel zu. */
+  if(window.innerWidth<=900)toggleNav(false);
 }
 function setView(v){
   if((v==='docs'||v==='cal')&&!isPro()){openLogin(v);return;}
@@ -1477,31 +1721,50 @@ function setView(v){
 }
 function setSection(sec){
   S.section=sec;S.topic='all';S.src='all';S.inst='';S.idx=-1;S.art=null;buildNavInsts();
-  g('fb-set').textContent=SET_LABEL[sec];g('nav-themes-set').textContent='· '+SET_LABEL[sec==='all'?'news':sec];
-  buildNavTopics();buildChips();buildSrc();buildFilterSelects();
+  setC('fb-set',SET_LABEL[sec]);setC('nav-themes-set','· '+SET_LABEL[sec==='all'?'news':sec]);
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildSubChips();
   g('reader-content').style.display='none';g('reader-empty').style.display='flex';
   setView('feed');applyFilters();
 }
 function toggleRail(){document.body.classList.toggle('rail');store.set('ps_rail',document.body.classList.contains('rail'));
   setTimeout(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},220);}
-function toggleNav(force){document.body.classList.toggle('nav-open',force===undefined?undefined:force);}
+function toggleNav(force){
+  if(window.innerWidth>900){document.body.classList.remove('nav-open');return;}
+  document.body.classList.toggle('nav-open',force===undefined?undefined:force);
+}
 function toggleFilterPanel(){const p=g('filter-panel');p.classList.toggle('open');g('fp-arrow').textContent=p.classList.contains('open')?'▴':'▾';}
 function closeReader(){document.body.classList.remove('reader-open');}
 
 /* ═══ FILTER-BAUSTEINE ═══ */
 function chipsFor(sec){const tl=TL(sec);return[{t:'all',l:'Alle'},...Object.keys(tl).map(t=>({t,l:tl[t]}))];}
-function buildNavTopics(){const sec=S.section==='all'?'news':S.section;
+function buildNavTopics(){
+  if(!g('nav-topics'))return;   /* Ressortliste existiert nur im Monitor-Kontext */
+  const sec=S.section==='all'?'news':S.section;
   const all=chipsFor(sec).slice(1);
   g('nav-topics').className='nav-chip-wrap'+(S.topicsExpanded||all.length<=8?'':' capped');
   g('nav-topics').innerHTML=all.map(c=>`<span class="chip${S.topics.has(c.t)?' sel':(S.topic===c.t?' active':'')}" onclick="(event.metaKey||event.ctrlKey)?toggleTopic('${c.t}'):setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('')
   ;
   g('nav-topics-more').innerHTML=
     (all.length>8?`<span class="chip-more" onclick="S.topicsExpanded=!S.topicsExpanded;buildNavTopics()">${S.topicsExpanded?'▲ weniger anzeigen':'▼ alle '+all.length+' Themen'}</span>`:'')
-    +`<span class="chip-more" onclick="openTopicPicker()">＋ mehrere kombinieren</span>`;}
+    +`<span class="chip-more" onclick="if(S.view!=='feed')setView('feed');toggleTopicPanel(true)">＋ mehrere kombinieren</span>`;}
 /* v5: Institutionen als aufklappbarer Baum (Deutschland · Länder · EU · USA) */
-function instCounts(){const c={};rawPool('all').forEach(a=>{const k=instOf(a);if(k&&INST_FLAT[k])c[k]=(c[k]||0)+1;});return c;}
+/* Zählt alle Meldungen einer Institution. Kennt das Backend die Zuordnung nicht,
+   greift die Karte CAT_INST; bleibt trotzdem etwas übrig, landet es in einer
+   Sammelzeile „Weitere" – so verschwindet nichts unsichtbar. */
+function instCounts(){
+  const c={},rest={};
+  rawPool('all').forEach(a=>{
+    const k=instOf(a);
+    if(k&&INST_FLAT[k])c[k]=(c[k]||0)+1;
+    else if(a._set==='us')rest['us-sonstige']=(rest['us-sonstige']||0)+1;
+    else if(a._set==='eu')rest['eu-sonstige']=(rest['eu-sonstige']||0)+1;
+    else if(a._set==='laender'&&a.cat)c['landtag-'+a.cat]=(c['landtag-'+a.cat]||0)+1;
+  });
+  return Object.assign(c,rest);
+}
 function buildNavInsts(){
-  const cnt=instCounts();const open=store.get('ps_treeopen')||['de'];
+  if(!g('nav-insts'))return;   /* Element gehoert zur alten Navigation – in v6 nicht immer vorhanden */
+  const cnt=instCounts();const open=store.get('ps_treeopen')||['de','laender','eu','us'];
   g('nav-insts').innerHTML=INST_TREE.map(gr=>{
     const items=gr.items.filter(([k])=>cnt[k]);const tot=items.reduce((n,[k])=>n+cnt[k],0);
     if(!items.length)return'';
@@ -1511,9 +1774,23 @@ function buildNavInsts(){
 }
 function toggleTree(id){const el=g('tg-'+id);el.classList.toggle('open');const open=[...document.querySelectorAll('.tree-grp.open')].map(e=>e.id.slice(3));store.set('ps_treeopen',open);}
 function instNav(inst){
+  if(inst==='us-sonstige'){S.inst='';S.section='us';g('fb-set').textContent='USA';
+    buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();return;}
+  if(inst==='eu-sonstige'){S.inst='';S.section='eu';g('fb-set').textContent='EU Direkt';
+    buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();return;}
   S.inst=inst;S.section='all';S.topic='all';S.src='all';
-  g('fb-set').textContent=INST_FLAT[inst]||inst;
+  setC('fb-set',INST_FLAT[inst]||inst);
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();
+}
+/* Untergliederung je Feed: Bundestag ⇄ Bundesrat ⇄ Gerichte, Länder ⇄ Bundesrat */
+const SUBSETS={bt:['bt','br','gerichte'],br:['bt','br','gerichte'],gerichte:['bt','br','gerichte'],
+               laender:['laender','br']};
+function buildSubChips(){
+  if(!g('sub-chips'))return;   /* Element gehoert zur alten Navigation – in v6 nicht immer vorhanden */
+  const w=g('sub-chips');if(!w)return;
+  const grp=SUBSETS[S.section];
+  if(!grp){w.innerHTML='';return;}
+  w.innerHTML=grp.map(k=>`<span class="chip${S.section===k?' active':''}" onclick="setSection('${k}')">${SET_LABEL[k]}<span style="opacity:.6"> ${rawPool(k).length}</span></span>`).join('');
 }
 function buildChips(){const sec=S.section==='all'?'news':S.section;const w=g('topic-chips');
   const picked=[...S.topics].map(t=>`<span class="chip sel" onclick="toggleTopic('${t}')">${chipLabel(t)}<span class="x">×</span></span>`).join('');
@@ -1545,6 +1822,19 @@ function allTopics(){
     if(items.length)out.push([label,items.map(k=>({k,l:tl[k],c:tc[k]||'#6b7280'}))]);});
   return out;
 }
+function toggleTopicPanel(force){
+  const on=force===undefined?!document.body.classList.contains('topics-open'):force;
+  document.body.classList.toggle('topics-open',on);
+  if(on){renderTopicPanel();g('tp-q2').focus();}
+}
+function renderTopicPanel(){
+  const q=(g('tp-q2').value||'').toLowerCase();
+  g('tp-grid2').innerHTML=allTopics().map(([label,items])=>{
+    const f=items.filter(i=>!q||i.l.toLowerCase().includes(q)||i.k.includes(q));
+    return f.length?`<div class="tsec">${label}</div>`+f.map(i=>`<span class="chip${S.topics.has(i.k)?' sel':''}" style="${S.topics.has(i.k)?`background:${i.c};border-color:${i.c}`:`border-color:${i.c}55;color:${i.c}`}" onclick="toggleTopic('${i.k}');renderTopicPanel()">${i.l}</span>`).join(''):'';}).join('');
+  g('tp-hits2').textContent=S.topics.size?S.filt.length+' Treffer · '+S.topics.size+' Ressorts':'kein Ressort gewählt';
+  g('tp2-or').classList.toggle('active',S.topicMode==='or');g('tp2-and').classList.toggle('active',S.topicMode==='and');
+}
 function openTopicPicker(){g('tp-q').value='';renderTopicPicker();g('topic-picker').classList.add('open');g('tp-q').focus();}
 function closeTopicPicker(){g('topic-picker').classList.remove('open');}
 function setTopicMode(m){S.topicMode=m;g('tp-or').classList.toggle('active',m==='or');g('tp-and').classList.toggle('active',m==='and');
@@ -1572,7 +1862,7 @@ function qKey(e){
   if(not&&!isPro()){openLogin('not');return;}
   v=v.toLowerCase();if(v&&!S.tokens.some(t=>t.v===v&&t.not===not))S.tokens.push({v,not});
   e.target.value='';renderTokens();
-  if(S.view!=='feed'){_searchOrigin=_searchOrigin||{view:S.view,section:S.section};S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();buildSrc();applyView('feed');}
+  if(S.view!=='feed'){_searchOrigin=_searchOrigin||{view:S.view,section:S.section};S.section='all';setC('fb-set','Alle Feeds');buildChips();buildSrc();applyView('feed');}
   applyFilters();
 }
 function renderTokens(){g('tokens').innerHTML=S.tokens.map((t,i)=>`<span class="tok${t.not?' not':''}">${t.not?'<b>NICHT</b> ':''}${esc(t.v)}<button onclick="event.stopPropagation();S.tokens.splice(${i},1);renderTokens();applyFilters()" aria-label="entfernen">×</button></span>`).join('');}
@@ -1610,11 +1900,11 @@ function applyFilters(){
   if(S.sort==='boost')list.sort((a,b)=>(topScore(b)-topScore(a))||((b.date||'').localeCompare(a.date||'')));
   else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  S.filt=list;S.shown=FEED_PAGE;g('acnt').textContent=list.length;searchHits();
+  S.filt=list;S.shown=FEED_PAGE;setC('acnt',list.length);searchHits();
   const eb=g('eil-back');
   if(eb)eb.style.display=S.prio.eil?'':'none';
-  const hi=g('hidden-info');hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';
-  g('fp-summary').textContent=list.length+' Treffer · '+SET_LABEL[S.section]+(S.topic!=='all'?' · '+S.topic:'')+(S.tokens.length?' · '+S.tokens.length+' Begriffe':'');
+  const hi=g('hidden-info');if(hi){hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';}
+  setC('fp-summary',list.length+' Treffer · '+SET_LABEL[S.section]+(S.topic!=='all'?' · '+S.topic:'')+(S.tokens.length?' · '+S.tokens.length+' Begriffe':''));
   renderFeed();
 }
 const FEED_PAGE=60;
@@ -1623,11 +1913,14 @@ function renderFeed(){
   const el=g('list-scroll');
   if(!S.filt.length){el.innerHTML='<div style="text-align:center;padding:40px 12px;color:var(--muted);font-size:13px;line-height:1.5">Keine Artikel im aktuellen Filter.<br><button class="btn sm" style="margin-top:8px" onclick="resetFilters()">Filter zurücksetzen</button></div>'+archiveGate();return;}
   S.shown=Math.min(S.shown||FEED_PAGE,Math.max(FEED_PAGE,S.shown||FEED_PAGE));
+  const paper=S.layout==='paper';
   el.innerHTML=S.filt.slice(0,S.shown).map((a,i)=>{
+    const lead=paper&&i===0&&!!a.image;
+    const txtOnly=paper&&!a.image;
     const col=a._set==='eu'?'#003399':a._set==='bt'?'#1d4ed8':srcC(a.source).tc;const lock=isLocked(a);const m=marked.has(a.id);
     const instK=instOf(a)||a.cat;const inst=INST_FLAT[instK]?`<span class="inst-badge">${esc(INST_FLAT[instK])}</span>`:(a.cat&&a._set!=='news'?`<span class="inst-badge">${esc(INST_LABELS[a.cat]||a.cat)}</span>`:'');
     const clu=(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster} Quellen</span>`:'';
-    return`<div class="fitem" id="fi-${a.id}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
+    return`<div class="fitem${lead?' lead':''}${txtOnly?' txt':''}" id="fi-${a.id}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
       ${a.image?`<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
       <div class="ai-top">${badge(a.source)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
       <div class="ai-title">${esc(a.title)}</div>
@@ -1647,9 +1940,15 @@ function setFeedInline(on){
   if(!on&&_feedInlineId){const o=g('fin-'+_feedInlineId);if(o)o.innerHTML='';g('fi-'+_feedInlineId)?.classList.remove('open');_feedInlineId=null;}
   renderFeed();
 }
-function toggleCompact(){document.body.classList.toggle('compact');
-  g('lt-compact').classList.toggle('on',document.body.classList.contains('compact'));
-  store.set('ps_compact',document.body.classList.contains('compact'));}
+/* Drei Lesearten: Zeitung (Standard), Kompakt, Karten */
+function setLayout(m){
+  S.layout=m;store.set('ps_layout',m);
+  document.body.classList.toggle('paper',m==='paper');
+  document.body.classList.toggle('compact',m==='compact');
+  ['paper','compact','cards'].forEach(k=>g('lt-'+k)?.classList.toggle('on',k===m));
+  if(m!=='cards'&&!S.feedInline)setFeedInline(true);else renderFeed();
+}
+function toggleCompact(){setLayout(document.body.classList.contains('compact')?'paper':'compact');}
 function lpWidth(d){const lp=g('list-pane');const w=Math.max(200,Math.min(window.innerWidth-260,lp.offsetWidth+d));
   lp.style.width=w+'px';store.set('ps_lpw',w);}
 let _feedInlineId=null;
@@ -1698,12 +1997,12 @@ function openById(id,set,ctx){
   if(!a){console.warn('Artikel nicht gefunden:',id);return;}
   if(isLocked(a)){openLogin('media');return;}
   if(!isPro()&&!inWindow(a)){openLogin('archive');return;}
-  S.section=set||a._set;g('fb-set').textContent=SET_LABEL[S.section]||S.section;
+  S.section=set||a._set;setC('fb-set',SET_LABEL[S.section]||S.section);
   S.topic='all';S.topics.clear();S.src='all';S.inst='';
   /* Aus der Eilmeldungs-Kachel heraus bleibt der Eil-Filter aktiv: die Liste links
      zeigt dann alle Eilmeldungen, man kann sie der Reihe nach durchgehen. */
   S.prio={eil:ctx==='eil',top:false};
-  if(ctx==='eil'){S.section='all';g('fb-set').textContent='Meistberichtet';}
+  if(ctx==='eil'){S.section='all';setC('fb-set','Meistberichtet');}
   if(g('fp-eil'))g('fp-eil').checked=(ctx==='eil');if(g('fp-top'))g('fp-top').checked=false;
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();
   setView('feed');applyFilters();
@@ -1720,7 +2019,7 @@ function nextArt(){if(S.idx<S.filt.length-1){openArt(S.idx+1);g('ai-'+S.idx)?.sc
 /* ═══ MERKLISTE (Basis: Limit) ═══ */
 function toggleMark(e,id){e.stopPropagation();if(marked.has(id))marked.delete(id);else{if(!isPro()&&marked.size>=FREE_MARK_LIMIT){openLogin('marks');return;}marked.add(id);}updateMarkUI();renderFeed();if(S.art)g('reader-mark-btn').textContent=marked.has(S.art.id)?'★ Markiert':'☆ Markieren';}
 function toggleMarkCur(){if(S.art)toggleMark({stopPropagation(){}},S.art.id);}
-function updateMarkUI(){const n=marked.size;const el=g('mark-count');el.textContent=n+(isPro()?'':'/'+FREE_MARK_LIMIT)+' markiert';el.style.display=n?'':'none';}
+function updateMarkUI(){const n=marked.size;const el=g('mark-count');if(!el)return;el.textContent=n+(isPro()?'':'/'+FREE_MARK_LIMIT)+' markiert';el.style.display=n?'':'none';}
 
 /* ═══ DASHBOARD ═══ */
 function dl(a,opts={}){
@@ -1764,7 +2063,7 @@ function win48(){
 function showAllEil(){
   S.section='all';S.topic='all';S.topics.clear();S.src='all';S.inst='';
   S.prio={eil:true,top:false};if(g('fp-eil'))g('fp-eil').checked=true;
-  g('fb-set').textContent='Meistberichtet';
+  setC('fb-set','Meistberichtet');
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();
 }
 /* Schnellzugriff: die Werkzeuge als Kacheln mit Zahl und Kontext.
@@ -1785,14 +2084,14 @@ function renderQuickbar(){
     `<span class="qb-lbl">Themen-Radar <span style="font-weight:500;color:var(--muted)">48 h</span></span>`
     +top.map(([t,n])=>{const c=topicColor(t),on=S.topics.has(t);
       return`<span class="qb-chip${on?' sel':''}" style="${on?`background:${c};border-color:${c};color:#fff`:`border-color:${c}44;color:${c}`}"
-        onclick="toggleTopic('${t}');renderQuickbar();if(S.topics.size){S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters();}"
+        onclick="toggleTopic('${t}');renderQuickbar();if(S.topics.size){S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters();}"
         title="${n} Meldungen">${chipLabel(t)}<b style="opacity:.65;font-size:${(9+2*n/mx).toFixed(1)}px">${n}</b></span>`;}).join('')
     +(S.topics.size?`<span class="qb-chip" onclick="S.topics.clear();buildChips();applyFilters();renderQuickbar()">✕ Auswahl</span>`:'')
     +(nx?`<span class="qb-vote" style="margin-left:0" onclick="setView('wahl')"><b>${nx.days===0?'heute':'in '+nx.days+' Tagen'}</b> ${esc(nx.region)} wählt</span>`:'');
 }
 function showThinkTanks(){
   S.section='eu';S.topic='all';S.topics.clear();S.src='all';S.inst='';
-  g('fb-set').textContent='Think Tanks';
+  setC('fb-set','Think Tanks');
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();setTopic('__eu-think');setView('feed');
 }
 function setTermMode(m,btn){S.termMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderDashSide();}
@@ -1899,7 +2198,7 @@ function renderDashThemes(){
     +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ alle zeigen</span>`:'');
   const shown=dashPick.size?all.filter(([t])=>dashPick.has(t)):all;
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
-    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-${a.id}" onclick="toggleInline('${a.id}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-${a.id}" onclick="toggleInline('${a.id}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
 }
 
@@ -1922,12 +2221,13 @@ function saveFilter(){
 }
 function countNew(f){return pool(f.section).filter(a=>inWindow(a)&&(a.date||'')>f.lastSeen&&matches(a,f)).length;}
 function renderSaved(){
+  if(!g('saved-list'))return;   /* Element gehoert zur alten Navigation – in v6 nicht immer vorhanden */
   const el=g('saved-list');
   if(!isPro()){el.innerHTML='<div class="saved-empty locked"><div class="saved-item" style="padding:4px 0"><span class="dia" style="background:#7c3aed"></span><span class="nm">Beispiel: EU Digital</span><span class="nb">3</span></div>Suche als Filter speichern, Farbe wählen, neue Treffer zählen – mit Pro.</div>';return;}
   if(!SAVED.length){el.innerHTML='<div class="saved-empty">Noch keine Filter. Suche eingrenzen, dann „Als Filter speichern…".</div>';return;}
   el.innerHTML=SAVED.map(f=>{const n=f.notify?.app?countNew(f):0;return`<div class="saved-item" onclick="applySaved('${f.id}')" title="${esc(SET_LABEL[f.section])}${f.tokens.length?' · '+f.tokens.map(t=>(t.not?'NICHT ':'')+t.v).join(', '):''}"><span class="dia" style="background:${f.color}"></span><span class="nm">${esc(f.name)}</span>${n?`<span class="nb">${n}</span>`:''}<button class="x" onclick="event.stopPropagation();delSaved('${f.id}')" aria-label="löschen">×</button></div>`;}).join('');
 }
-function applySaved(id){const f=SAVED.find(x=>x.id===id);if(!f)return;S.section=f.section;S.topic=f.topic;S.src=f.src;S.tokens=[...f.tokens];S.prio={...f.prio};g('fp-eil').checked=!!f.prio.eil;g('fp-top').checked=!!f.prio.top;f.lastSeen=new Date().toISOString();store.set('ps_saved',SAVED);g('fb-set').textContent=SET_LABEL[f.section];renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();renderSaved();}
+function applySaved(id){const f=SAVED.find(x=>x.id===id);if(!f)return;S.section=f.section;S.topic=f.topic;S.src=f.src;S.tokens=[...f.tokens];S.prio={...f.prio};g('fp-eil').checked=!!f.prio.eil;g('fp-top').checked=!!f.prio.top;f.lastSeen=new Date().toISOString();store.set('ps_saved',SAVED);setC('fb-set',SET_LABEL[f.section]);renderTokens();buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();renderSaved();}
 function delSaved(id){SAVED=SAVED.filter(f=>f.id!==id);store.set('ps_saved',SAVED);renderSaved();}
 
 /* ═══ DOKUMENTE ═══ */
@@ -1940,7 +2240,7 @@ function grouped(list,keyFn,labelFn,itemFn,openFn){const b={};list.forEach(x=>{c
 function renderDocs(){
   const q=(g('docs-search').value||'').toLowerCase();
   let list=ALL_DOCS.filter(d=>S.docF==='all'||(S.docF==='hasfile'?d.has_file:d.origin===S.docF)).filter(d=>!q||(d.title+' '+(d.desc||'')).toLowerCase().includes(q));
-  g('docs-count').textContent=list.length+' / '+ALL_DOCS.length;
+  setC('docs-count',list.length+' / '+ALL_DOCS.length);
   if(S.docMode!=='list'){g('docs-list').className='dash-inner';
     g('docs-list').innerHTML=grouped(list,d=>S.docMode==='type'?d.type:classify(d.title+' '+d.desc),k=>S.docMode==='type'?esc(k):TOPIC_KW_L[k]||k,d=>`<span>${esc(d.source)}</span><span>${fd(d.date)}</span>`,d=>`openDoc('${d.id}')`)||'<div style="padding:30px;color:var(--muted)">Keine Dokumente.</div>';return;}
   g('docs-list').className='';
@@ -2055,8 +2355,8 @@ function calSubscribeUrl(){return location.origin.startsWith('http')?location.hr
 
 /* ═══ BRIEFINGS (automatisch je Thema, 24 h) + externe Newsletter ═══ */
 let _briefsBuilt=false;
-function buildBriefsLazy(){_briefsBuilt=false;g('cnt-brief').textContent='…';
-  requestIdleCallback?requestIdleCallback(()=>{buildBriefs();g('cnt-brief').textContent=BRIEFS.length+NEWSL.length;DIRTY.add('brief');DIRTY.add('dash');if(S.view==='brief'||S.view==='dash')renderIfNeeded(S.view);},{timeout:2500}):setTimeout(()=>{buildBriefs();g('cnt-brief').textContent=BRIEFS.length+NEWSL.length;},300);}
+function buildBriefsLazy(){_briefsBuilt=false;setC('cnt-brief','…');
+  requestIdleCallback?requestIdleCallback(()=>{buildBriefs();setC('cnt-brief',BRIEFS.length+NEWSL.length);DIRTY.add('brief');DIRTY.add('dash');if(S.view==='brief'||S.view==='dash')renderIfNeeded(S.view);},{timeout:2500}):setTimeout(()=>{buildBriefs();setC('cnt-brief',BRIEFS.length+NEWSL.length);},300);}
 function buildBriefs(){_briefsBuilt=true;
   BRIEFS=[];const win=dedupe(pool('all').filter(a=>ageH(a.date)<=24));
   const sets=[['news',NEWS_TL,NEWS_TC],['eu',EU_TL,EU_TC],['bt',BT_TL,BT_TC]];
@@ -2066,7 +2366,12 @@ function buildBriefs(){_briefsBuilt=true;
       BRIEFS.push({id:'b-'+set+'-'+t,set,topic:t,label:(tl[t]||t).replace(/^\S+\s/,''),color:tc[t]||'#6b7280',title:'Morgenbriefing '+(tl[t]||t).replace(/^\S+\s/,'')+(set==='eu'?' · EU':set==='bt'?' · Bundestag':''),items:items.slice(0,12),readMin:rm,date:items[0].date});}}
   BRIEFS.sort((a,b)=>b.items.length-a.items.length);
 }
-function setBriefMode(m,btn){S.briefMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderBriefs();}
+function setBriefMode(m,btn){
+  S.briefMode=m;
+  /* Auch ohne Button aufrufbar (Navigation ruft direkt auf) */
+  const wrap=btn?btn.parentNode:document.querySelector('#view-brief .seg');
+  if(wrap)wrap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',btn?b===btn:(m==='ext'?i===1:i===0)));
+  renderBriefs();}
 function renderBriefs(){
   g('brief-read').style.display='none';const el=g('brief-list');el.style.display='grid';
   if(S.briefMode==='ext'){
@@ -2088,9 +2393,21 @@ function openTageslage(){
 function openBrief(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;setView('brief');g('brief-list').style.display='none';const r=g('brief-read');r.style.display='';
   const bySrc={};b.items.forEach(a=>(bySrc[a.source]=bySrc[a.source]||[]).push(a));
   r.innerHTML=`<div class="brief-read"><button class="btn sm" onclick="renderBriefs()">← Alle Briefings</button><div class="dl-eb" style="margin-top:12px"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="parl">${SET_LABEL[b.set]}</span><span class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})} · ~${b.readMin} Min</span></div><h2>${esc(b.title)}</h2>
-    <div class="m-acts" style="margin:10px 0 14px"><button class="btn p sm" onclick="proGate('ai',()=>briefAI('${b.id}'))">🤖 KI-Briefing schreiben <span class="pro-tag">PRO</span></button><label class="chk" style="font-size:12px"><input type="checkbox" onchange="if(!proGate('notify'))this.checked=false"> täglich 7:00 per E-Mail <span class="eyebrow" style="text-transform:none;letter-spacing:0">(Backend-Endpunkt nötig)</span></label></div>
+    <div class="m-acts" style="margin:10px 0 14px"><button class="btn p sm" onclick="proGate('ai',()=>briefAI('${b.id}'))">🤖 KI-Briefing schreiben <span class="pro-tag">PRO</span></button>
+      <button class="btn sm" onclick="exportBrief('${b.id}')">↓ Briefing exportieren</button>
+      <button class="btn sm" onclick="copyBrief('${b.id}')">📋 Kopieren</button><label class="chk" style="font-size:12px"><input type="checkbox" onchange="if(!proGate('notify'))this.checked=false"> täglich 7:00 per E-Mail <span class="eyebrow" style="text-transform:none;letter-spacing:0">(Backend-Endpunkt nötig)</span></label></div>
     <div id="brief-ai"></div>
     ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}" id="tr-${a.id}" style="cursor:pointer" onclick="toggleInline('${a.id}')"><div class="t">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${relChip(a)?' · Relevanz '+a.boost:''}${(a.cluster||0)>=3?' · 📊 '+a.cluster+' Quellen':''}</div></div><div id="inl-${a.id}"></div>`).join('')}`).join('')}</div>`;}
+function briefText(id){
+  const b=BRIEFS.find(x=>x.id===id);if(!b)return'';
+  const head=`${b.title}\n${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${b.items.length} Meldungen\n${'='.repeat(50)}\n\n`;
+  const bySrc={};b.items.forEach(a=>(bySrc[a.source]=bySrc[a.source]||[]).push(a));
+  return head+Object.entries(bySrc).map(([src,arts])=>
+    `${src.toUpperCase()}\n`+arts.map(a=>`• ${a.title}\n  ${(a.desc||'').slice(0,220)}\n  ${a.link||''}`).join('\n\n')
+  ).join('\n\n')+`\n\nQuelle: Presseschau, ${new Date().toLocaleString('de-DE')}`;
+}
+function exportBrief(id){const b=BRIEFS.find(x=>x.id===id);dl_((b?b.title.replace(/[^\wäöüß -]/gi,'').trim():'briefing')+'.txt',briefText(id),'text/plain;charset=utf-8');}
+function copyBrief(id){navigator.clipboard.writeText(briefText(id));}
 async function briefAI(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;if(!apiKey){pendingSum=false;g('km').classList.add('open');g('api-key-input').focus();g('api-key-input').onkeydown=e=>{if(e.key==='Enter'){saveKey();briefAI(id);}};return;}
   const box=g('brief-ai');box.innerHTML='<div class="ai-thinking"><span>Schreibe Briefing…</span><span class="ai-dots"><span></span><span></span><span></span></span></div>';
   const txt=b.items.filter(a=>!isLocked(a)).map((a,i)=>(i+1)+'. ['+a.source+'] '+a.title+' – '+(a.desc||'').slice(0,300)).join('\n');
@@ -2148,23 +2465,32 @@ function renderElectionBanner(){
 }
 /* Der Countdown zur nächsten Wahl steht weiterhin im Themen-Radar
    und auf der Wahlen-Seite – nur eben nicht als Banner auf der Startseite. */
+function pickWahlRegion(id){g('wahl-region').value=id;renderWahl();g('view-wahl').scrollTop=0;}
 function setWahlMode(m){S.wahlMode=m;g('wm-up').classList.toggle('active',m==='upcoming');g('wm-all').classList.toggle('active',m==='all');renderWahl();}
 function renderWahl(){
   const body=g('wahl-body');
   if(!ELECT){body.innerHTML='<div class="gap-note"><strong>elections.json fehlt.</strong> <code>fetch_elections.py</code> in den Workflow aufnehmen – danach stehen hier Wahltermine, Umfragewerte je Land und am Wahlabend Prognose und Hochrechnung.</div>';return;}
   const sel=g('wahl-region');
+  const regions=[...new Map((ELECT.elections||[]).map(e=>[e.region_id,e.region])).entries()];
   if(!sel.options.length){
-    const regions=[...new Map((ELECT.elections||[]).map(e=>[e.region_id,e.region])).entries()];
-    sel.innerHTML='<option value="">Alle Ebenen · Bund, Länder, EU</option><option value="bund">Bund</option>'
-      +regions.filter(([id])=>id!=='bund').map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join('');
+    sel.innerHTML='<option value="">Alle</option>'+regions.map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join('');
   }
   const reg=sel.value;
+  /* Auswahl offen sichtbar – vorher steckte sie in einem Dropdown,
+     aus dem man nur schwer wieder herausfand. */
+  const cntBy={};(ELECT.elections||[]).forEach(e=>{if(e.status!=='past')cntBy[e.region_id]=(cntBy[e.region_id]||0)+1;});
+  g('wahl-chips').innerHTML=`<span class="fl">Ebene</span>`
+    +`<span class="chip${!reg?' active':''}" onclick="pickWahlRegion('')">Alle${(ELECT.elections||[]).filter(e=>e.status!=='past').length?' ('+(ELECT.elections||[]).filter(e=>e.status!=='past').length+')':''}</span>`
+    +`<span class="chip${reg==='bund'?' active':''}" onclick="pickWahlRegion('bund')">🏛 Bund</span>`
+    +regions.filter(([id])=>id!=='bund'&&id!=='eu').sort((a,b)=>a[1].localeCompare(b[1],'de'))
+      .map(([id,name])=>`<span class="chip${reg===id?' active':''}" onclick="pickWahlRegion('${id}')">${LAND_C[id]?landIcon(id):''} ${esc(name)}${cntBy[id]?' '+cntBy[id]:''}</span>`).join('')
+    +(regions.some(([id])=>id==='eu')?`<span class="chip${reg==='eu'?' active':''}" onclick="pickWahlRegion('eu')">🇪🇺 Europa</span>`:'');
   let list=(ELECT.elections||[]).filter(e=>!reg||e.region_id===reg);
   if(S.wahlMode!=='all')list=list.filter(e=>e.status!=='past');
   const up=list.filter(e=>e.status!=='past').slice(0,4);
   const poll=(ELECT.polls||{})[reg||'bund'];
   body.innerHTML=
-    (up.length?`<div class="cd">${up.map((e,i)=>`<div class="cd-box${i===0?' next':''}" onclick="g('wahl-region').value='${e.region_id}';renderWahl()">
+    (up.length?`<div class="cd">${up.map((e,i)=>`<div class="cd-box${i===0?' next':''}" onclick="pickWahlRegion('${e.region_id}')">
         <div class="cd-days">${e.days===0?'heute':e.days}</div><div class="cd-lbl">${e.days===0?'':'Tage bis '}${esc(e.title)}</div>
         <div class="cd-date">${fd(e.date).slice(0,8)}</div></div>`).join('')}</div>`:'')
     +(poll?`<div class="dcard" style="margin-bottom:12px"><div class="dcard-hd"><h2>Sonntagsfrage ${esc(reg?(LAND_L[reg]||reg):'Bund')}</h2>
@@ -2180,6 +2506,792 @@ function renderWahl(){
         ${r?barsHTML(r.parties):''}
         <a class="btn sm" href="${esc(e.url)}" target="_blank" rel="noopener">Details ↗</a></div>`;}).join('')
         ||'<div class="gap-note">Keine Termine in dieser Auswahl.</div>'}</div>`;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ENTITÄTEN-SCHICHT (v6)
+   Aus den vorhandenen JSON-Dateien werden erstklassige Objekte abgeleitet:
+   Story, Monitor, PolicyProcess, Stakeholder, Report.
+   Kein erfundenes Backend – alles rechnet auf den Daten, die schon da sind.
+   Die erwarteten Strukturen stehen in ARCHITEKTUR_Policy_Intelligence.md.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Hilfen ─────────────────────────────────────────────────────────── */
+const STOPW=new Set('der die das den dem des ein eine einer eines und oder aber für mit von aus bei nach über auf im in zu zum zur als ist sind wird werden hat haben nicht auch noch mehr neue neuer neues gegen ohne durch vor sich dass wie was mehr'.split(' '));
+/* Deutsche Beugung: „Glasfaserausbaus" und „Glasfaserausbau" sind dasselbe Wort.
+   Ein grober Stammabgleich genügt – Endungen abschneiden, Rest vergleichen. */
+function stem(w){
+  return w.replace(/(ungen|ungs|erung|heiten|keiten|lichen|ischen|enden|enen|esse|es|en|em|er|e|s|n)$/,'')
+          .replace(/(ss)$/,'s');
+}
+function sigWords(t){
+  return[...new Set((t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/)
+    .filter(w=>w.length>4&&!STOPW.has(w)).map(w=>w.length>7?stem(w):w).filter(w=>w.length>3))];
+}
+function jaccard(a,b){if(!a.length||!b.length)return 0;const B=new Set(b);let i=0;a.forEach(w=>{if(B.has(w))i++;});return i/(a.length+b.length-i);}
+const DRUCKSACHE=/\b(\d{2})\/(\d{3,6})\b/g;
+function drucksachen(t){const out=[];let m;const re=new RegExp(DRUCKSACHE);while((m=re.exec(t||''))!==null)out.push(m[1]+'/'+m[2]);return out;}
+
+/* ── STORY: mehrere Artikel zur selben Sache ────────────────────────── */
+let _stories=null,_storiesKey='';
+function buildStories(hours=48){
+  const key=hours+'|'+[ALL_NEWS.length,ALL_EU.length,ALL_BT.length,ALL_LAENDER.length,ALL_US.length].join(',');
+  if(_stories&&_storiesKey===key)return _stories;
+  const arts=pool('all').filter(a=>ageH(a.date)<=hours).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const stories=[];
+  const idx={};                     // Wort → Story-Indizes, damit nicht alles mit allem verglichen wird
+  arts.forEach(a=>{
+    a._w=a._w||sigWords(a.title);
+    const cand=new Set();
+    a._w.forEach(w=>(idx[w]||[]).forEach(i=>cand.add(i)));
+    let best=-1,bestScore=0;
+    cand.forEach(i=>{const sc=jaccard(a._w,stories[i]._w);if(sc>bestScore){bestScore=sc;best=i;}});
+    if(best>=0&&bestScore>=0.5){
+      const st=stories[best];
+      st.articles.push(a);
+      if(!st.sources.includes(a.source))st.sources.push(a.source);
+      st._w=[...new Set([...st._w,...a._w])].slice(0,24);
+      if((a.date||'')>st.last)st.last=a.date;
+      if((a.date||'')<st.first)st.first=a.date;
+    }else{
+      const st={id:'s-'+a.id,title:a.title,lead:a,articles:[a],sources:[a.source],
+                first:a.date,last:a.date,_w:a._w.slice(0,24),
+                topics:[...new Set((a.topics||[]).map(normTopic))],set:a._set};
+      stories.push(st);
+      const i=stories.length-1;
+      a._w.forEach(w=>(idx[w]=idx[w]||[]).push(i));
+    }
+  });
+  stories.forEach(st=>{
+    /* Die Inhaltsart der Story richtet sich nach der häufigsten Art ihrer Artikel */
+    const kc={};st.articles.forEach(a=>{const k=contentKind(a);kc[k]=(kc[k]||0)+1;});
+    st.kind=Object.entries(kc).sort((a,b)=>b[1]-a[1])[0][0];
+    st.kinds=kc;
+    st.speakers=[...new Map(st.articles.flatMap(a=>speakers(a)).map(p=>[p.id,p])).values()].slice(0,3);
+    st.articles.forEach(a=>(a.topics||[]).map(normTopic).forEach(t=>{if(t&&!st.topics.includes(t))st.topics.push(t);}));
+    const h=ageH(st.last),n=st.sources.length;
+    st.severity=(n>=5&&h<6)?'critical':(n>=3)?'important':'new';
+    st.velocity=n/Math.max(1,ageH(st.first)-ageH(st.last)||1);
+    /* Der Artikel mit den meisten Quellen-Belegen führt die Story an */
+    st.lead=st.articles.slice().sort((a,b)=>((b.cluster||1)-(a.cluster||1))||((b.boost||0)-(a.boost||0)))[0];
+    st.title=st.lead.title;
+  });
+  stories.sort((a,b)=>(b.sources.length-a.sources.length)||((b.last||'').localeCompare(a.last||'')));
+  _stories=stories;_storiesKey=key;return stories;
+}
+const SEV={critical:{l:'kritisch',c:'#dc2626'},important:{l:'wichtig',c:'#d97706'},new:{l:'neu',c:'#2563eb'}};
+
+/* ── POLICY PROCESS: aus dip.json ───────────────────────────────────── */
+function processes(){return(DIP.procedures||[]);}
+function processById(id){return processes().find(p=>p.id===id);}
+function processNews(p,limit=12){
+  const nums=drucksachen(p.title+' '+(p.gesta||''));
+  const w=sigWords(p.title);
+  return pool('all').filter(a=>{
+    const txt=stext(a);
+    if(nums.some(n=>txt.includes(n)))return true;
+    const aw=a._w||(a._w=sigWords(a.title));
+    const shared=w.filter(x=>aw.includes(x)).length;
+    /* Zwei seltene gemeinsame Wörter reichen; sonst über die Wortmengen-Ähnlichkeit */
+    return shared>=2||jaccard(w,aw)>=0.22;
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,limit);
+}
+function processDocs(p,limit=10){
+  const nums=drucksachen(p.title),w=sigWords(p.title);
+  return[...(DIP.documents||[]),...ALL_DOCS].filter(d=>{
+    const t=(d.title||'')+' '+(d.number||'');
+    if(nums.some(n=>t.includes(n)))return true;
+    const dw=sigWords(d.title);
+    return w.filter(x=>dw.includes(x)).length>=2||jaccard(w,dw)>=0.22;
+  }).slice(0,limit);
+}
+function processStakeholders(p,limit=8){
+  const t=(p.title+' '+(p.sachgebiet||[]).join(' ')).toLowerCase();
+  const scored=PEOPLE.map(x=>{
+    let sc=0;
+    (x.committees||[]).forEach(c=>{const cw=sigWords(c.name);if(cw.some(w=>t.includes(w)))sc+=2;});
+    if(x.last_name&&t.includes((x.last_name||'').toLowerCase()))sc+=3;
+    return{x,sc};
+  }).filter(o=>o.sc>0).sort((a,b)=>b.sc-a.sc);
+  return scored.slice(0,limit).map(o=>o.x);
+}
+function processEvents(p,limit=5){
+  const w=sigWords(p.title);
+  return calItems().filter(c=>jaccard(w,sigWords(c.title))>=0.22).slice(0,limit);
+}
+
+/* ── STAKEHOLDER: Personen, Institutionen, Organisationen ───────────── */
+function orgList(){
+  const m={};
+  pool('all').filter(a=>a.cat==='eu-think').forEach(a=>{
+    (m[a.source]=m[a.source]||{id:'org-'+a.source,type:'organization',name:a.source,
+      articles:[],policyAreas:new Set()}).articles.push(a);
+    (a.topics||[]).map(normTopic).forEach(t=>t&&m[a.source].policyAreas.add(t));
+  });
+  return Object.values(m).map(o=>({...o,policyAreas:[...o.policyAreas]}))
+    .sort((a,b)=>b.articles.length-a.articles.length);
+}
+function instList(){
+  const cnt=instCounts();
+  return Object.entries(cnt).map(([k,n])=>({id:'inst-'+k,type:'institution',name:INST_FLAT[k]||k,inst:k,count:n}))
+    .sort((a,b)=>b.count-a.count);
+}
+/* Erwähnungen einer Person in den Meldungen: Nachname plus zweiter Beleg */
+function mentions(p,days=30){
+  const ln=(p.last_name||'').toLowerCase(),fn=(p.first_name||'').toLowerCase(),party=(p.party||'').toLowerCase();
+  if(ln.length<4)return[];
+  return pool('all').filter(a=>{
+    if(ageH(a.date)>days*24)return false;
+    const t=stext(a);
+    if(!t.includes(ln))return false;
+    return t.includes(fn)||(party&&t.includes(party.split(' ')[0]))||t.includes(p.name.toLowerCase());
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function stakeholderProcesses(p,limit=6){
+  const names=(p.committees||[]).flatMap(c=>sigWords(c.name));
+  const ln=(p.last_name||'').toLowerCase();
+  return processes().filter(pr=>{
+    const t=(pr.title||'').toLowerCase();
+    return(ln.length>3&&t.includes(ln))||names.some(w=>t.includes(w));
+  }).slice(0,limit);
+}
+function stakeholderRelations(p,limit=8){
+  const ids=new Set((p.committees||[]).map(c=>c.id));
+  if(!ids.size)return[];
+  const score={};
+  PEOPLE.forEach(o=>{if(o.id===p.id)return;
+    const shared=(o.committees||[]).filter(c=>ids.has(c.id));
+    if(shared.length)score[o.id]={p:o,shared:shared.map(c=>c.name)};});
+  return Object.values(score).sort((a,b)=>b.shared.length-a.shared.length).slice(0,limit);
+}
+function policyAreasOf(p){
+  const set=new Set();
+  (p.committees||[]).forEach(c=>{const t=classify(c.name);if(t&&t!=='sonstig')set.add(t);});
+  mentions(p,60).slice(0,20).forEach(a=>(a.topics||[]).map(normTopic).forEach(t=>t&&set.add(t)));
+  return[...set].slice(0,6);
+}
+
+/* ── INHALTSART ──────────────────────────────────────────────────────
+   Eine Meldung der Tagesschau, ein SWP-Papier, eine Bundestagsdrucksache und
+   ein Ministerzitat sind vier verschiedene Dinge. Der Monitor trennt sie. */
+const KINDS_MON={
+  presse:   {l:'Presse',       ic:'📰', c:'#2563eb', d:'Berichterstattung von Medien'},
+  studie:   {l:'Studie',       ic:'🔬', c:'#7c3aed', d:'Analysen und Papiere von Denkfabriken und Instituten'},
+  gesetz:   {l:'Gesetzgebung', ic:'⚖',  c:'#0f766e', d:'Vorgänge, Drucksachen, Amtsblatt'},
+  aussage:  {l:'Aussage',      ic:'🗣', c:'#d97706', d:'Reden, Statements und Zitate von Politikerinnen und Politikern'},
+  amtlich:  {l:'Amtlich',      ic:'🏛', c:'#475569', d:'Pressemitteilungen von Institutionen'},
+};
+const STUDY_RE=/\b(studie|analyse|policy brief|papier|gutachten|report|working paper|diskussionspapier|kurzanalyse|jahresbericht)\b/i;
+const SAY_RE=/\b(sagte|erklärte|betonte|forderte|kritisierte|warnte|kündigte an|verteidigte|widersprach|äußerte|rede|statement|interview|im gespräch)\b/i;
+const LAW_RE=/\b(gesetzentwurf|drucksache|verordnung|richtlinie|beschlussempfehlung|referentenentwurf|amtsblatt|vorlage)\b/i;
+function contentKind(a){
+  if(a._ck)return a._ck;
+  const cat=a.cat||'',t=(a.title||'')+' '+(a.desc||'').slice(0,200);
+  let k='presse';
+  if(cat==='eu-think'||STUDY_RE.test(t))k='studie';
+  else if(a.kind==='speech'||SAY_RE.test(t))k='aussage';
+  else if(a._doc||a._dip||cat==='eurlex'||LAW_RE.test(t))k='gesetz';
+  else if(['ec','ep','eu-council','ecb','bt-allg','breg','bundesrat','bverfg','bgh','us-whitehouse','us-house','us-senate'].includes(cat))k='amtlich';
+  return(a._ck=k);
+}
+/* Wer wird in der Meldung zitiert? Nachname plus Zitatverb im selben Text. */
+function speakers(a,limit=3){
+  if(contentKind(a)!=='aussage')return[];
+  const t=stext(a);
+  return PEOPLE.filter(p=>{const ln=(p.last_name||'').toLowerCase();
+    return ln.length>4&&t.includes(ln);}).slice(0,limit);
+}
+
+/* ── MONITOR: dauerhaftes Beobachtungsobjekt ────────────────────────── */
+let MONITORS=[];
+const monitorStore={
+  async load(){
+    let m=store.get('ps_monitors');
+    if(!m){ /* Einmalige Übernahme aus eigenen Themen und gespeicherten Filtern */
+      m=[...(store.get('ps_mytopics')||[]).map(t=>({id:t.id,name:t.name,color:t.color,keywords:t.kw||[],
+            exclude:t.not||[],topics:[],sources:[],institutions:[],people:[],processes:[],
+            lastSeen:t.lastSeen||new Date(Date.now()-864e5).toISOString(),notify:{app:true,mail:false}})),
+         ...(store.get('ps_saved')||[]).map(f=>({id:f.id,name:f.name,color:f.color,
+            keywords:(f.tokens||[]).filter(t=>!t.not).map(t=>t.v),
+            exclude:(f.tokens||[]).filter(t=>t.not).map(t=>t.v),
+            topics:f.topic&&f.topic!=='all'&&!f.topic.startsWith('__')?[f.topic]:[],
+            sources:f.src&&f.src!=='all'?[f.src]:[],institutions:[],people:[],processes:[],
+            lastSeen:f.lastSeen||new Date(Date.now()-864e5).toISOString(),notify:f.notify||{app:true,mail:false}}))];
+    }
+    MONITORS=m;return m;
+  },
+  async save(){store.set('ps_monitors',MONITORS);
+    try{if(window.PS_API)await fetch(window.PS_API+'/me/monitors',{method:'PUT',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:MONITORS})});}catch{}}
+};
+function monitorMatch(a,m){
+  const t=stext(a);
+  if((m.exclude||[]).some(w=>t.includes(w.toLowerCase())))return false;
+  const hasCrit=(m.keywords||[]).length||(m.topics||[]).length||(m.sources||[]).length||(m.institutions||[]).length||(m.people||[]).length;
+  if(!hasCrit)return false;
+  if((m.keywords||[]).some(w=>t.includes(w.toLowerCase())))return true;
+  const at=new Set((a.topics||[]).map(normTopic));
+  if((m.topics||[]).some(x=>at.has(normTopic(x))))return true;
+  if((m.sources||[]).includes(a.source))return true;
+  if((m.institutions||[]).includes(instOf(a)))return true;
+  if((m.people||[]).length){
+    const ppl=PEOPLE.filter(p=>m.people.includes(p.id));
+    if(ppl.some(p=>(p.last_name||'').length>3&&t.includes((p.last_name||'').toLowerCase())))return true;
+  }
+  return false;
+}
+function monitorState(m){
+  const all=pool('all').filter(a=>monitorMatch(a,m));
+  const win=all.filter(a=>ageH(a.date)<=48);
+  const prev=all.filter(a=>ageH(a.date)>48&&ageH(a.date)<=96);
+  const seen=m.lastSeen||'';
+  const neu=all.filter(a=>(a.date||'')>seen);
+  const stories=buildStories(48).filter(st=>st.articles.some(a=>monitorMatch(a,m)));
+  const bySev={critical:0,important:0,new:0};
+  stories.forEach(st=>bySev[st.severity]++);
+  const pol=processes().filter(p=>{
+    const t=(p.title||'').toLowerCase();
+    return(m.keywords||[]).some(w=>t.includes(w.toLowerCase()))||
+           (m.topics||[]).some(x=>p.topic===normTopic(x))||
+           (m.processes||[]).includes(p.id);
+  }).slice(0,6);
+  const shSet=new Map();
+  neu.slice(0,60).forEach(a=>{
+    PEOPLE.forEach(p=>{const ln=(p.last_name||'').toLowerCase();
+      if(ln.length>4&&stext(a).includes(ln))shSet.set(p.id,p);});
+  });
+  const heute=new Date();heute.setHours(0,0,0,0);
+  const ev=calItems().filter(c=>c.date>=heute).filter(c=>{
+    const t=c.title.toLowerCase();
+    return(m.keywords||[]).some(w=>t.includes(w.toLowerCase()))||(m.topics||[]).some(x=>c.topic===normTopic(x));
+  }).slice(0,5);
+  const byKind={};all.filter(a=>ageH(a.date)<=48).forEach(a=>{const k=contentKind(a);byKind[k]=(byKind[k]||0)+1;});
+  return{all,win,neu,stories:stories.slice(0,40),allStories:stories,bySeverity:bySev,byKind,
+    trendPct:prev.length?Math.round((win.length-prev.length)/prev.length*100):(win.length?100:0),
+    policy:pol,stakeholders:[...shSet.values()].slice(0,8),events:ev};
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ARBEITSBEREICHE (v6)
+   Fünf Werkzeuge auf denselben Daten. Die zweite Navigationsebene
+   erscheint nur innerhalb des gewählten Bereichs.
+   ═══════════════════════════════════════════════════════════════════════ */
+const WORKSPACES={
+  dash:{label:'Dashboard',views:[
+    {id:'overview', label:'Übersicht',   icon:'▣', view:'dash'},
+    {id:'themen',   label:'Nach Themen', icon:'▤', act:()=>{setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));}},
+  ]},
+  monitor:{label:'Monitor',views:[
+    {id:'monitors', label:'Meine Monitore', icon:'◎', view:'monitor'},
+    {id:'activity', label:'Alle Aktivität', icon:'≡', act:()=>{setSection('all');}},
+    {id:'stories',  label:'Stories',        icon:'⧉', view:'stories'},
+    {id:'trends',   label:'Trends',         icon:'↗', view:'trends'},
+    {id:'sources',  label:'Quellen',        icon:'⌂', view:'sources'},
+    {id:'wahl',     label:'Wahlen',         icon:'✓', view:'wahl'},
+  ]},
+  policy:{label:'Policy',views:[
+    {id:'procs',  label:'Verfahren',     icon:'⚖', view:'policy'},
+    {id:'docs',   label:'Dokumente',     icon:'📄', view:'docs'},
+    {id:'types',  label:'Inhaltstypen',  icon:'≣', view:'types'},
+    {id:'cal',    label:'Termine',       icon:'📅', view:'cal'},
+    {id:'inst',   label:'Institutionen', icon:'🏛', view:'institutions'},
+  ]},
+  stakeholder:{label:'Stakeholder',views:[
+    {id:'people', label:'Personen',      icon:'👤', act:()=>{setDirMode('people');setView('dir');}},
+    {id:'orgs',   label:'Organisationen',icon:'⬢', view:'orgs'},
+    {id:'comm',   label:'Gremien',       icon:'▦', act:()=>{setDirMode('comm');setView('dir');}},
+    {id:'chg',    label:'Änderungen',    icon:'↺', act:()=>{setDirMode('changes');setView('dir');}},
+  ]},
+  reporting:{label:'Reporting',views:[
+    {id:'briefings',label:'Briefings',      icon:'📰', view:'brief'},
+    {id:'reports',  label:'Reports',        icon:'📊', view:'reports'},
+    {id:'newsl',    label:'Newsletter',     icon:'✉', act:()=>{setView('brief');setBriefMode('ext');}},
+  ]},
+};
+/* Welcher Arbeitsbereich gehört zu welcher Ansicht (für Direktsprünge) */
+const VIEW_WS={dash:'dash',feed:'monitor',monitor:'monitor',stories:'monitor',trends:'monitor',sources:'monitor',wahl:'monitor',
+  policy:'policy',docs:'policy',types:'policy',cal:'policy',institutions:'policy',
+  dir:'stakeholder',orgs:'stakeholder',brief:'reporting',reports:'reporting'};
+
+function setWorkspace(ws,skipView){
+  S.ws=ws;store.set('ps_ws',ws);
+  document.querySelectorAll('#ws-switch .ws').forEach(e=>e.classList.toggle('active',e.dataset.ws===ws));
+  renderWsNav();
+  if(!skipView){
+    const first=(WORKSPACES[ws].views||[])[0];
+    if(ws==='dash')setView('dash');
+    else if(first){first.act?first.act():setView(first.view);}
+  }
+  renderWsContext();
+}
+function renderWsNav(){
+  const ws=WORKSPACES[S.ws]||WORKSPACES.dash;
+  const el=g('ws-nav');
+  if(!ws.views.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="ws-title">${ws.label}</div>`+ws.views.map(v=>{
+    const on=(v.view&&S.view===v.view)||(v.id==='activity'&&S.view==='feed')||
+             (v.id==='people'&&S.view==='dir'&&S.dirMode==='people')||
+             (v.id==='comm'&&S.view==='dir'&&S.dirMode==='comm')||
+             (v.id==='chg'&&S.view==='dir'&&S.dirMode==='changes');
+    const badge=v.id==='monitors'?MONITORS.length:v.id==='procs'?(DIP.counts?.procedures||processes().length):
+                v.id==='docs'?ALL_DOCS.length:v.id==='people'?PEOPLE.length:v.id==='orgs'?orgList().length:'';
+    return`<div class="wsnav${on?' active':''}" onclick="wsGo('${S.ws}','${v.id}')"><span class="ic">${v.icon}</span>${v.label}${badge?`<span class="cnt">${badge}</span>`:''}</div>`;
+  }).join('');
+}
+function wsGo(ws,id){
+  const v=(WORKSPACES[ws].views||[]).find(x=>x.id===id);if(!v)return;
+  S.ws=ws;
+  if(v.act)v.act();else setView(v.view);
+  renderWsNav();renderWsContext();
+}
+/* Kontextfilter je Arbeitsbereich – Themen und Feeds nur dort, wo sie wirken */
+/* Einklappbare Gruppe in der Kontextleiste; Zustand wird gemerkt */
+function grp(key,label,inner){
+  const closed=(store.get('ps_ctxclosed')||[]).includes(key);
+  return`<div class="ctx-grp${closed?' closed':''}" id="cg-${key}">
+    <div class="ws-title" onclick="toggleCtx('${key}')"><span class="sarw">▼</span>${label}</div>
+    <div class="ctx-body">${inner}</div></div>`;
+}
+function toggleCtx(key){
+  const el=g('cg-'+key);if(!el)return;
+  el.classList.toggle('closed');
+  const c=new Set(store.get('ps_ctxclosed')||[]);
+  el.classList.contains('closed')?c.add(key):c.delete(key);
+  store.set('ps_ctxclosed',[...c]);
+}
+function renderWsContext(){
+  const el=g('ws-context');if(!el)return;
+  if(S.ws==='monitor'){
+    /* Feeds bleiben immer sichtbar – auch in Monitor- und Story-Ansicht.
+       Vorher verschwand die Nachrichten-Navigation beim Wechsel. */
+    el.innerHTML=
+       grp('feeds','Nachrichten-Feeds',`<div id="ctx-feeds"></div>`)
+      +grp('ressorts','Ressorts',`<div class="nav-chip-wrap" id="nav-topics"></div><div id="nav-topics-more"></div>`)
+      +grp('themen','Eigene Themen',`<div class="nav-chip-wrap" id="my-topics"></div>
+         <div style="padding:0 8px 6px"><button class="btn sm" style="width:100%;justify-content:center" onclick="proGate('mytopics',openTopicModal)">+ Thema anlegen</button></div>`)
+      +grp('filter','Gespeicherte Filter',`<div id="saved-list"></div>`);
+    g('ctx-feeds').innerHTML=['news','eu','bt','br','laender','us'].map(k=>
+      `<div class="wsnav${S.view==='feed'&&S.section===k?' active':''}" onclick="setSection('${k}')">${SET_LABEL[k]}<span class="cnt">${rawPool(k).length}</span></div>`).join('');
+    buildNavTopics();renderMyTopics();renderSaved();
+  }else if(S.ws==='dash'){
+    el.innerHTML=grp('ressorts','Ressorts',`<div class="nav-chip-wrap" id="nav-topics"></div><div id="nav-topics-more"></div>`);
+    buildNavTopics();
+  }else if(S.ws==='policy'){
+    el.innerHTML=grp('inst','Institutionen',`<div id="nav-insts"></div>`);
+    buildNavInsts();
+  }else if(S.ws==='stakeholder'){
+    el.innerHTML=grp('parl','Parlamente',`<div class="nav-chip-wrap" id="dir-parl-ctx"></div>`);
+    const inUse=new Set(PEOPLE.map(p=>p.parliament));
+    g('dir-parl-ctx').innerHTML=[['all','Alle'],['bt','Bundestag'],['br','Bundesrat'],['ep','Europ. Parlament'],['us','US-Kongress']]
+      .filter(([id])=>id==='all'||inUse.has(id))
+      .map(([id,l])=>`<span class="chip${S.dirParl===id?' active':''}" onclick="S.dirParl='${id}';buildDirFilters();reRender('dir');renderWsContext()">${l}</span>`).join('');
+  }else el.innerHTML='';
+}
+
+/* ── MONITOR-ANSICHT ────────────────────────────────────────────────── */
+function renderMonitor(){
+  const el=g('view-monitor');if(!el)return;
+  if(S.monitorId){renderMonitorDetail();return;}
+  const cards=MONITORS.map(m=>{
+    const st=monitorState(m);
+    return`<div class="mon-card" onclick="openMonitor('${m.id}')" style="--mc:${m.color||'#2563eb'}">
+      <div class="mon-hd"><span class="mon-dot"></span><h3>${esc(m.name)}</h3>
+        <span class="mon-new">${st.neu.length} neu</span></div>
+      <div class="mon-sev">
+        ${st.bySeverity.critical?`<span class="sev crit">🔴 ${st.bySeverity.critical} kritisch</span>`:''}
+        ${st.bySeverity.important?`<span class="sev imp">🟠 ${st.bySeverity.important} wichtig</span>`:''}
+        <span class="sev new">🔵 ${st.bySeverity.new} neu</span>
+        <span class="sev ${st.trendPct>=15?'up':st.trendPct<=-15?'down':''}">${st.trendPct>0?'↑':st.trendPct<0?'↓':'→'} ${Math.abs(st.trendPct)} %</span>
+      </div>
+      <div class="mon-stories">${st.stories.slice(0,3).map(s=>`<div class="mon-story"><b>${esc(s.title.slice(0,90))}</b>
+        <span>${s.sources.length} Quellen · ${s.articles.length} Artikel · ${rel(s.last)}</span></div>`).join('')||'<div class="mon-empty">Keine Entwicklung in 48 Stunden.</div>'}</div>
+      <div class="mon-foot">
+        <span>⚖ ${st.policy.length} Verfahren</span><span>👤 ${st.stakeholders.length} Akteure</span><span>📅 ${st.events.length} Termine</span>
+      </div></div>`;}).join('');
+  el.innerHTML=`<div class="plain-head"><div><h1>Meine Monitore</h1>
+      <div class="sub" style="margin:0">Ein Monitor bündelt Themen, Begriffe, Quellen, Institutionen und Personen zu einem dauerhaften Beobachtungsauftrag.</div></div>
+      <button class="btn p" onclick="newMonitor()">+ Monitor anlegen</button></div>
+    <div class="mon-grid">${cards||'<div class="gap-note">Noch kein Monitor. Lege einen an – er sammelt fortlaufend Meldungen, Verfahren, Akteure und Termine zu deinem Thema.</div>'}</div>
+    ${upgradeCandidates().length?`<div class="ws-title" style="padding-left:0;margin-top:18px">Aus v5 übernehmen</div>
+      <div class="gap-note" style="margin-bottom:8px">Diese eigenen Themen und gespeicherten Filter sind noch keine Monitore. Ein Monitor beobachtet zusätzlich Verfahren, Akteure und Termine.</div>
+      <div class="mon-grid">${upgradeCandidates().map(c=>`<div class="mon-card" style="--mc:${c.color||'#8b92a8'};border-left-style:dashed" onclick="upgradeToMonitor('${c.kind}','${c.id}')">
+        <div class="mon-hd"><span class="mon-dot"></span><h3>${esc(c.name)}</h3><span class="chip">${c.kind==='topic'?'Eigenes Thema':'Filter'}</span></div>
+        <div class="mon-empty" style="text-align:left;padding:4px 0">${esc(c.desc)}</div>
+        <div class="mon-foot"><span>＋ Als Monitor übernehmen</span></div></div>`).join('')}</div>`:''}`;
+}
+/* Eigene Themen und gespeicherte Filter aus v5 bleiben bestehen und lassen sich
+   in vollwertige Monitore überführen – nichts geht verloren. */
+function upgradeCandidates(){
+  const have=new Set(MONITORS.map(m=>m.id));
+  return[
+    ...MYTOPICS.filter(t=>!have.has(t.id)).map(t=>({kind:'topic',id:t.id,name:t.name,color:t.color,
+      desc:(t.kw||[]).join(', ')+((t.not||[]).length?' · ohne '+t.not.join(', '):'')})),
+    ...SAVED.filter(f=>!have.has(f.id)).map(f=>({kind:'filter',id:f.id,name:f.name,color:f.color,
+      desc:[SET_LABEL[f.section]||f.section,f.topic&&f.topic!=='all'?chipLabel(f.topic):'',
+            ...(f.tokens||[]).map(t=>(t.not?'NICHT ':'')+t.v)].filter(Boolean).join(' · ')}))];
+}
+function upgradeToMonitor(kind,id){
+  const src=kind==='topic'?MYTOPICS.find(t=>t.id===id):SAVED.find(f=>f.id===id);
+  if(!src)return;
+  MONITORS.push(kind==='topic'
+    ?{id:src.id,name:src.name,color:src.color,keywords:src.kw||[],exclude:src.not||[],topics:[],
+      sources:[],institutions:[],people:[],processes:[],lastSeen:src.lastSeen||new Date(Date.now()-864e5).toISOString(),
+      notify:{app:true,mail:false},createdAt:new Date().toISOString()}
+    :{id:src.id,name:src.name,color:src.color,
+      keywords:(src.tokens||[]).filter(t=>!t.not).map(t=>t.v),
+      exclude:(src.tokens||[]).filter(t=>t.not).map(t=>t.v),
+      topics:src.topic&&src.topic!=='all'&&!src.topic.startsWith('__')?[src.topic]:[],
+      sources:src.src&&src.src!=='all'?[src.src]:[],institutions:[],people:[],processes:[],
+      lastSeen:src.lastSeen||new Date(Date.now()-864e5).toISOString(),
+      notify:src.notify||{app:true,mail:false},createdAt:new Date().toISOString()});
+  monitorStore.save();reRender('monitor');renderWsNav();updateWsBadges();
+}
+function openMonitor(id){S.monitorId=id;setView('monitor');reRender('monitor');}
+function closeMonitor(){S.monitorId=null;reRender('monitor');}
+function renderMonitorDetail(){
+  const m=MONITORS.find(x=>x.id===S.monitorId);if(!m){closeMonitor();return;}
+  const st=monitorState(m);
+  m.lastSeen=new Date().toISOString();monitorStore.save();
+  g('view-monitor').innerHTML=`
+    <div class="plain-head"><button class="btn sm" onclick="closeMonitor()">← Monitore</button>
+      <div style="flex:1"><h1 style="display:flex;align-items:center;gap:8px"><span class="mon-dot" style="--mc:${m.color||'#2563eb'}"></span>${esc(m.name)}</h1>
+      <div class="sub" style="margin:0">${st.all.length} Meldungen insgesamt · ${st.win.length} in 48 h · ${st.neu.length} seit dem letzten Besuch</div></div>
+      <button class="btn sm" onclick="editMonitor('${m.id}')">Bearbeiten</button>
+      <button class="btn sm" onclick="buildReport('monitor','${m.id}')">↓ Report</button></div>
+    <div class="mon-detail">
+      <div>
+        <div class="dcard"><div class="dcard-hd"><h2>Neue Entwicklungen</h2>
+          <span class="eyebrow">${st.bySeverity.critical} kritisch · ${st.bySeverity.important} wichtig · ${st.bySeverity.new} neu</span></div>
+          <div class="kind-bar">${Object.entries(KINDS_MON).map(([k,v])=>{
+            const n=(st.allStories||st.stories).filter(x=>x.kind===k).length;
+            return`<span class="chip${S.monKind===k?' active':''}" title="${v.d}" style="${S.monKind===k?`background:${v.c};border-color:${v.c}`:`border-color:${v.c}55;color:${v.c}`}"
+              onclick="S.monKind=S.monKind==='${k}'?null:'${k}';reRender('monitor')">${v.ic} ${v.l} ${n}</span>`;}).join('')}
+            ${S.monKind?`<span class="chip" onclick="S.monKind=null;reRender('monitor')">✕ Filter</span>`:''}</div>
+          <div class="dcard-body">${(st.allStories||st.stories).filter(x=>!S.monKind||x.kind===S.monKind).slice(0,14).map(s=>storyRow(s)).join('')||'<div class="mon-empty">Nichts in dieser Auswahl.</div>'}</div>
+          <div class="story-help">Eine <b>Story</b> fasst Meldungen zusammen, die dieselbe Sache behandeln – erkannt an der Ähnlichkeit der Schlagzeilen.
+            Je mehr unabhängige Quellen berichten, desto höher die Einstufung: <span style="color:${SEV.critical.c}">kritisch</span> ab fünf Quellen in sechs Stunden,
+            <span style="color:${SEV.important.c}">wichtig</span> ab drei Quellen, sonst <span style="color:${SEV.new.c}">neu</span>.</div></div>
+      </div>
+      <aside class="mon-side">
+        <div class="dcard mini"><div class="dcard-hd"><h2>Trend</h2></div><div class="dcard-body">
+          <div class="trendbig ${st.trendPct>=15?'up':st.trendPct<=-15?'down':''}">${st.trendPct>0?'↑':st.trendPct<0?'↓':'→'} ${Math.abs(st.trendPct)} %</div>
+          <div class="mon-empty" style="text-align:left">Meldungsaufkommen der letzten 48 Stunden gegenüber den 48 Stunden davor.</div></div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Policy-Aktivität</h2><span class="cnt">${st.policy.length}</span></div>
+          <div class="dcard-body scrollbox">${st.policy.map(p=>`<div class="mini-row" onclick="openProcess('${p.id}')">
+            <div class="mt">${esc(p.title)}</div><div class="mm"><span class="stage-dot" style="background:${stageColor(p.stage)}"></span>${STAGE_L[p.stage]||''} · ${rel(p.updated||p.date)}</div></div>`).join('')||'<div class="mon-empty">Keine laufenden Verfahren zugeordnet.</div>'}</div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Akteure</h2><span class="cnt">${st.stakeholders.length}</span></div>
+          <div class="dcard-body scrollbox">${st.stakeholders.map(p=>`<div class="mini-row" onclick="openPerson('${p.id}')">
+            <div class="mt">${esc(p.name)}</div><div class="mm">${esc(p.party||'')} · ${esc(parlLabel(p))}</div></div>`).join('')||'<div class="mon-empty">Keine Akteure erkannt.</div>'}</div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Bevorstehend</h2><span class="cnt">${st.events.length}</span></div>
+          <div class="dcard-body scrollbox">${st.events.map(c=>`<div class="mini-row" onclick="window.open('${esc(c.link)}','_blank')">
+            <div class="mt">${esc(c.title)}</div><div class="mm"><span class="when">${c.dateLabel}</span></div></div>`).join('')||'<div class="mon-empty">Keine Termine.</div>'}</div></div>
+      </aside></div>`;
+}
+function storyRow(s){
+  const sev=SEV[s.severity],kn=KINDS_MON[s.kind]||KINDS_MON.presse;
+  return`<div class="story" onclick="openStory('${s.id}')">
+    <span class="sev-bar" style="background:${sev.c}"></span>
+    <div style="flex:1;min-width:0">
+      <div class="dl-eb"><span class="kindbadge" style="background:${kn.c}18;color:${kn.c};border-color:${kn.c}44" title="${kn.d}">${kn.ic} ${kn.l}</span>
+        <span class="tag" style="color:${sev.c}">${sev.l}</span>
+        ${s.topics.slice(0,2).map(t=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')}</span>`).join('')}</div>
+      <div class="dl-t">${esc(s.title)}</div>
+      <div class="dl-m">${s.sources.length} Quelle${s.sources.length===1?'':'n'} · ${s.articles.length} Artikel · ${rel(s.last)}${
+        (s.speakers||[]).length?' · 🗣 '+s.speakers.map(p=>esc(p.name)).join(', '):''}</div>
+    </div></div>`;
+}
+function openStory(id){
+  const s=buildStories(48).find(x=>x.id===id);if(!s)return;
+  const m=g('story-modal');
+  m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('story-modal').classList.remove('open')">✕</button>
+    <div class="dl-eb"><span class="tag" style="color:${SEV[s.severity].c}">${SEV[s.severity].l}</span>
+      <span class="eyebrow">${s.sources.length} Quellen · ${s.articles.length} Artikel · seit ${rel(s.first)}</span></div>
+    <h2 style="margin:6px 0 4px">${esc(s.title)}</h2>
+    <div class="wiki" style="margin-bottom:10px">${esc((s.lead.desc||'').slice(0,420))}</div>
+    <div class="kind-split">${Object.entries(s.kinds||{}).map(([k,n])=>{const v=KINDS_MON[k]||KINDS_MON.presse;
+      return`<span class="kindbadge" style="background:${v.c}18;color:${v.c};border-color:${v.c}44">${v.ic} ${v.l} ${n}</span>`;}).join('')}
+      ${(s.speakers||[]).map(p=>`<span class="kindbadge" style="border-color:var(--border)" onclick="event.stopPropagation();g('story-modal').classList.remove('open');openPerson('${p.id}')">🗣 ${esc(p.name)}</span>`).join('')}</div>
+    <div class="eyebrow" style="margin-bottom:6px">Berichterstattung</div>
+    <div style="max-height:44vh;overflow:auto">${s.articles.map(a=>`<div class="mini-row" onclick="window.open('${esc(a.link)}','_blank')">
+      <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')}</div>
+    <div class="m-acts"><button class="btn p" onclick="window.open('${esc(s.lead.link)}','_blank')">🔗 Leitartikel öffnen</button>
+      <button class="btn" onclick="navigator.clipboard.writeText(storyText('${s.id}'))">📋 Story kopieren</button></div>`;
+  m.classList.add('open');
+}
+function storyText(id){const s=buildStories(48).find(x=>x.id===id);if(!s)return'';
+  return`${s.title}\n${s.sources.length} Quellen · ${s.articles.length} Artikel\n\n`+
+    s.articles.map(a=>`• [${a.source}] ${a.title}\n  ${a.link||''}`).join('\n');}
+
+/* ── STORIES-ÜBERSICHT ──────────────────────────────────────────────── */
+function renderStories(){
+  const el=g('view-stories');if(!el)return;
+  const all=buildStories(S.storyWin||48);
+  const list=all.filter(s=>S.storySev==='all'||!S.storySev?true:s.severity===S.storySev);
+  el.innerHTML=`<div class="plain-head"><div><h1>Stories</h1>
+      <div class="sub" style="margin:0">Meldungen, die dieselbe Sache behandeln, zu einer Story zusammengefasst – je mehr unabhängige Quellen, desto höher die Einstufung.
+        <b>kritisch</b> ab fünf Quellen in sechs Stunden · <b>wichtig</b> ab drei Quellen · sonst <b>neu</b>.</div></div>
+    <div class="seg"><button class="${!S.storySev||S.storySev==='all'?'active':''}" onclick="S.storySev='all';reRender('stories')">Alle ${all.length}</button>
+      <button class="${S.storySev==='critical'?'active':''}" onclick="S.storySev='critical';reRender('stories')">🔴 ${all.filter(s=>s.severity==='critical').length}</button>
+      <button class="${S.storySev==='important'?'active':''}" onclick="S.storySev='important';reRender('stories')">🟠 ${all.filter(s=>s.severity==='important').length}</button></div>
+    <div class="seg"><button class="${(S.storyWin||48)===24?'active':''}" onclick="S.storyWin=24;reRender('stories')">24 h</button>
+      <button class="${(S.storyWin||48)===48?'active':''}" onclick="S.storyWin=48;reRender('stories')">48 h</button></div></div>
+    <div class="dcard"><div class="dcard-body">${list.slice(0,80).map(storyRow).join('')||'<div class="gap-note">Keine Stories im Zeitraum.</div>'}</div></div>`;
+}
+
+/* ── QUELLEN-ÜBERSICHT ──────────────────────────────────────────────── */
+function renderSources(){
+  const el=g('view-sources');if(!el)return;
+  const map={};
+  pool('all').forEach(a=>{const s=(map[a.source]=map[a.source]||{n:0,last:'',set:a._set,topics:{},cat:a.cat});
+    s.n++;if((a.date||'')>s.last)s.last=a.date;(a.topics||[]).map(normTopic).forEach(t=>t&&(s.topics[t]=(s.topics[t]||0)+1));});
+  const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
+  const fails=(META.news?.feeds_fail||0)+(META.eu?.feeds_fail||0)+(META.bt?.feeds_fail||0);
+  el.innerHTML=`<div class="plain-head"><div><h1>Quellen</h1>
+    <div class="sub" style="margin:0">${rows.length} liefernde Quellen · ${fails} Feeds ohne Ergebnis im letzten Lauf</div></div></div>
+    <div class="src-grid">${rows.map(([name,s])=>{
+      const top=Object.entries(s.topics).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      return`<div class="src-card" onclick="setSection('${s.set}');setSrc('${esc(name).replace(/'/g,"\\'")}')">
+        <div class="sc-hd"><span class="sbadge" style="background:${srcC(name).bg};color:${srcC(name).tc}">${esc(name)}</span><span class="cnt">${s.n}</span></div>
+        <div class="sc-m">zuletzt ${rel(s.last)} · ${SET_LABEL[s.set]||s.set}</div>
+        <div class="sc-t">${top.map(([t,n])=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')} ${n}</span>`).join('')}</div></div>`;}).join('')}</div>`;
+}
+
+/* ── POLICY-ANSICHT ─────────────────────────────────────────────────── */
+const STAGE_COL={eingebracht:'#6b7280',ausschuss:'#d97706',bundestag:'#2563eb',bundesrat:'#7c3aed',verkuendet:'#16a34a'};
+const stageColor=s=>STAGE_COL[s]||'#6b7280';
+function renderPolicy(){
+  const el=g('view-policy');if(!el)return;
+  if(S.processId){renderProcess();return;}
+  const all=processes();
+  if(!all.length){el.innerHTML=`<div class="plain-head"><div><h1>Verfahren</h1></div></div>
+    <div class="gap-note"><strong>dip.json fehlt.</strong> <code>fetch_directory.py</code> holt Gesetzgebungsvorgänge aus der DIP-API des Bundestags – danach steht hier jedes Verfahren mit Stand, Verlauf, Dokumenten und beteiligten Akteuren.</div>`;return;}
+  const q=(S.policyQ||'').toLowerCase();
+  const list=all.filter(p=>(!S.policyStage||p.stage===S.policyStage)&&(!S.policyTopic||p.topic===S.policyTopic)&&(!q||p.title.toLowerCase().includes(q)))
+    .sort((a,b)=>(b.updated||b.date||'').localeCompare(a.updated||a.date||''));
+  const byStage={};all.forEach(p=>byStage[p.stage]=(byStage[p.stage]||0)+1);
+  const byTopic={};all.forEach(p=>byTopic[p.topic]=(byTopic[p.topic]||0)+1);
+  el.innerHTML=`<div class="plain-head"><div><h1>Verfahren</h1>
+      <div class="sub" style="margin:0">${all.length} Gesetzgebungsvorgänge aus dem Dokumentations- und Informationssystem des Bundestags</div></div>
+      <input class="fsel" style="min-width:200px" placeholder="Verfahren suchen…" value="${esc(S.policyQ||'')}" oninput="S.policyQ=this.value;debounce(()=>reRender('policy'),200)"></div>
+    <div class="stage-bar">${STAGES.map(st=>`<span class="chip${S.policyStage===st?' active':''}" style="${S.policyStage===st?`background:${stageColor(st)};border-color:${stageColor(st)}`:`border-color:${stageColor(st)}55;color:${stageColor(st)}`}"
+      onclick="S.policyStage=S.policyStage==='${st}'?null:'${st}';reRender('policy')">${STAGE_L[st]} ${byStage[st]||0}</span>`).join('')}
+      ${Object.entries(byTopic).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([t,n])=>`<span class="chip${S.policyTopic===t?' active':''}" onclick="S.policyTopic=S.policyTopic==='${t}'?null:'${t}';reRender('policy')">${TOPIC_KW_L[t]||t} ${n}</span>`).join('')}</div>
+    <div class="proc-list">${list.slice(0,120).map(p=>`<div class="proc" onclick="openProcess('${p.id}')">
+      <div class="proc-main"><div class="dl-eb"><span class="doc-type">${esc(p.type||'Vorgang')}</span>
+        ${p.wp?`<span class="tag">WP ${esc(p.wp)}</span>`:''}<span class="tag c" style="--tc:${topicColor(p.topic)}">${TOPIC_KW_L[p.topic]||p.topic}</span></div>
+        <div class="proc-t">${esc(p.title)}</div>
+        <div class="dl-m">${esc(p.status||'')}${p.initiative?' · '+esc(p.initiative):''} · aktualisiert ${rel(p.updated||p.date)}</div></div>
+      <div class="proc-stage">${pipeHTML(p.stage)}</div></div>`).join('')||'<div class="gap-note">Keine Verfahren in dieser Auswahl.</div>'}</div>`;
+}
+function openProcess(id){S.processId=id;setView('policy');reRender('policy');}
+function closeProcess(){S.processId=null;reRender('policy');}
+function renderProcess(){
+  const p=processById(S.processId);if(!p){closeProcess();return;}
+  const news=processNews(p),docs=processDocs(p),shs=processStakeholders(p),evs=processEvents(p);
+  const idx=Math.max(0,STAGES.indexOf(p.stage));
+  g('view-policy').innerHTML=`
+    <div class="plain-head"><button class="btn sm" onclick="closeProcess()">← Verfahren</button>
+      <div style="flex:1"><h1 style="font-size:20px">${esc(p.title)}</h1>
+        <div class="sub" style="margin:0">${esc(p.type||'')} · WP ${esc(p.wp||'')} · ${esc(p.initiative||'')}</div></div>
+      <a class="btn sm" href="${esc(p.link)}" target="_blank" rel="noopener">Auf dip.bundestag.de ↗</a>
+      <button class="btn sm p" onclick="buildReport('policy','${p.id}')">↓ Statusbericht</button></div>
+
+    <div class="proc-status"><span class="stage-dot big" style="background:${stageColor(p.stage)}"></span>
+      <div><div class="ps-l">Aktueller Stand</div><div class="ps-v">${STAGE_L[p.stage]||p.stage}</div>
+      ${p.status?`<div class="ps-s">${esc(p.status)}</div>`:''}</div>
+      <div style="flex:1"></div>
+      ${monitorsFor(p).map(m=>`<span class="chip" style="border-color:${m.color}">◎ ${esc(m.name)}</span>`).join('')}
+      <button class="btn sm" onclick="addToMonitor('process','${p.id}')">＋ In Monitor aufnehmen</button></div>
+
+    <div class="tl">${STAGES.map((st,i)=>`<div class="tl-step ${i<idx?'done':i===idx?'now':''}">
+        <span class="tl-dot"></span><div class="tl-l">${STAGE_L[st]}</div></div>`).join('')}</div>
+
+    <div class="proc-grid">
+      <div>
+        <div class="dcard"><div class="dcard-hd"><h2>Verlauf</h2><span class="cnt">${(p.stations||[]).length}</span></div>
+          <div class="dcard-body">${(p.stations||[]).slice().reverse().map(st=>`<div class="station">
+            <div class="st-d">${esc(st.date||'')}</div><div><div class="st-t">${esc(st.title||st.type||'')}</div>
+            ${st.body?`<div class="st-b">${esc(st.body)}</div>`:''}</div></div>`).join('')||'<div class="mon-empty">Kein Verlauf im Datensatz. Die DIP-API liefert ihn im Feld <code>vorgangsverlauf</code>.</div>'}</div></div>
+
+        <div class="dcard" style="margin-top:12px"><div class="dcard-hd"><h2>Berichterstattung</h2><span class="cnt">${news.length}</span>
+          <span class="eyebrow">verknüpft über Drucksachennummer und Titelbezug</span></div>
+          <div class="dcard-body">${news.map(a=>`<div class="mini-row" id="mr-${a.id}" onclick="toggleMini('${a.id}','art')">
+            <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-${a.id}"></div>`).join('')||'<div class="mon-empty">Keine Meldungen zugeordnet.</div>'}</div></div>
+      </div>
+      <aside class="mon-side">
+        <div class="dcard mini"><div class="dcard-hd"><h2>Dokumente</h2><span class="cnt">${docs.length}</span></div>
+          <div class="dcard-body scrollbox">${docs.map(d=>`<div class="mini-row" onclick="${d._dip||d.number?`window.open('${esc(d.link)}','_blank')`:`openDoc('${d.id}')`}">
+            <div class="mt">${esc(d.title)}</div><div class="mm"><span class="doc-type">${esc(d.type||'Dokument')}</span><span>${esc(d.number||fd(d.date))}</span></div></div>`).join('')||'<div class="mon-empty">Keine Dokumente zugeordnet.</div>'}</div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Beteiligte</h2><span class="cnt">${shs.length}</span></div>
+          <div class="dcard-body scrollbox">${shs.map(x=>`<div class="mini-row" onclick="openPerson('${x.id}')">
+            <div class="mt">${esc(x.name)}</div><div class="mm">${esc(x.party||'')} · ${esc((x.committees||[])[0]?.name||parlLabel(x))}</div></div>`).join('')||'<div class="mon-empty">Zuordnung über Ausschüsse und Namensnennung – hier ohne Treffer.</div>'}</div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Termine</h2><span class="cnt">${evs.length}</span></div>
+          <div class="dcard-body scrollbox">${evs.map(c=>`<div class="mini-row" onclick="window.open('${esc(c.link)}','_blank')">
+            <div class="mt">${esc(c.title)}</div><div class="mm"><span class="when">${c.dateLabel}</span></div></div>`).join('')||'<div class="mon-empty">Keine Termine zugeordnet.</div>'}</div></div>
+      </aside></div>`;
+}
+function monitorsFor(p){return MONITORS.filter(m=>(m.processes||[]).includes(p.id));}
+
+/* ── INSTITUTIONEN ──────────────────────────────────────────────────── */
+function renderInstitutions(){
+  const el=g('view-institutions');if(!el)return;
+  const list=instList();
+  el.innerHTML=`<div class="plain-head"><div><h1>Institutionen</h1>
+    <div class="sub" style="margin:0">${list.length} Institutionen mit eigener Berichterstattung</div></div></div>
+    <div class="src-grid">${list.map(i=>`<div class="src-card" onclick="instNav('${i.inst}')">
+      <div class="sc-hd"><strong>${esc(i.name)}</strong><span class="cnt">${i.count}</span></div>
+      <div class="sc-m">${(PEOPLE.filter(p=>p.parliament===(i.inst==='bundestag'?'bt':i.inst==='bundesrat'?'br':i.inst==='ep'?'ep':'')).length)||0} Personen im Verzeichnis</div></div>`).join('')}</div>`;
+}
+
+/* ── ORGANISATIONEN ─────────────────────────────────────────────────── */
+function renderOrgs(){
+  const el=g('view-orgs');if(!el)return;
+  const list=orgList();
+  el.innerHTML=`<div class="plain-head"><div><h1>Organisationen</h1>
+    <div class="sub" style="margin:0">Denkfabriken und Institute, die eigene Analysen veröffentlichen. Verbände und Unternehmen kommen dazu, sobald das Lobbyregister angebunden ist (siehe Architekturdokument).</div></div></div>
+    ${list.length?`<div class="src-grid">${list.map(o=>`<div class="src-card" onclick="setSection('eu');setSrc('${esc(o.name).replace(/'/g,"\\'")}')">
+      <div class="sc-hd"><strong>${esc(o.name)}</strong><span class="cnt">${o.articles.length}</span></div>
+      <div class="sc-m">zuletzt ${rel(o.articles[0].date)}</div>
+      <div class="sc-t">${o.policyAreas.slice(0,4).map(t=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')}</span>`).join('')}</div>
+      <div class="sc-last">${esc(o.articles[0].title.slice(0,80))}</div></div>`).join('')}</div>`
+    :'<div class="gap-note">Noch keine Organisationen erkannt – sie entstehen aus Quellen der Kategorie <code>eu-think</code>.</div>'}`;
+}
+
+/* ── REPORTING ──────────────────────────────────────────────────────── */
+let REPORTS=[];
+function buildReport(kind,ref){
+  const now=new Date();
+  let title='',sections=[];
+  if(kind==='monitor'){
+    const m=MONITORS.find(x=>x.id===ref);if(!m)return;
+    const st=monitorState(m);
+    title=`Monitorbericht: ${m.name}`;
+    sections=[
+      {h:'Zusammenfassung',t:`${st.win.length} Meldungen in 48 Stunden (${st.trendPct>0?'+':''}${st.trendPct} % gegenüber der Vorperiode), `+
+        `${st.bySeverity.critical} kritische und ${st.bySeverity.important} wichtige Entwicklungen, `+
+        `${st.policy.length} laufende Verfahren, ${st.events.length} bevorstehende Termine.`},
+      {h:'Wichtigste Entwicklungen',list:st.stories.slice(0,8).map(s=>`${s.title} — ${s.sources.length} Quellen, ${rel(s.last)}`)},
+      {h:'Policy-Verfahren',list:st.policy.map(p=>`${p.title} — Stand: ${STAGE_L[p.stage]||p.stage}`)},
+      {h:'Akteure',list:st.stakeholders.map(p=>`${p.name} (${p.party||''}, ${parlLabel(p)})`)},
+      {h:'Termine',list:st.events.map(c=>`${c.dateLabel} — ${c.title}`)},
+      {h:'Quellenlage',list:[...new Set(st.win.map(a=>a.source))].slice(0,12)},
+    ];
+  }else if(kind==='policy'){
+    const p=processById(ref);if(!p)return;
+    const news=processNews(p),docs=processDocs(p),shs=processStakeholders(p),evs=processEvents(p);
+    title=`Statusbericht: ${p.title}`;
+    sections=[
+      {h:'Stand',t:`${STAGE_L[p.stage]||p.stage}${p.status?' — '+p.status:''}. Initiative: ${p.initiative||'unbekannt'}. Zuletzt aktualisiert ${fd(p.updated||p.date)}.`},
+      {h:'Verlauf',list:(p.stations||[]).slice().reverse().map(s=>`${s.date||''} — ${s.title||s.type||''}`)},
+      {h:'Dokumente',list:docs.map(d=>`${d.type||'Dokument'} ${d.number||''} — ${d.title}`)},
+      {h:'Beteiligte',list:shs.map(x=>`${x.name} (${x.party||''})`)},
+      {h:'Berichterstattung',list:news.slice(0,10).map(a=>`[${a.source}] ${a.title}`)},
+      {h:'Termine',list:evs.map(c=>`${c.dateLabel} — ${c.title}`)},
+    ];
+  }else if(kind==='daily'){
+    const win=buildStories(24);
+    title='Tagesbriefing '+now.toLocaleDateString('de-DE');
+    const heute=new Date();heute.setHours(0,0,0,0);
+    sections=[
+      {h:'Zusammenfassung',t:`${win.length} Stories in 24 Stunden, `+
+        `${win.filter(s=>s.severity==='critical').length} davon kritisch. `+
+        `${processes().filter(p=>ageH(p.updated||p.date)<24).length} Verfahren bewegt, `+
+        `${calItems().filter(c=>c.date>=heute).length} anstehende Termine.`},
+      {h:'Wichtigste Entwicklungen',list:win.slice(0,10).map(s=>`${s.title} — ${s.sources.length} Quellen`)},
+      {h:'Policy-Bewegung',list:processes().filter(p=>ageH(p.updated||p.date)<48).slice(0,8).map(p=>`${p.title} — ${STAGE_L[p.stage]||p.stage}`)},
+      {h:'Neue Dokumente',list:ALL_DOCS.filter(d=>ageH(d.date)<24).slice(0,8).map(d=>`${d.type} — ${d.title}`)},
+      {h:'Termine',list:calItems().filter(c=>c.date>=heute).slice(0,8).map(c=>`${c.dateLabel} — ${c.title}`)},
+    ];
+  }
+  const rep={id:'r'+Date.now(),kind,ref,title,createdAt:now.toISOString(),sections};
+  REPORTS.unshift(rep);store.set('ps_reports',REPORTS.slice(0,30));
+  S.reportId=rep.id;setWorkspace('reporting',true);setView('reports');reRender('reports');
+  return rep;
+}
+function reportText(r){
+  return`${r.title}\n${new Date(r.createdAt).toLocaleString('de-DE')}\n${'='.repeat(56)}\n\n`+
+    r.sections.map((s,i)=>`${i+1}. ${s.h.toUpperCase()}\n`+
+      (s.t?s.t+'\n':'')+(s.list&&s.list.length?s.list.map(x=>'   • '+x).join('\n')+'\n':(s.list?'   (keine Einträge)\n':''))).join('\n')+
+    `\nErstellt mit Presseschau · Quellen: eigene Feeds, DIP des Bundestags, abgeordnetenwatch, EP Open Data`;
+}
+function renderReports(){
+  const el=g('view-reports');if(!el)return;
+  const r=REPORTS.find(x=>x.id===S.reportId)||REPORTS[0];
+  el.innerHTML=`<div class="plain-head"><div><h1>Reports</h1>
+      <div class="sub" style="margin:0">Aus Monitoren, Verfahren und Akteuren zusammengestellte Berichte.</div></div>
+      <button class="btn p" onclick="buildReport('daily')">+ Tagesbriefing erzeugen</button></div>
+    <div class="rep-layout">
+      <div class="rep-list">${REPORTS.map(x=>`<div class="rep-item${r&&x.id===r.id?' active':''}" onclick="S.reportId='${x.id}';reRender('reports')">
+        <div class="ri-t">${esc(x.title)}</div><div class="ri-m">${fd(x.createdAt)}</div></div>`).join('')||'<div class="mon-empty">Noch kein Report.</div>'}</div>
+      <div class="rep-doc">${r?`<div class="rep-head"><h2>${esc(r.title)}</h2>
+          <div class="sub">${fd(r.createdAt)}</div>
+          <div class="m-acts"><button class="btn sm p" onclick="dl_('${esc(r.title).replace(/[^\w -]/g,'')}.txt',reportText(REPORTS.find(x=>x.id==='${r.id}')),'text/plain;charset=utf-8')">↓ Textdatei</button>
+            <button class="btn sm" onclick="navigator.clipboard.writeText(reportText(REPORTS.find(x=>x.id==='${r.id}')))">📋 Kopieren</button>
+            <button class="btn sm" onclick="window.open('mailto:?subject='+encodeURIComponent('${esc(r.title)}')+'&body='+encodeURIComponent(reportText(REPORTS.find(x=>x.id==='${r.id}')).slice(0,1800)))">✉ Mail</button></div></div>
+        ${r.sections.map((s,i)=>`<section class="rep-sec"><h3>${i+1}. ${esc(s.h)}</h3>
+          ${s.t?`<p>${esc(s.t)}</p>`:''}
+          ${s.list?(s.list.length?`<ul>${s.list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="mon-empty" style="text-align:left">keine Einträge</p>'):''}</section>`).join('')}`
+        :'<div class="gap-note">Wähle links einen Report oder erzeuge ein Tagesbriefing. Aus einem Monitor oder Verfahren heraus lässt sich ebenfalls ein Bericht erstellen.</div>'}</div></div>`;
+}
+
+/* ── MONITOR anlegen/bearbeiten ─────────────────────────────────────── */
+function newMonitor(){editMonitor(null);}
+function editMonitor(id){
+  const m=id?MONITORS.find(x=>x.id===id):null;
+  S.editMonitor=id;
+  const mo=g('monitor-modal');
+  const topics=Object.entries({...NEWS_TL}).map(([k,l])=>({k,l}));
+  mo.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('monitor-modal').classList.remove('open')">✕</button>
+    <h2>${m?'Monitor bearbeiten':'Monitor anlegen'}</h2>
+    <p>Ein Monitor ist kein einmaliger Filter, sondern ein dauerhafter Beobachtungsauftrag: er sammelt fortlaufend Meldungen, Verfahren, Akteure und Termine.</p>
+    <div class="fld"><label>Name</label><input type="text" id="mo-name" value="${esc(m?.name||'')}" placeholder="z. B. KI-Regulierung"></div>
+    <div class="fld"><label>Begriffe (Komma-getrennt)</label><input type="text" id="mo-kw" value="${esc((m?.keywords||[]).join(', '))}" placeholder="ki-verordnung, ai act, algorithmus"></div>
+    <div class="fld"><label>Ausschließen</label><input type="text" id="mo-not" value="${esc((m?.exclude||[]).join(', '))}"></div>
+    <div class="fld"><label>Ressorts</label><div class="tgrid" style="max-height:22vh" id="mo-topics">
+      ${topics.map(t=>`<span class="chip${(m?.topics||[]).includes(t.k)?' sel':''}" data-t="${t.k}" onclick="this.classList.toggle('sel')">${t.l}</span>`).join('')}</div></div>
+    <div class="fld"><label>Institutionen</label><div class="tgrid" style="max-height:16vh" id="mo-inst">
+      ${Object.entries(INST_FLAT).slice(0,18).map(([k,l])=>`<span class="chip${(m?.institutions||[]).includes(k)?' sel':''}" data-i="${k}" onclick="this.classList.toggle('sel')">${esc(l)}</span>`).join('')}</div></div>
+    <div class="fld"><label>Farbe</label><div class="swatches" id="mo-sw">${SWATCHES.map(c=>`<span class="swatch${(m?.color||SWATCHES[0])===c?' sel':''}" style="background:${c}" onclick="document.querySelectorAll('#mo-sw .swatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel')"></span>`).join('')}</div></div>
+    <label class="chk"><input type="checkbox" id="mo-notify" ${m?.notify?.app!==false?'checked':''}> Neue Treffer zählen</label>
+    <div class="m-acts" style="justify-content:space-between">
+      ${m?`<button class="btn danger" onclick="delMonitor('${m.id}')">Löschen</button>`:'<span></span>'}
+      <button class="btn p" onclick="saveMonitor()">Speichern</button></div>`;
+  mo.classList.add('open');setTimeout(()=>g('mo-name').focus(),50);
+}
+function saveMonitor(){
+  const name=g('mo-name').value.trim();if(!name){g('mo-name').focus();return;}
+  const parse=v=>(v||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  const obj={
+    id:S.editMonitor||('m'+Date.now()),name,
+    color:document.querySelector('#mo-sw .swatch.sel')?.style.background||SWATCHES[0],
+    keywords:parse(g('mo-kw').value),exclude:parse(g('mo-not').value),
+    topics:[...document.querySelectorAll('#mo-topics .chip.sel')].map(e=>e.dataset.t),
+    institutions:[...document.querySelectorAll('#mo-inst .chip.sel')].map(e=>e.dataset.i),
+    sources:[],people:[],processes:(MONITORS.find(x=>x.id===S.editMonitor)?.processes)||[],
+    lastSeen:(MONITORS.find(x=>x.id===S.editMonitor)?.lastSeen)||new Date(Date.now()-864e5).toISOString(),
+    notify:{app:g('mo-notify').checked,mail:false},createdAt:new Date().toISOString()
+  };
+  MONITORS=S.editMonitor?MONITORS.map(x=>x.id===obj.id?obj:x):[...MONITORS,obj];
+  monitorStore.save();g('monitor-modal').classList.remove('open');
+  reRender('monitor');renderWsNav();updateWsBadges();
+}
+function delMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);monitorStore.save();
+  g('monitor-modal').classList.remove('open');S.monitorId=null;reRender('monitor');renderWsNav();}
+function addToMonitor(kind,id){
+  if(!MONITORS.length){newMonitor();return;}
+  const name=prompt('In welchen Monitor aufnehmen?\n\n'+MONITORS.map((m,i)=>(i+1)+'. '+m.name).join('\n'));
+  const m=MONITORS[parseInt(name,10)-1];if(!m)return;
+  if(kind==='process'){m.processes=[...new Set([...(m.processes||[]),id])];}
+  monitorStore.save();reRender('policy');
+}
+function updateWsBadges(){
+  const nMon=MONITORS.reduce((n,m)=>n+monitorState(m).neu.length,0);
+  const b=g('ws-monitor-badge');if(b)b.textContent=nMon?nMon:'';
+  const p=g('ws-policy-badge');
+  const moved=processes().filter(x=>ageH(x.updated||x.date)<48).length;
+  if(p)p.textContent=moved?moved:'';
 }
 
 /* ═══ TRENDS (v6): Blasen + Bewegung + verlinkte Artikel ═══ */
@@ -2202,17 +3314,57 @@ neue neuer neues erste ersten zweite dritte laut trotz zudem dabei dazu damit da
 the and for with from that this will has have had not are was were says said new news update
 about after before over under into more most than then they them their there here what which who
 report reports says year years percent billion million first second third could would should may might`.replace(/\s+/g,' ').trim().split(' '));
+/* \b greift bei Umlauten nicht – daher wortweise groß schreiben */
+function titleCase(t){return(t||'').split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1):w).join(' ');}
+function entities(title){
+  const words=(title||'').replace(/[^A-Za-zÄÖÜäöüßÀ-ÿ0-9 .-]/g,' ').split(/\s+/).filter(Boolean);
+  const out=[];let buf=[];
+  const isCap=w=>/^[A-ZÄÖÜ]/.test(w)&&!/^\d+$/.test(w);
+  const drop=w=>STOP.has(w.toLowerCase().replace(/[.,-]$/,''))||w.length<3;
+  const add=arr=>{
+    const term=arr.join(' ').replace(/[.,;:-]+$/,'').toLowerCase();
+    if((arr.length>1&&term.length>6)||(arr.length===1&&term.length>4&&!drop(arr[0])))out.push(term);
+  };
+  const push=()=>{
+    if(!buf.length)return;
+    /* Höchstens drei Wörter je Begriff – sonst entstehen aus Schlagzeilen mit
+       vielen Substantiven sinnlose Ketten. Aus längeren Folgen wird zusätzlich
+       das führende Paar genommen („Europäische Zentralbank" aus „… und Federal Reserve"). */
+    if(buf.length<=3)add(buf);
+    else{add(buf.slice(0,2));add(buf.slice(0,3));}
+    buf=[];
+  };
+  words.forEach(w=>{
+    const clean=w.replace(/[.,;:]$/,'');
+    if(isCap(clean)&&!drop(clean)&&clean.length>2)buf.push(clean);
+    else push();
+  });
+  push();
+  return[...new Set(out)];
+}
 function trendData(){
   const win=dedupe(pool('all').filter(a=>ageH(a.date)<=S.trendWin));
   const prev=dedupe(pool('all').filter(a=>ageH(a.date)>S.trendWin&&ageH(a.date)<=S.trendWin*2));
   const key=a=>S.trendMode==='sources'?[a.source]:S.trendMode==='topics'?(a.topics||[]).map(normTopic):
     /* Schlagwörter: nur großgeschriebene Wörter (= Substantive/Eigennamen), min. 5 Zeichen,
        keine Funktionswörter, keine reinen Zahlen, keine Wörter mit Ziffern */
-    (a.title||'').replace(/[^A-Za-zÄÖÜäöüß0-9 -]/g,' ').split(/\s+/)
-      .filter(w=>w.length>4&&/^[A-ZÄÖÜ]/.test(w)&&!/\d/.test(w)&&!STOP.has(w.toLowerCase()))
-      .map(w=>w.toLowerCase());
+    /* Aufeinanderfolgende großgeschriebene Wörter zu einem Begriff zusammenfassen –
+       „Dolly Parton", „Europäische Zentralbank", „Digital Services Act" bleiben
+       damit als Einheit stehen statt in Schnipsel zu zerfallen. */
+    entities(a.title||'');
   const count=list=>{const c={};list.forEach(a=>new Set(key(a)).forEach(k=>{if(!k)return;(c[k]=c[k]||{n:0,arts:[],sets:new Set()});c[k].n++;c[k].arts.push(a);c[k].sets.add(a._set);}));return c;};
   const now=count(win),before=count(prev);
+  /* Wörter, die in sehr vielen Meldungen vorkommen (Kabinett, Verordnung, Anhörung …),
+     beschreiben das Grundrauschen und nicht einen Trend. Deshalb: Begriffe verwerfen,
+     deren sämtliche Bestandteile in über 6 % aller Meldungen stehen – derselbe
+     Gedanke wie bei TF-IDF, nur ohne Bibliothek. */
+  if(S.trendMode==='words'){
+    const df={},N=Math.max(1,win.length);
+    win.forEach(a=>{const seen=new Set();(a.title||'').toLowerCase().split(/[^a-zäöüß0-9]+/).forEach(w=>{
+      if(w.length>3&&!seen.has(w)){seen.add(w);df[w]=(df[w]||0)+1;}});});
+    const zuHaeufig=w=>(df[w]||0)/N>0.06;
+    Object.keys(now).forEach(k=>{if(k.split(' ').every(zuHaeufig))delete now[k];});
+  }
   const out=Object.entries(now).map(([k,v])=>{
     const p=before[k]?.n||0;
     const hours={};v.arts.forEach(a=>{const h=Math.floor(ageH(a.date));hours[h]=(hours[h]||0)+1;});
@@ -2228,7 +3380,9 @@ function trendData(){
 }
 const SET_C={news:'#2563eb',eu:'#003399',bt:'#7c3aed',laender:'#0f766e',us:'#dc2626'};
 function renderTrends(){
-  const data=trendData();g('cnt-trends').textContent=data.length;
+  const wrap=g('bubble-wrap');
+  if(wrap&&!wrap.clientWidth){requestAnimationFrame(()=>renderTrends());return;}
+  const data=trendData();setC('cnt-trends',data.length);
   const svg=g('bubbles'),W=g('bubble-wrap').clientWidth||900,H=420;
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('width','100%');svg.setAttribute('height',H);
   if(!data.length){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#8b92a8" font-size="13" font-family="inherit">Zu wenige Meldungen im Zeitfenster.</text>`;g('trend-list').innerHTML='';return;}
@@ -2242,7 +3396,7 @@ function renderTrends(){
       if(d<m){const f=(m-d)/d*0.5;a.x-=dx*f;a.y-=dy*f;b.x+=dx*f;b.y+=dy*f;}}
     nodes.forEach(a=>{a.x=Math.max(a.r+2,Math.min(W-a.r-2,a.x));a.y=Math.max(a.r+2,Math.min(H-a.r-2,a.y));});
   }
-  svg.innerHTML=nodes.map(d=>{const c=SET_C[d.set]||'#2563eb';const lbl=S.trendMode==='topics'?chipLabel(d.k).replace(/^\S+\s/,''):(S.trendMode==='words'?d.k.charAt(0).toUpperCase()+d.k.slice(1):d.k);
+  svg.innerHTML=nodes.map(d=>{const c=SET_C[d.set]||'#2563eb';const lbl=S.trendMode==='topics'?chipLabel(d.k).replace(/^\S+\s/,''):(S.trendMode==='words'?titleCase(d.k):d.k);
     const show=d.r>26;
     return`<g class="bub" onclick="trendDetail('${encodeURIComponent(d.k)}')"><circle cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="${d.r.toFixed(1)}" fill="${c}" fill-opacity="0.14" stroke="${c}" stroke-width="1.6"/>
       ${show?`<text x="${d.x.toFixed(1)}" y="${(d.y-1).toFixed(1)}" text-anchor="middle" font-size="${Math.min(13,d.r/2.6).toFixed(0)}" font-weight="700" fill="${c}" font-family="inherit">${esc(lbl.slice(0,16))}</text>
@@ -2259,7 +3413,7 @@ function renderTrendSummary(data){
   const el=g('trend-summary');if(!el)return;
   const win=S.trendWin===24?'den letzten 24 Stunden':S.trendWin===72?'den letzten drei Tagen':'den letzten sieben Tagen';
   if(!data.length){el.innerHTML=`<div class="sum-hd">Auswertung</div>Zu wenige Meldungen in ${win} für eine Auswertung.`;return;}
-  const lbl=k=>S.trendMode==='topics'?chipLabel(k):k.charAt(0).toUpperCase()+k.slice(1);
+  const lbl=k=>S.trendMode==='topics'?chipLabel(k):titleCase(k);
   const chip=d=>`<span class="hl" style="background:${(S.trendMode==='topics'?topicColor(d.k):'#2563eb')}1e;color:${S.trendMode==='topics'?topicColor(d.k):'#2563eb'}">${esc(lbl(d.k))}</span>`;
   const total=data.reduce((n,d)=>n+d.n,0), prevTotal=data.reduce((n,d)=>n+d.prev,0);
   const trend=prevTotal?Math.round((total-prevTotal)/prevTotal*100):0;
@@ -2287,7 +3441,7 @@ function trendDetail(kEnc){
   const k=decodeURIComponent(kEnc);const d=trendData().find(x=>x.k===k);if(!d)return;
   const lbl=S.trendMode==='topics'?chipLabel(k):k;
   g('trend-detail').innerHTML=`<div class="dcard"><div class="dcard-hd"><h2>${esc(lbl)}</h2><span class="eyebrow">${d.n} Meldungen · ${d.delta>0?'+':''}${d.delta}% ggü. Vorperiode</span>
-    ${S.trendMode==='topics'?`<button class="all" onclick="S.topics=new Set(['${k}']);S.section='all';g('fb-set').textContent='Alle Feeds';buildChips();setView('feed');applyFilters()">Im Feed öffnen</button>`:`<button class="all" onclick="S.tokens=[{v:'${esc(k).toLowerCase()}',not:false}];renderTokens();S.section='all';setView('feed');applyFilters()">Im Feed öffnen</button>`}</div>
+    ${S.trendMode==='topics'?`<button class="all" onclick="S.topics=new Set(['${k}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Im Feed öffnen</button>`:`<button class="all" onclick="S.tokens=[{v:'${esc(k).toLowerCase()}',not:false}];renderTokens();S.section='all';setView('feed');applyFilters()">Im Feed öffnen</button>`}</div>
     <div class="dcard-body">${d.arts.slice(0,12).map(a=>dl(a,{src:true})).join('')}</div></div>`;
   g('trend-detail').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -2321,6 +3475,7 @@ async function saveTopic(){
 }
 function delTopic(id){MYTOPICS=MYTOPICS.filter(t=>t.id!==id);userStore.save(MYTOPICS);renderMyTopics();if(S.topic==='my:'+id)setTopic('all');}
 function renderMyTopics(){
+  if(!g('my-topics'))return;   /* Element gehoert zur alten Navigation – in v6 nicht immer vorhanden */
   const el=g('my-topics');
   if(!isPro()){el.innerHTML='<div class="saved-empty locked" style="padding:2px 2px 6px">Eigene Themen aus beliebigen Begriffen – mit Pro.</div>';return;}
   el.innerHTML=MYTOPICS.map(t=>{const n=rawPool('all').filter(a=>(a.date||'')>t.lastSeen&&matchMy(a,t)).length;
@@ -2328,7 +3483,7 @@ function renderMyTopics(){
     ||'<div class="saved-empty" style="padding:2px 2px 6px">Noch keine eigenen Themen.</div>';
 }
 function pickMyTopic(id){const t=MYTOPICS.find(x=>x.id===id);if(t){t.lastSeen=new Date().toISOString();userStore.save(MYTOPICS);}
-  S.section='all';g('fb-set').textContent='Alle Feeds';S.inst='';setTopic('my:'+id);setView('feed');renderMyTopics();}
+  S.section='all';setC('fb-set','Alle Feeds');S.inst='';setTopic('my:'+id);setView('feed');renderMyTopics();}
 
 /* ═══ VERZEICHNIS: Personen & Ausschüsse ═══ */
 function setDirMode(m){S.dirMode=m;
@@ -2357,18 +3512,43 @@ function renderDir(){
     if(!PCHANGES){el.innerHTML='<div class="gap-note"><strong>Noch kein Vergleich vorhanden.</strong> Ab dem zweiten Lauf von <code>fetch_directory.py</code> steht hier, wer neu ist, wer fehlt und wer Fraktion oder Ausschuss gewechselt hat.</div>';g('dir-sub').textContent='';return;}
     const {added=[],removed=[],changed=[]}=PCHANGES;
     g('dir-sub').textContent=`Stand ${fd(PCHANGES.checked)} · +${added.length} neu · −${removed.length} nicht mehr gelistet · ~${changed.length} verändert`;
-    const grp=(title,items,cls,body)=>items.length?`<div class="ds" style="margin-bottom:11px"><div class="ds-hd" style="border-left:3px solid ${cls}"><span class="ds-title">${title}</span><span class="ds-cnt">${items.length}</span></div>${items.slice(0,60).map(body).join('')}${items.length>60?`<div class="ds-more">+${items.length-60} weitere</div>`:''}</div>`:'';
+    const erklaerung=`<div class="gap-note" style="margin-bottom:11px"><strong>Was hier steht:</strong> Bei jedem Lauf vergleicht die Presseschau das Personenverzeichnis mit dem letzten Stand.
+      Angezeigt wird, wer neu dazugekommen ist, wer nicht mehr gelistet wird (Mandatsniederlegung, Nachrücken) und bei wem sich Fraktion, Ausschuss oder Wahlkreis geändert hat.
+      So sieht man Wechsel, ohne 700 Profile durchzugehen. Parlamente, die in einem Lauf nicht abgerufen wurden, tauchen hier bewusst nicht als „weg" auf.</div>`;
+    const block=(title,items,cls,body)=>items.length?`<div class="ds" style="margin-bottom:11px"><div class="ds-hd" style="border-left:3px solid ${cls}"><span class="ds-title">${title}</span><span class="ds-cnt">${items.length}</span></div>${items.slice(0,60).map(body).join('')}${items.length>60?`<div class="ds-more">+${items.length-60} weitere</div>`:''}</div>`:'';
     const pl=x=>PARL_L[x.parliament]||(x.parliament||'').startsWith('lt-')?LAND_L[(x.parliament||'').slice(3)]||x.parliament:x.parliament;
-    el.innerHTML=
-      grp('Neu im Verzeichnis',added,'#16a34a',x=>`<div class="ds-item" onclick="openPerson('${x.id}')"><div class="ds-it">${esc(x.name)}</div><div class="ds-im"><span>${esc(pl(x))}</span><span>${esc(x.party||'')}</span></div></div>`)
-     +grp('Fraktion oder Ausschuss geändert',changed,'#d97706',x=>`<div class="ds-item" onclick="openPerson('${x.id}')"><div class="ds-it">${esc(x.name)}</div><div class="ds-im" style="flex-wrap:wrap">${x.aenderungen.map(a=>`<span><strong>${esc(a.feld)}:</strong> ${a.vorher?esc(a.vorher)+' → ':''}${esc(a.jetzt||'')}</span>`).join('')}</div></div>`)
-     +grp('Nicht mehr gelistet',removed,'#dc2626',x=>`<div class="ds-item"><div class="ds-it">${esc(x.name)}</div><div class="ds-im"><span>${esc(pl(x))}</span><span>${esc(x.party||'')}</span></div></div>`)
+    el.innerHTML=erklaerung+
+      block('Neu im Verzeichnis',added,'#16a34a',x=>`<div class="ds-item" onclick="openPerson('${x.id}')"><div class="ds-it">${esc(x.name)}</div><div class="ds-im"><span>${esc(pl(x))}</span><span>${esc(x.party||'')}</span></div></div>`)
+     +block('Fraktion oder Ausschuss geändert',changed,'#d97706',x=>`<div class="ds-item" onclick="openPerson('${x.id}')"><div class="ds-it">${esc(x.name)}</div><div class="ds-im" style="flex-wrap:wrap">${x.aenderungen.map(a=>`<span><strong>${esc(a.feld)}:</strong> ${a.vorher?esc(a.vorher)+' → ':''}${esc(a.jetzt||'')}</span>`).join('')}</div></div>`)
+     +block('Nicht mehr gelistet',removed,'#dc2626',x=>`<div class="ds-item"><div class="ds-it">${esc(x.name)}</div><div class="ds-im"><span>${esc(pl(x))}</span><span>${esc(x.party||'')}</span></div></div>`)
      ||'<div class="gap-note">Keine Änderungen seit dem letzten Lauf.</div>';
     return;
   }
   if(!renderDir._q||renderDir._q!==(g('dir-q').value||'')+S.dirParl+g('dir-comm').value+g('dir-party').value){S.dirLimit=60;renderDir._q=(g('dir-q').value||'')+S.dirParl+g('dir-comm').value+g('dir-party').value;}
-  if(S.dirMode==='comm'){const q=(g('dir-q').value||'').toLowerCase();const cs=COMMS.filter(c=>(S.dirParl==='all'||c.parliament===S.dirParl)&&(!q||c.name.toLowerCase().includes(q)));
-    g('dir-sub').textContent=cs.length+' Ausschüsse';el.className='p-grid';
+  if(S.dirMode==='comm'){
+    const q=(g('dir-q').value||'').toLowerCase();
+    /* Landesvertretungen im Bundesrat sind keine Ausschüsse – getrennt ausweisen. */
+    const isVertretung=c=>/^Landesvertretung/.test(c.name||'');
+    let cs=COMMS.filter(c=>(S.dirParl==='all'||c.parliament===S.dirParl)&&(!q||c.name.toLowerCase().includes(q)));
+    const parlOf=c=>c.parliament;
+    const GRUPPEN=[['bt','🏛 Bundestag'],['br','🏛 Bundesrat'],['ep','🇪🇺 Europäisches Parlament'],['us','🇺🇸 US-Kongress']];
+    const ltCodes=[...new Set(cs.filter(c=>(c.parliament||'').startsWith('lt-')).map(c=>c.parliament))];
+    g('dir-sub').textContent=cs.filter(c=>!isVertretung(c)).length+' Ausschüsse'+(ltCodes.length?' · '+ltCodes.length+' Landtage':'');
+    el.className='';
+    const block=(titel,list,hinweis)=>list.length?`<div class="ds" style="margin-bottom:11px"><div class="ds-hd"><span class="ds-title">${titel}</span><span class="ds-cnt">${list.length}</span></div>
+      ${hinweis?`<div style="padding:6px 12px;font-size:11px;color:var(--muted)">${hinweis}</div>`:''}
+      <div class="comm-grid">${list.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')">
+        <div class="cn">${esc(c.name)}</div><div class="cm"><span>👥 ${c.members.length}</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')}</div></div>`:'';
+    el.innerHTML=GRUPPEN.map(([pid,label])=>block(label,cs.filter(c=>parlOf(c)===pid&&!isVertretung(c)))).join('')
+      +(ltCodes.length?`<div class="ds" style="margin-bottom:11px"><div class="ds-hd"><span class="ds-title">🏳️ Landtage</span>
+        <select class="fsel" style="min-width:200px;margin-left:auto" onchange="S.dirParl=this.value;buildDirFilters();reRender('dir')">
+          <option value="">Bundesland wählen…</option>${ltCodes.map(p=>`<option value="${p}"${S.dirParl===p?' selected':''}>${esc(LAND_L[p.slice(3)]||p)}</option>`).join('')}</select></div>
+        <div class="comm-grid">${cs.filter(c=>(c.parliament||'').startsWith('lt-')&&(S.dirParl===c.parliament)).map(c=>`<div class="comm" onclick="g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span>👥 ${c.members.length}</span></div></div>`).join('')
+          ||'<div style="padding:10px 12px;font-size:11.5px;color:var(--muted)">Bundesland oben auswählen.</div>'}</div></div>`:'')
+      +block('🏛 Landesvertretungen im Bundesrat',cs.filter(isVertretung),'Keine Ausschüsse, sondern die Mitglieder je Landesregierung.')
+      ||'<div class="gap-note">Keine Ausschussdaten geladen.</div>';
+    return;}
+  if(false){const cs=[];
     el.innerHTML=cs.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span class="parl">${esc(PARL_L[c.parliament]||(c.parliament?.startsWith('lt-')?LAND_L[c.parliament.slice(3)]:c.parliament))}</span><span>👥 ${c.members.length} Mitglieder</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')||'<div style="padding:30px;color:var(--muted)">Keine Ausschüsse.</div>';return;}
   const ps=dirPeople();g('dir-sub').textContent=ps.length+' Personen'+(g('dir-comm').value?' · '+(g('dir-comm').selectedOptions[0]?.textContent||''):'');
   const lim=S.dirLimit||60;
@@ -2524,9 +3704,9 @@ document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
   if(e.key==='Escape'&&document.activeElement===g('q')){g('q').value='';S.tokens=[];renderTokens();onSearch();return;}
   if(e.key==='Escape'){closeLogin();closeSF();closeEM();closeKM();closeReader();g('doc-viewer').classList.remove('open');g('person-modal').classList.remove('open');}
-  if(e.key==='t'&&!e.metaKey&&!e.ctrlKey){openTopicPicker();return;}
+  if(e.key==='t'&&!e.metaKey&&!e.ctrlKey){if(S.view!=='feed')setView('feed');toggleTopicPanel();return;}
   if(S.view!=='feed')return;
-  if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();goBack();return;}
+  if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();goHome();return;}
   if(e.key==='ArrowDown'){e.preventDefault();nextArt();}if(e.key==='ArrowUp'){e.preventDefault();prevArt();}
   if(e.key==='Enter'&&S.art)openCurLink();if(e.key==='m'&&S.art)toggleMarkCur();if(e.key==='s'&&S.art)proGate('ai',summarizeArticle);
   if(e.key==='1')setSection('news');if(e.key==='2')setSection('eu');if(e.key==='3')setSection('bt');if(e.key==='0')setView('dash');
@@ -2539,6 +3719,7 @@ g('list-scroll').addEventListener('scroll',function(){
 if(window.innerWidth<600)g('q').placeholder=g('q').dataset.short;
 /* Seitenleiste: Abschnitte einklappbar, Zustand gespeichert */
 function initSidebarSections(){
+  if(!document.querySelector('#sidebar .nav-sec'))return;   /* v6: neue Navigation */
   const closed=new Set(store.get('ps_secclosed')||[]);
   document.querySelectorAll('#sidebar .nav-sec').forEach((sec,i)=>{
     if(sec.querySelector('.sarw'))return;
@@ -2560,6 +3741,7 @@ function initSidebarSections(){
   store.set('ps_secseen',1);
 }
 SAVED=store.get('ps_saved')||[];
+REPORTS=store.get('ps_reports')||[];
 if(store.get('ps_rail'))document.body.classList.add('rail');
 initSidebarSections();
 if(!PAYWALL_ACTIVE){
@@ -2571,9 +3753,10 @@ if(!PAYWALL_ACTIVE){
 }
 pushNav();
 window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},250);});
-userStore.load().then(t=>{MYTOPICS=t;renderMyTopics();});
+userStore.load().then(t=>{MYTOPICS=t;renderMyTopics&&renderMyTopics();});
+monitorStore.load().then(()=>{setWorkspace(store.get('ps_ws')||'dash',true);renderWsNav();updateWsBadges();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
-if(store.get('ps_compact')){document.body.classList.add('compact');g('lt-compact').classList.add('on');}
+setLayout(store.get('ps_layout')||'paper');
 setFeedInline(store.get('ps_feedinline')!==false);
 if(store.get('ps_lpw'))g('list-pane').style.width=store.get('ps_lpw')+'px';
 setAuth(store.get('ps_plan')==='pro');
