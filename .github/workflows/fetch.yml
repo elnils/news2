@@ -46,6 +46,7 @@ jobs:
           LANDTAGE_PER_RUN: '4'     # 16 Landtage in 4 Läufen
           EP_DETAILS_PER_RUN: '150' # ~720 MEPs in 5 Läufen
           ENRICH_PER_RUN: '40'
+          WIKI_PER_RUN: '15'        # Wikipedia drosselt ab ~20 Abrufen (HTTP 429)
         run: |
           MIN=$(date -u +%M)
           if [ "$MIN" -lt 25 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
