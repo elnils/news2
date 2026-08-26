@@ -46,6 +46,9 @@ def _atomic_dump(obj, path):
 
 
 UA = "Presseschau/3.0 (+github actions; kontakt siehe repo)"
+# Wikipedia verlangt einen sprechenden User-Agent mit Kontaktmoeglichkeit,
+# sonst wird schnell gedrosselt.
+UA_WIKI = os.environ.get("WIKI_UA", "Presseschau/3.0 (https://github.com/elnils/news2)")
 # Biografie-Seiten werden inkrementell angereichert: pro Lauf höchstens ENRICH_PER_RUN
 # Personen, danach erst wieder nach ENRICH_AFTER_DAYS. So sind nach wenigen Läufen alle
 # Profile mit Foto und Kontakt gefüllt, ohne die Server zu belasten.
@@ -114,7 +117,8 @@ def get(url, params=None, accept="application/json", retries=1, timeout=20):
         url = url + ("&" if "?" in url else "?") + urlencode(params)
     for i in range(retries + 1):
         try:
-            req = Request(url, headers={"User-Agent": UA, "Accept": accept})
+            ua = UA_WIKI if "wikipedia.org" in url else UA
+            req = Request(url, headers={"User-Agent": ua, "Accept": accept})
             with urlopen(req, timeout=timeout) as r:
                 data = r.read()
                 return data
@@ -266,8 +270,11 @@ def fetch_bundesrat():
 # BUNDESTAG – abgeordnetenwatch
 # ─────────────────────────────────────────────────────────────
 def aw_all(path, **params):
-    """Paginiert über die abgeordnetenwatch-API (range_start/range_end)."""
-    out, start, page = [], 0, 500
+    """Paginiert über die abgeordnetenwatch-API (range_start/range_end).
+    page_size steuert die Seitengroesse – manche Endpunkte (committees)
+    antworten bei 500 Treffern pro Seite mit HTTP 500."""
+    page = int(params.pop("page_size", 500))
+    out, start = [], 0
     while not out_of_time():
         p = dict(params); p.update({"range_start": start, "range_end": page})
         d = get_json(f"{ENDPOINTS['aw']}/{path}", p)
@@ -348,7 +355,20 @@ def fetch_parliament(parliament, prefix, parliament_id, label, address, membersh
         }
     comms = []
     if memberships:
-        raw = aw_all("committees", legislature=period["id"])
+        # HTTP 500 bei committees?legislature=…&range_end=500.
+        # Kleinere Seiten und zwei alternative Parameternamen probieren.
+        # Vier Varianten, weil der Endpunkt im Log mit HTTP 500 antwortete.
+        # Die letzte holt alle Ausschuesse und filtert selbst.
+        raw = (aw_all("committees", legislature=period["id"], page_size=50)
+               or aw_all("committees", field_legislature=period["id"], page_size=50)
+               or aw_all("committees", parliament_period=period["id"], page_size=50)
+               or [c for c in aw_all("committees", page_size=100)
+                   if str(((c.get("field_legislature") or c.get("legislature") or {}) or {}).get("id"))
+                      == str(period["id"])])
+        print(f"  {len(raw)} Ausschüsse")
+        if not raw:
+            print("     Hinweis: /committees antwortet derzeit nicht. Mitgliedschaften bleiben leer,")
+            print("     die Personen sind davon nicht betroffen. Im naechsten Lauf wird erneut versucht.")
         m2p = {v["_mandate_id"]: k for k, v in people.items()}
         for c in raw:
             cid = f"{prefix}-c{c['id']}"
@@ -490,7 +510,9 @@ def diff_people(new_people):
 # ─────────────────────────────────────────────────────────────
 # WIKIPEDIA – Kurzbiografie als Hintergrund (inkrementell wie die Profile)
 # ─────────────────────────────────────────────────────────────
+WIKI_BLOCKED = [False]
 def wiki_summary(title):
+    if WIKI_BLOCKED[0]: return {}
     d = get_json(f"{ENDPOINTS['wiki']}/{quote(title.replace(' ', '_'))}")
     if not d or d.get("type") == "disambiguation": return {}
     return {"wiki_extract": (d.get("extract") or "")[:600],
@@ -498,8 +520,12 @@ def wiki_summary(title):
             "wiki_thumb": (d.get("thumbnail") or {}).get("source", "")}
 
 def enrich_wikipedia(people, per_run=None):
-    """Ergänzt Kurzbiografien. Nutzt denselben Cache-Rhythmus wie die Profil-Anreicherung."""
-    per_run = per_run or ENRICH_PER_RUN
+    """Ergaenzt Kurzbiografien. Wikipedia drosselt bei zu vielen Abrufen (HTTP 429),
+    deshalb bewusst langsam: wenige Profile pro Lauf, eine Sekunde Pause, und bei
+    der zweiten Drosselung wird abgebrochen – der naechste Lauf macht weiter."""
+    per_run = per_run or int(os.environ.get("WIKI_PER_RUN", "15"))
+    WIKI_BLOCKED[0] = False
+    blocked = [0]
     cache = load_cache()
     todo = [p for p in people if not cache.get("w:" + p["id"])][:per_run]
     for p in people:
@@ -512,10 +538,20 @@ def enrich_wikipedia(people, per_run=None):
     for p in todo:
         if out_of_time(): budget_note("Wikipedia"); break
         data = wiki_summary(p.get("wikipedia") or p["name"])
-        for k, v in data.items():
-            if v: p[k] = v
-        cache["w:" + p["id"]] = {"ts": datetime.now(timezone.utc).isoformat(), "data": data}
-        time.sleep(0.4)
+        if not data:
+            blocked[0] += 1
+            if blocked[0] >= 3:
+                WIKI_BLOCKED[0] = True
+                print("  Wikipedia drosselt (HTTP 429) – Rest im nächsten Lauf.")
+                break
+        else:
+            blocked[0] = 0
+            for k, v in data.items():
+                if v: p[k] = v
+        # Nur erfolgreiche Abrufe merken, damit fehlgeschlagene erneut versucht werden
+        if data:
+            cache["w:" + p["id"]] = {"ts": datetime.now(timezone.utc).isoformat(), "data": data}
+        time.sleep(1.0)
     save_cache(cache)
 
 def fetch_bundestag():
@@ -658,6 +694,20 @@ def fetch_ep_scrape():
         time.sleep(0.4)
     return people, []
 
+# Staendige Ausschuesse des Europaeischen Parlaments (Kuerzel → Name)
+EP_COMMITTEES = {
+    "AFET": "Auswärtige Angelegenheiten", "DROI": "Menschenrechte", "SEDE": "Sicherheit und Verteidigung",
+    "DEVE": "Entwicklung", "INTA": "Internationaler Handel", "BUDG": "Haushalt",
+    "CONT": "Haushaltskontrolle", "ECON": "Wirtschaft und Währung", "FISC": "Steuerfragen",
+    "EMPL": "Beschäftigung und soziale Angelegenheiten", "ENVI": "Umwelt, Klima und Lebensmittelsicherheit",
+    "SANT": "Öffentliche Gesundheit", "ITRE": "Industrie, Forschung und Energie",
+    "IMCO": "Binnenmarkt und Verbraucherschutz", "TRAN": "Verkehr und Tourismus",
+    "REGI": "Regionale Entwicklung", "AGRI": "Landwirtschaft und ländliche Entwicklung",
+    "PECH": "Fischerei", "CULT": "Kultur und Bildung", "JURI": "Recht",
+    "LIBE": "Bürgerliche Freiheiten, Justiz und Inneres", "AFCO": "Konstitutionelle Fragen",
+    "FEMM": "Rechte der Frauen und Gleichstellung", "PETI": "Petitionen",
+}
+
 def fetch_ep():
     print("── Europäisches Parlament (Open Data) ──")
     meps = ep_ld("meps/show-current")
@@ -665,7 +715,9 @@ def fetch_ep():
         print("  Open-Data-Portal ohne Ergebnis")
         return fetch_ep_scrape()
     print(f"  {len(meps)} MEPs")
-    bodies = ep_ld("corporate-bodies", **{"body-classification": "COMMITTEE_PARLIAMENTARY_STANDING"}) or ep_ld("corporate-bodies")
+    bodies = (ep_ld("corporate-bodies", **{"body-classification": "COMMITTEE_PARLIAMENTARY_STANDING"})
+              or ep_ld("corporate-bodies", **{"body-classification": "EU_COMMITTEE"})
+              or ep_ld("corporate-bodies"))
     comm_map = {}
     for b in bodies:
         bid = str(b.get("id") or b.get("identifier") or "")
@@ -673,7 +725,17 @@ def fetch_ep():
         if isinstance(label, dict): label = label.get("en") or next(iter(label.values()), "")
         if bid and label and re.search(r"committee|ausschuss", str(label), re.I):
             comm_map[bid] = {"id": f"ep-c{bid}", "parliament": "ep", "name": str(label), "topics": [], "link": "", "members": []}
-    print(f"  {len(comm_map)} Ausschüsse")
+    if not comm_map:
+        # Das Open-Data-Portal liefert die Gremien zeitweise nicht. Die staendigen
+        # Ausschuesse des EP sind stabil – als Rueckfallebene fest hinterlegt,
+        # damit das Verzeichnis nicht leer bleibt. Mitgliedschaften kommen weiter
+        # aus den MEP-Detailprofilen (Abgleich ueber das Kuerzel).
+        for abk, name in EP_COMMITTEES.items():
+            comm_map[abk] = {"id": "ep-c" + abk, "parliament": "ep",
+                             "name": f"{name} ({abk})", "topics": [], "link": "", "members": []}
+        print(f"  {len(comm_map)} Ausschüsse (feste Liste, Portal lieferte keine)")
+    else:
+        print(f"  {len(comm_map)} Ausschüsse")
 
     people = []
     detail_budget = int(os.environ.get("EP_DETAILS_PER_RUN", "150"))
@@ -708,6 +770,10 @@ def fetch_ep():
             org = str(ms.get("organization") or ms.get("membershipClassification") or "")
             oid = org.split("/")[-1]
             role = str(ms.get("role") or "").split("/")[-1]
+            # Zuordnung ueber die Portal-ID oder – bei fester Liste – ueber das Kuerzel
+            if oid not in comm_map:
+                m_abk = re.search(r"\b(" + "|".join(EP_COMMITTEES) + r")\b", str(org), re.I)
+                if m_abk: oid = m_abk.group(1).upper()
             if oid in comm_map and not ms.get("memberDuring", {}).get("endDate"):
                 comm_map[oid]["members"].append({"id": p["id"], "role": role})
                 p["committees"].append({"id": comm_map[oid]["id"], "name": comm_map[oid]["name"], "role": role})
@@ -792,7 +858,16 @@ def fetch_dip(days=90):
     print("── DIP (Vorgänge, Drucksachen, Protokolle) ──")
     since = (date.today() - timedelta(days=days)).isoformat()
 
-    vorgaenge = dip_pages("vorgang", {"f.aktualisiert.start": since}, max_items=3000)
+    # HTTP 400 bei "f.aktualisiert.start=2026-05-28": dieses Feld erwartet einen
+    # Zeitstempel, nicht nur ein Datum. Erst mit Uhrzeit versuchen, sonst auf
+    # "f.datum.start" ausweichen (das nimmt ein reines Datum).
+    vorgaenge = dip_pages("vorgang", {"f.aktualisiert.start": since + "T00:00:00"}, max_items=3000)
+    if not vorgaenge:
+        print("    Fallback: f.datum.start")
+        vorgaenge = dip_pages("vorgang", {"f.datum.start": since}, max_items=3000)
+    if not vorgaenge:
+        print("    Fallback: ohne Datumsfilter, neueste zuerst")
+        vorgaenge = dip_pages("vorgang", {}, max_items=1000)
     print(f"  {len(vorgaenge)} Vorgänge")
     procs = []
     for v in vorgaenge:
@@ -928,6 +1003,10 @@ def fetch_newsletters():
     items = []
     for url, name, topic, pro in NEWSLETTER_FEEDS:
         if out_of_time(): budget_note("Newsletter"); break
+        # Leere oder unvollstaendige URL ueberspringen (z. B. wenn TAGESLAGE_FEED
+        # nicht gesetzt ist) - vorher warf urllib "unknown url type: ''".
+        if not (url or "").startswith(("http://", "https://")):
+            print(f"  {name}: keine URL hinterlegt – übersprungen"); continue
         raw = get(url, accept="application/rss+xml, application/xml, text/xml")
         if not raw: print(f"  {name}: FAIL"); continue
         try: root = ET.fromstring(re.sub(rb"[^\x09\x0A\x0D\x20-\xFF]", b"", raw))
