@@ -29,6 +29,19 @@ from datetime import datetime, timezone, timedelta, date
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
+def _atomic_dump(obj, path):
+    """Erst in eine Nebendatei schreiben, dann umbenennen. Bricht der Lauf mittendrin
+    ab (Timeout, Netzfehler), bleibt die alte Datei vollstaendig erhalten - statt einer
+    halb geschriebenen, die im Browser als "kein gueltiges JSON" ankommt."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+
 UA = "Presseschau/3.0 (+github actions)"
 BASE = "https://www.wahlrecht.de"
 TIME_BUDGET_MIN = int(os.environ.get("ELECTION_BUDGET_MIN", "4"))
@@ -327,8 +340,7 @@ def main():
     if not elections and not polls:
         print("⚠ Nichts geladen – bestehende elections.json bleibt unverändert.")
         return
-    json.dump(out, open("elections.json", "w", encoding="utf-8"),
-              ensure_ascii=False, separators=(",", ":"))
+    _atomic_dump(out, "elections.json")
     ok = sum(1 for s in SOURCES if s["ok"])
     print(f"→ elections.json: {len(elections)} Termine, {len(polls)} Umfragen, "
           f"{len(results)} Ergebnisse ({ok}/{len(SOURCES)} Quellen erreichbar)")
