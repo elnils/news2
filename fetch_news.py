@@ -24,9 +24,26 @@ from xml.etree import ElementTree as ET
 from email.utils import parsedate_to_datetime
 from collections import Counter
 
+def _atomic_dump(obj, path):
+    """Erst in eine Nebendatei schreiben, dann umbenennen. Bricht der Lauf mittendrin
+    ab (Timeout, Netzfehler), bleibt die alte Datei vollstaendig erhalten - statt einer
+    halb geschriebenen, die im Browser als "kein gueltiges JSON" ankommt."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+
 # ═══════════════════════════════════════════════════════════════
 # OFFIZIELLE EU-QUELLEN (gehen in eu_articles.json)
 # ═══════════════════════════════════════════════════════════════
+# Google-News-Proxy: Rueckfallebene fuer Quellen ohne eigenen oder mit defektem RSS
+def _gn(q):   return f"https://news.google.com/rss/search?q={q}&hl=de&gl=DE&ceid=DE:de"
+def _gnus(q): return f"https://news.google.com/rss/search?q={q}&ceid=US:en&hl=en-US&gl=US"
+
 EU_OFFICIAL_FEEDS = [
     # ── Europäisches Parlament ─────────────────────────────────
     ("https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",            "EP Pressemitt.",       "ep"),
@@ -43,6 +60,9 @@ EU_OFFICIAL_FEEDS = [
     # ── Rat der EU → 403 → via Google News ────────────────────
     ("https://news.google.com/rss/search?q=site:consilium.europa.eu&hl=de&gl=DE&ceid=DE:de", "EU Rat",   "council"),
 
+    # Rueckfallebenen fuer das EP – die offiziellen Feeds fallen zeitweise aus
+    (_gn("site:europarl.europa.eu"),                                              "EP Pressemitt.",    "ep"),
+    ("https://www.europarl.europa.eu/rss/doc/top-stories/de.xml",                  "EP Top Stories",    "ep"),
     # ── Europäischer Rat / Gerichtshof / Rechnungshof (NEU) ───
     ("https://news.google.com/rss/search?q=site:consilium.europa.eu+%22Europäischer+Rat%22&hl=de&gl=DE&ceid=DE:de", "Europäischer Rat", "eu-council"),
     ("https://curia.europa.eu/jcms/jcms/Jo2_16799/de/?rss=1",                              "EuGH",              "cjeu"),
@@ -159,7 +179,6 @@ BT_TOPIC_RULES = {
 # cat = Länderkürzel; direkte RSS-URLs der Landtage variieren stark → Google-News-Proxy
 # als robuster Start; wer direkte Feeds kennt, trägt sie hier ein.
 # ═══════════════════════════════════════════════════════════════
-def _gn(q): return f"https://news.google.com/rss/search?q={q}&hl=de&gl=DE&ceid=DE:de"
 LAENDER = [("bw","Baden-Württemberg","landtag-bw.de"),("by","Bayern","bayern.landtag.de"),("be","Berlin","parlament-berlin.de"),
            ("bb","Brandenburg","landtag.brandenburg.de"),("hb","Bremen","bremische-buergerschaft.de"),("hh","Hamburg","hamburgische-buergerschaft.de"),
            ("he","Hessen","hessischer-landtag.de"),("mv","Mecklenburg-Vorpommern","landtag-mv.de"),("ni","Niedersachsen","landtag-niedersachsen.de"),
@@ -182,7 +201,6 @@ _CONSOLIDATED = False        # Flag: siehe _apply_consolidation() am Ende der Da
 # ═══════════════════════════════════════════════════════════════
 # USA: Institutionen + US-Presse (NEU → us_articles.json)
 # ═══════════════════════════════════════════════════════════════
-def _gnus(q): return f"https://news.google.com/rss/search?q={q}&ceid=US:en&hl=en-US&gl=US"
 US_FEEDS = [
     # Kongress (congress.gov RSS – Feeds im Log prüfen)
     ("https://www.congress.gov/rss/house-floor-today.xml",        "House Floor",        "us-house"),
@@ -509,15 +527,18 @@ def relevance_boost(text):
 # zusammengelegten Themen werden vereinigt, es geht also keine Trefferqualität verloren.
 # Ein Thema wieder auftrennen = Zeile aus TOPIC_MERGE entfernen.
 # ═══════════════════════════════════════════════════════════════
+# An den Bundesressorts orientiert: Landwirtschaft, Arbeit, Bauen/Wohnen und
+# Kultur/Medien sind eigene Ressorts und nicht mehr unter Umwelt bzw. Soziales
+# versteckt - genau das hatte in der Praxis gefehlt.
 TOPIC_MERGE = {
     "medizin":"gesundheit",
-    "arbeit":"soziales", "wohnen":"soziales", "demografie":"soziales",
-    "agrar":"umwelt",
+    "demografie":"soziales",
+    "agrar":"landwirtschaft",
     "rechtsstaat":"justiz", "korruption":"justiz",
     "innenpolitik":"sicherheit", "sicherheitspolitik":"verteidigung",
     "verbraucher":"wirtschaft", "handel":"wirtschaft", "startup":"wirtschaft",
     "raumfahrt":"wissenschaft",
-    "religion":"politik", "kultur":"politik", "kommunales":"politik",
+    "religion":"politik", "kommunales":"politik",
     "ukraine":"international", "nahost":"international", "asien":"international",
     "afrika":"international", "lateinamerika":"international",
     "nordeuropa":"international", "osteuropa":"international",
@@ -531,11 +552,29 @@ TOPIC_MERGE = {
 #    steckt genauso in Rehkitzrettung wie in Luftraumverletzungen - erst zusammen
 #    mit einem zweiten Militaerbegriff ist es Verteidigung.
 TOPIC_ADD = {
-    "umwelt": [(3, ["landwirt", "landwirtin", "bauernhof", "wildtier", "wildtiere", "artensterben",
-                    "tierschutz", "nutztier", "weidetier", "rehkitz", "kitzrettung", "maehwerk",
-                    "jaeger", "jäger", "jagd", "forst", "moor", "renaturierung", "pestizid",
-                    "duenger", "dünger", "ackerbau", "viehhaltung", "milchbauern", "obstbau", "weinbau"]),
-               (2, ["hecke", "wiese", "acker", "weide", "boden", "insekten", "bienen", "vogelschutz"])],
+    "landwirtschaft": [(3, ["landwirt", "landwirtin", "bauernhof", "nutztier", "weidetier", "rehkitz",
+                            "kitzrettung", "maehwerk", "jaeger", "jäger", "jagd", "pestizid",
+                            "duenger", "dünger", "ackerbau", "viehhaltung", "milchbauern", "obstbau",
+                            "weinbau", "agrardiesel", "hoefesterben", "höfesterben", "direktzahlungen"]),
+                       (2, ["hecke", "wiese", "acker", "weide", "ernte", "stall", "melken", "traktor"])],
+    "umwelt": [(3, ["wildtier", "wildtiere", "artensterben", "tierschutz", "forst", "moor",
+                    "renaturierung", "flaechenversiegelung", "flächenversiegelung"]),
+               (2, ["boden", "insekten", "bienen", "vogelschutz"])],
+    "finanzen": [(3, ["zins", "zinsen", "leitzins", "zinssenkung", "zinserhoehung", "zinserhöhung",
+                      "kapitalmarkt", "geldpolitik", "anleihe", "anleihen", "rendite", "boerse", "börse",
+                      "aktienmarkt", "waehrung", "währung", "wechselkurs", "notenbank", "zentralbank",
+                      "kreditvergabe", "bankenaufsicht", "finanzaufsicht", "bafin"]),
+                 (2, ["inflation", "konjunkturprognose", "wertpapier", "fonds", "dividende", "kurssturz"])],
+    "arbeit": [(3, ["arbeitsmarkt", "fachkraeftemangel", "fachkräftemangel", "tarifrunde", "tarifabschluss",
+                    "streik", "kurzarbeit", "mindestlohn", "arbeitszeitgesetz", "arbeitsagentur",
+                    "betriebsrat", "mitbestimmung", "arbeitslosenquote"]),
+               (2, ["gewerkschaft", "arbeitgeber", "beschaeftigung", "beschäftigung", "homeoffice", "azubi"])],
+    "wohnen": [(3, ["wohnungsbau", "mietpreisbremse", "mietendeckel", "wohnungsnot", "baugenehmigung",
+                    "sozialwohnung", "bauministerium", "grundsteuer"]),
+               (2, ["miete", "vermieter", "immobilienmarkt", "stadtentwicklung", "bauen"])],
+    "kultur": [(3, ["rundfunkbeitrag", "oeffentlich-rechtlich", "öffentlich-rechtlich", "medienstaatsvertrag",
+                    "pressefreiheit", "kulturstaatsminister", "denkmalschutz"]),
+               (2, ["kultur", "museum", "theater", "verlag", "journalismus", "film", "buchmesse"])],
     "gesundheit": [(3, ["hausarzt", "hausaerzte", "notaufnahme", "rettungsdienst", "impfstoff",
                         "epidemie", "seuche", "krankenkassenbeitrag"])],
     "bildung": [(3, ["lehrermangel", "schulbau", "ganztagsbetreuung", "abitur", "berufsschule",
@@ -737,6 +776,7 @@ def parse_feed(fetch_result, source, topic_rules):
             if m: img=m.group(1)
         author=(g('{http://purl.org/dc/elements/1.1/}creator') or g('author') or
                 g('{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name') or '')[:120]
+        title = improve_title(title, desc, source)
         a={"id":uid,"source":source,"title":title,"link":link.strip(),
            "desc":desc,"date":pub_iso,"topics":topics,"boost":boost,
            "priority":priority,"cats":cats,"image":img,"author":author}
@@ -766,6 +806,33 @@ def detect_priority(title, cats):
     return ""
 
 # ── NEU (v3): Inhaltstyp und Institution je Feed ──
+# ── Titel aufwerten ──────────────────────────────────────────
+# Manche Quellen liefern Titel ohne Aussage ("Entscheidung vom 12.08.2026",
+# "Pressemitteilung Nr. 141/2026") oder haengen die Quelle an
+# ("... - Tagesschau"). Beides wird hier bereinigt bzw. um den ersten
+# Satz der Beschreibung ergaenzt, damit in der Liste erkennbar ist, worum es geht.
+VAGUE_TITLE = re.compile(
+    r'^\s*(entscheidung(en)?|beschluss|urteil|pressemitteilung|mitteilung|meldung|dokument|'
+    r'tagesordnung|drucksache|plenarprotokoll|nachricht|artikel|newsletter)'
+    r'\s*(nr\.?|vom|des|der|zum)?\s*[\d./ -]*\s*$', re.I)
+
+def first_sentence(text, limit=110):
+    t = re.sub(r'\s+', ' ', (text or '')).strip()
+    if not t: return ''
+    m = re.search(r'(.{25,%d}?[.!?])\s' % limit, t)
+    out = (m.group(1) if m else t[:limit]).strip(' .;,–-')
+    return out
+
+def improve_title(title, desc, source):
+    t = (title or '').strip()
+    # "Schlagzeile - Quelle" (Google News) → Quelle abschneiden
+    t = re.sub(r'\s+[-–—]\s+[^-–—]{2,40}$', '', t) if re.search(r'\s[-–—]\s', t) and len(t) > 45 else t
+    if VAGUE_TITLE.match(t) or len(t) < 22:
+        add = first_sentence(desc)
+        if add and add.lower() not in t.lower():
+            t = f"{t.rstrip(':')}: {add}" if t else add
+    return t.strip()
+
 def kind_for(source, cat, title):
     t=(title or '').lower(); s=(source or '').lower()
     if re.search(r'plenarprotokoll|protokoll|verbatim|transcript', t): return "transcript"
