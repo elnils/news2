@@ -32,6 +32,19 @@ import traceback
 from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
 
+def _atomic_dump(obj, path):
+    """Erst in eine Nebendatei schreiben, dann umbenennen. Bricht der Lauf mittendrin
+    ab (Timeout, Netzfehler), bleibt die alte Datei vollstaendig erhalten - statt einer
+    halb geschriebenen, die im Browser als "kein gueltiges JSON" ankommt."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+
 UA = "Presseschau/3.0 (+github actions; kontakt siehe repo)"
 # Biografie-Seiten werden inkrementell angereichert: pro Lauf höchstens ENRICH_PER_RUN
 # Personen, danach erst wieder nach ENRICH_AFTER_DAYS. So sind nach wenigen Läufen alle
@@ -296,7 +309,7 @@ def fetch_landtage():
         if ppl: cache[code] = {"people": ppl, "comms": cms, "ts": datetime.now(timezone.utc).isoformat()}
         time.sleep(0.3)
     cache["_next"] = (start + LANDTAGE_PER_RUN) % len(codes)
-    json.dump(cache, open("landtage_cache.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    _atomic_dump(cache, "landtage_cache.json")
     for code in codes:                                  # alle bekannten Landtage einspielen
         entry = cache.get(code)
         if isinstance(entry, dict):
@@ -848,7 +861,7 @@ def fetch_dip(days=90):
     }
     if not (procs or docs or protocols):
         print("  ⚠ DIP lieferte nichts – dip.json bleibt unverändert."); return
-    json.dump(out, open("dip.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    _atomic_dump(out, "dip.json")
     print(f"  → dip.json: {len(procs)} Vorgänge, {len(docs)} Drucksachen, {len(protocols)} Protokolle, {os.path.getsize('dip.json')//1024} KB")
 
 # ─────────────────────────────────────────────────────────────
@@ -1000,7 +1013,7 @@ def main():
             print(f"⚠ Nur {len(people)} statt zuvor {prev} Personen – sieht nach Ausfall aus, "
                   f"people.json wird NICHT überschrieben.")
         else:
-            json.dump(out, open("people.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+            _atomic_dump(out, "people.json")
     size = os.path.getsize("people.json") // 1024 if os.path.exists("people.json") else 0
     print(f"→ people.json: {len(people)} Personen, {len(out['committees'])} Ausschüsse, {size} KB")
     c = out.get("changes", {})
