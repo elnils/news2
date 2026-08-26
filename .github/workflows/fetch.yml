@@ -54,16 +54,42 @@ jobs:
             echo "Verzeichnis übersprungen (läuft im ersten Lauf jeder Stunde)"
           fi
 
+      # Sicherheitsnetz: Konfliktmarker aus fruheren Laeufen entfernen und
+      # kaputte Dateien gar nicht erst committen.
+      - name: JSON prüfen
+        if: always()
+        run: |
+          python - <<'PY'
+          import glob, json, os, subprocess, sys
+          bad = []
+          for f in sorted(glob.glob("*.json")):
+              raw = open(f, encoding="utf-8", errors="replace").read()
+              if raw.lstrip().startswith("<<<<<<<") or "\n=======\n" in raw and ">>>>>>>" in raw:
+                  print(f"  {f}: Git-Konfliktmarker gefunden -> aus dem Index nehmen")
+                  subprocess.run(["git", "checkout", "--", f], check=False)
+                  bad.append(f); continue
+              try:
+                  json.load(open(f, encoding="utf-8"))
+                  print(f"  {f}: ok")
+              except Exception as e:
+                  print(f"  {f}: UNGUELTIG ({e}) -> alte Version wiederherstellen")
+                  subprocess.run(["git", "checkout", "--", f], check=False)
+                  bad.append(f)
+          if bad:
+              print("Wiederhergestellt: " + ", ".join(bad))
+          PY
+
       - name: JSON-Dateien committen
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git stash --include-untracked || true
-          git pull --rebase origin main || true
-          git stash pop || true
-          # WICHTIG: einzeln adden. "git add a b c" bricht komplett ab, sobald EINE
-          # Datei fehlt – dann wird gar nichts gestaged (genau das ist passiert).
+
+          # KEIN stash/pop mehr. Das erzeugte Konfliktmarker mitten in den
+          # JSON-Dateien ("<<<<<<< Updated upstream"), die dann committet wurden
+          # und im Browser als "kein gueltiges JSON" ankamen.
+          # Diese Dateien werden ausschliesslich hier erzeugt: der frisch
+          # erzeugte Stand gewinnt immer.
           for f in articles.json eu_articles.json bundestag_articles.json \
                    laender_articles.json us_articles.json documents.json \
                    people.json dip.json calendar.ics newsletters.json elections.json \
@@ -71,10 +97,24 @@ jobs:
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
+
           if git diff --cached --quiet; then
             echo "Keine Änderungen zum Committen."
-          else
-            git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
-            git push
-            echo "Committet und gepusht."
+            exit 0
           fi
+          git commit -m "chore: update feeds [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+
+          # Push; bei zwischenzeitlichen Fremdänderungen genau einmal nachziehen
+          # und dabei unsere Version der Datendateien behalten.
+          if ! git push; then
+            echo "Push abgelehnt – ziehe nach."
+            git fetch origin main
+            git rebase -X ours origin/main || {
+              echo "Rebase gescheitert – nehme unseren Stand."
+              git rebase --abort || true
+              git reset --soft origin/main
+              git commit -m "chore: update feeds (neu aufgesetzt)" || true
+            }
+            git push
+          fi
+          echo "Committet und gepusht."
