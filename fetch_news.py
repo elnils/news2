@@ -791,8 +791,11 @@ def parse_feed(fetch_result, source, topic_rules):
             if m: img=m.group(1)
         author=(g('{http://purl.org/dc/elements/1.1/}creator') or g('author') or
                 g('{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name') or '')[:120]
+        access = detect_access(source, title, cats, link)
+        if access == "paid":
+            title = clean_paid_marker(title)
         title = improve_title(title, desc, source)
-        a={"id":uid,"source":source,"title":title,"link":link.strip(),
+        a={"id":uid,"source":source,"title":title,"link":link.strip(),"access":access,
            "desc":desc,"date":pub_iso,"topics":topics,"boost":boost,
            "priority":priority,"cats":cats,"image":img,"author":author}
         arts.append(a)
@@ -821,6 +824,51 @@ def detect_priority(title, cats):
     return ""
 
 # ── NEU (v3): Inhaltstyp und Institution je Feed ──
+# ── ZUGANG: frei oder kostenpflichtig ──────────────────────
+# Viele Haeuser kennzeichnen Bezahlartikel im Titel oder in der Kategorie
+# ("S+", "ZEIT+", "SZ Plus", "F+", "(Abo)"). Andere Angebote sind vollstaendig
+# kostenpflichtig. Beides wird hier zusammengefuehrt, damit im Interface
+# erkennbar ist, was sich ohne Abonnement lesen laesst.
+
+# Angebote, die praktisch vollstaendig hinter einer Bezahlschranke stehen
+PAID_SOURCES = {
+    "Handelsblatt", "Table.Briefings", "Table.Media", "Tagesspiegel Background",
+    "Politico Pro", "Börsen-Zeitung", "WirtschaftsWoche", "Capital",
+    "Der Spiegel Plus", "Wall Street Journal", "Financial Times", "Bloomberg",
+    "The Economist", "New York Times", "Washington Post",
+}
+# Angebote ohne Bezahlschranke (oeffentlich-rechtlich, Behoerden, Institutionen)
+FREE_SOURCES = {
+    "Tagesschau", "Tagesschau Eil", "ZDF heute", "Deutschlandfunk", "DLF",
+    "n-tv Eil", "heise online", "Heise", "Golem", "netzpolitik.org",
+    "Bundesregierung", "Bundestag", "Bundesrat", "EU-Kommission", "EP Pressemitt.",
+    "BGH", "BVerfG", "Bundesbank", "EZB", "SWP Berlin", "Bruegel", "White House",
+}
+# Kennzeichnung im Titel oder in den Kategorien des Feeds
+PAID_MARK_RE = re.compile(
+    r'(^|[\s\[(|])('
+    r's\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|nzz\+|'          # Kuerzel mit Pluszeichen
+    r'sz\s*plus|zeit\s*plus|spiegel\s*plus|welt\s*plus|faz\s*plus|'      # ausgeschrieben
+    r'plus-artikel|abo|abonnenten|paywall|premium|exklusiv f[üu]r'
+    r')([\s\])|:.\-–]|$)', re.I)
+
+def detect_access(source, title, cats, link=""):
+    """'paid', 'free' oder 'unknown' – bewusst zurueckhaltend."""
+    if source in PAID_SOURCES: return "paid"
+    if any(re.fullmatch(r"(s\+|plus|abo|premium|paywall)", str(c).strip(), re.I) for c in (cats or [])):
+        return "paid"
+    if PAID_MARK_RE.search(title or ""): return "paid"
+    l = (link or "").lower()
+    if re.search(r"[/\-.](plus|premium|abo|paywall)[/\-.?]|[/\-]plus\b", l): return "paid"
+    if source in FREE_SOURCES: return "free"
+    return "unknown"
+
+def clean_paid_marker(title):
+    """Entfernt die Kennzeichnung aus dem Titel, damit sie nicht doppelt erscheint."""
+    return re.sub(r'^\s*[\[(]?\s*(s\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|'
+                  r'sz\s*plus|zeit\s*plus|spiegel\s*plus|plus)\s*[\])]?\s*[:\-–]?\s*',
+                  '', title or '', flags=re.I).strip()
+
 # ── Titel aufwerten ──────────────────────────────────────────
 # Manche Quellen liefern Titel ohne Aussage ("Entscheidung vom 12.08.2026",
 # "Pressemitteilung Nr. 141/2026") oder haengen die Quelle an
