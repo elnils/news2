@@ -308,7 +308,7 @@ body.inline .archive-gate,body.inline #more-btn{grid-column:1/-1}
 /* ── Zeitungsansicht ────────────────────────────────────────
    Angelehnt an FT und Politico Pro: ein Aufmacher mit Bild, darunter
    Spalten mit kleineren Bildern. Bilder sichtbar, aber nicht dominant. */
-body.paper #list-scroll{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:0;
+body.paper #list-scroll{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--paper-min,268px),1fr));gap:0;
   align-content:start;background:var(--surface);border-radius:var(--r);padding:14px 16px}
 body.paper .fitem{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:13px 15px 14px;margin:0}
 body.paper .fitem:nth-child(4n){border-right:none}
@@ -427,7 +427,10 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .theme-cols{column-count:4;column-gap:11px}
 @media (max-width:1500px){.theme-cols{column-count:3}}
 @media (max-width:1100px){.theme-cols{column-count:2}}
-@media (max-width:700px){.theme-cols{column-count:1}}
+@media (max-width:900px){.theme-cols{column-count:1;column-gap:0}
+  .theme-cols .ds{margin-bottom:9px}
+  .theme-bar{overflow-x:auto;flex-wrap:nowrap;padding:8px}
+  .theme-bar .chip{flex:0 0 auto}}
 .theme-cols .ds{break-inside:avoid;margin-bottom:11px;display:inline-block;width:100%}
 .theme-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:11px;padding:9px 11px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r)}
 .theme-bar .fl{margin-right:2px}
@@ -521,6 +524,58 @@ body.topics-open #tp-arw{display:inline-block;transform:rotate(180deg)}
 .wsnav .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--bg);color:var(--muted)}
 body.rail #ws-switch .ws span,body.rail #ws-nav,body.rail #ws-context{display:none}
 body.rail .ws{justify-content:center;padding:10px 0}
+/* Automatische Zusammenfassung */
+.ki-box{background:linear-gradient(180deg,#f5f3ff,var(--surface));border:1.5px solid #ddd6fe;border-radius:var(--r);padding:12px 14px;margin-bottom:11px}
+.ki-hd{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#6d28d9;margin-bottom:5px;display:flex;gap:7px;align-items:center}
+.ki-src{font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none;font-size:10px}
+.ki-box>div:not(.ki-hd){font-size:13.5px;line-height:1.6;color:var(--text2)}
+.ki-eff{margin-top:6px;font-size:12.5px}
+.proc-sum{font-size:12px;line-height:1.5;color:var(--text2);margin:4px 0}
+/* Lesespalte im Monitor */
+#story-panel{display:none}
+body.panel-open #story-panel{display:block;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:14px;max-height:calc(100dvh - 150px);overflow-y:auto;position:sticky;top:0}
+body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
+.sp-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.sp-head .btn{margin-left:auto}
+.sp-img{width:100%;height:150px;object-fit:cover;border-radius:8px;margin-bottom:10px}
+#story-panel h3{font-size:16px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-bottom:4px}
+.sp-text{font-size:12.5px;line-height:1.6;color:var(--text2);margin-top:9px}
+@media (max-width:1300px){body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 320px}
+  body.panel-open #mon-side{display:none}}
+@media (max-width:900px){body.panel-open #mon-detail{grid-template-columns:1fr}
+  body.panel-open #story-panel{position:fixed;inset:52px 0 0;z-index:60;max-height:none;border-radius:0}}
+/* Nachrichten-Übersicht im Dashboard */
+#news-finder{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:12px;flex:0 0 auto}
+.nf-row{display:flex;gap:7px;margin-bottom:8px}
+.nf-row input{flex:1;min-width:0;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+.nf-row input:focus{border-color:var(--blue);background:#fff}
+.nf-row2{display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap}
+.nf-row2 .chips{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.nf-hits{margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+.nf-count{font-size:11px;color:var(--muted);margin-bottom:5px}
+.nf-item{display:flex;gap:8px;align-items:baseline;padding:5px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.nf-item:last-child{border-bottom:none}
+.nf-item:hover .nf-t{color:var(--blue)}
+.nf-t{flex:1;min-width:0;font-size:12.5px;font-weight:600;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nf-d{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.brief-topics{display:flex;gap:5px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:9px 11px;margin-bottom:12px}
+.rep-links li{cursor:pointer}
+.rep-links li:hover{color:var(--blue);text-decoration:underline}
+@media (max-width:900px){.nf-row2{flex-direction:column}.nf-row2 .chips{overflow-x:auto;flex-wrap:nowrap;width:100%}.nf-row2 .chip{flex:0 0 auto}}
+/* Monitor: Begründung, Zitate, Trefferzeile */
+.whytag{font-size:9.5px;font-weight:600;color:var(--muted);background:var(--bg);padding:1px 6px;border-radius:9px}
+.say{font-size:11px;line-height:1.45;color:var(--text2);margin-top:4px;padding-left:8px;border-left:2px solid var(--border)}
+.mon-count{font-size:11px;color:var(--muted);margin:-4px 0 8px}
+/* Story inline */
+.story.open{background:var(--surface2)}
+.story-thumb{width:74px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.story-open{padding:4px 0 14px 13px;animation:fu .18s ease both}
+.story-img{float:right;width:190px;height:120px;object-fit:cover;border-radius:8px;margin:0 0 10px 14px}
+.story-lead{font-size:13px;line-height:1.65;color:var(--text2)}
+.mini-filter{display:flex;gap:4px;flex-wrap:wrap;padding:7px 12px 4px;border-bottom:1px solid var(--border)}
+.mini-filter .chip{font-size:10.5px;padding:2px 8px}
+@media (max-width:620px){.story-img{float:none;width:100%;height:150px;margin:0 0 10px}}
 /* Kontextleiste einklappbar */
 .ctx-grp .ws-title{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
 .ctx-grp .ws-title:hover{color:var(--text2)}
@@ -1037,6 +1092,15 @@ body.rail .ws{justify-content:center;padding:10px 0}
         </div>
       </div>
       <div id="quickbar"></div>
+      <div id="news-finder">
+        <div class="nf-row">
+          <input id="nf-q" placeholder="Nachrichten durchsuchen – Stichwort, Name, Begriff…" oninput="debounce(renderFinder,180)" onkeydown="if(event.key==='Enter')nfOpen()">
+          <button class="btn p sm" onclick="nfOpen()">Im Feed öffnen</button>
+        </div>
+        <div class="nf-row2"><span class="fl">Ressort</span><div class="chips" id="nf-topics"></div></div>
+        <div class="nf-row2"><span class="fl">Quelle</span><div class="chips" id="nf-src"></div></div>
+        <div class="nf-hits" id="nf-hits"></div>
+      </div>
       <div id="dash-themes" style="display:none">
         <div class="theme-bar" id="theme-bar"></div>
         <div class="theme-cols" id="theme-cols"></div>
@@ -1044,7 +1108,9 @@ body.rail .ws{justify-content:center;padding:10px 0}
       <div id="dash-overview">
       <div class="dmain">
         <div class="dcard">
-          <div class="dcard-hd"><h2>Top-Meldungen</h2><span class="eyebrow">meistberichtet · 48 h</span><button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
+          <div class="dcard-hd"><h2>Top-Meldungen</h2>
+            <div class="seg mini-seg" id="top-win"></div>
+            <button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
           <div class="dcard-body top-list" id="dash-top"></div>
         </div>
         <aside class="dside">
@@ -1056,6 +1122,7 @@ body.rail .ws{justify-content:center;padding:10px 0}
           </div>
           <div class="dcard mini" data-fold="Dokumente">
             <div class="dcard-hd"><h2>Neue Dokumente</h2><button class="all" onclick="setView('docs')">↗</button></div>
+            <div class="mini-filter" id="docs-filter"></div>
             <div class="dcard-body scrollbox" id="dash-docs"></div>
           </div>
           <div class="dcard mini" data-fold="Studien">
@@ -1171,6 +1238,7 @@ body.rail .ws{justify-content:center;padding:10px 0}
             <button id="lt-paper" class="on" onclick="setLayout('paper')" title="Zeitungsansicht mit Bildern">📰 Zeitung</button>
             <button id="lt-compact" onclick="setLayout('compact')" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
             <button id="lt-cards" onclick="setLayout('cards')" title="Karten mit Teaser">▦ Karten</button>
+            <button id="lt-cols" onclick="cycleCols()" title="Spaltenzahl in der Zeitungsansicht">▥ Spalten</button>
             <span style="width:1px;height:18px;background:var(--border);margin:0 3px"></span>
             <button id="lt-inline" class="on" onclick="setFeedInline(!S.feedInline)" title="Klick öffnet den Text direkt in der Liste; aus = Lesefenster rechts">⤢ Inline</button>
             <span style="flex:1"></span>
@@ -1407,7 +1475,7 @@ const parlLabel=p=>p.parliament_label||PARL_L[p.parliament]||(p.parliament?.star
 /* v5: eigene Themen des Nutzers */
 let MYTOPICS=[];
 function matchMy(a,t){const txt=stext(a);
-  if(t.not?.some(w=>txt.includes(w)))return false;return t.kw.some(w=>txt.includes(w));}
+  if(t.not?.some(w=>kwHit(w,txt)))return false;return t.kw.some(w=>kwHit(w,txt));}
 
 /* ═══════════════════════════════════════════════════════════
    FREE / PRO – die einzige Stelle, an der Gates definiert sind
@@ -1464,8 +1532,8 @@ const LOADLOG=[];
 const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyTopic:null,policyQ:'',
- calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyArt:null,policyTopic:null,policyQ:'',
+ calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1574,7 +1642,62 @@ function setSport(on){S.hideSport=on;store.set('ps_sport',on);_winCache=null;_po
 /* Dubletten (gleiche Meldung aus mehreren Quellen / Google-Proxies) */
 function normT(t){return(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
 function normTa(a){return a._n||(a._n=normT(a.title));}
-function dedupe(list,seen=new Set()){return list.filter(a=>{const k=normTa(a);if(!k||seen.has(k)||seen.has(a.id))return false;seen.add(k);seen.add(a.id);return true;});}
+/* Dublettenerkennung über Wortmengen. Die alte Prüfung verglich die ersten
+   60 Zeichen – „Reuters: Bericht zu X" und „Bericht zu X – BBC" galten damit als
+   verschieden. Zusätzlich werden Zahlen und Eigennamen verglichen, weil dieselbe
+   Meldung auf Deutsch und Englisch dieselben Zahlen und Namen enthält. */
+const DUP_STOP=new Set('der die das den dem des ein eine und oder für mit von aus bei nach über auf ist sind wird werden hat haben nicht the and for with from that this will has have not are was were says said new news about after over into more than'.split(' '));
+function dupKeys(a){
+  if(a._dk)return a._dk;
+  const raw=(a.title||'');
+  const words=raw.toLowerCase().replace(/[^a-zäöüßa-z0-9 ]/g,' ').split(/\s+/)
+    .filter(w=>w.length>3&&!DUP_STOP.has(w));
+  /* „2,5" und „2.5" sind dieselbe Zahl; Tausenderpunkte fallen weg */
+  const nums=(raw.match(/\b\d[\d.,]{0,12}\b/g)||[]).map(x=>x.replace(/[.,](?=\d{3}\b)/g,'').replace(/[.,]/g,'.'))
+    .map(x=>String(parseFloat(x))).filter(x=>x!=='NaN'&&x.length>0);
+  const names=(raw.match(/\b[A-ZÄÖÜ][a-zäöüß]{3,}\b/g)||[]).map(x=>x.toLowerCase());
+  return(a._dk={words:new Set(words),nums:new Set(nums),names:new Set(names)});
+}
+function isDup(a,b){
+  const A=dupKeys(a),B=dupKeys(b);
+  const inter=(x,y)=>{let n=0;x.forEach(v=>{if(y.has(v))n++;});return n;};
+  const wi=inter(A.words,B.words),wu=A.words.size+B.words.size-wi;
+  if(wu&&wi/wu>=0.5)return true;                       // gleiche Wortmenge
+  const ni=inter(A.nums,B.nums),mi=inter(A.names,B.names);
+  if(ni>=2&&mi>=1)return true;                          // gleiche Zahlen und ein Name
+  if(mi>=2&&wi>=2)return true;                          // zwei Namen und Wortüberschneidung
+  return false;
+}
+/* Dubletten in einer Liste zusammenfassen; die Quellen werden am Sieger vermerkt. */
+function dedupeStrong(list){
+  const out=[],buckets={};
+  /* Vergleichskandidaten über Wörter, Zahlen UND Eigennamen suchen.
+     Nur über die ersten Wörter zu indexieren, ließ Übersetzungen durchrutschen:
+     „Merz kündigt 2,5 Milliarden…“ und „Germany pledges 2.5 billion…“ haben
+     kein gemeinsames Anfangswort, aber dieselbe Zahl und denselben Namen. */
+  const keysOf=a=>{const d=dupKeys(a);return[...d.words,...[...d.nums].map(n=>'#'+n),...[...d.names].map(n=>'@'+n)];};
+  list.forEach(a=>{
+    const k=keysOf(a);
+    const cand=new Set();
+    k.forEach(w=>(buckets[w]||[]).forEach(i=>cand.add(i)));
+    let hit=-1;
+    for(const i of cand){if(isDup(a,out[i])){hit=i;break;}}
+    if(hit>=0){
+      const w=out[hit];
+      w._dupes=(w._dupes||[]);
+      if(!w._dupes.some(x=>x.source===a.source))w._dupes.push(a);
+      w.cluster=Math.max(w.cluster||1,1+w._dupes.length);
+    }else{
+      out.push(a);const i=out.length-1;
+      k.forEach(w=>(buckets[w]=buckets[w]||[]).push(i));
+    }
+  });
+  return out;
+}
+function dedupe(list,seen=new Set()){
+  const pre=list.filter(a=>{const k=normTa(a);if(!k||seen.has(k)||seen.has(a.id))return false;seen.add(k);seen.add(a.id);return true;});
+  return dedupeStrong(pre);
+}
 /* Relevanz: Zahl der Schlüsselbegriffe aus HIGH_VALUE_KEYWORDS (fetch_news.py).
    Früher stand hier nur ein „★ 3" ohne Erklärung. */
 function relChip(a){const b=a.boost||0;if(!b)return'';
@@ -1886,7 +2009,7 @@ function matches(a,f){
   if(f.src&&f.src!=='all'&&a.source!==f.src)return false;
   if(f.prio?.eil&&!(isBreaking(a)||((a.cluster||0)>=3&&ageH(a.date)<6)))return false;
   if(f.prio?.top&&!(a.boost||0))return false;
-  for(const t of(f.tokens||[])){const hit=txt.includes(t.v);if(t.not?hit:!hit)return false;}
+  for(const t of(f.tokens||[])){const hit=kwHit(t.v,txt);if(t.not?hit:!hit)return false;}
   if(f.q&&!txt.includes(f.q))return false;
   return true;
 }
@@ -1941,6 +2064,11 @@ function setFeedInline(on){
   renderFeed();
 }
 /* Drei Lesearten: Zeitung (Standard), Kompakt, Karten */
+function cycleCols(){
+  S.cols=({4:2,2:3,3:4})[S.cols||4]||2;store.set('ps_cols',S.cols);
+  document.documentElement.style.setProperty('--paper-min',S.cols===2?'440px':S.cols===3?'320px':'268px');
+  g('lt-cols').textContent='▥ '+S.cols+' Spalten';
+}
 function setLayout(m){
   S.layout=m;store.set('ps_layout',m);
   document.body.classList.toggle('paper',m==='paper');
@@ -2070,6 +2198,14 @@ function showAllEil(){
    Damit braucht die Seitenleiste die vielen Einträge nicht mehr im Blick zu halten. */
 /* Oben im Dashboard: Themen-Radar der letzten 48 Stunden als klickbare Leiste,
    dazu die nächste Wahl, wenn eine ansteht. Alles Weitere steht links. */
+/* Ein Klick auf ein Thema filtert die Übersicht, ohne den Bereich zu verlassen. */
+function dashTopic(t){
+  toggleTopic(t);
+  if(S.view!=='dash')setView('dash');
+  setDashMode(S.topics.size?'themes':'overview',document.querySelector('#dash-seg button'+(S.topics.size?':nth-child(2)':'')));
+  renderQuickbar();renderDashThemes();
+}
+function setTopWin(h){S.topWin=h;store.set('ps_topwin',h);reRender('dash');}
 function renderQuickbar(){
   const el=g('quickbar');if(!el)return;
   const win=win48();
@@ -2084,7 +2220,7 @@ function renderQuickbar(){
     `<span class="qb-lbl">Themen-Radar <span style="font-weight:500;color:var(--muted)">48 h</span></span>`
     +top.map(([t,n])=>{const c=topicColor(t),on=S.topics.has(t);
       return`<span class="qb-chip${on?' sel':''}" style="${on?`background:${c};border-color:${c};color:#fff`:`border-color:${c}44;color:${c}`}"
-        onclick="toggleTopic('${t}');renderQuickbar();if(S.topics.size){S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters();}"
+        onclick="dashTopic('${t}')"
         title="${n} Meldungen">${chipLabel(t)}<b style="opacity:.65;font-size:${(9+2*n/mx).toFixed(1)}px">${n}</b></span>`;}).join('')
     +(S.topics.size?`<span class="qb-chip" onclick="S.topics.clear();buildChips();applyFilters();renderQuickbar()">✕ Auswahl</span>`:'')
     +(nx?`<span class="qb-vote" style="margin-left:0" onclick="setView('wahl')"><b>${nx.days===0?'heute':'in '+nx.days+' Tagen'}</b> ${esc(nx.region)} wählt</span>`:'');
@@ -2095,19 +2231,56 @@ function showThinkTanks(){
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();setTopic('__eu-think');setView('feed');
 }
 function setTermMode(m,btn){S.termMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderDashSide();}
+/* Der schnelle Überblick aus News 2: suchen, nach Ressort und Quelle eingrenzen,
+   Treffer sofort sehen – ohne die Seite zu wechseln. */
+function renderFinder(){
+  const q=(g('nf-q')?.value||'').trim().toLowerCase();
+  const win=pool('all').filter(a=>ageH(a.date)<=48);
+  const cnt={},src={};
+  win.forEach(a=>{[...new Set((a.topics||[]).map(normTopic))].forEach(t=>t&&(cnt[t]=(cnt[t]||0)+1));src[a.source]=(src[a.source]||0)+1;});
+  g('nf-topics').innerHTML=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10)
+    .map(([t,n])=>`<span class="chip${S.nfTopic===t?' active':''}" onclick="S.nfTopic=S.nfTopic==='${t}'?null:'${t}';renderFinder()">${chipLabel(t)} ${n}</span>`).join('');
+  g('nf-src').innerHTML=Object.entries(src).sort((a,b)=>b[1]-a[1]).slice(0,10)
+    .map(([x,n])=>`<span class="chip${S.nfSrc===x?' active':''}" onclick="S.nfSrc=S.nfSrc==='${esc(x)}'?null:'${esc(x)}';renderFinder()">${esc(x)} ${n}</span>`).join('');
+  let list=win;
+  if(S.nfTopic)list=list.filter(a=>(a.topics||[]).map(normTopic).includes(S.nfTopic));
+  if(S.nfSrc)list=list.filter(a=>a.source===S.nfSrc);
+  if(q)list=list.filter(a=>kwHit(q,stext(a))||stext(a).includes(q));
+  list=dedupe(list.sort((a,b)=>(b.date||'').localeCompare(a.date||'')));
+  const box=g('nf-hits');
+  if(!q&&!S.nfTopic&&!S.nfSrc){box.innerHTML=`<span class="km-note">${win.length} Meldungen der letzten 48 Stunden. Stichwort eingeben oder Ressort und Quelle wählen.</span>`;return;}
+  box.innerHTML=`<div class="nf-count"><b>${list.length}</b> Treffer</div>`
+    +list.slice(0,6).map(a=>`<div class="nf-item" onclick="openById('${a.id}','${a._set}')">
+      <span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>
+      <span class="nf-t">${esc(a.title)}</span><span class="nf-d">${rel(a.date)}</span></div>`).join('')
+    +(list.length>6?`<button class="btn sm" style="margin-top:6px" onclick="nfOpen()">Alle ${list.length} im Feed öffnen →</button>`:'');
+}
+function nfOpen(){
+  const q=(g('nf-q')?.value||'').trim();
+  S.section='all';S.topics.clear();S.src=S.nfSrc||'all';
+  if(S.nfTopic)S.topics.add(S.nfTopic);
+  setC('fb-set','Alle Feeds');
+  if(g('q'))g('q').value=q;
+  buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();
+}
 function renderDash(){
-  const win=win48();
+  const hrs=S.topWin||24;
+  /* Zeitfenster der Top-Meldungen: 3 bis 48 Stunden */
+  const tw=g('top-win');
+  if(tw)tw.innerHTML=[3,6,12,24,48].map(h=>`<button class="${hrs===h?'active':''}" onclick="setTopWin(${h})">${h} h</button>`).join('');
+  const win=pool('all').filter(a=>ageH(a.date)<=hrs).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const empty=t=>`<div style="padding:20px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
   /* Top-Meldungen: was viele Quellen gleichzeitig haben, dann Relevanz. */
   const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,12);
+  const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
   g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-${a.id}" onclick="toggleInline('${a.id}')">
       <span class="rank">${i+1}</span>
-      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
+      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
       <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div><span class="chev">▶</span></div>
       <div id="inl-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
   renderDashSide();
-  renderQuickbar();renderDashThemes();initFolds();
+  renderQuickbar();renderFinder();renderDashThemes();initFolds();
 }
 /* Inline lesen: Teaser, Bild und Aktionen direkt an Ort und Stelle.
    Kein Ansichtswechsel nötig – der Feed bleibt für langes Lesen erhalten. */
@@ -2132,7 +2305,8 @@ function toggleInline(id){
       <button class="btn sm" onclick="event.stopPropagation();copyOne('${a.id}')">📋 Titel + Link</button>
       <span style="flex:1"></span>
       <button class="btn sm" onclick="event.stopPropagation();toggleInline('${a.id}')">✕ Schließen</button>
-    </div></div>`;
+    </div>${thumb?`<img class="story-thumb" src="${esc(thumb.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+    </div><div id="sin-${s.id}"></div>`;
   row?.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function copyOne(id){const a=articleById(id);if(!a)return;navigator.clipboard.writeText(a.title+'\n'+(a.link||''));}
@@ -2168,8 +2342,14 @@ function renderDashSide(){
       <div class="mt">${esc(c.title)}</div>
       <div class="mm"><span class="when">${S.termMode==='week'?c.dateLabel.split(',')[0]+' ':''}${c.timeLabel}</span><span>${esc(c.src)}</span></div></div>`).join('')
     :empty(S.termMode==='week'?'Diese Woche keine Termine.':'Heute keine Termine.<br>Über „Woche" die nächsten sieben Tage ansehen.');
-  // Neue Dokumente
-  const docs=ALL_DOCS.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
+  // Neue Dokumente – nach Thema eingrenzbar
+  const alleDocs=ALL_DOCS.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const dTopics={};alleDocs.slice(0,150).forEach(d=>{const t=classify(d.title+' '+(d.desc||''));if(t&&t!=='sonstig')dTopics[t]=(dTopics[t]||0)+1;});
+  const df=g('docs-filter');
+  if(df)df.innerHTML=Object.entries(dTopics).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([t,n])=>
+    `<span class="chip${S.docTopic===t?' active':''}" onclick="S.docTopic=S.docTopic==='${t}'?null:'${t}';renderDashSide()">${TOPIC_KW_L[t]||t} ${n}</span>`).join('')
+    +(S.docTopic?`<span class="chip" onclick="S.docTopic=null;renderDashSide()">✕</span>`:'');
+  const docs=(S.docTopic?alleDocs.filter(d=>classify(d.title+' '+(d.desc||''))===S.docTopic):alleDocs).slice(0,20);
   g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" id="mr-${d.id}" onclick="toggleMini('${d.id}','doc')">
       <div class="mt">${esc(d.title)}</div>
       <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div><div id="mi-${d.id}"></div>`).join('')
@@ -2196,7 +2376,8 @@ function renderDashThemes(){
   g('theme-bar').innerHTML='<span class="fl">Spalten</span>'+all.map(([t,arts])=>{const on=dashPick.has(t),c=topicColor(t);
     return`<span class="chip${on?' sel':''}" style="${on?`background:${c};border-color:${c}`:`border-color:${c}55;color:${c}`}" onclick="toggleDashTheme('${t}')">${chipLabel(t)} <span style="opacity:.6">${arts.length}</span></span>`;}).join('')
     +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ alle zeigen</span>`:'');
-  const shown=dashPick.size?all.filter(([t])=>dashPick.has(t)):all;
+  const sel=dashPick.size?dashPick:S.topics;
+  const shown=sel.size?all.filter(([t])=>sel.has(t)):all;
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
     return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-${a.id}" onclick="toggleInline('${a.id}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
@@ -2355,8 +2536,15 @@ function calSubscribeUrl(){return location.origin.startsWith('http')?location.hr
 
 /* ═══ BRIEFINGS (automatisch je Thema, 24 h) + externe Newsletter ═══ */
 let _briefsBuilt=false;
-function buildBriefsLazy(){_briefsBuilt=false;setC('cnt-brief','…');
-  requestIdleCallback?requestIdleCallback(()=>{buildBriefs();setC('cnt-brief',BRIEFS.length+NEWSL.length);DIRTY.add('brief');DIRTY.add('dash');if(S.view==='brief'||S.view==='dash')renderIfNeeded(S.view);},{timeout:2500}):setTimeout(()=>{buildBriefs();setC('cnt-brief',BRIEFS.length+NEWSL.length);},300);}
+function buildBriefsLazy(){
+  _briefsBuilt=false;setC('cnt-brief','…');
+  /* Auf Mobilgeräten kam requestIdleCallback oft nicht zum Zug – die Briefings
+     blieben leer. Deshalb dort direkt bauen, sonst im Leerlauf. */
+  const run=()=>{buildBriefs();setC('cnt-brief',BRIEFS.length+NEWSL.length);
+    DIRTY.add('brief');DIRTY.add('dash');if(S.view==='brief'||S.view==='dash')renderIfNeeded(S.view);};
+  if(window.innerWidth<=900||!window.requestIdleCallback)setTimeout(run,150);
+  else requestIdleCallback(run,{timeout:2500});
+}
 function buildBriefs(){_briefsBuilt=true;
   BRIEFS=[];const win=dedupe(pool('all').filter(a=>ageH(a.date)<=24));
   const sets=[['news',NEWS_TL,NEWS_TC],['eu',EU_TL,EU_TC],['bt',BT_TL,BT_TC]];
@@ -2587,13 +2775,18 @@ function processes(){return(DIP.procedures||[]);}
 function processById(id){return processes().find(p=>p.id===id);}
 function processNews(p,limit=12){
   const nums=drucksachen(p.title+' '+(p.gesta||''));
-  const w=sigWords(p.title);
+  /* Deskriptoren sind die vom Bundestag vergebenen Schlagwoerter – das beste
+     Bindeglied zwischen Verfahren und Berichterstattung. */
+  /* Amtliche Deskriptoren plus die von Groq erzeugten Suchbegriffe */
+  const desk=[...(p.deskriptoren||[]),...(p.ki_keywords||[])].map(d=>String(d).toLowerCase());
+  const w=[...new Set([...sigWords(p.title+' '+(p.abstract||'')),...desk.flatMap(sigWords)])];
   return pool('all').filter(a=>{
     const txt=stext(a);
     if(nums.some(n=>txt.includes(n)))return true;
     const aw=a._w||(a._w=sigWords(a.title));
+    /* Ein Deskriptor in der Schlagzeile genügt – er ist präzise vergeben. */
+    if(desk.some(d=>d.length>5&&kwHit(d,(a.title||'').toLowerCase())))return true;
     const shared=w.filter(x=>aw.includes(x)).length;
-    /* Zwei seltene gemeinsame Wörter reichen; sonst über die Wortmengen-Ähnlichkeit */
     return shared>=2||jaccard(w,aw)>=0.22;
   }).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,limit);
 }
@@ -2607,6 +2800,14 @@ function processDocs(p,limit=10){
   }).slice(0,limit);
 }
 function processStakeholders(p,limit=8){
+  /* Bevorzugt die echten Personenbezüge aus der DIP-Aktivitätenliste. */
+  if((p.people||[]).length){
+    const out=p.people.map(x=>{
+      const match=PEOPLE.find(q=>q.name===x.name||((q.last_name||'').length>3&&x.name.toLowerCase().includes((q.last_name||'').toLowerCase())));
+      return match?{...match,_akt:x.art,_datum:x.date}:{id:'dip:'+(x.person_id||x.name),name:x.name,party:'',parliament:'bt',_extern:true,_akt:x.art,_datum:x.date};
+    });
+    return out.slice(0,limit);
+  }
   const t=(p.title+' '+(p.sachgebiet||[]).join(' ')).toLowerCase();
   const scored=PEOPLE.map(x=>{
     let sc=0;
@@ -2644,8 +2845,9 @@ function mentions(p,days=30){
   return pool('all').filter(a=>{
     if(ageH(a.date)>days*24)return false;
     const t=stext(a);
-    if(!t.includes(ln))return false;
-    return t.includes(fn)||(party&&t.includes(party.split(' ')[0]))||t.includes(p.name.toLowerCase());
+    if(!kwHit(ln,t))return false;
+    /* Zweiter Beleg nötig, damit „Bär" nicht jeden Bären trifft */
+    return kwHit(fn,t)||(party&&kwHit(party.split(' ')[0],t))||t.includes(p.name.toLowerCase());
   }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
 function stakeholderProcesses(p,limit=6){
@@ -2695,12 +2897,31 @@ function contentKind(a){
   else if(['ec','ep','eu-council','ecb','bt-allg','breg','bundesrat','bverfg','bgh','us-whitehouse','us-house','us-senate'].includes(cat))k='amtlich';
   return(a._ck=k);
 }
-/* Wer wird in der Meldung zitiert? Nachname plus Zitatverb im selben Text. */
+/* Wer wird zitiert? Zuerst im Personenverzeichnis suchen. Wer dort nicht steht –
+   Ministerinnen ohne Mandat, Kommissare, Verbandsvertreter – wird aus dem Satzbau
+   gelesen: Eigenname unmittelbar vor einem Zitatverb. */
+const SAY_VERB=/(sagte|erklärte|betonte|forderte|kritisierte|warnte|kündigte an|verteidigte|widersprach|äußerte|mahnte|begrüßte|nannte)/i;
+const NAME_BEFORE=new RegExp('([A-ZÄÖÜ][a-zäöüß]+(?:\\s+[A-ZÄÖÜ][a-zäöüß-]+)?)\\s+(?:'+SAY_VERB.source+')','g');
+const NOT_NAME=new Set(['Die','Der','Das','Er','Sie','Es','Man','Wir','Dabei','Zudem','Auch','Dies','Diese','Dieser','Bundestag','Kommission','Regierung','Ministerium','Partei','Fraktion']);
+/* Nachname als Schlüssel: „Habeck" und „Robert Habeck" sind eine Person.
+   Wer im Verzeichnis steht, gewinnt gegen den aus dem Text gelesenen Namen. */
+function lastToken(n){const p=(n||'').trim().split(/\s+/);return(p[p.length-1]||'').toLowerCase().replace(/[.,;:]$/,'');}
 function speakers(a,limit=3){
   if(contentKind(a)!=='aussage')return[];
-  const t=stext(a);
-  return PEOPLE.filter(p=>{const ln=(p.last_name||'').toLowerCase();
-    return ln.length>4&&t.includes(ln);}).slice(0,limit);
+  const t=stext(a),by=new Map();
+  PEOPLE.forEach(p=>{const ln=(p.last_name||'').toLowerCase();
+    if(ln.length>4&&kwHit(ln,t))by.set(ln,p);});
+  const src=(a.title||'')+' '+(a.desc||'').slice(0,300);
+  let m;const re=new RegExp(NAME_BEFORE.source,'g');
+  while((m=re.exec(src))!==null){
+    const nm=m[1].trim(),key=lastToken(nm);
+    if(NOT_NAME.has(nm.split(' ')[0])||key.length<4)continue;
+    const vorhanden=by.get(key);
+    if(!vorhanden)by.set(key,{id:'n:'+key,name:nm,party:'',parliament:'',_extern:true});
+    /* Vollständigerer Name gewinnt bei losen Akteuren */
+    else if(vorhanden._extern&&nm.length>vorhanden.name.length)by.set(key,{...vorhanden,name:nm});
+  }
+  return[...by.values()].slice(0,limit);
 }
 
 /* ── MONITOR: dauerhaftes Beobachtungsobjekt ────────────────────────── */
@@ -2725,51 +2946,105 @@ const monitorStore={
     try{if(window.PS_API)await fetch(window.PS_API+'/me/monitors',{method:'PUT',credentials:'include',
       headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:MONITORS})});}catch{}}
 };
-function monitorMatch(a,m){
-  const t=stext(a);
-  if((m.exclude||[]).some(w=>t.includes(w.toLowerCase())))return false;
-  const hasCrit=(m.keywords||[]).length||(m.topics||[]).length||(m.sources||[]).length||(m.institutions||[]).length||(m.people||[]).length;
-  if(!hasCrit)return false;
-  if((m.keywords||[]).some(w=>t.includes(w.toLowerCase())))return true;
-  const at=new Set((a.topics||[]).map(normTopic));
-  if((m.topics||[]).some(x=>at.has(normTopic(x))))return true;
-  if((m.sources||[]).includes(a.source))return true;
-  if((m.institutions||[]).includes(instOf(a)))return true;
-  if((m.people||[]).length){
-    const ppl=PEOPLE.filter(p=>m.people.includes(p.id));
-    if(ppl.some(p=>(p.last_name||'').length>3&&t.includes((p.last_name||'').toLowerCase())))return true;
+/* Begriffe müssen ganze Wörter treffen. Vorher fand „KI" auch „Kritik",
+   „Verkirchlichung" oder „Skizze" – daher die vielen unpassenden Treffer. */
+const _kwRx={};
+function kwHit(w,t){
+  if(!w)return false;
+  const k=w.toLowerCase();
+  let rx=_kwRx[k];
+  if(!rx){
+    const esc=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+    /* kurze Begriffe exakt, längere dürfen zusammengesetzt weitergehen (Glasfaser→Glasfaserausbau) */
+    rx=_kwRx[k]=new RegExp(k.length<=4
+      ? '(?<![\\wäöüß])'+esc+'(?![\\wäöüß])'
+      : '(?<![\\wäöüß])'+esc, 'i');
   }
-  return false;
+  return rx.test(t);
 }
+/* Ein Monitor darf nicht jedes Kriterium einzeln gelten lassen. Sonst holt das
+   Ressort „KI" alles herein, was je so verschlagwortet wurde – genau das war das
+   Problem. Stattdessen Punkte: nur wer die Schwelle erreicht, gehört zum Monitor.
+      Begriff im Titel      3   (das eigentliche Signal)
+      Begriff im Text       1
+      Ressort                1   (Kontext, allein zu wenig)
+      Quelle / Institution   1
+      beobachtete Person     2
+   Schwelle 3 = ein Begriff im Titel, oder Begriff im Text plus Ressort. */
+function monitorScore(a,m){
+  const t=stext(a),ti=(a.title||'').toLowerCase();
+  if((m.exclude||[]).some(w=>kwHit(w,t)))return 0;
+  let sc=0;const why=[];
+  (m.keywords||[]).forEach(w=>{
+    if(kwHit(w,ti)){sc+=3;why.push('Titel: '+w);}
+    else if(kwHit(w,t)){sc+=1;why.push('Text: '+w);}
+  });
+  const at=new Set((a.topics||[]).map(normTopic));
+  (m.topics||[]).forEach(x=>{if(at.has(normTopic(x))){sc+=1;why.push(chipLabel(x));}});
+  if((m.sources||[]).includes(a.source)){sc+=1;why.push(a.source);}
+  if((m.institutions||[]).includes(instOf(a))){sc+=1;why.push(INST_FLAT[instOf(a)]||'Institution');}
+  if((m.people||[]).length){
+    PEOPLE.filter(p=>m.people.includes(p.id)).forEach(p=>{
+      if((p.last_name||'').length>3&&kwHit(p.last_name,t)){sc+=2;why.push(p.name);}});
+  }
+  a._why=why;
+  return sc;
+}
+const MON_MIN=3;
+function monitorMatch(a,m){return monitorScore(a,m)>=(m.minScore||MON_MIN);}
 function monitorState(m){
-  const all=pool('all').filter(a=>monitorMatch(a,m));
+  /* Treffer mit Punktzahl, damit die Liste nach Nähe zum Thema sortiert ist. */
+  const scored=[];
+  pool('all').forEach(a=>{const sc=monitorScore(a,m);if(sc>=(m.minScore||MON_MIN))scored.push({a,sc,why:(a._why||[]).slice(0,3)});});
+  scored.sort((x,y)=>(y.sc-x.sc)||((y.a.date||'').localeCompare(x.a.date||'')));
+  const all=scored.map(x=>x.a);
+  const scoreOf=new Map(scored.map(x=>[x.a.id,x]));
   const win=all.filter(a=>ageH(a.date)<=48);
   const prev=all.filter(a=>ageH(a.date)>48&&ageH(a.date)<=96);
   const seen=m.lastSeen||'';
   const neu=all.filter(a=>(a.date||'')>seen);
-  const stories=buildStories(48).filter(st=>st.articles.some(a=>monitorMatch(a,m)));
+  /* Nur Stories, die wirklich zum Thema gehören: mindestens ein Treffer und
+     entweder mehrere Treffer oder ein starker (Begriff im Titel). */
+  const stories=buildStories(48).map(st=>{
+    const hits=st.articles.filter(a=>scoreOf.has(a.id));
+    if(!hits.length)return null;
+    const best=Math.max(...hits.map(a=>scoreOf.get(a.id).sc));
+    if(hits.length<2&&best<3)return null;
+    return{...st,hits,relevance:best+hits.length,why:scoreOf.get(hits[0].id).why};
+  }).filter(Boolean).sort((a,b)=>b.relevance-a.relevance);
   const bySev={critical:0,important:0,new:0};
   stories.forEach(st=>bySev[st.severity]++);
-  const pol=processes().filter(p=>{
+  /* Gesetzgebung: Begriff muss im Titel des Verfahrens stehen – ein Ressort
+     allein reicht nicht, sonst hängen 300 Vorgänge am Monitor. */
+  const pol=processes().map(p=>{
     const t=(p.title||'').toLowerCase();
-    return(m.keywords||[]).some(w=>t.includes(w.toLowerCase()))||
-           (m.topics||[]).some(x=>p.topic===normTopic(x))||
-           (m.processes||[]).includes(p.id);
-  }).slice(0,6);
+    let sc=0;
+    (m.keywords||[]).forEach(w=>{if(kwHit(w,t))sc+=3;});
+    if((m.processes||[]).includes(p.id))sc+=5;
+    if(sc&&(m.topics||[]).some(x=>p.topic===normTopic(x)))sc+=1;
+    return sc?{...p,sc}:null;
+  }).filter(Boolean).sort((a,b)=>b.sc-a.sc).slice(0,8);
+  /* Wer äußert sich zum Thema? Nur Meldungen der Art „Aussage" auswerten und
+     nur Personen, deren Name dort mit einem Zitatverb zusammensteht. */
   const shSet=new Map();
-  neu.slice(0,60).forEach(a=>{
-    PEOPLE.forEach(p=>{const ln=(p.last_name||'').toLowerCase();
-      if(ln.length>4&&stext(a).includes(ln))shSet.set(p.id,p);});
+  all.filter(a=>ageH(a.date)<=168&&contentKind(a)==='aussage').slice(0,120).forEach(a=>{
+    speakers(a,4).forEach(p=>{
+      const key=lastToken(p.last_name||p.name);
+      const e=shSet.get(key)||{p,count:0,items:[]};
+      if(p._extern===undefined&&e.p._extern)e.p=p;      /* Verzeichniseintrag bevorzugen */
+      e.count++;if(e.items.length<3)e.items.push(a);
+      shSet.set(key,e);});
   });
+  const stakeholders=[...shSet.values()].sort((a,b)=>b.count-a.count).slice(0,8);
   const heute=new Date();heute.setHours(0,0,0,0);
   const ev=calItems().filter(c=>c.date>=heute).filter(c=>{
     const t=c.title.toLowerCase();
     return(m.keywords||[]).some(w=>t.includes(w.toLowerCase()))||(m.topics||[]).some(x=>c.topic===normTopic(x));
   }).slice(0,5);
   const byKind={};all.filter(a=>ageH(a.date)<=48).forEach(a=>{const k=contentKind(a);byKind[k]=(byKind[k]||0)+1;});
-  return{all,win,neu,stories:stories.slice(0,40),allStories:stories,bySeverity:bySev,byKind,
+  return{all,win,neu,scored,stories:stories.slice(0,40),allStories:stories,bySeverity:bySev,byKind,
     trendPct:prev.length?Math.round((win.length-prev.length)/prev.length*100):(win.length?100:0),
-    policy:pol,stakeholders:[...shSet.values()].slice(0,8),events:ev};
+    policy:pol,stakeholders,events:ev};
 }
 
 
@@ -2780,15 +3055,18 @@ function monitorState(m){
    ═══════════════════════════════════════════════════════════════════════ */
 const WORKSPACES={
   dash:{label:'Dashboard',views:[
-    {id:'overview', label:'Übersicht',   icon:'▣', view:'dash'},
-    {id:'themen',   label:'Nach Themen', icon:'▤', act:()=>{setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));}},
+    {id:'overview', label:'Übersicht',    icon:'▣', act:()=>{setView('dash');setDashMode('overview',document.querySelector('#dash-seg button'));}},
+    {id:'themen',   label:'Nach Themen',  icon:'▤', act:()=>{setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));}},
+    {id:'news',     label:'Nachrichten',  icon:'📰', act:()=>{setSection('all');}},
+    {id:'ddocs',    label:'Dokumente',    icon:'📄', act:()=>{setView('docs');}},
+    {id:'dcal',     label:'Termine',      icon:'📅', act:()=>{setView('cal');}},
+    {id:'dstud',    label:'Studien',      icon:'🔬', act:()=>{showThinkTanks();}},
   ]},
   monitor:{label:'Monitor',views:[
     {id:'monitors', label:'Meine Monitore', icon:'◎', view:'monitor'},
     {id:'activity', label:'Alle Aktivität', icon:'≡', act:()=>{setSection('all');}},
     {id:'stories',  label:'Stories',        icon:'⧉', view:'stories'},
     {id:'trends',   label:'Trends',         icon:'↗', view:'trends'},
-    {id:'sources',  label:'Quellen',        icon:'⌂', view:'sources'},
     {id:'wahl',     label:'Wahlen',         icon:'✓', view:'wahl'},
   ]},
   policy:{label:'Policy',views:[
@@ -2898,7 +3176,8 @@ function renderMonitor(){
     const st=monitorState(m);
     return`<div class="mon-card" onclick="openMonitor('${m.id}')" style="--mc:${m.color||'#2563eb'}">
       <div class="mon-hd"><span class="mon-dot"></span><h3>${esc(m.name)}</h3>
-        <span class="mon-new">${st.neu.length} neu</span></div>
+        ${st.neu.length?`<span class="mon-new">${st.neu.length} neu</span>`:''}</div>
+      <div class="mon-count">${st.all.length} Treffer · ${st.allStories.length} Themen · ${st.policy.length} Verfahren</div>
       <div class="mon-sev">
         ${st.bySeverity.critical?`<span class="sev crit">🔴 ${st.bySeverity.critical} kritisch</span>`:''}
         ${st.bySeverity.important?`<span class="sev imp">🟠 ${st.bySeverity.important} wichtig</span>`:''}
@@ -2906,7 +3185,7 @@ function renderMonitor(){
         <span class="sev ${st.trendPct>=15?'up':st.trendPct<=-15?'down':''}">${st.trendPct>0?'↑':st.trendPct<0?'↓':'→'} ${Math.abs(st.trendPct)} %</span>
       </div>
       <div class="mon-stories">${st.stories.slice(0,3).map(s=>`<div class="mon-story"><b>${esc(s.title.slice(0,90))}</b>
-        <span>${s.sources.length} Quellen · ${s.articles.length} Artikel · ${rel(s.last)}</span></div>`).join('')||'<div class="mon-empty">Keine Entwicklung in 48 Stunden.</div>'}</div>
+        <span>${s.hits?s.hits.length+' Treffer · ':''}${s.sources.length} Quellen · ${rel(s.last)}</span></div>`).join('')||'<div class="mon-empty">Keine Entwicklung in 48 Stunden.</div>'}</div>
       <div class="mon-foot">
         <span>⚖ ${st.policy.length} Verfahren</span><span>👤 ${st.stakeholders.length} Akteure</span><span>📅 ${st.events.length} Termine</span>
       </div></div>`;}).join('');
@@ -2960,7 +3239,7 @@ function renderMonitorDetail(){
       <div class="sub" style="margin:0">${st.all.length} Meldungen insgesamt · ${st.win.length} in 48 h · ${st.neu.length} seit dem letzten Besuch</div></div>
       <button class="btn sm" onclick="editMonitor('${m.id}')">Bearbeiten</button>
       <button class="btn sm" onclick="buildReport('monitor','${m.id}')">↓ Report</button></div>
-    <div class="mon-detail">
+    <div class="mon-detail" id="mon-detail">
       <div>
         <div class="dcard"><div class="dcard-hd"><h2>Neue Entwicklungen</h2>
           <span class="eyebrow">${st.bySeverity.critical} kritisch · ${st.bySeverity.important} wichtig · ${st.bySeverity.new} neu</span></div>
@@ -2969,38 +3248,93 @@ function renderMonitorDetail(){
             return`<span class="chip${S.monKind===k?' active':''}" title="${v.d}" style="${S.monKind===k?`background:${v.c};border-color:${v.c}`:`border-color:${v.c}55;color:${v.c}`}"
               onclick="S.monKind=S.monKind==='${k}'?null:'${k}';reRender('monitor')">${v.ic} ${v.l} ${n}</span>`;}).join('')}
             ${S.monKind?`<span class="chip" onclick="S.monKind=null;reRender('monitor')">✕ Filter</span>`:''}</div>
-          <div class="dcard-body">${(st.allStories||st.stories).filter(x=>!S.monKind||x.kind===S.monKind).slice(0,14).map(s=>storyRow(s)).join('')||'<div class="mon-empty">Nichts in dieser Auswahl.</div>'}</div>
+          <div class="dcard-body" data-panel="1">${(st.allStories||st.stories).filter(x=>!S.monKind||x.kind===S.monKind).slice(0,12).map(s=>storyRow(s,s.why)).join('')||'<div class="mon-empty">Nichts in dieser Auswahl. Der Monitor ist eng gefasst – über „Bearbeiten" lassen sich Begriffe ergänzen.</div>'}</div>
           <div class="story-help">Eine <b>Story</b> fasst Meldungen zusammen, die dieselbe Sache behandeln – erkannt an der Ähnlichkeit der Schlagzeilen.
             Je mehr unabhängige Quellen berichten, desto höher die Einstufung: <span style="color:${SEV.critical.c}">kritisch</span> ab fünf Quellen in sechs Stunden,
             <span style="color:${SEV.important.c}">wichtig</span> ab drei Quellen, sonst <span style="color:${SEV.new.c}">neu</span>.</div></div>
       </div>
-      <aside class="mon-side">
+      <aside class="mon-side" id="mon-side">
         <div class="dcard mini"><div class="dcard-hd"><h2>Trend</h2></div><div class="dcard-body">
           <div class="trendbig ${st.trendPct>=15?'up':st.trendPct<=-15?'down':''}">${st.trendPct>0?'↑':st.trendPct<0?'↓':'→'} ${Math.abs(st.trendPct)} %</div>
           <div class="mon-empty" style="text-align:left">Meldungsaufkommen der letzten 48 Stunden gegenüber den 48 Stunden davor.</div></div></div>
-        <div class="dcard mini"><div class="dcard-hd"><h2>Policy-Aktivität</h2><span class="cnt">${st.policy.length}</span></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Verknüpfte Gesetzgebung</h2><span class="cnt">${st.policy.length}</span></div>
           <div class="dcard-body scrollbox">${st.policy.map(p=>`<div class="mini-row" onclick="openProcess('${p.id}')">
-            <div class="mt">${esc(p.title)}</div><div class="mm"><span class="stage-dot" style="background:${stageColor(p.stage)}"></span>${STAGE_L[p.stage]||''} · ${rel(p.updated||p.date)}</div></div>`).join('')||'<div class="mon-empty">Keine laufenden Verfahren zugeordnet.</div>'}</div></div>
-        <div class="dcard mini"><div class="dcard-hd"><h2>Akteure</h2><span class="cnt">${st.stakeholders.length}</span></div>
-          <div class="dcard-body scrollbox">${st.stakeholders.map(p=>`<div class="mini-row" onclick="openPerson('${p.id}')">
-            <div class="mt">${esc(p.name)}</div><div class="mm">${esc(p.party||'')} · ${esc(parlLabel(p))}</div></div>`).join('')||'<div class="mon-empty">Keine Akteure erkannt.</div>'}</div></div>
+            <div class="mt">${esc(p.title)}</div>
+            <div class="mm"><span class="stage-dot" style="background:${stageColor(p.stage)}"></span>${STAGE_L[p.stage]||''} · ${rel(p.updated||p.date)}</div>
+            <div class="pipe" style="margin:5px 0 0">${STAGES.map((x,i)=>`<i class="${i<STAGES.indexOf(p.stage)?'on':i===STAGES.indexOf(p.stage)?'now':''}"></i>`).join('')}</div>
+            </div>`).join('')||'<div class="mon-empty">Kein Verfahren trägt einen deiner Begriffe im Titel. Über ein Verfahren lässt sich unter Policy „In Monitor aufnehmen" wählen.</div>'}</div></div>
+        <div class="dcard mini"><div class="dcard-hd"><h2>Wer sich äußert</h2><span class="cnt">${st.stakeholders.length}</span></div>
+          <div class="dcard-body scrollbox">${st.stakeholders.map(e=>`<div class="mini-row"${e.p._extern?'':` onclick="openPerson('${e.p.id}')"`}>
+            <div class="mt">${esc(e.p.name)} <span style="font-weight:500;color:var(--muted)">${esc(e.p.party||(e.p._extern?'nicht im Verzeichnis':''))}</span></div>
+            <div class="mm"><span>${e.count}× zitiert</span></div>
+            ${e.items.slice(0,1).map(a=>`<div class="say">„${esc((a.title||'').slice(0,90))}“ <span style="color:var(--muted)">– ${esc(a.source)}, ${rel(a.date)}</span></div>`).join('')}
+            </div>`).join('')||'<div class="mon-empty">Noch keine Äußerungen von Abgeordneten zu diesem Thema in den Meldungen der letzten Woche.</div>'}</div></div>
         <div class="dcard mini"><div class="dcard-hd"><h2>Bevorstehend</h2><span class="cnt">${st.events.length}</span></div>
           <div class="dcard-body scrollbox">${st.events.map(c=>`<div class="mini-row" onclick="window.open('${esc(c.link)}','_blank')">
             <div class="mt">${esc(c.title)}</div><div class="mm"><span class="when">${c.dateLabel}</span></div></div>`).join('')||'<div class="mon-empty">Keine Termine.</div>'}</div></div>
-      </aside></div>`;
+      </aside>
+      <aside id="story-panel"></aside></div>`;
 }
-function storyRow(s){
+/* Story inline aufklappen – kein eigenes Fenster mehr. */
+function toggleStory(id){
+  const box=g('sin-'+id),row=g('sr-'+id);if(!box)return;
+  if(_storyOpen&&_storyOpen!==id){const o=g('sin-'+_storyOpen);if(o)o.innerHTML='';g('sr-'+_storyOpen)?.classList.remove('open');}
+  if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');_storyOpen=null;return;}
+  const s=(buildStories(48).find(x=>x.id===id));if(!s)return;
+  _storyOpen=id;row?.classList.add('open');
+  const img=s.articles.find(a=>a.image);
+  box.innerHTML=`<div class="story-open">
+    ${img?`<img class="story-img" src="${esc(img.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+    <div class="kind-split">${Object.entries(s.kinds||{}).map(([k,n])=>{const v=KINDS_MON[k]||KINDS_MON.presse;
+      return`<span class="kindbadge" style="background:${v.c}18;color:${v.c};border-color:${v.c}44">${v.ic} ${v.l} ${n}</span>`;}).join('')}
+      ${(s.speakers||[]).map(p=>`<span class="kindbadge" style="border-color:var(--border)${p._extern?'':';cursor:pointer'}"${p._extern?'':` onclick="event.stopPropagation();openPerson('${p.id}')"`}>🗣 ${esc(p.name)}</span>`).join('')}</div>
+    <div class="story-lead">${esc((s.lead.desc||'').slice(0,400))}</div>
+    <div class="eyebrow" style="margin:10px 0 4px">Alle ${s.articles.length} Meldungen</div>
+    ${s.articles.slice(0,12).map(a=>`<div class="mini-row" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">
+      <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span><span class="kindbadge" style="border-color:var(--border)">${(KINDS_MON[contentKind(a)]||KINDS_MON.presse).ic}</span></div></div>`).join('')}
+    <div class="acts" style="display:flex;gap:6px;margin-top:9px">
+      <button class="btn sm p" onclick="event.stopPropagation();window.open('${esc(s.lead.link)}','_blank','noopener')">🔗 Leitartikel</button>
+      <button class="btn sm" onclick="event.stopPropagation();navigator.clipboard.writeText(storyText('${s.id}'))">📋 Kopieren</button>
+      <button class="btn sm" onclick="event.stopPropagation();toggleStory('${s.id}')">✕ Schließen</button></div></div>`;
+}
+let _storyOpen=null;
+/* Klick im Monitor soll nicht ans Seitenende springen. Deshalb: die Story
+   erscheint als Lesespalte rechts neben der Liste, die Liste bleibt stehen. */
+function openStoryPanel(id){
+  const s=buildStories(48).find(x=>x.id===id);if(!s)return;
+  const el=g('story-panel');if(!el)return;
+  const img=s.articles.find(a=>a.image);
+  document.body.classList.add('panel-open');
+  el.innerHTML=`<div class="sp-head"><span class="kindbadge" style="background:${(KINDS_MON[s.kind]||KINDS_MON.presse).c}18;color:${(KINDS_MON[s.kind]||KINDS_MON.presse).c}">${(KINDS_MON[s.kind]||KINDS_MON.presse).ic} ${(KINDS_MON[s.kind]||KINDS_MON.presse).l}</span>
+      <button class="btn sm" onclick="closeStoryPanel()">✕</button></div>
+    ${img?`<img class="sp-img" src="${esc(img.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+    <h3>${esc(s.title)}</h3>
+    <div class="dl-m">${s.sources.length} Quellen · ${s.articles.length} Artikel · ${rel(s.last)}</div>
+    ${(s.speakers||[]).length?`<div class="kind-split">${s.speakers.map(p=>`<span class="kindbadge" style="border-color:var(--border)">🗣 ${esc(p.name)}</span>`).join('')}</div>`:''}
+    <div class="sp-text">${esc((s.lead.desc||'').slice(0,700))}</div>
+    <div class="eyebrow" style="margin:12px 0 5px">Berichterstattung</div>
+    ${s.articles.slice(0,15).map(a=>`<div class="mini-row" onclick="window.open('${esc(a.link)}','_blank','noopener')">
+      <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div>`).join('')}
+    <div class="m-acts" style="margin-top:10px"><button class="btn sm p" onclick="window.open('${esc(s.lead.link)}','_blank','noopener')">🔗 Öffnen</button>
+      <button class="btn sm" onclick="navigator.clipboard.writeText(storyText('${s.id}'))">📋</button></div>`;
+  el.scrollTop=0;
+}
+function closeStoryPanel(){document.body.classList.remove('panel-open');const el=g('story-panel');if(el)el.innerHTML='';}
+function storyRow(s,why){
   const sev=SEV[s.severity],kn=KINDS_MON[s.kind]||KINDS_MON.presse;
-  return`<div class="story" onclick="openStory('${s.id}')">
+  const thumb=s.articles.find(a=>a.image);
+  return`<div class="story" id="sr-${s.id}" onclick="(this.closest('[data-panel]')?openStoryPanel:toggleStory)('${s.id}')">
     <span class="sev-bar" style="background:${sev.c}"></span>
     <div style="flex:1;min-width:0">
       <div class="dl-eb"><span class="kindbadge" style="background:${kn.c}18;color:${kn.c};border-color:${kn.c}44" title="${kn.d}">${kn.ic} ${kn.l}</span>
         <span class="tag" style="color:${sev.c}">${sev.l}</span>
-        ${s.topics.slice(0,2).map(t=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')}</span>`).join('')}</div>
+        ${s.topics.slice(0,2).map(t=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')}</span>`).join('')}
+        ${(why||[]).length?`<span class="whytag" title="Warum diese Meldung im Monitor steht">↳ ${esc(why.join(' · '))}</span>`:''}</div>
       <div class="dl-t">${esc(s.title)}</div>
       <div class="dl-m">${s.sources.length} Quelle${s.sources.length===1?'':'n'} · ${s.articles.length} Artikel · ${rel(s.last)}${
         (s.speakers||[]).length?' · 🗣 '+s.speakers.map(p=>esc(p.name)).join(', '):''}</div>
-    </div></div>`;
+    </div>${thumb?`<img class="story-thumb" src="${esc(thumb.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+    </div><div id="sin-${s.id}"></div>`;
 }
 function openStory(id){
   const s=buildStories(48).find(x=>x.id===id);if(!s)return;
@@ -3068,22 +3402,31 @@ function renderPolicy(){
   if(!all.length){el.innerHTML=`<div class="plain-head"><div><h1>Verfahren</h1></div></div>
     <div class="gap-note"><strong>dip.json fehlt.</strong> <code>fetch_directory.py</code> holt Gesetzgebungsvorgänge aus der DIP-API des Bundestags – danach steht hier jedes Verfahren mit Stand, Verlauf, Dokumenten und beteiligten Akteuren.</div>`;return;}
   const q=(S.policyQ||'').toLowerCase();
-  const list=all.filter(p=>(!S.policyStage||p.stage===S.policyStage)&&(!S.policyTopic||p.topic===S.policyTopic)&&(!q||p.title.toLowerCase().includes(q)))
+  const list=all.filter(p=>(!S.policyArt||(p.art||'gesetz')===S.policyArt)&&(!S.policyStage||p.stage===S.policyStage)&&(!S.policyTopic||p.topic===S.policyTopic)&&(!q||p.title.toLowerCase().includes(q)))
     .sort((a,b)=>(b.updated||b.date||'').localeCompare(a.updated||a.date||''));
   const byStage={};all.forEach(p=>byStage[p.stage]=(byStage[p.stage]||0)+1);
   const byTopic={};all.forEach(p=>byTopic[p.topic]=(byTopic[p.topic]||0)+1);
   el.innerHTML=`<div class="plain-head"><div><h1>Verfahren</h1>
       <div class="sub" style="margin:0">${all.length} Gesetzgebungsvorgänge aus dem Dokumentations- und Informationssystem des Bundestags</div></div>
       <input class="fsel" style="min-width:200px" placeholder="Verfahren suchen…" value="${esc(S.policyQ||'')}" oninput="S.policyQ=this.value;debounce(()=>reRender('policy'),200)"></div>
-    <div class="stage-bar">${STAGES.map(st=>`<span class="chip${S.policyStage===st?' active':''}" style="${S.policyStage===st?`background:${stageColor(st)};border-color:${stageColor(st)}`:`border-color:${stageColor(st)}55;color:${stageColor(st)}`}"
+    <div class="stage-bar">
+        ${['gesetz','anfrage','sonstiges'].filter(k=>all.some(p=>(p.art||'gesetz')===k)).map(k=>{
+          const n=all.filter(p=>(p.art||'gesetz')===k).length;
+          const lbl={gesetz:'⚖ Gesetzgebung',anfrage:'❓ Anfragen & Fragestunden',sonstiges:'· Sonstiges'}[k];
+          return`<span class="chip${S.policyArt===k?' active':''}" onclick="S.policyArt=S.policyArt==='${k}'?null:'${k}';reRender('policy')">${lbl} ${n}</span>`;}).join('')}
+        <span style="width:1px;height:18px;background:var(--border);margin:0 3px"></span>
+        ${STAGES.map(st=>`<span class="chip${S.policyStage===st?' active':''}" style="${S.policyStage===st?`background:${stageColor(st)};border-color:${stageColor(st)}`:`border-color:${stageColor(st)}55;color:${stageColor(st)}`}"
       onclick="S.policyStage=S.policyStage==='${st}'?null:'${st}';reRender('policy')">${STAGE_L[st]} ${byStage[st]||0}</span>`).join('')}
       ${Object.entries(byTopic).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([t,n])=>`<span class="chip${S.policyTopic===t?' active':''}" onclick="S.policyTopic=S.policyTopic==='${t}'?null:'${t}';reRender('policy')">${TOPIC_KW_L[t]||t} ${n}</span>`).join('')}</div>
     <div class="proc-list">${list.slice(0,120).map(p=>`<div class="proc" onclick="openProcess('${p.id}')">
       <div class="proc-main"><div class="dl-eb"><span class="doc-type">${esc(p.type||'Vorgang')}</span>
         ${p.wp?`<span class="tag">WP ${esc(p.wp)}</span>`:''}<span class="tag c" style="--tc:${topicColor(p.topic)}">${TOPIC_KW_L[p.topic]||p.topic}</span></div>
         <div class="proc-t">${esc(p.title)}</div>
+        ${p.ki_summary?`<div class="proc-sum">${esc(p.ki_summary.slice(0,180))}</div>`:''}
         <div class="dl-m">${esc(p.status||'')}${p.initiative?' · '+esc(p.initiative):''} · aktualisiert ${rel(p.updated||p.date)}</div></div>
-      <div class="proc-stage">${pipeHTML(p.stage)}</div></div>`).join('')||'<div class="gap-note">Keine Verfahren in dieser Auswahl.</div>'}</div>`;
+      <div class="proc-stage">${(p.art==='anfrage')
+        ? `<span class="chip" style="border-color:${p.stage==='abgeschlossen'?'var(--green)':'var(--amber)'}">${p.stage==='abgeschlossen'?'beantwortet':'offen'}</span>`
+        : pipeHTML(p.stage)}</div></div>`).join('')||'<div class="gap-note">Keine Verfahren in dieser Auswahl.</div>'}</div>`;
 }
 function openProcess(id){S.processId=id;setView('policy');reRender('policy');}
 function closeProcess(){S.processId=null;reRender('policy');}
@@ -3098,6 +3441,10 @@ function renderProcess(){
       <a class="btn sm" href="${esc(p.link)}" target="_blank" rel="noopener">Auf dip.bundestag.de ↗</a>
       <button class="btn sm p" onclick="buildReport('policy','${p.id}')">↓ Statusbericht</button></div>
 
+    ${p.ki_summary?`<div class="ki-box"><div class="ki-hd">Zusammenfassung <span class="ki-src">automatisch erstellt${p.ki_model?' · '+esc(p.ki_model.split('-')[0]):''}</span></div>
+        <div>${esc(p.ki_summary)}</div>${p.ki_wirkung?`<div class="ki-eff"><b>Wen es betrifft:</b> ${esc(p.ki_wirkung)}</div>`:''}</div>`:''}
+    ${p.abstract?`<div class="gap-note" style="margin-bottom:11px"><strong>Worum es geht (amtlich):</strong> ${esc(p.abstract)}</div>`:''}
+    ${[...(p.deskriptoren||[]),...(p.ki_keywords||[])].length?`<div class="kind-split" style="margin-bottom:11px">${[...new Set([...(p.deskriptoren||[]),...(p.ki_keywords||[])])].map(d=>`<span class="kindbadge" style="border-color:var(--border);cursor:pointer" onclick="S.tokens=[{v:'${esc(d).toLowerCase()}',not:false}];renderTokens();S.section='all';setView('feed');applyFilters()">🏷 ${esc(d)}</span>`).join('')}</div>`:''}
     <div class="proc-status"><span class="stage-dot big" style="background:${stageColor(p.stage)}"></span>
       <div><div class="ps-l">Aktueller Stand</div><div class="ps-v">${STAGE_L[p.stage]||p.stage}</div>
       ${p.status?`<div class="ps-s">${esc(p.status)}</div>`:''}</div>
@@ -3120,13 +3467,14 @@ function renderProcess(){
           <div class="dcard-body">${news.map(a=>`<div class="mini-row" id="mr-${a.id}" onclick="toggleMini('${a.id}','art')">
             <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-${a.id}"></div>`).join('')||'<div class="mon-empty">Keine Meldungen zugeordnet.</div>'}</div></div>
       </div>
-      <aside class="mon-side">
+      <aside class="mon-side" id="mon-side">
         <div class="dcard mini"><div class="dcard-hd"><h2>Dokumente</h2><span class="cnt">${docs.length}</span></div>
           <div class="dcard-body scrollbox">${docs.map(d=>`<div class="mini-row" onclick="${d._dip||d.number?`window.open('${esc(d.link)}','_blank')`:`openDoc('${d.id}')`}">
             <div class="mt">${esc(d.title)}</div><div class="mm"><span class="doc-type">${esc(d.type||'Dokument')}</span><span>${esc(d.number||fd(d.date))}</span></div></div>`).join('')||'<div class="mon-empty">Keine Dokumente zugeordnet.</div>'}</div></div>
         <div class="dcard mini"><div class="dcard-hd"><h2>Beteiligte</h2><span class="cnt">${shs.length}</span></div>
-          <div class="dcard-body scrollbox">${shs.map(x=>`<div class="mini-row" onclick="openPerson('${x.id}')">
-            <div class="mt">${esc(x.name)}</div><div class="mm">${esc(x.party||'')} · ${esc((x.committees||[])[0]?.name||parlLabel(x))}</div></div>`).join('')||'<div class="mon-empty">Zuordnung über Ausschüsse und Namensnennung – hier ohne Treffer.</div>'}</div></div>
+          <div class="dcard-body scrollbox">${shs.map(x=>`<div class="mini-row"${x._extern?'':` onclick="openPerson('${x.id}')"`}>
+            <div class="mt">${esc(x.name)}</div>
+            <div class="mm">${x._akt?`<span class="kindbadge" style="border-color:var(--border)">${esc(x._akt)}</span>`:''}${esc(x.party||'')}${x._datum?' · '+esc(x._datum):''}</div></div>`).join('')||'<div class="mon-empty">Keine Personenbezüge in den DIP-Aktivitäten zu diesem Vorgang.</div>'}</div></div>
         <div class="dcard mini"><div class="dcard-hd"><h2>Termine</h2><span class="cnt">${evs.length}</span></div>
           <div class="dcard-body scrollbox">${evs.map(c=>`<div class="mini-row" onclick="window.open('${esc(c.link)}','_blank')">
             <div class="mt">${esc(c.title)}</div><div class="mm"><span class="when">${c.dateLabel}</span></div></div>`).join('')||'<div class="mon-empty">Keine Termine zugeordnet.</div>'}</div></div>
@@ -3191,37 +3539,71 @@ function buildReport(kind,ref){
       {h:'Termine',list:evs.map(c=>`${c.dateLabel} — ${c.title}`)},
     ];
   }else if(kind==='daily'){
-    const win=buildStories(24);
-    title='Tagesbriefing '+now.toLocaleDateString('de-DE');
+    /* Nach Ressorts gegliedert, je Ressort die drei wichtigsten Meldungen,
+       Dubletten entfernt und jede Meldung anklickbar. */
+    const stories=buildStories(24);
     const heute=new Date();heute.setHours(0,0,0,0);
-    sections=[
-      {h:'Zusammenfassung',t:`${win.length} Stories in 24 Stunden, `+
-        `${win.filter(s=>s.severity==='critical').length} davon kritisch. `+
-        `${processes().filter(p=>ageH(p.updated||p.date)<24).length} Verfahren bewegt, `+
-        `${calItems().filter(c=>c.date>=heute).length} anstehende Termine.`},
-      {h:'Wichtigste Entwicklungen',list:win.slice(0,10).map(s=>`${s.title} — ${s.sources.length} Quellen`)},
-      {h:'Policy-Bewegung',list:processes().filter(p=>ageH(p.updated||p.date)<48).slice(0,8).map(p=>`${p.title} — ${STAGE_L[p.stage]||p.stage}`)},
-      {h:'Neue Dokumente',list:ALL_DOCS.filter(d=>ageH(d.date)<24).slice(0,8).map(d=>`${d.type} — ${d.title}`)},
-      {h:'Termine',list:calItems().filter(c=>c.date>=heute).slice(0,8).map(c=>`${c.dateLabel} — ${c.title}`)},
-    ];
+    const gewaehlt=(S.briefTopics&&S.briefTopics.length)?S.briefTopics:null;
+    const nachRessort={};
+    stories.forEach(st=>{
+      const t=(st.topics||[])[0];if(!t)return;
+      if(gewaehlt&&!gewaehlt.includes(t))return;
+      (nachRessort[t]=nachRessort[t]||[]).push(st);
+    });
+    const ressorts=Object.entries(nachRessort)
+      .map(([t,arr])=>[t,arr.sort((a,b)=>b.sources.length-a.sources.length).slice(0,3)])
+      .sort((a,b)=>b[1].reduce((n,s)=>n+s.sources.length,0)-a[1].reduce((n,s)=>n+s.sources.length,0))
+      .slice(0,gewaehlt?gewaehlt.length:6);
+    title='Tagesbriefing '+now.toLocaleDateString('de-DE');
+    sections=[{h:'Zusammenfassung',t:`${stories.length} Themen in 24 Stunden, davon `+
+        `${stories.filter(s=>s.severity==='critical').length} kritisch. `+
+        `Schwerpunkte: ${ressorts.map(([t])=>chipLabel(t).replace(/^\S+\s/,'')).join(', ')||'—'}.`}];
+    ressorts.forEach(([t,arr])=>sections.push({
+      h:chipLabel(t).replace(/^\S+\s/,''),
+      items:arr.map(st=>({text:`${st.title} — ${st.sources.length} Quellen, ${rel(st.last)}`,
+                          link:st.lead.link,id:st.lead.id}))}));
+    const pol=processes().filter(p=>ageH(p.updated||p.date)<48)
+      .filter(p=>!/anfrage/i.test(p.type||'')).slice(0,5);
+    if(pol.length)sections.push({h:'Gesetzgebung in Bewegung',
+      items:pol.map(p=>({text:`${p.title} — ${STAGE_L[p.stage]||p.stage}`,proc:p.id}))});
+    const docs=ALL_DOCS.filter(d=>ageH(d.date)<24).slice(0,3);
+    if(docs.length)sections.push({h:'Neue Dokumente',items:docs.map(d=>({text:`${d.type} — ${d.title}`,doc:d.id}))});
+    const evs=calItems().filter(c=>c.date>=heute).slice(0,2);
+    if(evs.length)sections.push({h:'Termine',items:evs.map(c=>({text:`${c.dateLabel} — ${c.title}`,link:c.link}))});
   }
   const rep={id:'r'+Date.now(),kind,ref,title,createdAt:now.toISOString(),sections};
   REPORTS.unshift(rep);store.set('ps_reports',REPORTS.slice(0,30));
   S.reportId=rep.id;setWorkspace('reporting',true);setView('reports');reRender('reports');
   return rep;
 }
+function toggleBriefTopic(t){
+  const s=new Set(S.briefTopics||[]);s.has(t)?s.delete(t):s.add(t);
+  S.briefTopics=[...s];store.set('ps_brieftopics',S.briefTopics);reRender('reports');
+}
 function reportText(r){
   return`${r.title}\n${new Date(r.createdAt).toLocaleString('de-DE')}\n${'='.repeat(56)}\n\n`+
     r.sections.map((s,i)=>`${i+1}. ${s.h.toUpperCase()}\n`+
-      (s.t?s.t+'\n':'')+(s.list&&s.list.length?s.list.map(x=>'   • '+x).join('\n')+'\n':(s.list?'   (keine Einträge)\n':''))).join('\n')+
+      (s.t?s.t+'\n':'')
+      +(s.list&&s.list.length?s.list.map(x=>'   • '+x).join('\n')+'\n':(s.list?'   (keine Einträge)\n':''))
+      +(s.items?s.items.map(x=>'   • '+x.text+(x.link?'\n     '+x.link:'')).join('\n')+'\n':'')).join('\n')+
     `\nErstellt mit Presseschau · Quellen: eigene Feeds, DIP des Bundestags, abgeordnetenwatch, EP Open Data`;
 }
 function renderReports(){
   const el=g('view-reports');if(!el)return;
+  const topicsBar=()=>{
+    const cnt={};buildStories(24).forEach(st=>{const t=(st.topics||[])[0];if(t)cnt[t]=(cnt[t]||0)+1;});
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,12);
+    const sel=S.briefTopics||[];
+    return`<span class="fl">Ressorts fürs Tagesbriefing</span>`
+      +top.map(([t,n])=>`<span class="chip${sel.includes(t)?' active':''}" onclick="toggleBriefTopic('${t}')">${chipLabel(t)} ${n}</span>`).join('')
+      +(sel.length?`<span class="chip" onclick="S.briefTopics=[];reRender('reports')">✕ alle</span>`:'<span class="km-note">ohne Auswahl: die sechs stärksten</span>');
+  };
   const r=REPORTS.find(x=>x.id===S.reportId)||REPORTS[0];
+  const _tb=topicsBar();
   el.innerHTML=`<div class="plain-head"><div><h1>Reports</h1>
       <div class="sub" style="margin:0">Aus Monitoren, Verfahren und Akteuren zusammengestellte Berichte.</div></div>
       <button class="btn p" onclick="buildReport('daily')">+ Tagesbriefing erzeugen</button></div>
+    <div class="brief-topics" id="brief-topics">${_tb}</div>
     <div class="rep-layout">
       <div class="rep-list">${REPORTS.map(x=>`<div class="rep-item${r&&x.id===r.id?' active':''}" onclick="S.reportId='${x.id}';reRender('reports')">
         <div class="ri-t">${esc(x.title)}</div><div class="ri-m">${fd(x.createdAt)}</div></div>`).join('')||'<div class="mon-empty">Noch kein Report.</div>'}</div>
@@ -3232,7 +3614,8 @@ function renderReports(){
             <button class="btn sm" onclick="window.open('mailto:?subject='+encodeURIComponent('${esc(r.title)}')+'&body='+encodeURIComponent(reportText(REPORTS.find(x=>x.id==='${r.id}')).slice(0,1800)))">✉ Mail</button></div></div>
         ${r.sections.map((s,i)=>`<section class="rep-sec"><h3>${i+1}. ${esc(s.h)}</h3>
           ${s.t?`<p>${esc(s.t)}</p>`:''}
-          ${s.list?(s.list.length?`<ul>${s.list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="mon-empty" style="text-align:left">keine Einträge</p>'):''}</section>`).join('')}`
+          ${s.list?(s.list.length?`<ul>${s.list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p class="mon-empty" style="text-align:left">keine Einträge</p>'):''}
+          ${s.items?`<ul class="rep-links">${s.items.map(it=>`<li${it.id?` onclick="openById('${it.id}')"`:it.proc?` onclick="openProcess('${it.proc}')"`:it.doc?` onclick="openDoc('${it.doc}')"`:it.link?` onclick="window.open('${esc(it.link)}','_blank','noopener')"`:''}>${esc(it.text)}</li>`).join('')}</ul>`:''}</section>`).join('')}`
         :'<div class="gap-note">Wähle links einen Report oder erzeuge ein Tagesbriefing. Aus einem Monitor oder Verfahren heraus lässt sich ebenfalls ein Bericht erstellen.</div>'}</div></div>`;
 }
 
@@ -3245,20 +3628,47 @@ function editMonitor(id){
   const topics=Object.entries({...NEWS_TL}).map(([k,l])=>({k,l}));
   mo.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('monitor-modal').classList.remove('open')">✕</button>
     <h2>${m?'Monitor bearbeiten':'Monitor anlegen'}</h2>
-    <p>Ein Monitor ist kein einmaliger Filter, sondern ein dauerhafter Beobachtungsauftrag: er sammelt fortlaufend Meldungen, Verfahren, Akteure und Termine.</p>
+    <p>Ein Monitor sammelt fortlaufend Meldungen, Verfahren, Akteure und Termine zu einem Thema.
+      <b>Die Begriffe entscheiden</b>: eine Meldung kommt hinein, wenn ein Begriff in der Schlagzeile steht –
+      oder im Text und zusätzlich das Ressort passt. Ein Ressort allein genügt nicht, sonst wird die Liste unbrauchbar.</p>
     <div class="fld"><label>Name</label><input type="text" id="mo-name" value="${esc(m?.name||'')}" placeholder="z. B. KI-Regulierung"></div>
     <div class="fld"><label>Begriffe (Komma-getrennt)</label><input type="text" id="mo-kw" value="${esc((m?.keywords||[]).join(', '))}" placeholder="ki-verordnung, ai act, algorithmus"></div>
     <div class="fld"><label>Ausschließen</label><input type="text" id="mo-not" value="${esc((m?.exclude||[]).join(', '))}"></div>
-    <div class="fld"><label>Ressorts</label><div class="tgrid" style="max-height:22vh" id="mo-topics">
+    <div class="fld"><label>Ressorts <span class="km-note" style="font-weight:400">— verstärken passende Meldungen, filtern aber nicht allein</span></label><div class="tgrid" style="max-height:22vh" id="mo-topics">
       ${topics.map(t=>`<span class="chip${(m?.topics||[]).includes(t.k)?' sel':''}" data-t="${t.k}" onclick="this.classList.toggle('sel')">${t.l}</span>`).join('')}</div></div>
     <div class="fld"><label>Institutionen</label><div class="tgrid" style="max-height:16vh" id="mo-inst">
       ${Object.entries(INST_FLAT).slice(0,18).map(([k,l])=>`<span class="chip${(m?.institutions||[]).includes(k)?' sel':''}" data-i="${k}" onclick="this.classList.toggle('sel')">${esc(l)}</span>`).join('')}</div></div>
     <div class="fld"><label>Farbe</label><div class="swatches" id="mo-sw">${SWATCHES.map(c=>`<span class="swatch${(m?.color||SWATCHES[0])===c?' sel':''}" style="background:${c}" onclick="document.querySelectorAll('#mo-sw .swatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel')"></span>`).join('')}</div></div>
+    <div class="fld"><label>Genauigkeit</label>
+      <div class="seg" id="mo-strict">
+        <button class="${(m?.minScore||3)<=2?'active':''}" onclick="document.querySelectorAll('#mo-strict button').forEach(b=>b.classList.remove('active'));this.classList.add('active');this.dataset.v=2">weit</button>
+        <button class="${(m?.minScore||3)===3?'active':''}" onclick="document.querySelectorAll('#mo-strict button').forEach(b=>b.classList.remove('active'));this.classList.add('active');this.dataset.v=3">ausgewogen</button>
+        <button class="${(m?.minScore||3)>=4?'active':''}" onclick="document.querySelectorAll('#mo-strict button').forEach(b=>b.classList.remove('active'));this.classList.add('active');this.dataset.v=4">eng</button>
+      </div>
+      <div class="km-note" id="mo-preview" style="margin-top:6px"></div></div>
     <label class="chk"><input type="checkbox" id="mo-notify" ${m?.notify?.app!==false?'checked':''}> Neue Treffer zählen</label>
     <div class="m-acts" style="justify-content:space-between">
       ${m?`<button class="btn danger" onclick="delMonitor('${m.id}')">Löschen</button>`:'<span></span>'}
       <button class="btn p" onclick="saveMonitor()">Speichern</button></div>`;
-  mo.classList.add('open');setTimeout(()=>g('mo-name').focus(),50);
+  mo.classList.add('open');setTimeout(()=>{g('mo-name').focus();moPreview();},50);
+  g('mo-kw').oninput=()=>debounce(moPreview,250);
+  g('mo-not').oninput=()=>debounce(moPreview,250);
+  mo.querySelectorAll('#mo-strict button,#mo-topics .chip').forEach(b=>b.addEventListener('click',()=>setTimeout(moPreview,10)));
+}
+/* Vorschau schon beim Anlegen: wie viele Treffer bringt diese Einstellung? */
+function moPreview(){
+  const el=g('mo-preview');if(!el)return;
+  const parse=v=>(v||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  const strict=+(document.querySelector('#mo-strict button.active')?.dataset.v||3);
+  const m={keywords:parse(g('mo-kw').value),exclude:parse(g('mo-not').value),
+    topics:[...document.querySelectorAll('#mo-topics .chip.sel')].map(e=>e.dataset.t),
+    institutions:[],sources:[],people:[],minScore:strict};
+  if(!m.keywords.length&&!m.topics.length){el.textContent='Begriffe eingeben, um die Trefferzahl zu sehen.';return;}
+  const hits=pool('all').filter(a=>monitorScore(a,m)>=strict);
+  const w48=hits.filter(a=>ageH(a.date)<=48).length;
+  el.innerHTML=`<b>${hits.length}</b> Treffer insgesamt, davon <b>${w48}</b> in 48 Stunden.`
+    +(hits.length>400?' <span style="color:var(--red)">Sehr viel – Begriffe schärfen oder auf „eng" stellen.</span>':
+      hits.length<3?' <span style="color:var(--amber)">Sehr wenig – Begriffe ergänzen oder auf „weit" stellen.</span>':'');
 }
 function saveMonitor(){
   const name=g('mo-name').value.trim();if(!name){g('mo-name').focus();return;}
@@ -3269,7 +3679,8 @@ function saveMonitor(){
     keywords:parse(g('mo-kw').value),exclude:parse(g('mo-not').value),
     topics:[...document.querySelectorAll('#mo-topics .chip.sel')].map(e=>e.dataset.t),
     institutions:[...document.querySelectorAll('#mo-inst .chip.sel')].map(e=>e.dataset.i),
-    sources:[],people:[],processes:(MONITORS.find(x=>x.id===S.editMonitor)?.processes)||[],
+    sources:[],people:[],minScore:+(document.querySelector('#mo-strict button.active')?.dataset.v||3),
+    processes:(MONITORS.find(x=>x.id===S.editMonitor)?.processes)||[],
     lastSeen:(MONITORS.find(x=>x.id===S.editMonitor)?.lastSeen)||new Date(Date.now()-864e5).toISOString(),
     notify:{app:g('mo-notify').checked,mail:false},createdAt:new Date().toISOString()
   };
@@ -3756,6 +4167,10 @@ window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderT
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics&&renderMyTopics();});
 monitorStore.load().then(()=>{setWorkspace(store.get('ps_ws')||'dash',true);renderWsNav();updateWsBadges();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
+S.topWin=store.get('ps_topwin')||24;
+S.cols=store.get('ps_cols')||4;
+document.documentElement.style.setProperty('--paper-min',S.cols===2?'440px':S.cols===3?'320px':'268px');
+if(g('lt-cols'))g('lt-cols').textContent='▥ '+S.cols+' Spalten';
 setLayout(store.get('ps_layout')||'paper');
 setFeedInline(store.get('ps_feedinline')!==false);
 if(store.get('ps_lpw'))g('list-pane').style.width=store.get('ps_lpw')+'px';
