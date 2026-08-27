@@ -467,6 +467,21 @@ body.eu-mode .art-item.active{border-color:var(--eu);box-shadow:0 0 0 2px var(--
 .type-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;font-size:12.5px;color:var(--text2);cursor:pointer}
 .type-row:hover{background:var(--bg)}.type-row.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
 .type-row .cnt{margin-left:auto;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--bg);color:var(--muted)}
+.seat-wrap{display:grid;grid-template-columns:minmax(260px,1fr) minmax(240px,320px);gap:16px;align-items:center}
+.seats{width:100%;max-width:520px;height:auto}
+.seat-total{font-size:26px;font-weight:800;fill:var(--text)}
+.seat-lbl{font-size:11px;fill:var(--muted)}
+.seat-legend{display:flex;flex-direction:column;gap:4px}
+.sl-row{display:grid;grid-template-columns:12px 1fr auto auto;gap:7px;align-items:center;padding:4px 6px;border-radius:7px;cursor:pointer;font-size:12px}
+.sl-row:hover{background:var(--bg)}
+.sl-row.on{background:var(--blue-lt)}
+.sl-dot{width:10px;height:10px;border-radius:50%}
+.sl-n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-c{font-weight:800;font-variant-numeric:tabular-nums}
+.sl-p{font-size:10.5px;color:var(--muted);min-width:42px;text-align:right}
+.sl-bar{grid-column:2/-1;height:4px;background:var(--bg);border-radius:3px;overflow:hidden}
+.sl-bar i{display:block;height:100%;border-radius:3px}
+@media (max-width:900px){.seat-wrap{grid-template-columns:1fr}}
 .p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .person{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:11px;cursor:pointer;transition:all .12s;animation:fu .15s ease both}
 .person:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
@@ -580,6 +595,13 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .ki-ask input:focus{border-color:#7c3aed}
 .ki-examples{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
 .ki-examples .chip{font-size:11px}
+.ki-hit{padding:7px 0;border-top:1px solid var(--border);cursor:pointer}
+.ki-hit b{display:block;font-size:12.5px;font-weight:600;line-height:1.35}
+.ki-hit span{font-size:10.5px;color:var(--muted)}
+.ki-hit i{display:block;font-size:11.5px;color:var(--text2);margin-top:3px;font-style:normal;line-height:1.45}
+.ki-hit:hover b{color:var(--blue)}
+.ki-key{margin-top:10px;border:1.5px solid var(--border);border-radius:9px;padding:9px 12px}
+.ki-key summary{font-size:12px;font-weight:700;cursor:pointer}
 @media (max-width:560px){#ki-ask{padding:5px 9px;font-size:0}#ki-ask::before{content:'✦';font-size:13px}}
 /* Policy- und Dokumentgruppen */
 .pol-groups{display:flex;flex-direction:column;gap:12px}
@@ -596,6 +618,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .partei-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px}
 .partei-card{background:var(--bg);border:1.5px solid var(--border);border-left:4px solid var(--pc);border-radius:9px;padding:10px 12px;cursor:pointer}
 .partei-card:hover{border-color:var(--pc);box-shadow:var(--shadow)}
+.partei-card.sel{border-color:var(--pc);border-width:2px;background:var(--surface)}
 .pc-n{font-size:12px;font-weight:800;color:var(--pc)}
 .pc-c{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
 .pc-l{font-size:10.5px;color:var(--muted)}
@@ -741,6 +764,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .dcard.mini .dcard-hd .all{padding:2px 7px;font-size:12px;line-height:1.1}
 .mini-seg{border-width:1.5px}
 .mini-seg button{padding:2px 7px;font-size:10.5px}
+.mini-sel{font-size:11px;padding:3px 20px 3px 8px;height:26px;max-width:170px}
 .scrollbox{max-height:270px;overflow-y:auto;padding:4px 12px 8px}
 .scrollbox::-webkit-scrollbar{width:4px}
 .scrollbox::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
@@ -983,6 +1007,19 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   .dcard-hd .fold{padding:9px 8px;min-width:32px}
   .list-tools button{padding:8px 10px;min-height:36px}
   .seg button{min-height:38px}
+  .mini-seg button{min-height:34px;padding:6px 10px;font-size:11.5px}
+  .mini-sel,select.fsel{min-height:36px;font-size:16px;max-width:none}
+  .pg-head{min-height:46px}
+  .partei-card{min-height:64px}
+  .top-row .chev,.dcard-hd .fold{min-width:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center}
+  .story{padding-top:12px;padding-bottom:12px}
+  .src-tile{min-height:52px}
+  .qb-chip,.kindbadge{min-height:32px}
+  /* Restliche kleine Ziele: Aufklapp-Pfeile, Textknöpfe, zweite Navigationsebene */
+  .wsnav{min-height:38px}
+  .link-btn,.chip-more,.all,.fold,.mc,.x{min-height:36px;display:inline-flex;align-items:center;justify-content:center}
+  #ws-nav .wsnav,#ws-context .wsnav{padding-top:9px;padding-bottom:9px}
+  button{min-height:34px}
   .icon-btn{width:40px;height:40px}
   .seg button{padding:8px 12px}
   .art-item{padding:10px 11px}
@@ -1167,6 +1204,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
       <div class="dmain">
         <div class="dcard">
           <div class="dcard-hd"><h2>Top-Meldungen</h2>
+            <select class="fsel mini-sel" id="top-scope" onchange="S.topScope=this.value;store.set('ps_topscope',this.value);reRender('dash')"></select>
             <div class="seg mini-seg" id="top-win"></div>
             <button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
           <div class="dcard-body top-list" id="dash-top"></div>
@@ -1351,6 +1389,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         <input id="docs-search" placeholder="Suchen…" oninput="renderDocs()" style="flex:1;min-width:120px;padding:4px 9px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;font-size:12px;outline:none">
         <span class="eyebrow" id="docs-count"></span>
       </div>
+      <div class="seg mini-seg" id="docs-groupby" style="margin-bottom:10px"></div>
       <div id="docs-list"></div>
     </section>
 
@@ -1468,6 +1507,10 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   <iframe id="doc-iframe" title="Dokument"></iframe>
 </div></div>
 
+<!-- Öffentlicher Schlüssel für die KI-Suche. Liegt bewusst in einer eigenen
+     Datei, damit er ohne Änderung an index.html getauscht oder entfernt werden
+     kann. Fehlt die Datei, läuft alles Übrige unverändert weiter. -->
+<script src="config.js" onerror="void 0"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
    KONSTANTEN – unverändert aus v2 (gleiche Topic-Keys wie fetch_news.py)
@@ -1592,8 +1635,8 @@ const LOADLOG=[];
 const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyArt:null,polClosed:[],polMore:null,policyTopic:null,policyQ:'',
- docMore:null,calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,storyLimit:30,policyStage:null,policyArt:null,polClosed:[],polMore:null,policyHerk:null,policyTopic:null,policyQ:'',
+ docMore:null,docGroupBy:'thema',calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,topScope:'',docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -2371,7 +2414,22 @@ function renderDash(){
   /* Zeitfenster der Top-Meldungen: 3 bis 48 Stunden */
   const tw=g('top-win');
   if(tw)tw.innerHTML=[3,6,12,24,48].map(h=>`<button class="${hrs===h?'active':''}" onclick="setTopWin(${h})">${h} h</button>`).join('');
-  const win=pool('all').filter(a=>ageH(a.date)<=hrs).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  /* Worauf beziehen sich die Top-Meldungen? Alle Quellen, ein Datensatz oder ein
+     Ressort. Vorher mischten sich Bundesratsmeldungen unter die Schlagzeilen. */
+  const ts=g('top-scope');
+  if(ts&&!ts.options.length){
+    const cnt={};pool('all').filter(a=>ageH(a.date)<=48).forEach(a=>[...new Set((a.topics||[]).map(normTopic))].forEach(t=>t&&(cnt[t]=(cnt[t]||0)+1)));
+    ts.innerHTML='<option value="">Alle Quellen</option>'
+      +['news','eu','bt','br','laender','us'].map(k=>`<option value="set:${k}">Nur ${SET_LABEL[k]}</option>`).join('')
+      +Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,14)
+        .map(([t,n])=>`<option value="topic:${t}">${chipLabel(t)} (${n})</option>`).join('');
+    ts.value=S.topScope||'';
+  }
+  const scope=S.topScope||'';
+  let basis=pool('all');
+  if(scope.startsWith('set:'))basis=pool(scope.slice(4));
+  else if(scope.startsWith('topic:'))basis=basis.filter(a=>(a.topics||[]).map(normTopic).includes(scope.slice(6)));
+  const win=basis.filter(a=>ageH(a.date)<=hrs).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const empty=t=>`<div style="padding:20px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
   /* Top-Meldungen: was viele Quellen gleichzeitig haben, dann Relevanz. */
   /* Innerhalb des gewählten Zeitfensters neu bewerten: die Zahl der Quellen wird
@@ -2501,14 +2559,65 @@ function openKiSearch(){
       'Welche Fristen laufen bei den Verfahren zum Glasfaserausbau?'].map(x=>
       `<span class="chip" onclick="g('ki-q').value='${x}'">${x}</span>`).join('')}</div>
     <div id="ki-answer"></div>
-    <div class="gap-note" style="margin-top:12px"><strong>Noch nicht angebunden.</strong>
-      Die Oberfläche steht, das Modell fehlt bewusst noch. Angeschlossen wird über die Funktion
-      <code>askKI()</code> – sie erhält die Frage und den bereits gefilterten Datenbestand
-      (Meldungen, Verfahren, Dokumente, Personen) und gibt Text plus Belege zurück.
-      Welches Modell dahinterkommt, ist damit frei wählbar.</div>`;
+    <details class="ki-key"><summary>${kiKey()?'Eigenen Schlüssel verwenden (optional)':'Antwort formulieren lassen (Schlüssel nötig)'}</summary>
+      <p class="km-note">${(window.PS_KI_CONFIG&&window.PS_KI_CONFIG.key)
+        ? 'Für diese Seite ist ein Schlüssel hinterlegt; formulierte Antworten funktionieren ohne weiteres Zutun (begrenzt auf '+((window.PS_KI_CONFIG.maxPerHour)||12)+' Anfragen je Stunde und Browser). Mit einem eigenen Schlüssel entfällt diese Begrenzung.'
+        : 'Die Suche oben findet die Fundstellen ohne jede Weitergabe von Daten. Für einen formulierten Text wird ein OpenRouter-Schlüssel gebraucht – er bleibt in diesem Browser.'}</p>
+      <div class="ki-ask"><input id="ki-key" type="password" placeholder="sk-or-…" value="${esc(store.get('ps_ki_key')||'')}">
+        <button class="btn" onclick="store.set('ps_ki_key',g('ki-key').value.trim());g('ki-key-ok').textContent=g('ki-key').value?'gespeichert':'entfernt'">Speichern</button></div>
+      <span class="km-note" id="ki-key-ok"></span>
+    </details>
+    <div class="gap-note" style="margin-top:12px"><strong>So funktioniert die Suche.</strong>
+      Aus deiner Frage werden die seltenen, aussagekräftigen Begriffe gezogen und damit alle geladenen
+      Daten durchsucht: Meldungen, parlamentarische Vorgänge, Zitate von Abgeordneten und Termine.
+      Das Ergebnis sind echte Fundstellen mit Quelle und Datum, kein erfundener Text.
+      Für einen zusammenfassenden Satz braucht es ein Sprachmodell – entweder über einen eigenen
+      Schlüssel oben oder später über einen kleinen Server-Zwischendienst, der den Schlüssel aus
+      GitHub geheim hält.</div>`;
   m.classList.add('open');setTimeout(()=>g('ki-q')?.focus(),50);
 }
-/* Einziger Anschlusspunkt für ein späteres Modell. Bewusst ohne feste API. */
+/* Antwort ohne Sprachmodell: sucht in den geladenen Daten und stellt zusammen,
+   was gefunden wurde. Das funktioniert sofort und ohne Schlüssel – und liefert
+   die Belege, aus denen ein Modell später formulieren würde. */
+/* Schlüsselquelle: erst der öffentliche aus config.js, dann ein eigener aus
+   diesem Browser. Ein öffentlicher Schlüssel ist für jeden lesbar – deshalb
+   die Begrenzung unten und ein Modell ohne Kosten. */
+function kiKey(){
+  return store.get('ps_ki_key')||(window.PS_KI_CONFIG&&window.PS_KI_CONFIG.key)||'';
+}
+/* Einfache Bremse gegen Missbrauch des öffentlichen Schlüssels:
+   höchstens N Anfragen je Stunde und Browser. */
+function kiQuota(){
+  if(store.get('ps_ki_key'))return true;              // eigener Schlüssel: keine Bremse
+  const max=(window.PS_KI_CONFIG&&window.PS_KI_CONFIG.maxPerHour)||12;
+  const jetzt=Date.now(),h=3600000;
+  const log=(store.get('ps_ki_log')||[]).filter(t=>jetzt-t<h);
+  if(log.length>=max)return false;
+  log.push(jetzt);store.set('ps_ki_log',log);return true;
+}
+function retrievalAnswer(q){
+  const worte=q.toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/)
+    .filter(w=>w.length>3&&!STOPW.has(w));
+  const kern=worte.filter(selten);
+  const suchbegriffe=(kern.length?kern:worte).slice(0,5);
+  if(!suchbegriffe.length)return null;
+  const treffer=a=>suchbegriffe.filter(w=>kwHit(w,stext(a))).length;
+  const meldungen=dedupe(pool('all').filter(a=>treffer(a)>0)
+    .sort((a,b)=>(treffer(b)-treffer(a))||((b.date||'').localeCompare(a.date||'')))).slice(0,8);
+  const verfahren=(DIP.procedures||[]).map(p=>{
+    const t=((p.title||'')+' '+(p.abstract||'')+' '+(p.deskriptoren||[]).join(' ')+' '+(p.ki_keywords||[]).join(' ')).toLowerCase();
+    const n=suchbegriffe.filter(w=>kwHit(w,t)).length;return n?{p,n}:null;}).filter(Boolean)
+    .sort((a,b)=>b.n-a.n).slice(0,5).map(x=>x.p);
+  const personen=PEOPLE.filter(x=>suchbegriffe.some(w=>kwHit(w,(x.name||'').toLowerCase()))).slice(0,5);
+  const stimmen=new Map();
+  meldungen.filter(a=>contentKind(a)==='aussage').forEach(a=>speakers(a,2).forEach(sp=>{
+    if(!stimmen.has(sp.name))stimmen.set(sp.name,{sp,a});}));
+  const heute=new Date();heute.setHours(0,0,0,0);
+  const termine=(typeof calItems==='function'?calItems():[]).filter(c=>c.date>=heute&&suchbegriffe.some(w=>kwHit(w,c.title.toLowerCase()))).slice(0,4);
+  return{suchbegriffe,meldungen,verfahren,personen,stimmen:[...stimmen.values()],termine};
+}
+/* Anschlusspunkt für ein Sprachmodell. Ohne Schlüssel bleibt es bei der
+   Fundstellen-Antwort oben – die ist vollständig und ohne Weitergabe von Daten. */
 async function askKI(frage){
   const q=frage||g('ki-q')?.value?.trim();
   if(!q)return;
@@ -2517,17 +2626,51 @@ async function askKI(frage){
     verfahren:(DIP.procedures||[]).slice(0,40).map(p=>({t:p.title,stand:p.stage,art:p.art})),
     personen:PEOPLE.slice(0,0)};
   const el=g('ki-answer');
+  const r=retrievalAnswer(q);
+  const belege=r?`
+    <div class="ki-item"><div class="ki-t">Gefunden zu „${esc(q)}“</div>
+      <div class="ki-d">Gesucht nach: ${r.suchbegriffe.map(w=>`<b>${esc(w)}</b>`).join(', ')}</div></div>
+    ${r.verfahren.length?`<div class="ki-item"><div class="ki-t">⚖ Parlamentarische Vorgänge (${r.verfahren.length})</div>
+      ${r.verfahren.map(p=>`<div class="ki-hit" onclick="g('ki-modal').classList.remove('open');openProcess('${p.id}')">
+        <b>${esc(p.title)}</b><span>${STAGE_L[p.stage]||p.stage}${p.initiative?' · '+esc(p.initiative):''}</span>
+        ${p.ki_summary?`<i>${esc(p.ki_summary.slice(0,160))}</i>`:''}</div>`).join('')}</div>`:''}
+    ${r.stimmen.length?`<div class="ki-item"><div class="ki-t">🗣 Wer sich geäußert hat</div>
+      ${r.stimmen.map(x=>`<div class="ki-hit"><b>${esc(x.sp.name)}</b><span>${esc(x.a.source)} · ${rel(x.a.date)}</span>
+        <i>„${esc(x.a.title.slice(0,120))}"</i></div>`).join('')}</div>`:''}
+    ${r.meldungen.length?`<div class="ki-item"><div class="ki-t">📰 Berichterstattung (${r.meldungen.length})</div>
+      ${r.meldungen.slice(0,6).map(a=>`<div class="ki-hit" onclick="g('ki-modal').classList.remove('open');openById('${a.id}','${a._set}')">
+        <b>${esc(a.title)}</b><span>${esc(a.source)} · ${rel(a.date)}${(a._dupes||[]).length?' · '+(1+a._dupes.length)+' Quellen':''}</span></div>`).join('')}</div>`:''}
+    ${r.termine.length?`<div class="ki-item"><div class="ki-t">📅 Anstehende Termine</div>
+      ${r.termine.map(c=>`<div class="ki-hit"><b>${esc(c.title)}</b><span>${c.dateLabel}</span></div>`).join('')}</div>`:''}
+    ${!r.meldungen.length&&!r.verfahren.length?'<div class="gap-note">Dazu ist im geladenen Bestand nichts zu finden. Andere Begriffe versuchen.</div>':''}`
+    :'<div class="gap-note">Bitte einen Suchbegriff mit mindestens vier Zeichen eingeben.</div>';
+  const key=kiKey();
+  if(key&&r){
+    el.innerHTML=belege+'<div class="km-note">Formuliere eine Antwort…</div>';
+    try{
+      const modell=store.get('ps_ki_model')||(window.PS_KI_CONFIG&&window.PS_KI_CONFIG.model)||'meta-llama/llama-3.3-70b-instruct:free';
+      if(!kiQuota()){el.innerHTML=belege+'<div class="gap-note">Für diese Stunde ist das Kontingent für formulierte Antworten aufgebraucht. Die Fundstellen oben stehen unverändert zur Verfügung.</div>';return;}
+      const kontext=[...r.verfahren.map(p=>`VORGANG: ${p.title} (Stand ${STAGE_L[p.stage]||p.stage})`),
+                     ...r.meldungen.slice(0,6).map(a=>`MELDUNG (${a.source}): ${a.title}`)].join('\n');
+      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+        body:JSON.stringify({model:modell,max_tokens:400,temperature:0.2,messages:[
+          {role:'system',content:'Antworte knapp auf Deutsch, nur auf Grundlage der gegebenen Fundstellen. Erfinde nichts. Nenne, worauf du dich stützt.'},
+          {role:'user',content:`Frage: ${q}\n\nFundstellen:\n${kontext}`}]})});
+      const d=await res.json();
+      const txt=(d.choices||[{}])[0]?.message?.content||'';
+      el.innerHTML=`<div class="ki-item" style="border-left-color:#16a34a"><div class="ki-t">Antwort <span class="ki-src">${esc(modell.split('/').pop())}</span></div>
+        <div class="ki-d">${esc(txt)}</div></div>`+belege;
+    }catch(e){el.innerHTML=belege+'<div class="gap-note">Das Modell antwortete nicht – die Fundstellen oben stammen aus den geladenen Daten.</div>';}
+    return;
+  }
   if(typeof window.PS_KI==='function'){
     el.innerHTML='<div class="km-note">Frage läuft…</div>';
     try{const r=await window.PS_KI(ctx);el.innerHTML=`<div class="ki-item"><div class="ki-d">${esc(r.text||'')}</div></div>`;}
     catch(e){el.innerHTML='<div class="gap-note">Die Anfrage ist fehlgeschlagen.</div>';}
     return;
   }
-  el.innerHTML=`<div class="ki-item"><div class="ki-t">Vorschau ohne Modell</div>
-    <div class="ki-d">Die Frage wurde entgegengenommen: „${esc(q)}“.<br>
-    Bereitgestellt würden <b>${ctx.meldungen.length}</b> Meldungen der letzten 48 Stunden und
-    <b>${ctx.verfahren.length}</b> parlamentarische Vorgänge als Grundlage.
-    Sobald ein Modell hinterlegt ist (<code>window.PS_KI</code>), erscheint hier die Antwort mit Belegen.</div></div>`;
+  el.innerHTML=belege;
 }
 function copyOne(id){const a=articleById(id);if(!a)return;navigator.clipboard.writeText(a.title+'\n'+(a.link||''));}
 /* Auch in den kleinen Kacheln rechts lässt sich aufklappen */
@@ -2664,8 +2807,22 @@ function renderDocs(){
     g('docs-list').innerHTML=grouped(list,d=>S.docMode==='type'?d.type:classify(d.title+' '+d.desc),k=>S.docMode==='type'?esc(k):TOPIC_KW_L[k]||k,d=>`<span>${esc(d.source)}</span><span>${fd(d.date)}</span>`,d=>`openDoc('${d.id}')`)||'<div style="padding:30px;color:var(--muted)">Keine Dokumente.</div>';return;}
   g('docs-list').className='';
   /* Nach Dokumenttyp gruppiert statt als eine endlose Liste – mit Symbolen zur Orientierung */
+  /* Erste Ebene: Thema – danach sucht man zuerst. Zweite Ebene auf Wunsch: Dokumenttyp. */
+  const gb=g('docs-groupby');
+  if(gb)gb.innerHTML=[['thema','Nach Thema'],['typ','Nach Dokumenttyp']].map(([k,l])=>
+    `<button class="${(S.docGroupBy||'thema')===k?'active':''}" onclick="S.docGroupBy='${k}';reRender('docs')">${l}</button>`).join('');
   const grp={};
-  list.slice(0,400).forEach(d=>{const gg=docGroup(d);(grp[gg.lbl]=grp[gg.lbl]||{ic:gg.ic,items:[]}).items.push(d);});
+  list.slice(0,400).forEach(d=>{
+    if((S.docGroupBy||'thema')==='typ'){const gg=docGroup(d);(grp[gg.lbl]=grp[gg.lbl]||{ic:gg.ic,items:[]}).items.push(d);}
+    else{
+      /* Erst das Thema aus Titel und Beschreibung; greift das nicht, wird nach
+         der Art des Dokuments gruppiert statt alles in „Sonstiges" zu werfen. */
+      const t=classify((d.title||'')+' '+(d.desc||''));
+      const gg=docGroup(d);
+      const lbl=(t&&t!=='sonstig')?(TOPIC_KW_L[t]||chipLabel(t)||t).replace(/^\S+\s/,'')
+               :gg.lbl;
+      (grp[lbl]=grp[lbl]||{ic:(t&&t!=='sonstig')?'🏷':gg.ic,items:[]}).items.push(d);}
+  });
   const order=Object.entries(grp).sort((a,b)=>b[1].items.length-a[1].items.length);
   g('docs-list').className='';
   g('docs-list').innerHTML=order.map(([lbl,o])=>`
@@ -2877,7 +3034,21 @@ let ELECT=null;
 const PARTY_COL={'CDU/CSU':'#111111','CDU':'#111111','CSU':'#0a5aa5','SPD':'#e3000f','GRÜNE':'#1fa12e',
  'FDP':'#f0d000','LINKE':'#be3075','AfD':'#009ee0','BSW':'#7b2a8b','FW':'#f28c00','SSW':'#0d6b9a',
  'PIRATEN':'#ff820a','Sonstige':'#9ca3af'};
-const pcol=p=>PARTY_COL[p]||'#6b7280';
+/* Farbzuordnung über Kennwörter statt exakter Namen: „Bündnis 90/Die Grünen",
+   „GRÜNE" und „Grüne" sind dieselbe Fraktion. Deckt Bundestag, EP und US ab. */
+const PARTY_MATCH=[[/bündnis\s*90|grüne|greens|verts/i,'#1fa12e'],[/\bspd\b|sozialdemokrat|s&d|socialists/i,'#e3000f'],
+  [/cdu|csu|union|epp|christdemokrat/i,'#111111'],[/\bfdp\b|freie demokrat|renew|liberal/i,'#f0d000'],
+  [/linke|left|die linke/i,'#be3075'],[/\bafd\b|alternative für|\besn\b|\bid\b/i,'#009ee0'],
+  [/\bbsw\b|wagenknecht/i,'#7b2a8b'],[/freie wähler|\bfw\b/i,'#f28c00'],[/\bssw\b/i,'#0d6b9a'],
+  [/republican|\bgop\b/i,'#c8102e'],[/democrat/i,'#0044c9'],[/ecr|konservative/i,'#1e3a8a'],
+  [/fraktionslos|parteilos|independent/i,'#9ca3af']];
+function partyColor(name){
+  if(!name)return'#9ca3af';
+  if(PARTY_COL[name])return PARTY_COL[name];
+  for(const [re,c] of PARTY_MATCH)if(re.test(name))return c;
+  return'#9ca3af';
+}
+const pcol=p=>partyColor(p);
 function elUpcoming(){return(ELECT?.elections||[]).filter(e=>e.status!=='past');}
 function elNext(){return elUpcoming()[0]||null;}
 function elFresh(){ /* Wahl heute oder in den letzten 48 Stunden */
@@ -3546,11 +3717,16 @@ function renderMonitorDetail(){
       <aside id="story-panel"></aside></div>`;
 }
 /* Story inline aufklappen – kein eigenes Fenster mehr. */
+/* Alle Story-Funktionen nutzen dasselbe Zeitfenster. Vorher baute die Liste mit
+   S.storyWin, die Klickfunktionen aber fest mit 48 h – dadurch wurde bei jedem
+   Klick alles neu berechnet (Hänger) und Klicks liefen ins Leere. */
+function storyWin(){return S.storyWin||48;}
+function findStory(id){return buildStories(storyWin()).find(x=>x.id===id);}
 function toggleStory(id){
   const box=g('sin-'+id),row=g('sr-'+id);if(!box)return;
   if(_storyOpen&&_storyOpen!==id){const o=g('sin-'+_storyOpen);if(o)o.innerHTML='';g('sr-'+_storyOpen)?.classList.remove('open');}
   if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');_storyOpen=null;return;}
-  const s=(buildStories(48).find(x=>x.id===id));if(!s)return;
+  const s=findStory(id);if(!s)return;
   _storyOpen=id;row?.classList.add('open');
   const img=s.articles.find(a=>a.image);
   box.innerHTML=`<div class="story-open">
@@ -3571,7 +3747,7 @@ let _storyOpen=null;
 /* Klick im Monitor soll nicht ans Seitenende springen. Deshalb: die Story
    erscheint als Lesespalte rechts neben der Liste, die Liste bleibt stehen. */
 function openStoryPanel(id){
-  const s=buildStories(48).find(x=>x.id===id);if(!s)return;
+  const s=findStory(id);if(!s)return;
   const el=g('story-panel');if(!el)return;
   const img=s.articles.find(a=>a.image);
   document.body.classList.add('panel-open');
@@ -3607,7 +3783,7 @@ function storyRow(s,why){
     </div><div id="sin-${s.id}"></div>`;
 }
 function openStory(id){
-  const s=buildStories(48).find(x=>x.id===id);if(!s)return;
+  const s=findStory(id);if(!s)return;
   const m=g('story-modal');
   m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('story-modal').classList.remove('open')">✕</button>
     <div class="dl-eb"><span class="tag" style="color:${SEV[s.severity].c}">${SEV[s.severity].l}</span>
@@ -3624,14 +3800,14 @@ function openStory(id){
       <button class="btn" onclick="navigator.clipboard.writeText(storyText('${s.id}'))">📋 Story kopieren</button></div>`;
   m.classList.add('open');
 }
-function storyText(id){const s=buildStories(48).find(x=>x.id===id);if(!s)return'';
+function storyText(id){const s=findStory(id);if(!s)return'';
   return`${s.title}\n${s.sources.length} Quellen · ${s.articles.length} Artikel\n\n`+
     s.articles.map(a=>`• [${a.source}] ${a.title}\n  ${a.link||''}`).join('\n');}
 
 /* ── STORIES-ÜBERSICHT ──────────────────────────────────────────────── */
 function renderStories(){
   const el=g('view-stories');if(!el)return;
-  const all=buildStories(S.storyWin||48);
+  const all=buildStories(storyWin());
   const list=all.filter(s=>S.storySev==='all'||!S.storySev?true:s.severity===S.storySev);
   el.innerHTML=`<div class="plain-head"><div><h1>Stories</h1>
       <div class="sub" style="margin:0">Meldungen, die dieselbe Sache behandeln, zu einer Story zusammengefasst – je mehr unabhängige Quellen, desto höher die Einstufung.
@@ -3641,7 +3817,8 @@ function renderStories(){
       <button class="${S.storySev==='important'?'active':''}" onclick="S.storySev='important';reRender('stories')">🟠 ${all.filter(s=>s.severity==='important').length}</button></div>
     <div class="seg"><button class="${(S.storyWin||48)===24?'active':''}" onclick="S.storyWin=24;reRender('stories')">24 h</button>
       <button class="${(S.storyWin||48)===48?'active':''}" onclick="S.storyWin=48;reRender('stories')">48 h</button></div></div>
-    <div class="dcard"><div class="dcard-body">${list.slice(0,80).map(storyRow).join('')||'<div class="gap-note">Keine Stories im Zeitraum.</div>'}</div></div>`;
+    <div class="dcard"><div class="dcard-body">${list.slice(0,S.storyLimit||30).map(x=>storyRow(x)).join('')||'<div class="gap-note">Keine Stories im Zeitraum.</div>'}
+      ${list.length>(S.storyLimit||30)?`<button class="btn" style="width:100%;justify-content:center;margin-top:8px" onclick="S.storyLimit=(S.storyLimit||30)+30;reRender('stories')">Weitere ${Math.min(30,list.length-(S.storyLimit||30))} Stories anzeigen</button>`:''}</div></div>`;
 }
 
 /* ── QUELLEN-ÜBERSICHT ──────────────────────────────────────────────── */
@@ -3672,7 +3849,7 @@ function renderPolicy(){
   if(!all.length){el.innerHTML=`<div class="plain-head"><div><h1>Verfahren</h1></div></div>
     <div class="gap-note"><strong>dip.json fehlt.</strong> <code>fetch_directory.py</code> holt Gesetzgebungsvorgänge aus der DIP-API des Bundestags – danach steht hier jedes Verfahren mit Stand, Verlauf, Dokumenten und beteiligten Akteuren.</div>`;return;}
   const q=(S.policyQ||'').toLowerCase();
-  const list=all.filter(p=>(!S.policyArt||(p.art||'gesetz')===S.policyArt)&&(!S.policyStage||p.stage===S.policyStage)&&(!S.policyTopic||p.topic===S.policyTopic)&&(!q||p.title.toLowerCase().includes(q)))
+  const list=all.filter(p=>(!S.policyHerk||herkunftOf(p)===S.policyHerk)&&(!S.policyArt||(p.art||'gesetz')===S.policyArt)&&(!S.policyStage||p.stage===S.policyStage)&&(!S.policyTopic||p.topic===S.policyTopic)&&(!q||p.title.toLowerCase().includes(q)))
     .sort((a,b)=>(b.updated||b.date||'').localeCompare(a.updated||a.date||''));
   const byStage={};all.forEach(p=>byStage[p.stage]=(byStage[p.stage]||0)+1);
   const byTopic={};all.forEach(p=>byTopic[p.topic]=(byTopic[p.topic]||0)+1);
@@ -3714,6 +3891,16 @@ function togglePolGroup(k){
   S.polClosed=[...c];store.set('ps_polclosed',S.polClosed);reRender('policy');
 }
 const PARTEI_RE=/(CDU|CSU|SPD|BÜNDNIS\s*90|GRÜNE|FDP|AfD|LINKE|BSW|SSW|Fraktion)/i;
+/* Woher kommt eine Vorlage? Politisch die wichtigste Unterscheidung. */
+function herkunftOf(p){
+  const t=((p.initiative||'')+' '+(p.title||'')).toLowerCase();
+  if(/bundesregierung|bundeskanzler|bundesminist/.test(t))return 'regierung';
+  if(/bundesrat|landesregierung/.test(t))return 'bundesrat';
+  if(/\bafd\b|die linke|linksfraktion/.test(t))return 'opposition';
+  if(/\bcdu\b|\bcsu\b|\bspd\b/.test(t))return 'koalition';
+  if(/fraktion|bündnis 90|grüne|\bfdp\b/.test(t))return 'fraktion';
+  return 'sonst';
+}
 function policyGroups(list){
   const g=[];
   const nimm=(f)=>list.filter(f);
@@ -3721,7 +3908,18 @@ function policyGroups(list){
   const antrag=nimm(p=>/antrag|entschließung/i.test(p.type||'')&&!gesetz.includes(p));
   const anfrage=nimm(p=>(p.art)==='anfrage');
   const rest=list.filter(p=>!gesetz.includes(p)&&!antrag.includes(p)&&!anfrage.includes(p));
+  const HERK={regierung:['🏛','Bundesregierung','#1d4ed8'],koalition:['🤝','Koalitionsfraktionen','#16a34a'],
+    opposition:['↔','Opposition','#dc2626'],fraktion:['🎗','Fraktionen','#d97706'],
+    bundesrat:['🏛','Bundesrat und Länder','#7c3aed']};
+  const byHerk={};list.forEach(p=>{const h=herkunftOf(p);if(h!=='sonst')(byHerk[h]=byHerk[h]||[]).push(p);});
+  const herkListe=Object.entries(byHerk).sort((a,b)=>b[1].length-a[1].length);
   const lim=k=>S.polMore===k?9999:12;
+  if(herkListe.length)g.push({key:'herkunft',icon:'⚑',label:'Wer bringt was ein',items:list,
+    note:'Vorlagen nach Urheber: Bundesregierung, Koalitionsfraktionen, Opposition, Länderkammer. Ein Klick filtert die Bereiche darunter.',
+    render:()=>`<div class="partei-grid">${herkListe.map(([k,arr])=>`
+      <div class="partei-card${S.policyHerk===k?' sel':''}" onclick="S.policyHerk=S.policyHerk==='${k}'?null:'${k}';reRender('policy')" style="--pc:${HERK[k][2]}">
+        <div class="pc-n">${HERK[k][0]} ${HERK[k][1]}</div><div class="pc-c">${arr.length}</div>
+        <div class="pc-l">Vorlagen</div></div>`).join('')}</div>`});
   if(gesetz.length)g.push({key:'gesetz',icon:'⚖',label:'Gesetzesvorhaben',items:gesetz,limit:lim('gesetz'),
     note:'Entwürfe und Verordnungen im parlamentarischen Verfahren – der Balken zeigt, wie weit sie sind.'});
   if(antrag.length)g.push({key:'antrag',icon:'📌',label:'Anträge und Entschließungen',items:antrag,limit:lim('antrag')});
@@ -4229,6 +4427,61 @@ function buildDirFilters(){
 function personCard(p){const c=partyC(p.party);return`<div class="person" onclick="proGate('docs',()=>openPerson('${p.id}'))"><div class="tile" style="background:${c}">${p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" onerror="this.remove()">`:initials(p.name)}</div><div style="flex:1;min-width:0"><div class="pn">${esc(p.name)}</div><div class="pm">${p.party?`<span class="party" style="background:${c}">${esc(p.party)}</span>`:''}<span class="parl">${esc(parlLabel(p))}</span>${p.constituency?`<span>${esc(p.constituency)}</span>`:''}</div>${p.committees?.length?`<div class="pc">${p.committees.slice(0,3).map(x=>`<span>${esc(x.name.replace(/^Ausschuss (für|zur?) /,''))}</span>`).join('')}${p.committees.length>3?`<span>+${p.committees.length-3}</span>`:''}</div>`:''}<div class="pe">✉ ${esc(p.email||'–')}${p.email&&!p.email_verified?' <span class="unverified">Muster</span>':''}${p.speeches?.length?` · 🎤 ${p.speeches.length} Reden`:''}</div></div></div>`;}
 function dirPeople(){const q=(g('dir-q').value||'').toLowerCase(),cm=g('dir-comm').value,pt=g('dir-party').value;
   return PEOPLE.filter(p=>(S.dirParl==='all'||p.parliament===S.dirParl)&&(!cm||p.committees?.some(c=>c.id===cm))&&(!pt||p.party===pt)&&(!q||(p.name+' '+p.constituency+' '+p.party+' '+(p.committees||[]).map(c=>c.name).join(' ')).toLowerCase().includes(q))).sort((a,b)=>(a.last_name||a.name).localeCompare(b.last_name||b.name,'de'));}
+/* Sitzverteilung als Halbkreis, wie ihn der Bundestag zeigt: erst der Überblick,
+   darunter die Personen. Gezählt wird aus people.json, nicht abgeschrieben. */
+const FRAK_ORDER=['LINKE','Die Linke','BSW','SPD','GRÜNE','Bündnis 90/Die Grünen','FDP','FREIE WÄHLER','CDU','CSU','CDU/CSU','AfD','fraktionslos'];
+function fraktionen(parl){
+  const c={};
+  PEOPLE.filter(p=>parl==='all'?true:p.parliament===parl).forEach(p=>{
+    const k=(p.party||'fraktionslos').trim()||'fraktionslos';c[k]=(c[k]||0)+1;});
+  const rank=n=>{const i=FRAK_ORDER.findIndex(x=>n.toLowerCase().startsWith(x.toLowerCase()));return i<0?99:i;};
+  return Object.entries(c).sort((a,b)=>rank(a[0])-rank(b[0])||b[1]-a[1]);
+}
+function seatSVG(list,gesamt){
+  /* Halbkreis mit fünf Reihen; jeder Punkt ein Sitz. */
+  const reihen=5,W=520,H=250,cx=W/2,cy=H-8;
+  const punkte=[];
+  const proReihe=[];let rest=gesamt;
+  for(let r=0;r<reihen;r++){const anteil=(r+3)/(reihen*2+5);proReihe.push(Math.max(1,Math.round(gesamt*anteil)));}
+  const summe=proReihe.reduce((a,b)=>a+b,0);proReihe[reihen-1]+=gesamt-summe;
+  for(let r=0;r<reihen;r++){
+    const rad=70+r*33,n=proReihe[r];
+    for(let i=0;i<n;i++){
+      const w=Math.PI*(i+0.5)/n;
+      punkte.push({x:cx-Math.cos(w)*rad,y:cy-Math.sin(w)*rad});
+    }
+  }
+  punkte.sort((a,b)=>Math.atan2(cy-a.y,a.x-cx)-Math.atan2(cy-b.y,b.x-cx));
+  let i=0,out='';
+  list.forEach(([name,n])=>{
+    const col=partyColor(name);
+    for(let k=0;k<n&&i<punkte.length;k++,i++)
+      out+=`<circle cx="${punkte[i].x.toFixed(1)}" cy="${punkte[i].y.toFixed(1)}" r="5" fill="${col}"><title>${esc(name)}</title></circle>`;
+  });
+  return`<svg viewBox="0 0 ${W} ${H}" class="seats">${out}
+    <text x="${cx}" y="${cy-14}" text-anchor="middle" class="seat-total">${gesamt}</text>
+    <text x="${cx}" y="${cy}" text-anchor="middle" class="seat-lbl">Mitglieder</text></svg>`;
+}
+function renderSeats(){
+  const parl=S.dirParl==='all'?'bt':S.dirParl;
+  const list=fraktionen(parl).filter(([,n])=>n>0);
+  const gesamt=list.reduce((a,b)=>a+b[1],0);
+  if(!gesamt)return'';
+  const mehrheit=Math.floor(gesamt/2)+1;
+  return`<div class="dcard" style="margin-bottom:12px"><div class="dcard-hd">
+      <h2>Sitzverteilung${PARL_L[parl]?' · '+PARL_L[parl]:''}</h2>
+      <span class="eyebrow">Mehrheit ab ${mehrheit} Sitzen</span>
+      <button class="all" onclick="S.seatsOpen=!S.seatsOpen;reRender('dir')">${S.seatsOpen===false?'einblenden':'ausblenden'}</button></div>
+    ${S.seatsOpen===false?'':`<div class="dcard-body seat-wrap">
+      ${seatSVG(list,gesamt)}
+      <div class="seat-legend">${list.map(([n,c])=>{
+        const col=partyColor(n);
+        return`<div class="sl-row${S.dirParty===n?' on':''}" onclick="S.dirParty=S.dirParty==='${esc(n)}'?null:'${esc(n)}';g('dir-party').value='${esc(n)}';reRender('dir')">
+          <span class="sl-dot" style="background:${col}"></span><span class="sl-n">${esc(n)}</span>
+          <span class="sl-c">${c}</span><span class="sl-p">${(c/gesamt*100).toFixed(1)} %</span>
+          <span class="sl-bar"><i style="width:${(c/gesamt*100).toFixed(1)}%;background:${col}"></i></span></div>`;}).join('')}</div></div>`}
+    </div>`;
+}
 function renderDir(){
   const el=g('dir-list');
   if(S.dirMode==='changes'){
@@ -4276,7 +4529,9 @@ function renderDir(){
     el.innerHTML=cs.map(c=>`<div class="comm" onclick="S.dirParl='${c.parliament}';buildDirFilters();g('dir-comm').value='${c.id}';setDirMode('people')"><div class="cn">${esc(c.name)}</div><div class="cm"><span class="parl">${esc(PARL_L[c.parliament]||(c.parliament?.startsWith('lt-')?LAND_L[c.parliament.slice(3)]:c.parliament))}</span><span>👥 ${c.members.length} Mitglieder</span>${(c.topics||[]).slice(0,2).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('')||'<div style="padding:30px;color:var(--muted)">Keine Ausschüsse.</div>';return;}
   const ps=dirPeople();g('dir-sub').textContent=ps.length+' Personen'+(g('dir-comm').value?' · '+(g('dir-comm').selectedOptions[0]?.textContent||''):'');
   const lim=S.dirLimit||60;
-  el.className='p-grid';el.innerHTML=(ps.slice(0,lim).map(personCard).join('')+(ps.length>lim?`<button class="btn" style="grid-column:1/-1;justify-content:center" onclick="S.dirLimit=${lim+60};reRender('dir')">Weitere ${Math.min(60,ps.length-lim)} von ${ps.length-lim} anzeigen</button>`:''))||'<div style="padding:30px;color:var(--muted)">Keine Treffer.</div>';
+  el.className='';
+  const seats=renderSeats();
+  el.innerHTML=seats+`<div class="eyebrow" style="margin:4px 0 8px">Mitglieder (${ps.length})</div><div class="p-grid">`+((ps.slice(0,lim).map(personCard).join('')+(ps.length>lim?`<button class="btn" style="grid-column:1/-1;justify-content:center" onclick="S.dirLimit=${lim+60};reRender('dir')">Weitere ${Math.min(60,ps.length-lim)} von ${ps.length-lim} anzeigen</button>`:''))||'<div style="padding:30px;color:var(--muted)">Keine Treffer.</div>')+`</div>`;
 }
 function openPerson(id){const p=PEOPLE.find(x=>x.id===id);if(!p)return;const c=partyC(p.party);
   const m=g('person-modal');m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('person-modal').classList.remove('open')">✕</button>
@@ -4480,7 +4735,7 @@ window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderT
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics&&renderMyTopics();});
 monitorStore.load().then(()=>{setWorkspace(store.get('ps_ws')||'dash',true);renderWsNav();updateWsBadges();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
-S.topWin=store.get('ps_topwin')||24;
+S.topWin=store.get('ps_topwin')||24;S.topScope=store.get('ps_topscope')||'';
 S.cols=store.get('ps_cols')||4;
 document.documentElement.style.setProperty('--paper-min',S.cols===2?'440px':S.cols===3?'320px':'268px');
 if(g('lt-cols'))g('lt-cols').textContent='▥ '+S.cols+' Spalten';
