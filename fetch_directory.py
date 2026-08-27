@@ -508,6 +508,109 @@ def diff_people(new_people):
             "checked": datetime.now(timezone.utc).isoformat()}
 
 # ─────────────────────────────────────────────────────────────
+# GROQ – kostenlose Sprachmodell-API, optional
+#
+# Zweck hier: Gesetzgebungsvorgaenge verstaendlich zusammenfassen und
+# Suchbegriffe erzeugen, mit denen sich Presseberichte zuverlaessiger
+# zuordnen lassen als ueber Titelaehnlichkeit.
+#
+# Laeuft nur, wenn das Secret GROQ_API_KEY gesetzt ist. Ohne Schluessel
+# passiert nichts – alle anderen Funktionen bleiben unberuehrt.
+# Ergebnisse landen in groq_cache.json und werden nie erneut angefragt.
+# ─────────────────────────────────────────────────────────────
+GROQ_KEY   = os.environ.get("GROQ_API_KEY", "").strip()
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_PER_RUN = int(os.environ.get("GROQ_PER_RUN", "25"))
+GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_CACHE = "groq_cache.json"
+
+def groq_chat(prompt, max_tokens=320, temperature=0.2):
+    """Ein Aufruf an Groq. Gibt den Text zurueck oder None."""
+    body = json.dumps({
+        "model": GROQ_MODEL, "temperature": temperature, "max_tokens": max_tokens,
+        "messages": [
+            {"role": "system", "content":
+             "Du bist ein praeziser Parlamentsdokumentar. Antworte knapp, sachlich und "
+             "ausschliesslich auf Deutsch. Keine Wertung, keine Ausschmueckung. "
+             "Wenn eine Angabe im Text fehlt, erfinde sie nicht."},
+            {"role": "user", "content": prompt}],
+    }).encode("utf-8")
+    for versuch in range(2):
+        try:
+            req = Request(GROQ_URL, data=body, headers={
+                "Authorization": "Bearer " + GROQ_KEY,
+                "Content-Type": "application/json", "User-Agent": UA})
+            with urlopen(req, timeout=30) as r:
+                d = json.loads(r.read().decode("utf-8", "replace"))
+            return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+        except HTTPError as e:
+            if e.code == 429 and versuch == 0:
+                print("    Groq drosselt – 20 s Pause"); time.sleep(20); continue
+            print(f"    Groq HTTP {e.code}"); return None
+        except Exception as e:
+            print(f"    Groq {type(e).__name__}"); return None
+    return None
+
+def enrich_groq(procs):
+    """Fasst Vorgaenge zusammen und erzeugt Suchbegriffe fuer die Presseverknuepfung."""
+    if not GROQ_KEY:
+        print("── Groq: kein GROQ_API_KEY – übersprungen ──"); return
+    print(f"── Groq ({GROQ_MODEL}) ──")
+    try: cache = json.load(open(GROQ_CACHE, encoding="utf-8"))
+    except Exception: cache = {}
+
+    # Vorher aus dem Cache einspielen
+    for p in procs:
+        c = cache.get(p["id"])
+        if c: p.update({k: v for k, v in c.items() if v})
+
+    # Die zuletzt bewegten Vorgaenge zuerst, nur echte Gesetzgebung
+    todo = [p for p in procs if p.get("art") == "gesetz" and p["id"] not in cache]
+    todo.sort(key=lambda p: p.get("updated") or p.get("date") or "", reverse=True)
+    todo = todo[:GROQ_PER_RUN]
+    if not todo:
+        print("  nichts Neues zusammenzufassen"); return
+    print(f"  {len(todo)} Vorgänge (von {len(procs)})")
+
+    fertig = 0
+    for p in todo:
+        if out_of_time(): budget_note("Groq"); break
+        stationen = "; ".join(f"{s.get('date','')} {s.get('title','')}" for s in (p.get("stations") or [])[-5:])
+        prompt = (
+            "Fasse diesen Gesetzgebungsvorgang des Deutschen Bundestages zusammen.\n\n"
+            "Titel: " + str(p.get("title", "")) + "\n"
+            "Art: " + str(p.get("type", "")) + " | Stand: " + str(p.get("status", "")) + "\n"
+            "Initiative: " + str(p.get("initiative", "")) + "\n"
+            "Schlagwoerter: " + ", ".join(p.get("deskriptoren") or []) + "\n"
+            "Kurzbeschreibung: " + (p.get("abstract") or "(keine)") + "\n"
+            "Verlauf: " + (stationen or "(keiner)") + "\n\n"
+            "Antworte als JSON mit genau diesen Feldern:\n"
+            '{"zusammenfassung": "zwei Saetze: worum es geht und wo das Verfahren steht", '
+            '"wirkung": "ein Satz: wen betrifft es", '
+            '"suchbegriffe": ["fuenf Begriffe, mit denen man Presseberichte dazu findet"]}\n'
+            "Nur das JSON, kein weiterer Text.")
+        txt = groq_chat(prompt)
+        data = {}
+        if txt:
+            m = re.search(r"\{.*\}", txt, re.S)
+            try:
+                j = json.loads(m.group(0)) if m else {}
+                data = {"ki_summary": (j.get("zusammenfassung") or "")[:400],
+                        "ki_wirkung": (j.get("wirkung") or "")[:200],
+                        "ki_keywords": [str(x)[:40] for x in (j.get("suchbegriffe") or [])][:6],
+                        "ki_model": GROQ_MODEL}
+            except Exception:
+                # Kein sauberes JSON: den Text als Zusammenfassung nehmen
+                data = {"ki_summary": txt[:400], "ki_keywords": [], "ki_model": GROQ_MODEL}
+        cache[p["id"]] = data
+        p.update({k: v for k, v in data.items() if v})
+        if data.get("ki_summary"): fertig += 1
+        time.sleep(1.2)          # Freistufe: rund 30 Anfragen je Minute
+
+    json.dump(cache, open(GROQ_CACHE, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    print(f"  → {fertig} Zusammenfassungen ergänzt, Cache: {len(cache)} Vorgänge")
+
+# ─────────────────────────────────────────────────────────────
 # WIKIPEDIA – Kurzbiografie als Hintergrund (inkrementell wie die Profile)
 # ─────────────────────────────────────────────────────────────
 WIKI_BLOCKED = [False]
@@ -834,13 +937,17 @@ DIP_TOPIC = {
 }
 # Gesetzgebungs-Pipeline: grobe Stufe für die Fortschrittsanzeige im Frontend
 STAGES = ["eingebracht", "ausschuss", "bundestag", "bundesrat", "verkuendet", "abgeschlossen"]
+# Fuer Anfragen ist die Gesetzes-Pipeline sinnlos; sie haben nur zwei Zustaende.
 def legislative_stage(beratungsstand, stationen):
-    txt = (beratungsstand or "") + " " + " ".join(s.get("title", "") + " " + s.get("type", "") for s in stationen)
+    txt = (beratungsstand or "") + " " + " ".join(
+        (s.get("title", "") or "") + " " + (s.get("type", "") or "") + " " + (s.get("beschluss", "") or "")
+        for s in stationen)
     t = txt.lower()
     if re.search(r"verkündet|inkrafttreten|gesetz(esbe)?schluss|abgeschlossen", t): return "verkuendet"
     if re.search(r"bundesrat|zustimmung des bundesrates|2\. durchgang", t): return "bundesrat"
     if re.search(r"3\. beratung|schlussabstimmung|angenommen|verabschiedet", t): return "bundestag"
     if re.search(r"ausschuss|beschlussempfehlung|anhörung", t): return "ausschuss"
+    if re.search(r"beantwortet|erledigt", t): return "abgeschlossen"
     if re.search(r"eingebracht|zugeleitet|1\. beratung|überwiesen", t): return "eingebracht"
     return "eingebracht"
 
@@ -852,31 +959,76 @@ def dip_topic(text):
         if sc > score: best, score = k, sc
     return best
 
+# Vorgangstypen, die im Policy-Bereich als "Gesetzgebung" gelten.
+# Kleine/Große Anfragen sind parlamentarische Kontrolle, kein Gesetzesverfahren –
+# sie bekommen eine eigene Rubrik statt der irrefuehrenden Stufe "eingebracht".
+GESETZ_TYPEN = {"Gesetzgebung", "Verordnung", "Beschlussempfehlung", "Antrag",
+                "Entschließungsantrag", "Unterrichtung", "Bericht"}
+ANFRAGE_TYPEN = {"Kleine Anfrage", "Große Anfrage", "Schriftliche Frage",
+                 "Mündliche Frage", "Fragestunde", "Aktuelle Stunde"}
+
 def fetch_dip(days=90):
     if not DIP_KEY:
-        print("── DIP: kein Key (DIP_API_KEY oder DIP_PUBLIC_KEY setzen) – übersprungen ──"); return
-    print("── DIP (Vorgänge, Drucksachen, Protokolle) ──")
+        print("── DIP: kein Key (DIP_KEY/DIP_API_KEY setzen) – übersprungen ──"); return
+    print("── DIP (Vorgänge, Verlauf, Drucksachen, Protokolle) ──")
     since = (date.today() - timedelta(days=days)).isoformat()
 
-    # HTTP 400 bei "f.aktualisiert.start=2026-05-28": dieses Feld erwartet einen
-    # Zeitstempel, nicht nur ein Datum. Erst mit Uhrzeit versuchen, sonst auf
-    # "f.datum.start" ausweichen (das nimmt ein reines Datum).
-    vorgaenge = dip_pages("vorgang", {"f.aktualisiert.start": since + "T00:00:00"}, max_items=3000)
-    if not vorgaenge:
-        print("    Fallback: f.datum.start")
-        vorgaenge = dip_pages("vorgang", {"f.datum.start": since}, max_items=3000)
+    # Laut openapi.yaml ist f.aktualisiert.start ein "string/date-time" (RFC 3339),
+    # f.datum.start dagegen ein reines Datum. Genau das war die Ursache fuer HTTP 400.
+    vorgaenge = (dip_pages("vorgang", {"f.aktualisiert.start": since + "T00:00:00+01:00"}, max_items=4000)
+                 or dip_pages("vorgang", {"f.aktualisiert.start": since + "T00:00:00Z"}, max_items=4000)
+                 or dip_pages("vorgang", {"f.datum.start": since}, max_items=4000))
     if not vorgaenge:
         print("    Fallback: ohne Datumsfilter, neueste zuerst")
-        vorgaenge = dip_pages("vorgang", {}, max_items=1000)
+        vorgaenge = dip_pages("vorgang", {}, max_items=1200)
     print(f"  {len(vorgaenge)} Vorgänge")
+
+    # Der Verlauf steckt NICHT im Vorgang selbst (ein Feld "vorgangsverlauf" gibt es
+    # in der API nicht – deshalb war der Verlauf bisher immer leer), sondern in den
+    # Vorgangspositionen. Die holen wir gebuendelt und ordnen sie ueber vorgang_id zu.
+    positionen = (dip_pages("vorgangsposition", {"f.aktualisiert.start": since + "T00:00:00+01:00"}, max_items=8000)
+                  or dip_pages("vorgangsposition", {"f.datum.start": since}, max_items=8000))
+    print(f"  {len(positionen)} Vorgangspositionen (Verlauf)")
+    verlauf_map = {}
+    for vp in positionen:
+        vid = str(vp.get("vorgang_id") or "")
+        if not vid: continue
+        fs = vp.get("fundstelle") or {}
+        verlauf_map.setdefault(vid, []).append({
+            "title": vp.get("vorgangsposition") or vp.get("titel", ""),
+            "date": vp.get("datum", ""),
+            "body": vp.get("zuordnung", ""),
+            "type": vp.get("dokumentart", ""),
+            "gang": bool(vp.get("gang")),
+            "doc": fs.get("dokumentnummer", ""),
+            "link": fs.get("pdf_url", ""),
+            "beschluss": "; ".join(b.get("beschlusstenor", "") for b in (vp.get("beschlussfassung") or []))[:200],
+            "ueberweisung": "; ".join(u.get("ausschuss_kuerzel", "") or u.get("ausschuss", "")
+                                     for u in (vp.get("ueberweisung") or []))[:120],
+        })
+    for k in verlauf_map:
+        verlauf_map[k].sort(key=lambda x: x["date"] or "")
+
+    # Aktivitaeten liefern die Verbindung Person ↔ Vorgang (Feld vorgangsbezug).
+    akt = dip_pages("aktivitaet", {"f.aktualisiert.start": since + "T00:00:00+01:00"}, max_items=6000)
+    print(f"  {len(akt)} Aktivitäten (Personenbezug)")
+    person_map = {}
+    for a in akt:
+        pid = str(a.get("person_id") or "")
+        nm = (a.get("titel") or "").split(",")[0].strip()
+        for vb in (a.get("vorgangsbezug") or []):
+            vid = str(vb.get("id") or "")
+            if not vid or not nm: continue
+            e = person_map.setdefault(vid, {})
+            e[nm] = {"name": nm, "person_id": pid,
+                     "art": a.get("aktivitaetsart", ""), "date": a.get("datum", "")}
+
     procs = []
     for v in vorgaenge:
         titel = v.get("titel", "")
-        verlauf = v.get("vorgangsverlauf") or []
-        stand = verlauf[-1] if verlauf else {}
-        stationen = [{"title": x.get("titel", ""), "date": x.get("datum", ""),
-                      "body": x.get("zuordnung", ""), "type": x.get("vorgangspositionstyp", "")}
-                     for x in verlauf][-12:]
+        vid = str(v.get("id", ""))
+        stationen = verlauf_map.get(vid, [])[-14:]
+        stand = stationen[-1] if stationen else {}
         procs.append({
             "id": "v" + str(v.get("id", "")),
             "title": titel,
@@ -889,6 +1041,14 @@ def fetch_dip(days=90):
             "sachgebiet": (v.get("sachgebiet") or [])[:3],
             "stage": legislative_stage(v.get("beratungsstand", ""), stationen),
             "stations": stationen,
+            # Deskriptoren sind vergebene Schlagwoerter – das beste Bindeglied zu Meldungen
+            "deskriptoren": [d.get("name", "") if isinstance(d, dict) else str(d)
+                             for d in (v.get("deskriptor") or [])][:12],
+            "abstract": (v.get("abstract") or "")[:600],
+            "people": list((person_map.get(vid) or {}).values())[:12],
+            "art": ("anfrage" if (v.get("vorgangstyp") or "") in ANFRAGE_TYPEN
+                    else "gesetz" if (v.get("vorgangstyp") or "") in GESETZ_TYPEN else "sonstiges"),
+            "verlinkung": [str(x.get("id")) for x in (v.get("vorgang_verlinkung") or [])][:6],
             "gesta": v.get("gesta", ""),
             "zustimmungsbeduerftig": v.get("zustimmungsbeduerftigkeit", []),
             "topic": dip_topic(titel + " " + " ".join(v.get("sachgebiet") or [])),
@@ -923,19 +1083,25 @@ def fetch_dip(days=90):
         "kind": "transcript",
     } for x in prot]
 
-    by_topic, by_stage = {}, {}
+    by_topic, by_stage, by_kind = {}, {}, {}
     for pr in procs:
         by_topic[pr["topic"]] = by_topic.get(pr["topic"], 0) + 1
         by_stage[pr["stage"]] = by_stage.get(pr["stage"], 0) + 1
+        by_kind[pr["art"]] = by_kind.get(pr["art"], 0) + 1
+    mit_verlauf = sum(1 for pr in procs if pr["stations"])
+    mit_person = sum(1 for pr in procs if pr["people"])
+    print(f"  davon mit Verlauf: {mit_verlauf} · mit Personenbezug: {mit_person}")
+    print(f"  Arten: " + ", ".join(f"{k} {v}" for k, v in sorted(by_kind.items(), key=lambda x: -x[1])))
     out = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "source": "DIP – Dokumentations- und Informationssystem für Parlamentsmaterialien",
         "counts": {"procedures": len(procs), "documents": len(docs), "protocols": len(protocols)},
-        "topics": by_topic, "stages": by_stage, "stage_order": STAGES,
+        "topics": by_topic, "stages": by_stage, "stage_order": STAGES, "kinds": by_kind,
         "procedures": procs, "documents": docs, "protocols": protocols,
     }
     if not (procs or docs or protocols):
         print("  ⚠ DIP lieferte nichts – dip.json bleibt unverändert."); return
+    safe("Groq-Zusammenfassungen", lambda: enrich_groq(procs), None)
     _atomic_dump(out, "dip.json")
     print(f"  → dip.json: {len(procs)} Vorgänge, {len(docs)} Drucksachen, {len(protocols)} Protokolle, {os.path.getsize('dip.json')//1024} KB")
 
