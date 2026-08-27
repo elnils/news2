@@ -577,6 +577,27 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   body.panel-open #mon-side{display:none}}
 @media (max-width:900px){body.panel-open #mon-detail{grid-template-columns:1fr}
   body.panel-open #story-panel{position:fixed;inset:52px 0 0;z-index:60;max-height:none;border-radius:0}}
+.frei-btn{margin-top:8px;font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;border-top:1px solid var(--border);padding-top:7px}
+.frei-btn:hover{text-decoration:underline}
+.frei-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;margin:-4px 0 10px;grid-column:1/-1}
+.frei-hd{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text2);margin-bottom:5px}
+.frei-hd .km-note{display:block;font-weight:500;letter-spacing:0;text-transform:none;margin-top:2px}
+/* Die Lage – vorbereiteter Überblick */
+.lage-box{background:linear-gradient(180deg,#f5f3ff,var(--surface));border:1.5px solid #ddd6fe;
+  border-radius:var(--r);padding:12px 15px;margin-bottom:12px;flex:0 0 auto}
+.lage-hd{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:7px}
+.lage-hd b{font-size:14px;letter-spacing:-.02em}
+.lage-ic{color:#7c3aed;font-weight:800}
+.lage-arw{margin-left:auto;font-size:10px;color:var(--muted)}
+.lage-txt{font-size:14px;line-height:1.7;color:var(--text2);max-width:78ch}
+.lage-themen{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px;margin-top:11px}
+.lt{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 11px;cursor:pointer}
+.lt:hover{border-color:var(--blue)}
+.lt-h{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.lt-n{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--muted)}
+.lt-t{font-size:12px;line-height:1.5;color:var(--text2)}
+.lt-q{font-size:10px;color:var(--muted);margin-top:5px}
+.lage-alt{font-size:10.5px;color:var(--amber);margin-top:7px}
 /* KI-Hinweis und KI-Suche */
 #ki-ask{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:20px;
   padding:5px 13px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -921,6 +942,9 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .mytopic button{background:none;border:none;cursor:pointer;font-size:12px;line-height:1;opacity:.55;padding:0}
 .mytopic .n{font-size:9px;font-weight:800;padding:0 5px;border-radius:9px;color:#fff}
 .rel{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--amber-lt);color:#92400e;border:1px solid #fcd34d;cursor:help}
+.acc{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;white-space:nowrap}
+.acc.paid{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.acc.free{background:#dcfce7;color:#15803d;border:1px solid #86efac}
 .cluster{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
 .tageslage{grid-column:1/-1;background:linear-gradient(120deg,#0d1220,#1e2a4a);color:#fff;border:none}
 .tageslage .bt,.tageslage .bd{color:#fff}
@@ -1113,6 +1137,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
     <div class="fp-row">
       <label title="Meldungen, über die mindestens drei Quellen gleichzeitig berichten"><input type="checkbox" id="fp-eil" onchange="S.prio.eil=this.checked;applyFilters()"> 📊 Meistberichtet</label>
       <label title="Nur Meldungen mit mindestens einem politischen Schlüsselbegriff"><input type="checkbox" id="fp-top" onchange="S.prio.top=this.checked;applyFilters()"> Nur relevante</label>
+      <label title="Artikel hinter einer Bezahlschranke ausblenden"><input type="checkbox" id="fp-free" onchange="S.onlyFree=this.checked;applyFilters()"> 🔓 Nur frei zugängliche</label>
       <label title="Gleiche Meldung aus mehreren Quellen nur einmal zeigen"><input type="checkbox" id="fp-dedup" checked onchange="S.dedupe=this.checked;applyFilters()"> Dubletten zusammenfassen</label>
       <label title="Sport, Spielberichte, Vereinsnews ausblenden (clientseitig – dauerhaft besser über NOISE_KEYWORDS in fetch_news.py)"><input type="checkbox" id="fp-sport" checked onchange="setSport(this.checked)"> ⚽ Sport ausblenden</label>
     </div>
@@ -1187,6 +1212,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         </div>
       </div>
       <div id="quickbar"></div>
+      <div id="lage"></div>
       <div id="news-finder">
         <div class="nf-row">
           <input id="nf-q" placeholder="Nachrichten durchsuchen – Stichwort, Name, Begriff…" oninput="debounce(renderFinder,180)" onkeydown="if(event.key==='Enter')nfOpen()">
@@ -1629,6 +1655,7 @@ function doLogin(){setAuth(true);closeLogin();}
 /* ═══════════════════════════════════════════════════════════
    STATE & DATEN
    ═══════════════════════════════════════════════════════════ */
+let AI=null;   /* Zusammenfassungen aus ai.json – beim nächtlichen Lauf erzeugt */
 const LOADLOG=[];
 /* Demo-Daten nur noch auf ausdrücklichen Wunsch: index.html?demo=1
    Sonst erscheint eine Fehlermeldung mit der Liste der fehlenden Dateien. */
@@ -1636,7 +1663,7 @@ const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
 const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,storyLimit:30,policyStage:null,policyArt:null,polClosed:[],polMore:null,policyHerk:null,policyTopic:null,policyQ:'',
- docMore:null,docGroupBy:'thema',calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,topScope:'',docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+ docMore:null,docGroupBy:'thema',calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',lageZu:false,termMode:'today',topWin:24,topScope:'',docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,onlyFree:false,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1839,6 +1866,26 @@ function dedupe(list,seen=new Set()){
    Früher stand hier nur ein „★ 3" ohne Erklärung. */
 function relChip(a){const b=a.boost||0;if(!b)return'';
   return`<span class="rel" title="Relevanz ${b} von 5 – so viele politisch gewichtige Schlüsselbegriffe stecken in der Meldung (Gesetz, Kabinett, Urteil, Verordnung …)">Relevanz ${b}</span>`;}
+/* Zugang: kostenpflichtig oder frei. Das Backend liefert das Feld `access`;
+   für ältere Dateien wird es hier ersatzweise am Titel erkannt. */
+const PAID_SRC=new Set(['Handelsblatt','Table.Briefings','Table.Media','Tagesspiegel Background',
+  'Politico Pro','WirtschaftsWoche','Financial Times','Bloomberg','The Economist','New York Times']);
+const PAID_RE=/(^|[\s\[(|])(s\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|sz\s*plus|plus-artikel|abo|paywall|premium)([\s\])|:.\-–]|$)/i;
+function zugang(a){
+  if(a._acc)return a._acc;
+  let v=a.access;
+  if(!v){
+    v=PAID_SRC.has(a.source)||PAID_RE.test(a.title||'')||/[/\-.](plus|premium|abo)[/\-.?]/i.test(a.link||'')
+      ?'paid':'unknown';
+  }
+  return(a._acc=v);
+}
+function accBadge(a){
+  const v=zugang(a);
+  if(v==='paid')return`<span class="acc paid" title="Kostenpflichtig – nur mit Abonnement vollständig lesbar">🔒 Abo</span>`;
+  if(v==='free')return`<span class="acc free" title="Frei zugänglich">🔓 frei</span>`;
+  return'';
+}
 function tagsHTML(a,n=3){const tc=TC(a._set),tl=TL(a._set);return[...new Set((a.topics||[]).map(normTopic))].slice(0,n).map(t=>`<span class="tag c" style="--tc:${tc[t]||'#6b7280'}">${esc((tl[t]||t).replace(/^\S+\s/,''))}</span>`).join('');}
 
 /* ═══ LOAD – identische Dateinamen & Felder wie v2 ═══ */
@@ -1866,9 +1913,9 @@ async function loadData(){
   const tag=(arr,set)=>(arr||[]).map(a=>{a._set=set;return a;});
   const [n,e,b] = await Promise.all([get('articles.json'),get('eu_articles.json'),get('bundestag_articles.json')]);
   const rest = Promise.all([get('documents.json'),get('people.json'),get('newsletters.json'),
-                            get('laender_articles.json'),get('us_articles.json'),get('dip.json'),get('elections.json')]);
-  const [d,pp,nl,la,us,dp,ele] = await rest;
-  ELECT=ele||null;
+                            get('laender_articles.json'),get('us_articles.json'),get('dip.json'),get('elections.json'),get('ai.json')]);
+  const [d,pp,nl,la,us,dp,ele,aij] = await rest;
+  ELECT=ele||null;AI=aij||null;
   PEOPLE=pp?.people||[];COMMS=pp?.committees||[];NEWSL=nl?.items||[];PCHANGES=pp?.changes||null;
   ALL_LAENDER=tag(la?.articles,'laender');
   ALL_US=tag(us?.articles,'us');
@@ -2163,6 +2210,7 @@ function applyFilters(){
   const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
   const f={topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
   list=list.filter(a=>matches(a,f));
+  if(S.onlyFree)list=list.filter(a=>zugang(a)!=='paid');
   /* Gleiche Meldung aus mehreren Quellen nur einmal – die übrigen stecken im
      Quellen-Zähler (📊). Über „Filter anpassen“ abschaltbar. */
   if(S.dedupe!==false)list=dedupe(list);
@@ -2379,6 +2427,26 @@ function showThinkTanks(){
 function setTermMode(m,btn){S.termMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));renderDashSide();}
 /* Der schnelle Überblick aus News 2: suchen, nach Ressort und Quelle eingrenzen,
    Treffer sofort sehen – ohne die Seite zu wechseln. */
+/* „Die Lage" – beim Datenabruf erzeugt und mitgeliefert. Kein Schlüssel im
+   Browser nötig, jeder Besucher sieht dasselbe. */
+function renderLage(){
+  const el=g('lage');if(!el)return;
+  if(!AI||!AI.lage){el.innerHTML='';return;}
+  const alt=ageH(AI.updated);
+  el.innerHTML=`<div class="lage-box${S.lageZu?' zu':''}">
+    <div class="lage-hd" onclick="S.lageZu=!S.lageZu;store.set('ps_lagezu',S.lageZu);renderLage()">
+      <span class="lage-ic">✦</span><b>Die Lage</b>
+      <span class="ki-src">automatisch erstellt · ${esc((AI.modell||'').split('/').pop())} · ${rel(AI.updated)}</span>
+      <span class="lage-arw">${S.lageZu?'▸':'▾'}</span></div>
+    ${S.lageZu?'':`<div class="lage-txt">${esc(AI.lage)}</div>
+      ${(AI.themen||[]).length?`<div class="lage-themen">${AI.themen.map(t=>`
+        <div class="lt" onclick="S.topics=new Set(['${normTopic(t.thema)}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">
+          <div class="lt-h"><span class="tag c" style="--tc:${topicColor(normTopic(t.thema))}">${chipLabel(normTopic(t.thema))}</span><span class="lt-n">${t.anzahl}</span></div>
+          <div class="lt-t">${esc(t.text)}</div>
+          <div class="lt-q">${(t.quellen||[]).slice(0,4).map(esc).join(' · ')}</div></div>`).join('')}</div>`:''}
+      ${alt>30?`<div class="lage-alt">Dieser Überblick ist ${Math.round(alt)} Stunden alt.</div>`:''}`}
+  </div>`;
+}
 function renderFinder(){
   const q=(g('nf-q')?.value||'').trim().toLowerCase();
   const win=pool('all').filter(a=>ageH(a.date)<=48);
@@ -2450,12 +2518,12 @@ function renderDash(){
   const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
   g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-top-${a.id}" onclick="toggleInline('${a.id}','top')">
       <span class="rank">${i+1}</span>
-      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
+      <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${accBadge(a)}${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
       <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div><span class="chev">▶</span></div>
       <div id="inl-top-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
   renderDashSide();
-  renderQuickbar();renderFinder();renderDashThemes();initFolds();
+  renderLage();renderQuickbar();renderFinder();renderDashThemes();initFolds();
 }
 /* Inline lesen: Teaser, Bild und Aktionen direkt an Ort und Stelle.
    Kein Ansichtswechsel nötig – der Feed bleibt für langes Lesen erhalten. */
@@ -2480,7 +2548,7 @@ function toggleInline(id,ctx){
   box.innerHTML=`<div class="inline-body" data-ctx="${ctx}">
     <div class="il">
       ${a.image?`<img class="ip" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
-      <div class="meta">${badge(a.source)}${a.author?`<span>${esc(a.author)}</span>`:''}<span>${fd(a.date)}</span>${readMin(a)?`<span>${readMin(a)} Lesezeit</span>`:''}</div>
+      <div class="meta">${badge(a.source)}${accBadge(a)}${a.author?`<span>${esc(a.author)}</span>`:''}<span>${fd(a.date)}</span>${readMin(a)?`<span>${readMin(a)} Lesezeit</span>`:''}</div>
       ${weitere.length?`<div class="eyebrow">Auch berichtet von</div>
         <div class="src-tiles">${weitere.map(x=>`<div class="src-tile" onclick="event.stopPropagation();window.open('${esc(x.link)}','_blank','noopener')">
           <div class="st-s">${esc(x.source)}</div><div class="st-t">${esc(x.title)}</div></div>`).join('')}</div>`:''}
@@ -2570,6 +2638,8 @@ function openKiSearch(){
     <div class="gap-note" style="margin-top:12px"><strong>So funktioniert die Suche.</strong>
       Aus deiner Frage werden die seltenen, aussagekräftigen Begriffe gezogen und damit alle geladenen
       Daten durchsucht: Meldungen, parlamentarische Vorgänge, Zitate von Abgeordneten und Termine.
+      Passende Überblickstexte stammen aus <code>ai.json</code> und werden beim nächtlichen Lauf erzeugt –
+      dafür braucht niemand einen eigenen Schlüssel.
       Das Ergebnis sind echte Fundstellen mit Quelle und Datum, kein erfundener Text.
       Für einen zusammenfassenden Satz braucht es ein Sprachmodell – entweder über einen eigenen
       Schlüssel oben oder später über einen kleinen Server-Zwischendienst, der den Schlüssel aus
@@ -2627,7 +2697,11 @@ async function askKI(frage){
     personen:PEOPLE.slice(0,0)};
   const el=g('ki-answer');
   const r=retrievalAnswer(q);
-  const belege=r?`
+  const passend=(AI&&AI.themen||[]).filter(t=>r&&r.suchbegriffe.some(w=>kwHit(w,(t.text||'')+' '+t.thema)));
+  const vorab=passend.length?`<div class="ki-item" style="border-left-color:#16a34a">
+      <div class="ki-t">Überblick <span class="ki-src">automatisch erstellt · ${esc((AI.modell||'').split('/').pop())}</span></div>
+      ${passend.map(t=>`<div class="ki-d" style="margin-bottom:6px"><b>${chipLabel(normTopic(t.thema))}:</b> ${esc(t.text)}</div>`).join('')}</div>`:'';
+  const belege=r?vorab+`
     <div class="ki-item"><div class="ki-t">Gefunden zu „${esc(q)}“</div>
       <div class="ki-d">Gesucht nach: ${r.suchbegriffe.map(w=>`<b>${esc(w)}</b>`).join(', ')}</div></div>
     ${r.verfahren.length?`<div class="ki-item"><div class="ki-t">⚖ Parlamentarische Vorgänge (${r.verfahren.length})</div>
@@ -2983,12 +3057,45 @@ function setBriefMode(m,btn){
   const wrap=btn?btn.parentNode:document.querySelector('#view-brief .seg');
   if(wrap)wrap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',btn?b===btn:(m==='ext'?i===1:i===0)));
   renderBriefs();}
+/* Newsletter wie Table.Briefings oder Background stehen hinter einer Bezahlschranke.
+   Der frei sichtbare Teaser reicht aber, um die tragenden Begriffe zu ziehen und
+   frei zugängliche Berichte zum selben Thema zu finden. */
+function freieBerichte(item,limit=6){
+  const text=((item.title||'')+' '+(item.desc||'')).toLowerCase();
+  const worte=text.replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>4&&!STOPW.has(w));
+  const kern=[...new Set(worte.filter(selten))].slice(0,6);
+  if(!kern.length)return{begriffe:[],treffer:[]};
+  const score=a=>kern.filter(w=>kwHit(w,stext(a))).length;
+  const treffer=dedupe(pool('all')
+      .filter(a=>a.source!==item.source&&ageH(a.date)<=120&&score(a)>=Math.min(2,kern.length)))
+    .sort((a,b)=>{
+      /* Frei zugängliche zuerst – der Sinn der Verknüpfung ist ja, das Thema
+         ohne Abonnement lesen zu können. */
+      const fa=zugang(a)==='paid'?1:0,fb=zugang(b)==='paid'?1:0;
+      return(fa-fb)||(score(b)-score(a))||((b.date||'').localeCompare(a.date||''));})
+    .slice(0,limit);
+  return{begriffe:kern.slice(0,4),treffer};
+}
+function toggleFrei(id){
+  const box=g('frei-'+id);if(!box)return;
+  if(box.innerHTML){box.innerHTML='';return;}
+  const n=NEWSL.find(x=>x.id===id);if(!n)return;
+  const {begriffe,treffer}=freieBerichte(n);
+  box.innerHTML=`<div class="frei-box">
+    <div class="frei-hd">Frei zugängliche Berichte zum selben Thema
+      ${begriffe.length?`<span class="km-note">gesucht nach: ${begriffe.map(esc).join(', ')}</span>`:''}</div>
+    ${treffer.length?treffer.map(a=>`<div class="mini-row" onclick="event.stopPropagation();openById('${a.id}','${a._set}')">
+        <div class="mt">${esc(a.title)}</div>
+        <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a._dupes||[]).length?`<span class="cluster">📊 ${1+a._dupes.length} Quellen</span>`:''}</div></div>`).join('')
+      :'<div class="km-note">In den eigenen Quellen ist dazu nichts zu finden – das Thema scheint exklusiv zu sein.</div>'}
+  </div>`;
+}
 function renderBriefs(){
   g('brief-read').style.display='none';const el=g('brief-list');el.style.display='grid';
   if(S.briefMode==='ext'){
     const tl=NEWSL.filter(n=>/tageslage/i.test(n.source));const rest=NEWSL.filter(n=>!/tageslage/i.test(n.source));
   const tlHTML=tl.length?`<div class="brief tageslage" onclick="openTageslage()"><div class="dl-eb"><span class="tag" style="color:#f59e0b">Eigener Newsletter</span><span class="parl" style="background:rgba(255,255,255,.15);color:#fff;border-color:transparent">täglich</span></div><div class="bt">${esc(tl[0].title)}</div><div class="bd">${esc(tl[0].desc||'')}</div><div class="bm">Die Tageslage · ${rel(tl[0].date)} · ${tl.length} Ausgaben</div></div>`:'';
-  el.innerHTML=(tlHTML+(rest.length?rest.slice(0,40).map(n=>{const lock=n.pro&&!isPro();return`<div class="brief${lock?' locked':''}" style="--bc:${NEWS_TC[n.topic]||'#6b7280'}" onclick="${lock?`openLogin('media')`:`window.open('${esc(n.link)}','_blank')`}"><div class="dl-eb"><span class="tag">${esc(n.source)}</span>${n.pro?'<span class="pro-tag">PRO</span>':''}</div><div class="bt">${esc(n.title)}</div><div class="bd"${lock?' style="filter:blur(4px)"':''}>${esc(n.desc||'')}</div><div class="bm">${rel(n.date)}${n.desc?' · ~'+Math.max(1,Math.round(n.desc.split(/\s+/).length/180))+' Min':''}</div></div>`;}).join(''):''))
+  el.innerHTML=(tlHTML+(rest.length?rest.slice(0,40).map(n=>{const lock=n.pro&&!isPro();return`<div class="brief${lock?' locked':''}" style="--bc:${NEWS_TC[n.topic]||'#6b7280'}" onclick="${lock?`openLogin('media')`:`window.open('${esc(n.link)}','_blank')`}"><div class="dl-eb"><span class="tag">${esc(n.source)}</span>${n.pro?'<span class="pro-tag">PRO</span>':''}</div><div class="bt">${esc(n.title)}</div><div class="bd"${lock?' style="filter:blur(4px)"':''}>${esc(n.desc||'')}</div><div class="bm">${rel(n.date)}${n.desc?' · ~'+Math.max(1,Math.round(n.desc.split(/\s+/).length/180))+' Min':''}</div><div class="frei-btn" onclick="event.stopPropagation();toggleFrei('${n.id}')">🔎 Frei zugängliche Berichte dazu</div></div><div id="frei-${n.id}"></div>`;}).join(''):''))
       ||'<div class="gap-note" style="grid-column:1/-1"><strong>newsletters.json fehlt.</strong> <code>fetch_directory.py</code> erzeugt sie aus NEWSLETTER_FEEDS (Tagesspiegel Background, Table.Media, netzpolitik.org, Euractiv DE). Eigene Feeds dort ergänzen.</div>';return;}
   el.innerHTML=BRIEFS.length?BRIEFS.map(b=>`<div class="brief" style="--bc:${b.color}" onclick="openBrief('${b.id}')"><div class="dl-eb"><span class="tag c" style="--tc:${b.color}">${esc(b.label)}</span><span class="parl">${SET_LABEL[b.set]}</span></div><div class="bt">${esc(b.title)}</div><div class="bd">${b.items.slice(0,3).map(a=>esc(a.title)).join(' · ')}</div><div class="bm">${b.items.length} Meldungen · ~${b.readMin} Min · ${rel(b.date)}</div></div>`).join('')
     :'<div class="gap-note" style="grid-column:1/-1">Noch zu wenig Meldungen in 24 h für ein Briefing (Schwelle: 3 je Thema).</div>';
@@ -4735,6 +4842,7 @@ window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderT
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics&&renderMyTopics();});
 monitorStore.load().then(()=>{setWorkspace(store.get('ps_ws')||'dash',true);renderWsNav();updateWsBadges();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
+S.lageZu=!!store.get('ps_lagezu');
 S.topWin=store.get('ps_topwin')||24;S.topScope=store.get('ps_topscope')||'';
 S.cols=store.get('ps_cols')||4;
 document.documentElement.style.setProperty('--paper-min',S.cols===2?'440px':S.cols===3?'320px':'268px');
