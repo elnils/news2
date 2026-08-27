@@ -125,6 +125,8 @@ def get(url, params=None, accept="application/json", retries=1, timeout=20):
         except HTTPError as e:
             if e.code in (429, 503) and i < retries and not out_of_time():
                 time.sleep(3 * (i + 1)); continue
+            note_problem("Abruf", f"HTTP {e.code}", url)
+            fehler_notieren("Abruf", url, f"HTTP {e.code}")
             print(f"    HTTP {e.code} {url[:90]}"); return None
         except (URLError, TimeoutError, OSError) as e:
             if i < retries: time.sleep(2); continue
@@ -518,16 +520,34 @@ def diff_people(new_people):
 # passiert nichts – alle anderen Funktionen bleiben unberuehrt.
 # Ergebnisse landen in groq_cache.json und werden nie erneut angefragt.
 # ─────────────────────────────────────────────────────────────
+# OpenRouter (Secret OPEN_ROUTER_API) hat Vorrang; Groq bleibt als Rueckfallebene.
+# Beide sprechen dasselbe OpenAI-kompatible Format, daher ein gemeinsamer Aufruf.
+OR_KEY     = (os.environ.get("OPEN_ROUTER_API") or os.environ.get("OPENROUTER_API_KEY") or "").strip()
+OR_MODEL   = os.environ.get("OR_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+OR_URL     = "https://openrouter.ai/api/v1/chat/completions"
+OR_REFERER = os.environ.get("OR_REFERER", "https://github.com/elnils/news2")
 GROQ_KEY   = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 GROQ_PER_RUN = int(os.environ.get("GROQ_PER_RUN", "25"))
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_CACHE = "groq_cache.json"
 
+def ki_anbieter():
+    """(Name, URL, Key, Modell, Zusatzkoepfe) des aktiven Anbieters oder None."""
+    if OR_KEY:
+        return ("OpenRouter", OR_URL, OR_KEY, OR_MODEL,
+                {"HTTP-Referer": OR_REFERER, "X-Title": "Presseschau"})
+    if GROQ_KEY:
+        return ("Groq", GROQ_URL, GROQ_KEY, GROQ_MODEL, {})
+    return None
+
 def groq_chat(prompt, max_tokens=320, temperature=0.2):
-    """Ein Aufruf an Groq. Gibt den Text zurueck oder None."""
+    """Ein Aufruf an den aktiven Anbieter. Gibt den Text zurueck oder None."""
+    anb = ki_anbieter()
+    if not anb: return None
+    name, url, key, modell, extra = anb
     body = json.dumps({
-        "model": GROQ_MODEL, "temperature": temperature, "max_tokens": max_tokens,
+        "model": modell, "temperature": temperature, "max_tokens": max_tokens,
         "messages": [
             {"role": "system", "content":
              "Du bist ein praeziser Parlamentsdokumentar. Antworte knapp, sachlich und "
@@ -537,25 +557,27 @@ def groq_chat(prompt, max_tokens=320, temperature=0.2):
     }).encode("utf-8")
     for versuch in range(2):
         try:
-            req = Request(GROQ_URL, data=body, headers={
-                "Authorization": "Bearer " + GROQ_KEY,
-                "Content-Type": "application/json", "User-Agent": UA})
+            kopf = {"Authorization": "Bearer " + key,
+                    "Content-Type": "application/json", "User-Agent": UA}
+            kopf.update(extra)
+            req = Request(url, data=body, headers=kopf)
             with urlopen(req, timeout=30) as r:
                 d = json.loads(r.read().decode("utf-8", "replace"))
             return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
         except HTTPError as e:
             if e.code == 429 and versuch == 0:
-                print("    Groq drosselt – 20 s Pause"); time.sleep(20); continue
-            print(f"    Groq HTTP {e.code}"); return None
+                print(f"    {name} drosselt – 20 s Pause"); time.sleep(20); continue
+            fehler_notieren(f"KI {name}", url, f"HTTP {e.code}"); return None
         except Exception as e:
-            print(f"    Groq {type(e).__name__}"); return None
+            fehler_notieren(f"KI {name}", url, type(e).__name__); return None
     return None
 
 def enrich_groq(procs):
     """Fasst Vorgaenge zusammen und erzeugt Suchbegriffe fuer die Presseverknuepfung."""
-    if not GROQ_KEY:
-        print("── Groq: kein GROQ_API_KEY – übersprungen ──"); return
-    print(f"── Groq ({GROQ_MODEL}) ──")
+    anb = ki_anbieter()
+    if not anb:
+        print("── KI: weder OPEN_ROUTER_API noch GROQ_API_KEY gesetzt – übersprungen ──"); return
+    print(f"── KI: {anb[0]} ({anb[3]}) ──")
     try: cache = json.load(open(GROQ_CACHE, encoding="utf-8"))
     except Exception: cache = {}
 
@@ -598,10 +620,10 @@ def enrich_groq(procs):
                 data = {"ki_summary": (j.get("zusammenfassung") or "")[:400],
                         "ki_wirkung": (j.get("wirkung") or "")[:200],
                         "ki_keywords": [str(x)[:40] for x in (j.get("suchbegriffe") or [])][:6],
-                        "ki_model": GROQ_MODEL}
+                        "ki_model": anb[3], "ki_anbieter": anb[0]}
             except Exception:
                 # Kein sauberes JSON: den Text als Zusammenfassung nehmen
-                data = {"ki_summary": txt[:400], "ki_keywords": [], "ki_model": GROQ_MODEL}
+                data = {"ki_summary": txt[:400], "ki_keywords": [], "ki_model": anb[3], "ki_anbieter": anb[0]}
         cache[p["id"]] = data
         p.update({k: v for k, v in data.items() if v})
         if data.get("ki_summary"): fertig += 1
@@ -1207,14 +1229,71 @@ def fetch_newsletters():
 # notfalls mit weniger Parlamenten, aber nie ein Abbruch.
 # ─────────────────────────────────────────────────────────────
 STAGE_ERRORS = []
+# ─────────────────────────────────────────────────────────────
+# PROBLEMBERICHT
+# Sammelt alles, was nicht funktioniert hat – Feeds, Links, APIs – und gibt es
+# am Ende als einen Block aus, der sich in einem Rutsch kopieren laesst.
+# ─────────────────────────────────────────────────────────────
+PROBLEME = []
+def note_problem(bereich, grund, url="", detail=""):
+    PROBLEME.append({"bereich": bereich, "grund": grund, "url": url, "detail": detail})
+
+def report_probleme(titel="VERZEICHNIS"):
+    if not PROBLEME:
+        print(f"\n✅ {titel}: keine Probleme, alle Quellen erreichbar.\n"); return
+    grupp = {}
+    for p in PROBLEME:
+        grupp.setdefault((p["bereich"], p["grund"]), []).append(p)
+    print("\n" + "=" * 68)
+    print(f"PROBLEMBERICHT {titel} · {datetime.now().strftime('%d.%m.%Y %H:%M')} · {len(PROBLEME)} Einträge")
+    print("Zum Kopieren – hier steht alles, was nicht funktioniert hat.")
+    print("=" * 68)
+    for (bereich, grund), eintraege in sorted(grupp.items(), key=lambda x: -len(x[1])):
+        print(f"\n[{bereich}] {grund}  ({len(eintraege)}x)")
+        for e in eintraege[:8]:
+            if e["url"]:    print(f"    {e['url']}")
+            if e["detail"]: print(f"      → {e['detail'][:160]}")
+        if len(eintraege) > 8: print(f"    … und {len(eintraege)-8} weitere")
+    print("\n" + "=" * 68 + "\n")
+# Alles, was nicht erreichbar war – am Ende als ein Block zum Kopieren.
+FEHLER = []
+def fehler_notieren(was, url, grund):
+    FEHLER.append({"was": was, "url": url or "", "grund": str(grund)[:120]})
 def safe(label, fn, default):
     try:
         return fn()
     except Exception as e:
         STAGE_ERRORS.append((label, f"{type(e).__name__}: {e}"))
+        note_problem(label, f"{type(e).__name__}: {e}")
         print(f"  ⚠ {label} übersprungen – {type(e).__name__}: {e}")
         traceback.print_exc(limit=3)
         return default
+
+def fehlerbericht():
+    """Ein zusammenhaengender Block mit allem, was nicht funktioniert hat –
+    zum Kopieren aus dem Actions-Log."""
+    if not FEHLER and not STAGE_ERRORS:
+        print("\n===== FEHLERBERICHT =====\nAlles erreichbar, keine Ausfaelle.\n=========================")
+        return
+    # Gleiche Ursachen zusammenfassen
+    grupp = {}
+    for f in FEHLER:
+        grupp.setdefault((f["grund"], f["was"]), []).append(f["url"])
+    print("\n===== FEHLERBERICHT (zum Kopieren) =====")
+    print(f"Lauf: {datetime.now().isoformat(timespec='seconds')}")
+    if STAGE_ERRORS:
+        print(f"\nBausteine mit Fehler ({len(STAGE_ERRORS)}):")
+        for label, err in STAGE_ERRORS:
+            print(f"  - {label}: {err}")
+    if grupp:
+        print(f"\nNicht erreichbare Adressen ({len(FEHLER)} Aufrufe, {len(grupp)} Ursachen):")
+        for (grund, was), urls in sorted(grupp.items(), key=lambda x: -len(x[1])):
+            print(f"  [{grund}] {was} – {len(urls)}x")
+            for u in urls[:5]:
+                print(f"      {u[:150]}")
+            if len(urls) > 5:
+                print(f"      … und {len(urls)-5} weitere")
+    print("========================================\n")
 
 def main():
     t0 = time.monotonic()
@@ -1269,6 +1348,8 @@ def main():
     safe("Newsletter", fetch_newsletters, None)
 
     print(f"\n⏱ Laufzeit: {(time.monotonic()-t0)/60:.1f} Min von {TIME_BUDGET_MIN} Min Budget")
+    fehlerbericht()
+    report_probleme("VERZEICHNIS · DIP · KALENDER")
     if STAGE_ERRORS:
         print(f"\n── {len(STAGE_ERRORS)} Bausteine mit Fehler (Lauf trotzdem abgeschlossen) ──")
         for label, err in STAGE_ERRORS:
