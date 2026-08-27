@@ -29,6 +29,7 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode, quote
 from urllib.error import URLError, HTTPError
 import traceback
+from html import unescape as html_unescape
 from xml.etree import ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -292,6 +293,63 @@ LANDTAG_LABELS = {"bw":"Baden-Württemberg","by":"Bayern","be":"Berlin","bb":"Br
     "hh":"Hamburg","he":"Hessen","mv":"Mecklenburg-Vorpommern","ni":"Niedersachsen","nw":"Nordrhein-Westfalen",
     "rp":"Rheinland-Pfalz","sl":"Saarland","sn":"Sachsen","st":"Sachsen-Anhalt","sh":"Schleswig-Holstein","th":"Thüringen"}
 
+# ─────────────────────────────────────────────────────────────
+# AUSSCHUESSE VOM BUNDESTAG
+# abgeordnetenwatch antwortet beim committees-Endpunkt zeitweise mit HTTP 500.
+# bundestag.de/ausschuesse listet dieselben Gremien als HTML – das ist die
+# verlaesslichere Quelle. Geholt werden Name, Kuerzel und Profillink; die
+# Mitglieder stehen auf der jeweiligen Unterseite.
+# ─────────────────────────────────────────────────────────────
+BT_AUSSCHUSS_INDEX = "https://www.bundestag.de/ausschuesse"
+
+def fetch_bt_ausschuesse(max_detail=None):
+    print("── Ausschüsse (bundestag.de) ──")
+    html = html_get(BT_AUSSCHUSS_INDEX)
+    if not html:
+        note_problem("Ausschüsse", "Seite nicht erreichbar", BT_AUSSCHUSS_INDEX)
+        print("  Seite nicht erreichbar"); return [], []
+    # Links der Form /ausschuesse/a23_digitales_staatsmodernisierung
+    treffer = re.findall(r'href="(/ausschuesse/(a\d+)[a-z0-9_\-]*)"[^>]*>(?:<[^>]+>)*([^<]{4,120})<',
+                         html, re.I)
+    gesehen, comms = set(), []
+    for pfad, kuerzel, name in treffer:
+        if kuerzel in gesehen: continue
+        gesehen.add(kuerzel)
+        name = re.sub(r"\s+", " ", html_unescape(name)).strip(" –-")
+        if not name or len(name) < 4: continue
+        comms.append({"id": "bt-" + kuerzel, "parliament": "bt", "name": name,
+                      "topics": [], "link": "https://www.bundestag.de" + pfad, "members": []})
+    print(f"  {len(comms)} Ausschüsse gefunden")
+    if not comms:
+        note_problem("Ausschüsse", "keine Links im HTML gefunden – Seitenaufbau geändert?", BT_AUSSCHUSS_INDEX)
+        return [], []
+
+    # Mitglieder je Ausschuss von der Unterseite; begrenzt, damit das Budget haelt
+    grenze = max_detail if max_detail is not None else int(os.environ.get("AUSSCHUSS_DETAIL_PER_RUN", "8"))
+    cache = load_cache()
+    offen = [c for c in comms if not cache.get("aus:" + c["id"])]
+    for c in offen[:grenze]:
+        if out_of_time(): budget_note("Ausschuss-Mitglieder"); break
+        seite = html_get(c["link"] + "/mitglieder")  or html_get(c["link"])
+        namen = []
+        if seite:
+            # Mitgliederlisten stehen als Personenlinks mit "Nachname, Vorname"
+            for m in re.findall(r'/abgeordnete[^"]*"[^>]*>\s*([A-ZÄÖÜ][^<]{3,60})<', seite):
+                nm = re.sub(r"\s+", " ", html_unescape(m)).strip()
+                if nm and nm not in namen: namen.append(nm)
+        cache["aus:" + c["id"]] = {"ts": datetime.now(timezone.utc).isoformat(), "namen": namen[:60]}
+        print(f"    {c['name'][:44]}: {len(namen)} Mitglieder")
+        time.sleep(0.6)
+    save_cache(cache)
+
+    # Namen mit dem Personenverzeichnis zusammenfuehren
+    for c in comms:
+        eintrag = cache.get("aus:" + c["id"]) or {}
+        c["members"] = [{"name": n, "role": "Mitglied"} for n in (eintrag.get("namen") or [])]
+    mit = sum(1 for c in comms if c["members"])
+    print(f"  Mitglieder hinterlegt für {mit}/{len(comms)} Ausschüsse (Rest folgt in weiteren Läufen)")
+    return [], comms
+
 def fetch_landtage():
     """Landtage über dieselbe abgeordnetenwatch-Struktur wie der Bundestag.
     Pro Lauf nur LANDTAGE_PER_RUN Stück (rotierend) – nach wenigen Läufen sind alle drin.
@@ -369,8 +427,14 @@ def fetch_parliament(parliament, prefix, parliament_id, label, address, membersh
                       == str(period["id"])])
         print(f"  {len(raw)} Ausschüsse")
         if not raw:
-            print("     Hinweis: /committees antwortet derzeit nicht. Mitgliedschaften bleiben leer,")
-            print("     die Personen sind davon nicht betroffen. Im naechsten Lauf wird erneut versucht.")
+            print("     /committees antwortet nicht – weiche auf bundestag.de aus.")
+            note_problem("Ausschüsse", "abgeordnetenwatch /committees ohne Antwort",
+                         "https://www.abgeordnetenwatch.de/api/v2/committees")
+            try:
+                _, bt_comms = fetch_bt_ausschuesse()
+                comms.extend(bt_comms)
+            except Exception as e:
+                note_problem("Ausschüsse", f"bundestag.de: {type(e).__name__}", BT_AUSSCHUSS_INDEX)
         m2p = {v["_mandate_id"]: k for k, v in people.items()}
         for c in raw:
             cid = f"{prefix}-c{c['id']}"
@@ -631,6 +695,87 @@ def enrich_groq(procs):
 
     json.dump(cache, open(GROQ_CACHE, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print(f"  → {fertig} Zusammenfassungen ergänzt, Cache: {len(cache)} Vorgänge")
+
+# ─────────────────────────────────────────────────────────────
+# AI.JSON – Zusammenfassungen fuer alle Besucher
+#
+# Der Schluessel liegt als GitHub-Secret auf dem Server. Damit trotzdem jeder
+# Besucher etwas davon hat, werden die Zusammenfassungen HIER erzeugt und als
+# ai.json mit ausgeliefert. Im Browser wird kein Schluessel gebraucht.
+# ─────────────────────────────────────────────────────────────
+def lade_artikel():
+    """Liest die bereits erzeugten Artikeldateien fuer die Zusammenfassungen."""
+    alle = []
+    for datei, satz in [("articles.json", "news"), ("eu_articles.json", "eu"),
+                        ("bundestag_articles.json", "bt"), ("laender_articles.json", "laender")]:
+        try:
+            d = json.load(open(datei, encoding="utf-8"))
+            for a in d.get("articles", []):
+                a["_set"] = satz
+                alle.append(a)
+        except Exception:
+            pass
+    return alle
+
+def _stunden_alt(iso):
+    try:
+        t = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+        if not t.tzinfo: t = t.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - t).total_seconds() / 3600
+    except Exception:
+        return 9999
+
+def build_ai_json(procs=None):
+    """Erzeugt ai.json: Lage des Tages, Themenueberblicke, Vorgangs-Zusammenfassungen."""
+    anb = ki_anbieter()
+    if not anb:
+        print("── ai.json: kein KI-Schlüssel (OPEN_ROUTER_API / GROQ_API_KEY) – übersprungen ──"); return
+    name, _url, _key, modell, _extra = anb
+    print(f"── ai.json ({name} · {modell}) ──")
+    artikel = [a for a in lade_artikel() if _stunden_alt(a.get("date")) <= 24]
+    if not artikel:
+        print("  keine Artikel der letzten 24 h – übersprungen"); return
+
+    # Nach Ressort buendeln, die staerksten zuerst
+    nach_thema = {}
+    for a in artikel:
+        for t in (a.get("topics") or [])[:1]:
+            nach_thema.setdefault(t, []).append(a)
+    top_themen = sorted(nach_thema.items(), key=lambda x: -len(x[1]))[:6]
+
+    out = {"updated": datetime.now(timezone.utc).isoformat(),
+           "modell": modell, "anbieter": name,
+           "lage": "", "themen": [], "hinweis":
+           "Automatisch erstellt beim nächtlichen Datenabruf. Grundlage sind ausschließlich "
+           "die Schlagzeilen der letzten 24 Stunden aus den eigenen Quellen."}
+
+    # 1) Lage des Tages
+    kopf = "\n".join(f"- [{a.get('source','')}] {a.get('title','')}" for a in
+                     sorted(artikel, key=lambda x: -(x.get("cluster") or 1))[:40])
+    txt = groq_chat(
+        "Hier sind die meistberichteten Schlagzeilen der letzten 24 Stunden aus deutschen "
+        "und europaeischen Quellen.\n\n" + kopf +
+        "\n\nSchreibe eine Lage in hoechstens 6 Saetzen: was bestimmt den Tag, was ist neu, "
+        "was steht an. Nur was in den Schlagzeilen steht, nichts hinzuerfinden. "
+        "Keine Aufzaehlung, zusammenhaengender Text.", max_tokens=420)
+    if txt: out["lage"] = txt.strip()[:1200]
+
+    # 2) Je Ressort ein kurzer Ueberblick
+    for thema, arts in top_themen:
+        if out_of_time(): budget_note("ai.json"); break
+        liste = "\n".join(f"- [{a.get('source','')}] {a.get('title','')}" for a in arts[:18])
+        t = groq_chat(
+            f"Ressort: {thema}. Schlagzeilen der letzten 24 Stunden:\n\n{liste}\n\n"
+            "Fasse in hoechstens 3 Saetzen zusammen, was in diesem Ressort gerade laeuft. "
+            "Nenne die konkreten Vorgaenge, keine Allgemeinplaetze. Nichts hinzuerfinden.",
+            max_tokens=260)
+        out["themen"].append({"thema": thema, "anzahl": len(arts),
+                              "text": (t or "").strip()[:700],
+                              "quellen": sorted({a.get("source", "") for a in arts})[:8]})
+        time.sleep(1.0)
+
+    _atomic_dump(out, "ai.json")
+    print(f"  → ai.json: Lage ({len(out['lage'])} Zeichen) + {len(out['themen'])} Ressorts")
 
 # ─────────────────────────────────────────────────────────────
 # WIKIPEDIA – Kurzbiografie als Hintergrund (inkrementell wie die Profile)
@@ -1346,6 +1491,7 @@ def main():
     safe("DIP", fetch_dip, None)
     safe("Kalender", build_calendar_ics, None)
     safe("Newsletter", fetch_newsletters, None)
+    safe("ai.json (Zusammenfassungen)", build_ai_json, None)
 
     print(f"\n⏱ Laufzeit: {(time.monotonic()-t0)/60:.1f} Min von {TIME_BUDGET_MIN} Min Budget")
     fehlerbericht()
