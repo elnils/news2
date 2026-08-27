@@ -215,8 +215,25 @@ body.pro .pro-tag:not(.keep){display:none}
 .inline-open{background:var(--surface2)}
 .inline-body{padding:2px 0 12px 28px;animation:fu .18s ease both}
 .inline-body .txt{font-size:13px;line-height:1.65;color:var(--text2);white-space:pre-line}
-.inline-body img.ip{float:left;width:170px;height:110px;object-fit:cover;border-radius:8px;margin:0 12px 8px 0}
-@media (max-width:620px){.inline-body img.ip{float:none;width:100%;height:150px;margin:0 0 9px}}
+.inline-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.inline-body .il{display:flex;flex-direction:column;gap:9px}
+.inline-body .ir{min-width:0}
+.inline-body img.ip{float:none;width:100%;height:150px;object-fit:cover;border-radius:8px;margin:0}
+.inline-body .txt{font-size:14px;line-height:1.75;max-width:62ch}
+.inline-body .meta{margin-bottom:0}
+.inline-body .acts{grid-column:1/-1}
+.src-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.src-tile{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 8px;cursor:pointer;min-width:0}
+.src-tile:hover{border-color:var(--blue)}
+.st-s{font-size:10px;font-weight:800;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-t{font-size:10.5px;line-height:1.35;color:var(--text2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px}
+@media (max-width:900px){.inline-body{grid-template-columns:1fr}.src-tiles{grid-template-columns:repeat(2,1fr)}}
+
+.src-list{margin-top:9px;font-size:11.5px;line-height:1.9;color:var(--muted)}
+.src-list b{display:block;color:var(--text2);margin-bottom:3px;font-size:11px}
+.src-list .s{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:2px 9px;margin-right:4px;cursor:pointer;color:var(--text2);font-weight:600}
+.src-list .s:hover{border-color:var(--blue);color:var(--blue)}
 .inline-body .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
 .inline-body .meta{font-size:10.5px;color:var(--muted);margin-bottom:7px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .top-row .chev{font-size:9px;color:var(--muted);transition:transform .15s;margin-left:auto;padding-left:8px}
@@ -545,6 +562,45 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   body.panel-open #mon-side{display:none}}
 @media (max-width:900px){body.panel-open #mon-detail{grid-template-columns:1fr}
   body.panel-open #story-panel{position:fixed;inset:52px 0 0;z-index:60;max-height:none;border-radius:0}}
+/* KI-Hinweis und KI-Suche */
+#ki-ask{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:20px;
+  padding:5px 13px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+#ki-ask:hover{filter:brightness(1.1)}
+#ki-info-btn{color:#7c3aed;font-size:15px;font-weight:800}
+.ki-item{background:var(--surface2);border:1.5px solid var(--border);border-left:3px solid #7c3aed;
+  border-radius:9px;padding:10px 13px;margin-bottom:9px}
+.ki-t{font-size:13px;font-weight:800;margin-bottom:3px}
+.ki-d{font-size:12.5px;line-height:1.6;color:var(--text2)}
+.ki-w{font-size:11px;color:var(--muted);margin-top:4px}
+.ki-nicht{background:var(--red-lt);border:1.5px solid #fca5a5;border-radius:9px;padding:10px 13px;margin:10px 0}
+.ki-nicht ul{margin:5px 0 0 16px}
+.ki-nicht li{font-size:12px;line-height:1.55;color:var(--text2);margin-bottom:3px}
+.ki-ask{display:flex;gap:7px;margin:10px 0}
+.ki-ask input{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;outline:none}
+.ki-ask input:focus{border-color:#7c3aed}
+.ki-examples{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.ki-examples .chip{font-size:11px}
+@media (max-width:560px){#ki-ask{padding:5px 9px;font-size:0}#ki-ask::before{content:'✦';font-size:13px}}
+/* Policy- und Dokumentgruppen */
+.pol-groups{display:flex;flex-direction:column;gap:12px}
+.pol-group{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.pg-head{display:flex;align-items:center;gap:9px;padding:11px 14px;cursor:pointer;background:var(--surface2);border-bottom:1px solid var(--border)}
+.pg-head:hover{background:var(--bg)}
+.pg-ic{font-size:15px}
+.pg-head h2{font-size:14px;font-weight:800;letter-spacing:-.02em;flex:1}
+.pg-cnt{font-size:11px;font-weight:800;color:var(--muted);background:var(--bg);padding:1px 8px;border-radius:10px}
+.pg-arw{font-size:10px;color:var(--muted)}
+.pg-body{padding:11px 14px 13px}
+.pg-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:9px}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:9px}
+.partei-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px}
+.partei-card{background:var(--bg);border:1.5px solid var(--border);border-left:4px solid var(--pc);border-radius:9px;padding:10px 12px;cursor:pointer}
+.partei-card:hover{border-color:var(--pc);box-shadow:var(--shadow)}
+.pc-n{font-size:12px;font-weight:800;color:var(--pc)}
+.pc-c{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.pc-l{font-size:10.5px;color:var(--muted)}
+.cal-inst{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:9px 11px;margin-bottom:10px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r)}
 /* Nachrichten-Übersicht im Dashboard */
 #news-finder{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:12px;flex:0 0 auto}
 .nf-row{display:flex;gap:7px;margin-bottom:8px}
@@ -980,6 +1036,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
 <!-- ═══ TOPBAR ═══ -->
 <header id="topbar">
+  <button class="icon-btn" id="ki-info-btn" onclick="openKiInfo()" title="Wofür wird KI verwendet?" aria-label="KI-Hinweis">✦</button>
   <button class="icon-btn" id="rail-toggle" onclick="toggleRail()" title="Seitenleiste ein-/ausklappen" aria-label="Seitenleiste">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
   </button>
@@ -993,6 +1050,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
     <div id="tokens"></div>
     <input id="q" placeholder="Suchen · Enter = Begriff · NICHT xyz = ausschließen" data-short="Suchen…" oninput="onSearch()" onkeydown="qKey(event)" autocomplete="off">
     <span id="q-hits"></span>
+    <button id="ki-ask" onclick="openKiSearch()" title="KI-Suche (in Vorbereitung)">✦ KI-Suche</button>
     <button class="link-btn" onclick="event.stopPropagation();toggleFilterPanel()">Filter <span>anpassen</span> <span id="fp-arrow">▾</span></button>
   </div>
   <div class="tr">
@@ -1306,12 +1364,13 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         <button class="btn sm" onclick="window.open(calSubscribeUrl(),'_blank')">🔗 Abonnieren (calendar.ics)</button>
         <span style="color:var(--muted)">Google: <em>Weitere Kalender → Per URL</em> · Apple: <em>Ablage → Neues Kalenderabonnement</em> · URL: <code id="cal-sub-url"></code></span>
       </div>
+      <div class="cal-inst" id="cal-inst"></div>
       <div class="cal-filters">
         <span class="chip active" data-cf="upcoming" onclick="calFilter('upcoming',this)">Bevorstehend</span>
         <span class="chip" data-cf="week" onclick="calFilter('week',this)">Diese Woche</span>
         <span class="chip" data-cf="all" onclick="calFilter('all',this)">Alle</span>
       </div>
-      <div class="gap-note"><strong>Datenlücke:</strong> Termine werden aus Titel und Datum der Tagesordnungen abgeleitet. Für EP-Plenarkalender, Kommissions-Agenda und Akteure (wie bei Politico) fehlen noch Feeds – siehe Konzeptdokument, Abschnitt 3.3.</div>
+      <div class="gap-note"><strong>Datenlücke:</strong> Termine des <strong>Bundesverfassungsgerichts</strong> fehlen: das Gericht bietet keinen Terminfeed an, nur Pressemitteilungen. Geplant ist, Mitteilungen mit „Verhandlungstermin am …“ auszuwerten. Die übrigen Termine stammen aus Tagesordnungen und Plenarprotokollen; für EP-Plenarkalender und Kommissions-Agenda fehlen ebenfalls noch Feeds.</div>
       <div id="cal-list"></div>
       <div id="cal-bulk"><strong id="cal-sel-n">0</strong><span>ausgewählt</span>
         <button class="btn sm" onclick="dlICS(calSelected(),'auswahl.ics')">⬇ .ics</button>
@@ -1400,6 +1459,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   <div class="m-acts" style="justify-content:space-between;align-items:center"><span class="km-note" id="tm-hits"></span><button class="btn p" onclick="saveTopic()">Thema speichern</button></div>
   <p class="km-note">Gespeichert im Browser. Mit Konto (siehe ACCOUNTS.md) wandern die Themen in die Cloudflare-D1-Datenbank und stehen auf allen Geräten bereit.</p>
 </div></div>
+<div class="modal" id="ki-modal" onclick="if(event.target.id==='ki-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:620px"></div></div>
 <div class="modal" id="story-modal" onclick="if(event.target.id==='story-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:620px"></div></div>
 <div class="modal" id="monitor-modal" onclick="if(event.target.id==='monitor-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:560px"></div></div>
 <div class="modal" id="person-modal" onclick="if(event.target.id==='person-modal')this.classList.remove('open')"><div class="modal-in" style="max-width:560px"></div></div>
@@ -1532,8 +1592,8 @@ const LOADLOG=[];
 const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyArt:null,policyTopic:null,policyQ:'',
- calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,policyStage:null,policyArt:null,polClosed:[],polMore:null,policyTopic:null,policyQ:'',
+ docMore:null,calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',termMode:'today',topWin:24,docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
 let _deb=null;function debounce(fn,ms=150){clearTimeout(_deb);_deb=setTimeout(fn,ms);}
@@ -1658,14 +1718,42 @@ function dupKeys(a){
   const names=(raw.match(/\b[A-ZÄÖÜ][a-zäöüß]{3,}\b/g)||[]).map(x=>x.toLowerCase());
   return(a._dk={words:new Set(words),nums:new Set(nums),names:new Set(names)});
 }
+/* Wie selten ist ein Wort im aktuellen Bestand? Nur seltene Wörter taugen als
+   Beleg für dieselbe Meldung. „Reform" oder „Kommission" stehen in hunderten
+   Schlagzeilen und sagen nichts; „Rehkitz" oder „Turnberry" schon. */
+let _df=null,_dfKey='';
+function dfIndex(){
+  const key=[ALL_NEWS.length,ALL_EU.length,ALL_BT.length,ALL_LAENDER.length,ALL_US.length].join(',');
+  if(_df&&_dfKey===key)return _df;
+  const df={},all=rawPool('all');
+  all.forEach(a=>{const seen=new Set();
+    (a.title||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).forEach(w=>{
+      if(w.length>3&&!seen.has(w)){seen.add(w);df[w]=(df[w]||0)+1;}});});
+  _dfKey=key;_df={df,n:Math.max(1,all.length)};
+  return _df;
+}
+function selten(w){const {df,n}=dfIndex();return (df[w.toLowerCase()]||0)/n<0.02;}
 function isDup(a,b){
+  /* Die frühere Regel war zu lasch: zwei Meldungen mit den Allerweltswörtern
+     „Reform" und „Meldung" galten schon als dieselbe Nachricht – dabei fielen
+     hunderte echter Meldungen weg. Jetzt gilt:
+       · dieselbe Meldung erscheint zeitnah (höchstens 24 Stunden auseinander)
+       · und entweder sehr hohe Wortübereinstimmung
+       · oder gleiche Zahlen plus gemeinsamer Eigenname (Übersetzungen)          */
+  if(Math.abs(ageH(a.date)-ageH(b.date))>24)return false;
   const A=dupKeys(a),B=dupKeys(b);
   const inter=(x,y)=>{let n=0;x.forEach(v=>{if(y.has(v))n++;});return n;};
   const wi=inter(A.words,B.words),wu=A.words.size+B.words.size-wi;
-  if(wu&&wi/wu>=0.5)return true;                       // gleiche Wortmenge
-  const ni=inter(A.nums,B.nums),mi=inter(A.names,B.names);
-  if(ni>=2&&mi>=1)return true;                          // gleiche Zahlen und ein Name
-  if(mi>=2&&wi>=2)return true;                          // zwei Namen und Wortüberschneidung
+  const jac=wu?wi/wu:0;
+  const ni=inter(A.nums,B.nums);
+  /* Nur seltene gemeinsame Wörter und Namen zählen als Beleg */
+  const gemeinsam=[...A.words].filter(w=>B.words.has(w));
+  const distinkt=gemeinsam.filter(selten).length;
+  const namenGem=[...A.names].filter(x=>B.names.has(x)).filter(selten).length;
+  if(distinkt>=3)return true;                       // drei seltene Wörter gemeinsam
+  if(distinkt>=2&&jac>=0.4)return true;             // zwei seltene plus hohe Ähnlichkeit
+  if(namenGem>=2&&ni>=1)return true;                // Übersetzung: Namen + gleiche Zahl
+  if(namenGem>=1&&ni>=2)return true;                // ein Name, zwei gleiche Zahlen
   return false;
 }
 /* Dubletten in einer Liste zusammenfassen; die Quellen werden am Sieger vermerkt. */
@@ -1675,11 +1763,17 @@ function dedupeStrong(list){
      Nur über die ersten Wörter zu indexieren, ließ Übersetzungen durchrutschen:
      „Merz kündigt 2,5 Milliarden…“ und „Germany pledges 2.5 billion…“ haben
      kein gemeinsames Anfangswort, aber dieselbe Zahl und denselben Namen. */
-  const keysOf=a=>{const d=dupKeys(a);return[...d.words,...[...d.nums].map(n=>'#'+n),...[...d.names].map(n=>'@'+n)];};
+  /* Kandidaten nur über SELTENE Schlüssel suchen. Über häufige Wörter wie
+     „Reform" landeten sonst hunderte Vergleiche je Meldung – das kostete
+     bei 800 Meldungen fast eine Sekunde. Zusätzlich je Meldung gedeckelt. */
+  const keysOf=a=>{const d=dupKeys(a);
+    return[...[...d.words].filter(selten),...[...d.nums].map(n=>'#'+n),...[...d.names].filter(selten).map(n=>'@'+n)];};
   list.forEach(a=>{
     const k=keysOf(a);
     const cand=new Set();
-    k.forEach(w=>(buckets[w]||[]).forEach(i=>cand.add(i)));
+    for(const w of k){const bl=buckets[w];if(!bl||bl.length>60)continue;
+      for(const i of bl){cand.add(i);if(cand.size>40)break;}
+      if(cand.size>40)break;}
     let hit=-1;
     for(const i of cand){if(isDup(a,out[i])){hit=i;break;}}
     if(hit>=0){
@@ -1896,6 +1990,15 @@ function buildNavInsts(){
     ||'<div class="saved-empty">Noch keine Institutionsdaten. Nach dem nächsten Lauf von <code>fetch_news.py</code> (v3) erscheint hier der Baum.</div>';
 }
 function toggleTree(id){const el=g('tg-'+id);el.classList.toggle('open');const open=[...document.querySelectorAll('.tree-grp.open')].map(e=>e.id.slice(3));store.set('ps_treeopen',open);}
+function pickLand(code){
+  S.landPick=code;
+  if(!code){S.section='laender';setC('fb-set','Bundesländer');}
+  else{S.section='laender';S.src='all';setC('fb-set',LAND_L[code]||code);}
+  S.inst='';buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');
+  applyFilters();
+  if(code){S.filt=S.filt.filter(a=>(a.cat||'')===code||new RegExp(LAND_L[code],'i').test(a.source||''));renderFeed();
+    setC('acnt',S.filt.length);}
+}
 function instNav(inst){
   if(inst==='us-sonstige'){S.inst='';S.section='us';g('fb-set').textContent='USA';
     buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildNavInsts();setView('feed');applyFilters();return;}
@@ -2271,14 +2374,28 @@ function renderDash(){
   const win=pool('all').filter(a=>ageH(a.date)<=hrs).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const empty=t=>`<div style="padding:20px 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5">${t}</div>`;
   /* Top-Meldungen: was viele Quellen gleichzeitig haben, dann Relevanz. */
-  const top=dedupe(win.filter(a=>!PRO_CATS.has(a.cat)).sort((a,b)=>topScore(b)-topScore(a)),new Set()).slice(0,12);
+  /* Innerhalb des gewählten Zeitfensters neu bewerten: die Zahl der Quellen wird
+     im Fenster selbst gezählt, und je kürzer das Fenster, desto stärker zählt
+     Aktualität. Vorher stand in jedem Fenster dieselbe Meldung oben. */
+  /* Erst grob vorsortieren, dann nur die aussichtsreichsten entdoppeln –
+     eine vollständige Dublettenprüfung über tausende Meldungen ist unnötig,
+     wenn am Ende zwölf angezeigt werden. */
+  const vor=win.filter(a=>!PRO_CATS.has(a.cat))
+    .sort((a,b)=>((b.cluster||1)+(b.boost||0))-((a.cluster||1)+(a.boost||0))).slice(0,150);
+  const kand=dedupe(vor,new Set());
+  const winScore=a=>{
+    const quellen=1+((a._dupes||[]).length);
+    const frisch=Math.max(0,1-ageH(a.date)/Math.max(1,hrs));
+    return quellen*3+(a.boost||0)+frisch*(hrs<=6?8:hrs<=24?5:3);
+  };
+  const top=kand.sort((a,b)=>winScore(b)-winScore(a)).slice(0,12);
   const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
-  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-${a.id}" onclick="toggleInline('${a.id}')">
+  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-top-${a.id}" onclick="toggleInline('${a.id}','top')">
       <span class="rank">${i+1}</span>
       <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
       <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div><span class="chev">▶</span></div>
-      <div id="inl-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
+      <div id="inl-top-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
   renderDashSide();
   renderQuickbar();renderFinder();renderDashThemes();initFolds();
 }
@@ -2286,33 +2403,137 @@ function renderDash(){
    Kein Ansichtswechsel nötig – der Feed bleibt für langes Lesen erhalten. */
 let _inlineOpen=null;
 function articleById(id){return rawPool('all').find(x=>x.id===id);}
-function toggleInline(id){
-  const box=g('inl-'+id),row=g('tr-'+id);
+/* Derselbe Artikel kann in mehreren Listen stehen (Top-Meldungen, Themenspalten,
+   Briefings). Ohne Präfix hätten die Aufklapp-Container dieselbe ID – der Text
+   landete dann in der unsichtbaren Liste und der Klick wirkte folgenlos. */
+function toggleInline(id,ctx){
+  ctx=ctx||'top';
+  const box=g('inl-'+ctx+'-'+id),row=g('tr-'+ctx+'-'+id);
   if(!box)return;
-  if(_inlineOpen&&_inlineOpen!==id){const o=g('inl-'+_inlineOpen),r=g('tr-'+_inlineOpen);if(o)o.innerHTML='';if(r)r.classList.remove('open');}
+  if(_inlineOpen&&_inlineOpen!==ctx+'-'+id){const o=g('inl-'+_inlineOpen),r=g('tr-'+_inlineOpen);if(o)o.innerHTML='';if(r)r.classList.remove('open');}
   if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');_inlineOpen=null;return;}
+  _inlineOpen=ctx+'-'+id;
   const a=articleById(id);if(!a)return;
   if(isLocked(a)){openLogin('media');return;}
-  _inlineOpen=id;row?.classList.add('open');
-  box.innerHTML=`<div class="inline-body">
-    <div class="meta">${badge(a.source)}${a.author?`<span>${esc(a.author)}</span>`:''}<span>${fd(a.date)}</span>${readMin(a)?`<span>${readMin(a)} Lesezeit</span>`:''}${tagsHTML(a,4)}</div>
-    ${a.image?`<img class="ip" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+  row?.classList.add('open');
+  /* Linke Hälfte: Bild und Quellen-Kacheln. Rechte Hälfte: der Text.
+     Vorher füllte ein einzelnes Bild die halbe Höhe und drängte den Text weg. */
+  const weitere=(a._dupes||[]).slice(0,6);
+  box.innerHTML=`<div class="inline-body" data-ctx="${ctx}">
+    <div class="il">
+      ${a.image?`<img class="ip" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
+      <div class="meta">${badge(a.source)}${a.author?`<span>${esc(a.author)}</span>`:''}<span>${fd(a.date)}</span>${readMin(a)?`<span>${readMin(a)} Lesezeit</span>`:''}</div>
+      ${weitere.length?`<div class="eyebrow">Auch berichtet von</div>
+        <div class="src-tiles">${weitere.map(x=>`<div class="src-tile" onclick="event.stopPropagation();window.open('${esc(x.link)}','_blank','noopener')">
+          <div class="st-s">${esc(x.source)}</div><div class="st-t">${esc(x.title)}</div></div>`).join('')}</div>`:''}
+      <div>${tagsHTML(a,4)}</div>
+    </div>
+    <div class="ir">
     <div class="txt">${esc(a.desc||'Dieser Feed liefert keinen Vorschautext – bitte die Quelle öffnen.')}</div>
+    ${(a._dupes||[]).length?`<div class="src-list"><b>${1+a._dupes.length} Quellen berichten darüber</b>
+      <span class="s" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">${esc(a.source)}</span>
+      ${a._dupes.map(x=>`<span class="s" onclick="event.stopPropagation();window.open('${esc(x.link)}','_blank','noopener')">${esc(x.source)}</span>`).join('')}</div></div>`
+      :((a.cluster||0)>=2?`<div class="src-list"><b>Diese Meldung erschien bei ${a.cluster} Quellen</b>
+        <span class="s" onclick="event.stopPropagation();nfSearchTitle('${esc(a.title).slice(0,60).replace(/'/g,"")}')">Alle Quellen suchen →</span></div></div>`:'</div>')}
     <div class="acts">
       <button class="btn p sm" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">🔗 Beim Anbieter öffnen</button>
       <button class="btn sm" onclick="event.stopPropagation();openById('${a.id}','${a._set}')">Im Feed öffnen</button>
       <button class="btn sm" onclick="event.stopPropagation();toggleMark(event,'${a.id}')">☆ Merken</button>
       <button class="btn sm" onclick="event.stopPropagation();copyOne('${a.id}')">📋 Titel + Link</button>
       <span style="flex:1"></span>
-      <button class="btn sm" onclick="event.stopPropagation();toggleInline('${a.id}')">✕ Schließen</button>
-    </div>${thumb?`<img class="story-thumb" src="${esc(thumb.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
-    </div><div id="sin-${s.id}"></div>`;
+      <button class="btn sm" onclick="event.stopPropagation();toggleInline('${a.id}','${ctx}')">✕ Schließen</button>
+    </div></div>`;
   row?.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+/* Sucht dieselbe Meldung bei anderen Quellen – nutzt die seltensten Wörter des Titels */
+function nfSearchTitle(t){
+  const w=(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/)
+    .filter(x=>x.length>4&&selten(x)).slice(0,3);
+  S.section='all';S.topics.clear();S.src='all';
+  S.tokens=w.map(v=>({v,not:false}));
+  if(g('q'))g('q').value='';
+  renderTokens();setC('fb-set','Alle Feeds');buildChips();buildSrc();setView('feed');applyFilters();
+}
+/* ── KI: Erklärung und vorbereitete Suchzeile ──────────────────────
+   Die Erklärung ist bewusst in Alltagssprache gehalten und benennt auch,
+   was die KI NICHT tut. Die Suchzeile ist noch ohne Anbindung: die Funktion
+   askKI() ist der einzige Anschlusspunkt für ein späteres Modell. */
+const KI_FUNKTIONEN=[
+  {ic:'📝',t:'Gesetzesvorhaben zusammenfassen',
+   d:'Zu jedem neuen Gesetzentwurf des Bundestags entstehen zwei Sätze: worum es geht und wo das Verfahren gerade steht. Dazu ein Satz, wen die Regelung betrifft.',
+   wo:'Policy → ein Verfahren öffnen, violetter Kasten oben'},
+  {ic:'🔗',t:'Presseberichte zu Vorgängen finden',
+   d:'Die KI erzeugt Suchbegriffe zu einem Gesetzentwurf. Damit findet die Presseschau auch Artikel, die den amtlichen Titel gar nicht nennen.',
+   wo:'Policy → „Berichterstattung" unter einem Verfahren'},
+];
+const KI_NICHT=[
+  'Sie schreibt keine Nachrichten und verändert keine Schlagzeilen.',
+  'Sie bewertet nichts politisch und trifft keine Aussage darüber, ob ein Gesetz gut ist.',
+  'Sie entscheidet nicht, welche Meldung oben steht – die Reihenfolge ergibt sich aus der Zahl der berichtenden Quellen und dem Alter.',
+  'Sie liest keine Nutzerdaten. Der Aufruf geschieht einmal zentral beim Datenabruf, nicht im Browser.',
+  'Ohne hinterlegten Schlüssel läuft die Presseschau vollständig ohne KI.',
+];
+function openKiInfo(){
+  const anzahl=(DIP.procedures||[]).filter(p=>p.ki_summary).length;
+  const m=g('ki-modal');
+  m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('ki-modal').classList.remove('open')">✕</button>
+    <h2>✦ Wofür wird KI hier verwendet?</h2>
+    <p>Die Presseschau sammelt Nachrichten, Dokumente und parlamentarische Vorgänge automatisch, aber ohne KI.
+      Ein Sprachmodell kommt nur an zwei genau umrissenen Stellen zum Einsatz – beim nächtlichen Datenabruf, nicht während du liest.</p>
+    ${KI_FUNKTIONEN.map(f=>`<div class="ki-item"><div class="ki-t">${f.ic} ${f.t}</div>
+      <div class="ki-d">${f.d}</div><div class="ki-w">Zu sehen unter: ${f.wo}</div></div>`).join('')}
+    <div class="ki-item" style="border-color:var(--green)"><div class="ki-t">Aktueller Stand</div>
+      <div class="ki-d">${anzahl?`${anzahl} Verfahren haben eine automatische Zusammenfassung.`:'Derzeit gibt es keine automatischen Zusammenfassungen – entweder ist kein Schlüssel hinterlegt oder der nächste Lauf steht noch aus.'}
+      Jede solche Stelle ist im Interface mit „automatisch erstellt" und dem Modellnamen gekennzeichnet.</div></div>
+    <div class="ki-nicht"><div class="ki-t">Was die KI ausdrücklich nicht tut</div>
+      <ul>${KI_NICHT.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <p class="km-note">Die amtlichen Texte des Bundestags stehen immer unverändert daneben, damit erkennbar bleibt, was aus der Quelle stammt und was formuliert wurde.</p>`;
+  m.classList.add('open');
+}
+function openKiSearch(){
+  const m=g('ki-modal');
+  m.querySelector('.modal-in').innerHTML=`<button class="mc" onclick="g('ki-modal').classList.remove('open')">✕</button>
+    <h2>✦ KI-Suche</h2>
+    <div class="ki-ask"><input id="ki-q" placeholder="Was möchtest du wissen?" onkeydown="if(event.key==='Enter')askKI()">
+      <button class="btn p" onclick="askKI()">Fragen</button></div>
+    <div class="ki-examples">${['Woran arbeitet der Bundestag gerade beim Thema Energie?',
+      'Wer hat sich diese Woche zur Krankenhausreform geäußert?',
+      'Welche Fristen laufen bei den Verfahren zum Glasfaserausbau?'].map(x=>
+      `<span class="chip" onclick="g('ki-q').value='${x}'">${x}</span>`).join('')}</div>
+    <div id="ki-answer"></div>
+    <div class="gap-note" style="margin-top:12px"><strong>Noch nicht angebunden.</strong>
+      Die Oberfläche steht, das Modell fehlt bewusst noch. Angeschlossen wird über die Funktion
+      <code>askKI()</code> – sie erhält die Frage und den bereits gefilterten Datenbestand
+      (Meldungen, Verfahren, Dokumente, Personen) und gibt Text plus Belege zurück.
+      Welches Modell dahinterkommt, ist damit frei wählbar.</div>`;
+  m.classList.add('open');setTimeout(()=>g('ki-q')?.focus(),50);
+}
+/* Einziger Anschlusspunkt für ein späteres Modell. Bewusst ohne feste API. */
+async function askKI(frage){
+  const q=frage||g('ki-q')?.value?.trim();
+  if(!q)return;
+  const ctx={frage:q,
+    meldungen:pool('all').filter(a=>ageH(a.date)<=48).slice(0,80).map(a=>({t:a.title,q:a.source,d:a.date})),
+    verfahren:(DIP.procedures||[]).slice(0,40).map(p=>({t:p.title,stand:p.stage,art:p.art})),
+    personen:PEOPLE.slice(0,0)};
+  const el=g('ki-answer');
+  if(typeof window.PS_KI==='function'){
+    el.innerHTML='<div class="km-note">Frage läuft…</div>';
+    try{const r=await window.PS_KI(ctx);el.innerHTML=`<div class="ki-item"><div class="ki-d">${esc(r.text||'')}</div></div>`;}
+    catch(e){el.innerHTML='<div class="gap-note">Die Anfrage ist fehlgeschlagen.</div>';}
+    return;
+  }
+  el.innerHTML=`<div class="ki-item"><div class="ki-t">Vorschau ohne Modell</div>
+    <div class="ki-d">Die Frage wurde entgegengenommen: „${esc(q)}“.<br>
+    Bereitgestellt würden <b>${ctx.meldungen.length}</b> Meldungen der letzten 48 Stunden und
+    <b>${ctx.verfahren.length}</b> parlamentarische Vorgänge als Grundlage.
+    Sobald ein Modell hinterlegt ist (<code>window.PS_KI</code>), erscheint hier die Antwort mit Belegen.</div></div>`;
 }
 function copyOne(id){const a=articleById(id);if(!a)return;navigator.clipboard.writeText(a.title+'\n'+(a.link||''));}
 /* Auch in den kleinen Kacheln rechts lässt sich aufklappen */
-function toggleMini(id,kind){
-  const box=g('mi-'+id),row=g('mr-'+id);if(!box)return;
+function toggleMini(id,kind,ctx){
+  ctx=ctx||kind||'m';
+  const box=g('mi-'+ctx+'-'+id),row=g('mr-'+ctx+'-'+id);if(!box)return;
   if(box.innerHTML){box.innerHTML='';row?.classList.remove('open');return;}
   document.querySelectorAll('.dside .mini-body').forEach(b=>b.innerHTML='');
   document.querySelectorAll('.dside .mini-row.open').forEach(r=>r.classList.remove('open'));
@@ -2321,14 +2542,14 @@ function toggleMini(id,kind){
     const d=ALL_DOCS.find(x=>x.id===id);if(!d)return;
     box.innerHTML=`<div class="mini-body">${d.desc?esc(d.desc):'<span style="color:var(--muted)">Kein Beschreibungstext im Feed.</span>'}
       <div class="acts"><button class="btn sm p" onclick="event.stopPropagation();openDoc('${d.id}')">${d.has_file?'📄 Anzeigen':'🔗 Öffnen'}</button>
-      <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','doc')">✕</button></div></div>`;
+      <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','doc','${ctx}')">✕</button></div></div>`;
     return;
   }
   const a=articleById(id);if(!a)return;
   box.innerHTML=`<div class="mini-body">${esc((a.desc||'Kein Vorschautext.').slice(0,600))}
     <div class="acts"><button class="btn sm p" onclick="event.stopPropagation();window.open('${esc(a.link)}','_blank','noopener')">🔗 Öffnen</button>
     <button class="btn sm" onclick="event.stopPropagation();openById('${a.id}','${a._set}')">Im Feed</button>
-    <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','art')">✕</button></div></div>`;
+    <button class="btn sm" onclick="event.stopPropagation();toggleMini('${id}','art','${ctx}')">✕</button></div></div>`;
 }
 
 /* Die drei kleinen Kacheln rechts */
@@ -2350,15 +2571,15 @@ function renderDashSide(){
     `<span class="chip${S.docTopic===t?' active':''}" onclick="S.docTopic=S.docTopic==='${t}'?null:'${t}';renderDashSide()">${TOPIC_KW_L[t]||t} ${n}</span>`).join('')
     +(S.docTopic?`<span class="chip" onclick="S.docTopic=null;renderDashSide()">✕</span>`:'');
   const docs=(S.docTopic?alleDocs.filter(d=>classify(d.title+' '+(d.desc||''))===S.docTopic):alleDocs).slice(0,20);
-  g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" id="mr-${d.id}" onclick="toggleMini('${d.id}','doc')">
+  g('dash-docs').innerHTML=docs.length?docs.map(d=>`<div class="mini-row" id="mr-doc-${d.id}" onclick="toggleMini('${d.id}','doc','doc')">
       <div class="mt">${esc(d.title)}</div>
-      <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div><div id="mi-${d.id}"></div>`).join('')
+      <div class="mm"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span>${rel(d.date)}</span></div></div><div id="mi-doc-${d.id}"></div>`).join('')
     :empty('Keine Dokumente geladen.');
   // Studien: ausschließlich Denkfabriken, keine Medien
   const tt=pool('all').filter(a=>a.cat==='eu-think').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
-  g('dash-analysis').innerHTML=tt.length?tt.map(a=>`<div class="mini-row" id="mr-${a.id}" onclick="toggleMini('${a.id}','art')">
+  g('dash-analysis').innerHTML=tt.length?tt.map(a=>`<div class="mini-row" id="mr-std-${a.id}" onclick="toggleMini('${a.id}','art','std')">
       <div class="mt">${esc(a.title)}</div>
-      <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-${a.id}"></div>`).join('')
+      <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-std-${a.id}"></div>`).join('')
     :empty('Noch keine Studien im Zeitraum.<br>Quellen: SWP, Bruegel, ECFR, CER, Bertelsmann.');
 }
 function setDashMode(m,btn){S.dashMode=m;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));g('dash-overview').style.display=m==='overview'?'':'none';g('dash-themes').style.display=m==='themes'?'block':'none';if(m==='themes')renderDashThemes();}
@@ -2379,7 +2600,7 @@ function renderDashThemes(){
   const sel=dashPick.size?dashPick:S.topics;
   const shown=sel.size?all.filter(([t])=>sel.has(t)):all;
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
-    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-${a.id}" onclick="toggleInline('${a.id}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-th${t}-${a.id}" onclick="toggleInline('${a.id}','th${t}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-th${t}-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
 }
 
@@ -2418,6 +2639,23 @@ function setDocMode(m,btn){S.docMode=m;btn.parentNode.querySelectorAll('button')
 function docCard(d){return`<div class="doc-card"><div class="eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="tag">${esc(d.source)}</span>${d.has_file?'<span class="tag" style="color:var(--green)">📁 im Repo</span>':''}<span class="eyebrow" style="margin-left:auto">${fd(d.date)}</span></div><div class="t">${esc(d.title)}</div>${d.desc?`<div class="m" style="font-size:12px;color:var(--text2)">${esc(d.desc)}</div>`:'<div class="m"></div>'}<div class="doc-file" onclick="openDoc('${d.id}')"><span>${d.is_pdf?'📄':'🔗'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.local||d.link)}</span><span class="ext">${d.has_file?'Anzeigen':'Öffnen'} ↗</span></div></div>`;}
 function grouped(list,keyFn,labelFn,itemFn,openFn){const b={};list.forEach(x=>{const k=keyFn(x);(b[k]=b[k]||[]).push(x);});
   return Object.entries(b).sort((a,c)=>c[1].length-a[1].length).map(([k,xs])=>`<div class="ds"><div class="ds-hd"><span class="ds-title">${labelFn(k)}</span><span class="ds-cnt">${xs.length}</span></div>${xs.slice(0,8).map(x=>`<div class="ds-item" onclick="${openFn(x)}"><div class="ds-it">${esc(x.title)}</div><div class="ds-im">${itemFn(x)}</div></div>`).join('')}${xs.length>8?`<div class="ds-more">+${xs.length-8} weitere</div>`:''}</div>`).join('');}
+/* Dokumenttypen mit sprechenden Symbolen – dient der Orientierung, nicht der Zier */
+const DOC_ICON=[[/gesetzentwurf|gesetz/i,'⚖','Gesetzentwürfe'],
+  [/antrag|entschließung/i,'📌','Anträge'],
+  [/drucksache/i,'📄','Drucksachen'],
+  [/stellungnahme|gutachten/i,'✍','Stellungnahmen'],
+  [/ifg|informationsfreiheit/i,'🔓','IFG-Dokumente'],
+  [/plenarprotokoll|protokoll/i,'🎙','Protokolle'],
+  [/transkript|wortlaut|rede/i,'💬','Transkripte'],
+  [/tagesordnung|agenda/i,'📅','Tagesordnungen'],
+  [/beschluss|empfehlung/i,'✅','Beschlüsse'],
+  [/bericht|unterrichtung/i,'📊','Berichte'],
+  [/verordnung|richtlinie/i,'📜','Verordnungen']];
+function docGroup(d){
+  const t=(d.type||'')+' '+(d.title||'');
+  for(const [re,ic,lbl] of DOC_ICON)if(re.test(t))return{ic,lbl};
+  return{ic:'📁',lbl:'Sonstige Dokumente'};
+}
 function renderDocs(){
   const q=(g('docs-search').value||'').toLowerCase();
   let list=ALL_DOCS.filter(d=>S.docF==='all'||(S.docF==='hasfile'?d.has_file:d.origin===S.docF)).filter(d=>!q||(d.title+' '+(d.desc||'')).toLowerCase().includes(q));
@@ -2425,8 +2663,21 @@ function renderDocs(){
   if(S.docMode!=='list'){g('docs-list').className='dash-inner';
     g('docs-list').innerHTML=grouped(list,d=>S.docMode==='type'?d.type:classify(d.title+' '+d.desc),k=>S.docMode==='type'?esc(k):TOPIC_KW_L[k]||k,d=>`<span>${esc(d.source)}</span><span>${fd(d.date)}</span>`,d=>`openDoc('${d.id}')`)||'<div style="padding:30px;color:var(--muted)">Keine Dokumente.</div>';return;}
   g('docs-list').className='';
-  g('docs-list').innerHTML=list.slice(0,150).map(d=>`<div class="doc-card"><div class="eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="tag">${esc(d.source)}</span>${d.has_file?'<span class="tag" style="color:var(--green)">📁 im Repo</span>':''}<span class="eyebrow" style="margin-left:auto">${fd(d.date)}</span></div><div class="t">${esc(d.title)}</div>${d.desc?`<div class="m" style="font-size:12px;color:var(--text2)">${esc(d.desc)}</div>`:'<div class="m"></div>'}<div class="doc-file" onclick="openDoc('${d.id}')"><span>${d.is_pdf?'📄':'🔗'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.local||d.link)}</span><span class="ext">${d.has_file?'Anzeigen':'Öffnen'} ↗</span></div></div>`).join('')||'<div style="padding:30px;text-align:center;color:var(--muted);font-size:13px">Keine Dokumente.</div>';
+  /* Nach Dokumenttyp gruppiert statt als eine endlose Liste – mit Symbolen zur Orientierung */
+  const grp={};
+  list.slice(0,400).forEach(d=>{const gg=docGroup(d);(grp[gg.lbl]=grp[gg.lbl]||{ic:gg.ic,items:[]}).items.push(d);});
+  const order=Object.entries(grp).sort((a,b)=>b[1].items.length-a[1].items.length);
+  g('docs-list').className='';
+  g('docs-list').innerHTML=order.map(([lbl,o])=>`
+      <section class="pol-group"><header class="pg-head" onclick="togglePolGroup('d:${lbl}')">
+        <span class="pg-ic">${o.ic}</span><h2>${lbl}</h2><span class="pg-cnt">${o.items.length}</span>
+        <span class="pg-arw">${(S.polClosed||[]).includes('d:'+lbl)?'▸':'▾'}</span></header>
+      <div class="pg-body" style="${(S.polClosed||[]).includes('d:'+lbl)?'display:none':''}">
+        <div class="docs-grid">${o.items.slice(0,S.docMore===lbl?9999:9).map(docCardHTML).join('')}</div>
+        ${o.items.length>9?`<button class="btn sm" style="margin:9px 0 0" onclick="S.docMore=${'${'}S.docMore===lbl?'null':"'"+lbl+"'"}${'}'};reRender('docs')">${S.docMore===lbl?'Weniger':'Alle '+o.items.length+' anzeigen'}</button>`:''}
+      </div></section>`).join('')||'<div class="gap-note">Keine Dokumente in dieser Auswahl.</div>';
 }
+function docCardHTML(d){const gg=docGroup(d);return `<div class="doc-card"><span class="dc-ic">${gg.ic}</span><div class="eb"><span class="doc-type${d.origin==='eurlex'?' eurlex':''}">${esc(d.type)}</span><span class="tag">${esc(d.source)}</span>${d.has_file?'<span class="tag" style="color:var(--green)">📁 im Repo</span>':''}<span class="eyebrow" style="margin-left:auto">${fd(d.date)}</span></div><div class="t">${esc(d.title)}</div>${d.desc?`<div class="m" style="font-size:12px;color:var(--text2)">${esc(d.desc)}</div>`:'<div class="m"></div>'}<div class="doc-file" onclick="openDoc('${d.id}')"><span>${d.is_pdf?'📄':'🔗'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.local||d.link)}</span><span class="ext">${d.has_file?'Anzeigen':'Öffnen'} ↗</span></div></div>`;}
 function openDoc(id){const d=ALL_DOCS.find(x=>x.id===id);if(!d)return;if(!proGate('docs'))return;
   if(d.has_file&&d.local){g('dv-title').textContent=d.title;g('doc-iframe').dataset.link=d.link;g('doc-iframe').src=d.local;g('doc-viewer').classList.add('open');}
   else window.open(d.link,'_blank','noopener');}
@@ -2494,9 +2745,24 @@ function renderMonth(items){
   ${S.calDay?`<div class="eyebrow" style="margin:4px 0 8px">📅 ${new Date(S.calDay).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${sel.length} Termin${sel.length===1?'':'e'}</div>
     ${sel.map(calItemHTML).join('')||'<div class="gap-note">An diesem Tag keine Termine.</div>'}`:''}`;
 }
+const CAL_INST={alle:['Alle',()=>true],
+  bt:['🏛 Bundestag',c=>/bundestag|bt/i.test(c.src||'')||c.parl==='bt'],
+  br:['🏛 Bundesrat',c=>/bundesrat/i.test(c.src||'')||c.parl==='br'],
+  bverfg:['⚖ Bundesverfassungsgericht',c=>/verfassungsgericht|bverfg/i.test((c.src||'')+' '+(c.title||''))],
+  eu:['🇪🇺 EU',c=>/europ|eu-|kommission|ep\b/i.test((c.src||'')+' '+(c.title||''))||c.parl==='ep']};
 function renderCal(){
+  const ci=g('cal-inst');
+  if(ci){
+    const items=calItems();
+    ci.innerHTML=Object.entries(CAL_INST).map(([k,[lbl,f]])=>{
+      const n=k==='alle'?items.length:items.filter(f).length;
+      return`<span class="chip${S.calInst===k?' active':''}" onclick="S.calInst='${k}';reRender('cal')">${lbl} ${n}</span>`;}).join('')
+      +(CAL_INST[S.calInst]&&calItems().filter(CAL_INST[S.calInst][1]).length===0&&S.calInst!=='alle'
+        ?`<span class="km-note">Für diese Auswahl liegen keine Termine vor – siehe Hinweis unten.</span>`:'');
+  }
   const now=new Date();now.setHours(0,0,0,0);const wk=new Date(now);wk.setDate(wk.getDate()+7);
   let items=calItems();
+  if(S.calInst&&S.calInst!=='alle'&&CAL_INST[S.calInst])items=items.filter(CAL_INST[S.calInst][1]);
   if(S.calMode!=='month'){
     if(S.calF==='upcoming')items=items.filter(c=>c.date>=now);else if(S.calF==='week')items=items.filter(c=>c.date>=now&&c.date<=wk);
   }
@@ -2585,7 +2851,7 @@ function openBrief(id){const b=BRIEFS.find(x=>x.id===id);if(!b)return;setView('b
       <button class="btn sm" onclick="exportBrief('${b.id}')">↓ Briefing exportieren</button>
       <button class="btn sm" onclick="copyBrief('${b.id}')">📋 Kopieren</button><label class="chk" style="font-size:12px"><input type="checkbox" onchange="if(!proGate('notify'))this.checked=false"> täglich 7:00 per E-Mail <span class="eyebrow" style="text-transform:none;letter-spacing:0">(Backend-Endpunkt nötig)</span></label></div>
     <div id="brief-ai"></div>
-    ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}" id="tr-${a.id}" style="cursor:pointer" onclick="toggleInline('${a.id}')"><div class="t">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${relChip(a)?' · Relevanz '+a.boost:''}${(a.cluster||0)>=3?' · 📊 '+a.cluster+' Quellen':''}</div></div><div id="inl-${a.id}"></div>`).join('')}`).join('')}</div>`;}
+    ${Object.entries(bySrc).map(([s,arts])=>`<div class="eyebrow" style="margin-top:12px">${esc(s)}</div>${arts.map(a=>`<div class="brief-item${isLocked(a)?' locked':''}" id="tr-br-${a.id}" style="cursor:pointer" onclick="toggleInline('${a.id}','br')"><div class="t">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="d"${isLocked(a)?' style="filter:blur(4px)"':''}>${esc((a.desc||'').slice(0,320))}</div><div class="dl-m">${rel(a.date)}${relChip(a)?' · Relevanz '+a.boost:''}${(a.cluster||0)>=3?' · 📊 '+a.cluster+' Quellen':''}</div></div><div id="inl-br-${a.id}"></div>`).join('')}`).join('')}</div>`;}
 function briefText(id){
   const b=BRIEFS.find(x=>x.id===id);if(!b)return'';
   const head=`${b.title}\n${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${b.items.length} Meldungen\n${'='.repeat(50)}\n\n`;
@@ -3157,7 +3423,11 @@ function renderWsContext(){
     el.innerHTML=grp('ressorts','Ressorts',`<div class="nav-chip-wrap" id="nav-topics"></div><div id="nav-topics-more"></div>`);
     buildNavTopics();
   }else if(S.ws==='policy'){
-    el.innerHTML=grp('inst','Institutionen',`<div id="nav-insts"></div>`);
+    el.innerHTML=grp('inst','Institutionen',`<div id="nav-insts"></div>`)
+      +grp('land','Bundesländer',`<select class="fsel" style="width:100%" id="land-pick" onchange="pickLand(this.value)">
+          <option value="">Bundesland wählen…</option>
+          ${Object.entries(LAND_L).sort((a,b)=>a[1].localeCompare(b[1],'de')).map(([k,v])=>`<option value="${k}"${S.landPick===k?' selected':''}>${esc(v)}</option>`).join('')}
+        </select>`);
     buildNavInsts();
   }else if(S.ws==='stakeholder'){
     el.innerHTML=grp('parl','Parlamente',`<div class="nav-chip-wrap" id="dir-parl-ctx"></div>`);
@@ -3418,7 +3688,14 @@ function renderPolicy(){
         ${STAGES.map(st=>`<span class="chip${S.policyStage===st?' active':''}" style="${S.policyStage===st?`background:${stageColor(st)};border-color:${stageColor(st)}`:`border-color:${stageColor(st)}55;color:${stageColor(st)}`}"
       onclick="S.policyStage=S.policyStage==='${st}'?null:'${st}';reRender('policy')">${STAGE_L[st]} ${byStage[st]||0}</span>`).join('')}
       ${Object.entries(byTopic).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([t,n])=>`<span class="chip${S.policyTopic===t?' active':''}" onclick="S.policyTopic=S.policyTopic==='${t}'?null:'${t}';reRender('policy')">${TOPIC_KW_L[t]||t} ${n}</span>`).join('')}</div>
-    <div class="proc-list">${list.slice(0,120).map(p=>`<div class="proc" onclick="openProcess('${p.id}')">
+    <div class="pol-groups">${policyGroups(list).map(gr=>`
+      <section class="pol-group">
+        <header class="pg-head" onclick="togglePolGroup('${gr.key}')">
+          <span class="pg-ic">${gr.icon}</span><h2>${gr.label}</h2><span class="pg-cnt">${gr.items.length}</span>
+          <span class="pg-arw">${S.polClosed&&S.polClosed.includes(gr.key)?'▸':'▾'}</span></header>
+        <div class="pg-body" style="${S.polClosed&&S.polClosed.includes(gr.key)?'display:none':''}">
+          ${gr.note?`<div class="pg-note">${gr.note}</div>`:''}
+          ${gr.render?gr.render():`<div class="proc-list">${gr.items.slice(0,gr.limit||25).map(p=>`<div class="proc" onclick="openProcess('${p.id}')">
       <div class="proc-main"><div class="dl-eb"><span class="doc-type">${esc(p.type||'Vorgang')}</span>
         ${p.wp?`<span class="tag">WP ${esc(p.wp)}</span>`:''}<span class="tag c" style="--tc:${topicColor(p.topic)}">${TOPIC_KW_L[p.topic]||p.topic}</span></div>
         <div class="proc-t">${esc(p.title)}</div>
@@ -3426,7 +3703,43 @@ function renderPolicy(){
         <div class="dl-m">${esc(p.status||'')}${p.initiative?' · '+esc(p.initiative):''} · aktualisiert ${rel(p.updated||p.date)}</div></div>
       <div class="proc-stage">${(p.art==='anfrage')
         ? `<span class="chip" style="border-color:${p.stage==='abgeschlossen'?'var(--green)':'var(--amber)'}">${p.stage==='abgeschlossen'?'beantwortet':'offen'}</span>`
-        : pipeHTML(p.stage)}</div></div>`).join('')||'<div class="gap-note">Keine Verfahren in dieser Auswahl.</div>'}</div>`;
+        : pipeHTML(p.stage)}</div></div>`).join('')}
+          ${gr.items.length>(gr.limit||25)?`<button class="btn sm" style="margin-top:8px" onclick="S.polMore='${gr.key}';reRender('policy')">Alle ${gr.items.length} anzeigen</button>`:''}</div>`}
+        </div></section>`).join('')||'<div class="gap-note">Keine Verfahren in dieser Auswahl.</div>'}</div>`;
+}
+/* Policy nach Art gruppieren: Gesetzesvorhaben, Anträge, Anfragen, Parteien.
+   Vorher stand alles in einer einzigen sehr langen Liste. */
+function togglePolGroup(k){
+  const c=new Set(S.polClosed||[]);c.has(k)?c.delete(k):c.add(k);
+  S.polClosed=[...c];store.set('ps_polclosed',S.polClosed);reRender('policy');
+}
+const PARTEI_RE=/(CDU|CSU|SPD|BÜNDNIS\s*90|GRÜNE|FDP|AfD|LINKE|BSW|SSW|Fraktion)/i;
+function policyGroups(list){
+  const g=[];
+  const nimm=(f)=>list.filter(f);
+  const gesetz=nimm(p=>(p.art||'gesetz')==='gesetz'&&/gesetz/i.test(p.type||p.title||''));
+  const antrag=nimm(p=>/antrag|entschließung/i.test(p.type||'')&&!gesetz.includes(p));
+  const anfrage=nimm(p=>(p.art)==='anfrage');
+  const rest=list.filter(p=>!gesetz.includes(p)&&!antrag.includes(p)&&!anfrage.includes(p));
+  const lim=k=>S.polMore===k?9999:12;
+  if(gesetz.length)g.push({key:'gesetz',icon:'⚖',label:'Gesetzesvorhaben',items:gesetz,limit:lim('gesetz'),
+    note:'Entwürfe und Verordnungen im parlamentarischen Verfahren – der Balken zeigt, wie weit sie sind.'});
+  if(antrag.length)g.push({key:'antrag',icon:'📌',label:'Anträge und Entschließungen',items:antrag,limit:lim('antrag')});
+  if(anfrage.length)g.push({key:'anfrage',icon:'❓',label:'Anfragen und Auskunftsersuchen',items:anfrage,limit:lim('anfrage'),
+    note:'Kleine und Große Anfragen sowie Fragestunden. Sie durchlaufen kein Gesetzgebungsverfahren, sondern sind entweder offen oder beantwortet.'});
+  /* Parteien als eigene Kategorie: wer bringt wie viel ein */
+  const byPartei={};
+  list.forEach(p=>{const m=PARTEI_RE.exec((p.initiative||'')+' '+(p.title||''));
+    if(m){const k=m[1].toUpperCase().replace(/BÜNDNIS\s*90/,'GRÜNE');(byPartei[k]=byPartei[k]||[]).push(p);}});
+  const parteien=Object.entries(byPartei).sort((a,b)=>b[1].length-a[1].length);
+  if(parteien.length)g.push({key:'partei',icon:'🎗',label:'Nach Urheber und Fraktion',items:list,
+    note:'Wer die Vorlage eingebracht hat. Ein Klick filtert die Liste.',
+    render:()=>`<div class="partei-grid">${parteien.map(([k,arr])=>`
+      <div class="partei-card" onclick="S.policyQ='${k}';reRender('policy')" style="--pc:${PARTY_COL[k]||PARTY_COL[k.replace('GRÜNE','GRÜNE')]||'#6b7280'}">
+        <div class="pc-n">${esc(k)}</div><div class="pc-c">${arr.length}</div>
+        <div class="pc-l">Vorlagen</div></div>`).join('')}</div>`});
+  if(rest.length)g.push({key:'sonst',icon:'·',label:'Weitere Vorgänge',items:rest,limit:lim('sonst')});
+  return g;
 }
 function openProcess(id){S.processId=id;setView('policy');reRender('policy');}
 function closeProcess(){S.processId=null;reRender('policy');}
@@ -3464,8 +3777,8 @@ function renderProcess(){
 
         <div class="dcard" style="margin-top:12px"><div class="dcard-hd"><h2>Berichterstattung</h2><span class="cnt">${news.length}</span>
           <span class="eyebrow">verknüpft über Drucksachennummer und Titelbezug</span></div>
-          <div class="dcard-body">${news.map(a=>`<div class="mini-row" id="mr-${a.id}" onclick="toggleMini('${a.id}','art')">
-            <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-${a.id}"></div>`).join('')||'<div class="mon-empty">Keine Meldungen zugeordnet.</div>'}</div></div>
+          <div class="dcard-body">${news.map(a=>`<div class="mini-row" id="mr-pol-${a.id}" onclick="toggleMini('${a.id}','art','pol')">
+            <div class="mt">${esc(a.title)}</div><div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span><span>${rel(a.date)}</span></div></div><div id="mi-pol-${a.id}"></div>`).join('')||'<div class="mon-empty">Keine Meldungen zugeordnet.</div>'}</div></div>
       </div>
       <aside class="mon-side" id="mon-side">
         <div class="dcard mini"><div class="dcard-hd"><h2>Dokumente</h2><span class="cnt">${docs.length}</span></div>
