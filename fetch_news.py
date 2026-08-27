@@ -570,8 +570,12 @@ TOPIC_ADD = {
                     "betriebsrat", "mitbestimmung", "arbeitslosenquote"]),
                (2, ["gewerkschaft", "arbeitgeber", "beschaeftigung", "beschäftigung", "homeoffice", "azubi"])],
     "wohnen": [(3, ["wohnungsbau", "mietpreisbremse", "mietendeckel", "wohnungsnot", "baugenehmigung",
-                    "sozialwohnung", "bauministerium", "grundsteuer"]),
-               (2, ["miete", "vermieter", "immobilienmarkt", "stadtentwicklung", "bauen"])],
+                    "sozialwohnung", "bauministerium", "grundsteuer", "wohnungsmarkt", "mietrecht",
+                    "bauordnung", "wohngeld", "bauland"]),
+               # "bauen" allein ist wertlos: "Nvidia will mehr Chips bauen" landete damit
+               # unter Bauen & Wohnen. Nur Wohnungsbezug zaehlt.
+               (2, ["miete", "mieten", "vermieter", "immobilienmarkt", "stadtentwicklung",
+                    "wohnraum", "neubau", "bauherren"])],
     "kultur": [(3, ["rundfunkbeitrag", "oeffentlich-rechtlich", "öffentlich-rechtlich", "medienstaatsvertrag",
                     "pressefreiheit", "kulturstaatsminister", "denkmalschutz"]),
                (2, ["kultur", "museum", "theater", "verlag", "journalismus", "film", "buchmesse"])],
@@ -584,6 +588,17 @@ TOPIC_ADD = {
 }
 # Wort -> Thema(en), in denen es auf Gewicht 1 herabgestuft wird
 TOPIC_DEMOTE = {
+    # Woerter mit doppelter Bedeutung: allein begruenden sie kein Thema
+    "bauen":        ["wohnen", "wirtschaft"],
+    "bau":          ["wohnen"],
+    "chip":         ["wohnen"],
+    "netz":         ["energie"],
+    "kette":        ["wirtschaft"],
+    "welle":        ["gesundheit"],
+    "spitze":       ["politik"],
+    "kurs":         ["finanzen", "bildung"],
+    "zug":          ["mobilitaet"],
+    "linie":        ["mobilitaet"],
     "drohne":       ["verteidigung"],
     "drohnen":      ["verteidigung"],
     "schutz":       ["verteidigung", "sicherheit"],
@@ -961,13 +976,25 @@ def fetch_all(feed_list, topic_rules, label):
     return all_arts, ok, fail
 
 def report_failed():
+    """Ein Block zum Kopieren: welche Feeds nichts geliefert haben und warum."""
     if not FAILED_FEEDS:
-        print("\n✓ Alle Feeds geliefert."); return
-    print(f"\n── {len(FAILED_FEEDS)} Feeds ohne Ergebnis ──")
-    for label,name,url,why in FAILED_FEEDS:
-        print(f"  [{label}] {name}: {why}")
-        print(f"      {url}")
-    print("  Tipp: dauerhaft tote URL durch _gn(\"site:domain.de\") bzw. _gnus(...) ersetzen.")
+        print("\n✅ FEEDS: alle Quellen erreichbar.\n"); return
+    grupp = {}
+    for f in FAILED_FEEDS:
+        name, url, grund = (f + ("", "", ""))[:3] if isinstance(f, (list, tuple)) else (str(f), "", "")
+        kurz = str(grund)[:60] or "ohne Ergebnis"
+        grupp.setdefault(kurz, []).append((name, url))
+    print("\n" + "=" * 68)
+    print(f"PROBLEMBERICHT FEEDS · {datetime.now().strftime('%d.%m.%Y %H:%M')} · {len(FAILED_FEEDS)} Quellen")
+    print("Zum Kopieren – diese Quellen haben nichts geliefert.")
+    print("=" * 68)
+    for grund, eintraege in sorted(grupp.items(), key=lambda x: -len(x[1])):
+        print(f"\n[{grund}]  ({len(eintraege)}x)")
+        for name, url in eintraege[:12]:
+            print(f"    {name}")
+            if url: print(f"      {url}")
+        if len(eintraege) > 12: print(f"    … und {len(eintraege)-12} weitere")
+    print("\n" + "=" * 68 + "\n")
 
 def _norm_title(t):
     return re.sub(r'\s+',' ',re.sub(r'[^a-zäöüß0-9 ]',' ',(t or '').lower())).strip()[:60]
