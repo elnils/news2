@@ -913,7 +913,7 @@ def inst_for(cat, source):
     if cat in {c for c,_,_ in LAENDER}: return "landtag-"+cat if (source or '').startswith("Landtag") else "lreg-"+cat
     return ""
 
-def fetch_url(url, timeout=15):
+def fetch_url(url, timeout=int(os.environ.get("FEED_TIMEOUT", "10"))):
     from urllib.parse import quote
     # ASCII-encode the URL properly (handles Umlaute etc.)
     url_encoded = ''.join(c if ord(c) < 128 else quote(c) for c in url)
@@ -943,16 +943,94 @@ def load_existing(filename):
     except:
         return []
 
+# ─────────────────────────────────────────────────────────────
+# ARCHIV
+# Die laufenden Dateien halten nur wenige Tage – sonst wird der erste
+# Seitenaufruf zu langsam. Alles, was aus diesem Fenster faellt, wandert in
+# Monatsdateien unter archive/. Die Seite laedt sie nur auf Wunsch nach.
+# ─────────────────────────────────────────────────────────────
+ARCHIVE_DIR = "archive"
+ARCHIVE_ENABLED = os.environ.get("ARCHIVE", "1") not in ("0", "false", "no")
+
+def _monat(iso):
+    return (str(iso) or "")[:7] or "unbekannt"
+
+def archiviere(artikel):
+    """Legt herausgefallene Artikel in archive/YYYY-MM.json ab (ohne Dubletten)."""
+    if not ARCHIVE_ENABLED or not artikel: return 0
+    os.makedirs(ARCHIVE_DIR, exist_ok=True)
+    nach_monat = {}
+    for a in artikel:
+        m = _monat(a.get("date"))
+        if m == "unbekannt": continue
+        nach_monat.setdefault(m, []).append(a)
+    gesamt = 0
+    for monat, neue in nach_monat.items():
+        pfad = os.path.join(ARCHIVE_DIR, f"{monat}.json")
+        vorhanden = []
+        try:
+            vorhanden = json.load(open(pfad, encoding="utf-8")).get("articles", [])
+        except Exception:
+            pass
+        bekannt = {a.get("id") for a in vorhanden}
+        # Im Archiv nur die Felder, die zum Suchen und Anzeigen noetig sind
+        schlank = [{k: a.get(k) for k in
+                    ("id", "source", "title", "link", "desc", "date", "topics",
+                     "cat", "boost", "cluster", "access", "_set")}
+                   for a in neue if a.get("id") not in bekannt]
+        if not schlank: continue
+        alle = vorhanden + schlank
+        alle.sort(key=lambda x: x.get("date") or "", reverse=True)
+        _atomic_json(pfad, {"month": monat, "updated": datetime.now(timezone.utc).isoformat(),
+                            "count": len(alle), "articles": alle})
+        gesamt += len(schlank)
+        print(f"  Archiv {monat}: +{len(schlank)} → {len(alle)}")
+    if gesamt:
+        schreibe_archiv_index()
+    return gesamt
+
+def schreibe_archiv_index():
+    """Verzeichnis aller Monatsdateien – die Seite weiss so, was es gibt."""
+    monate = []
+    for name in sorted(os.listdir(ARCHIVE_DIR)):
+        if not name.endswith(".json") or name == "index.json": continue
+        try:
+            d = json.load(open(os.path.join(ARCHIVE_DIR, name), encoding="utf-8"))
+            monate.append({"month": d.get("month", name[:-5]), "count": d.get("count", 0),
+                           "file": f"{ARCHIVE_DIR}/{name}"})
+        except Exception:
+            pass
+    monate.sort(key=lambda x: x["month"], reverse=True)
+    _atomic_json(os.path.join(ARCHIVE_DIR, "index.json"),
+                 {"updated": datetime.now(timezone.utc).isoformat(),
+                  "months": monate, "total": sum(m["count"] for m in monate)})
+    print(f"  Archiv-Index: {len(monate)} Monate, {sum(m['count'] for m in monate)} Artikel")
+
+def _atomic_json(pfad, obj):
+    tmp = pfad + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+        fh.flush(); os.fsync(fh.fileno())
+    os.replace(tmp, pfad)
+
 def merge_rolling(existing, new_articles, days=7, max_count=5000):
     cutoff=(datetime.now(timezone.utc)-timedelta(days=days)).isoformat()
+    _rausgefallen=[]
     # Articles without a date: keep only if very recently fetched (grace: 2 days max)
     # by dropping them after they've cycled out — don't keep "date=''" forever
-    existing_filtered=[a for a in existing
-                       if a.get('date','') >= cutoff]
+    existing_filtered=[a for a in existing if a.get('date','') >= cutoff]
+    # Was aus dem Zeitfenster faellt, wird nicht verworfen, sondern archiviert
+    _rausgefallen=[a for a in existing if a.get('date','') and a.get('date','') < cutoff]
     existing_ids={a['id'] for a in new_articles}
     existing_keep=[a for a in existing_filtered if a['id'] not in existing_ids]
     merged=new_articles + existing_keep
     merged.sort(key=lambda a:a.get('date','') or '0000', reverse=True)
+    # Auch was ueber die Hoechstzahl hinausgeht, kommt ins Archiv
+    if len(merged) > max_count:
+        _rausgefallen += merged[max_count:]
+    if _rausgefallen:
+        try: archiviere(_rausgefallen)
+        except Exception as e: print(f"  Archiv-Fehler: {type(e).__name__}: {e}")
     return merged[:max_count]
 
 def compute_trends(articles):
@@ -986,17 +1064,60 @@ def compute_trends(articles):
 
 FAILED_FEEDS = []   # (label, name, url, grund) – wird am Ende zusammengefasst
 
+# ── ZEITBUDGET UND PARALLELE ABRUFE ──────────────────────────────────
+# Ueber hundert Feeds nacheinander mit je 15 Sekunden Zeitlimit sprengen das
+# Job-Limit: ein einziger haengender Server kostete bisher eine Viertelminute.
+# Deshalb mehrere Abrufe gleichzeitig und ein hartes Gesamtbudget. Was nicht
+# hineinpasst, holt der naechste Lauf (alle 25 Minuten).
+TIME_BUDGET_MIN = int(os.environ.get("NEWS_BUDGET_MIN", "9"))
+_START = time.monotonic()
+_DEADLINE = _START + TIME_BUDGET_MIN * 60
+FEED_WORKERS = int(os.environ.get("FEED_WORKERS", "8"))
+
+# Gestaffeltes Budget: Nachrichten sind zeitkritisch und duerfen NIE ausgesetzt
+# werden – sie laufen alle 25 Minuten und muessen aktuell sein. Dokumente
+# (Drucksachen, Tagesordnungen, PDF-Downloads) sind es nicht; sie bekommen nur
+# die Restzeit und werden bei Bedarf auf den naechsten Lauf verschoben.
+ARTIKEL_ANTEIL = float(os.environ.get("NEWS_ARTICLE_SHARE", "0.75"))
+_ARTIKEL_DEADLINE = _START + TIME_BUDGET_MIN * 60 * ARTIKEL_ANTEIL
+
+def out_of_time(phase="artikel"):
+    """phase='artikel': erst am harten Gesamtlimit stoppen.
+       phase='dokumente': schon am Ende des Artikel-Anteils stoppen."""
+    if phase == "dokumente":
+        return time.monotonic() > _ARTIKEL_DEADLINE
+    return time.monotonic() > _DEADLINE
+
+def restzeit():
+    return max(0, int(_DEADLINE - time.monotonic()))
+
 def fetch_all(feed_list, topic_rules, label):
-    """Ein defekter Feed darf den Lauf nie abbrechen: jeder Schritt ist einzeln abgesichert."""
+    """Ein defekter Feed darf den Lauf nie abbrechen: jeder Schritt ist einzeln
+    abgesichert. Die Abrufe laufen parallel, die Auswertung danach der Reihe nach."""
+    from concurrent.futures import ThreadPoolExecutor
     all_arts=[]
     ok=fail=0
+    if out_of_time():
+        print(f"  [{label}] Zeitbudget aufgebraucht – übersprungen, folgt im nächsten Lauf")
+        for url,name,cat in feed_list:
+            FAILED_FEEDS.append((label,name,url,"Zeitbudget"))
+        return all_arts, ok, len(feed_list)
+
+    roh={}
+    with ThreadPoolExecutor(max_workers=FEED_WORKERS) as pool:
+        auftraege={pool.submit(fetch_url,url):name for url,name,cat in feed_list}
+        for fut,name in auftraege.items():
+            if out_of_time():
+                fut.cancel(); roh.setdefault(name,None); continue
+            try:
+                roh[name]=fut.result(timeout=max(1,int(_DEADLINE-time.monotonic())))
+            except Exception as e:
+                roh[name]=None
+                print(f"  [{label}] {name}: {type(e).__name__}")
+
     for url,name,cat in feed_list:
         print(f"  [{label}] {name}...",end=' ',flush=True)
-        try:
-            result=fetch_url(url)
-        except Exception as e:
-            result=None
-            print(f"ERR {type(e).__name__}", end=' ')
+        result=roh.get(name)
         if not result:
             fail+=1
             FAILED_FEEDS.append((label,name,url,"nicht erreichbar"))
@@ -1151,10 +1272,24 @@ def download_pdf(url, doc_id):
         return None
 
 def fetch_documents():
+    """Dokumente sind nicht zeitkritisch: laeuft nur, wenn nach den Nachrichten
+    noch Zeit bleibt. Sonst bleibt documents.json unveraendert und der naechste
+    Lauf holt sie."""
+    if out_of_time("dokumente"):
+        print("── Dokumente: übersprungen, damit die Nachrichten sicher fertig werden ──")
+        print(f"   (verbleibende Zeit: {restzeit()} s – Dokumente folgen im nächsten Lauf)")
+        FAILED_FEEDS.append(("docs", "Dokumentenabruf", "", "zugunsten der Nachrichten verschoben"))
+        return []
+    return _fetch_documents_inner()
+
+def _fetch_documents_inner():
     """Holt Dokument-Links, lädt PDFs wo download=True."""
     docs = []
     cleanup_old_pdfs()
     for url, source, doc_type, origin, do_download in DOCUMENT_FEEDS:
+        if out_of_time():
+            print("  Zeitbudget erschöpft – restliche Dokumentquellen folgen im nächsten Lauf")
+            break
         print(f"  [docs] {source} – {doc_type}...", end=' ', flush=True)
         result = fetch_url(url)
         if not result:
@@ -1282,7 +1417,8 @@ def _apply_consolidation():
 
 def main():
     _apply_consolidation()
-    print(f"[{datetime.now().isoformat()}] Presseschau Fetch")
+    print(f"[{datetime.now().isoformat()}] Presseschau Fetch "
+          f"(Zeitbudget {TIME_BUDGET_MIN} Min, {FEED_WORKERS} parallele Abrufe)")
 
     print("\n── Allgemeine News ──")
     new_news, ok1, fail1 = fetch_all(NEWS_FEEDS, TOPIC_RULES, "news")
