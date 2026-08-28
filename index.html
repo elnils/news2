@@ -582,6 +582,12 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .frei-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;margin:-4px 0 10px;grid-column:1/-1}
 .frei-hd{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text2);margin-bottom:5px}
 .frei-hd .km-note{display:block;font-weight:500;letter-spacing:0;text-transform:none;margin-top:2px}
+.arch-bar{display:flex;gap:7px;margin-bottom:10px}
+.arch-bar input{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;outline:none}
+.arch-bar input:focus{border-color:var(--blue)}
+.arch-filters{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.arch-count{font-size:12px;color:var(--text2);margin:10px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+#arch-res{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px}
 /* Die Lage – vorbereiteter Überblick */
 .lage-box{background:linear-gradient(180deg,#f5f3ff,var(--surface));border:1.5px solid #ddd6fe;
   border-radius:var(--r);padding:12px 15px;margin-bottom:12px;flex:0 0 auto}
@@ -1268,6 +1274,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
     <section class="view plain" id="view-monitor"></section>
     <section class="view plain" id="view-stories"></section>
+    <section class="view plain" id="view-archiv"></section>
     <section class="view plain" id="view-sources"></section>
     <section class="view plain" id="view-policy"></section>
     <section class="view plain" id="view-institutions"></section>
@@ -1662,7 +1669,7 @@ const LOADLOG=[];
 const DEMO_OK=new URLSearchParams(location.search).has('demo');
 let PCHANGES=null,DIP={},ALL_NEWS=[],ALL_EU=[],ALL_BT=[],ALL_LAENDER=[],ALL_US=[],ALL_DOCS=[],META={},PEOPLE=[],COMMS=[],NEWSL=[],BRIEFS=[];
 let marked=new Set(),apiKey='',pendingSum=false,SAVED=[];
-const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,storyLimit:30,policyStage:null,policyArt:null,polClosed:[],polMore:null,policyHerk:null,policyTopic:null,policyQ:'',
+const S={plan:'free',view:'dash',section:'news',topic:'all',src:'all',sort:'new',tokens:[],prio:{eil:false,top:false},range:'48',idx:-1,art:null,filt:[],hidden:0,docF:'all',ws:'dash',monitorId:null,monKind:null,briefTopics:[],processId:null,reportId:null,storySev:'all',storyWin:48,storyLimit:30,archMonat:null,archTopic:null,archLimit:60,archTreffer:[],policyStage:null,policyArt:null,polClosed:[],polMore:null,policyHerk:null,policyTopic:null,policyQ:'',
  docMore:null,docGroupBy:'thema',calInst:'alle',docMore:null,calInst:'alle',calF:'upcoming',calMonth:null,calDay:null,wahlMode:'upcoming',lageZu:false,termMode:'today',topWin:24,topScope:'',docTopic:null,nfTopic:null,nfSrc:null,layout:'paper',feedInline:true,radarOpen:false,topicsExpanded:false,srcExpanded:false,inst:'',topics:new Set(),topicMode:'or',trendWin:24,trendMode:'topics',hideSport:true,dedupe:true,onlyFree:false,dashMode:'overview',docMode:'list',calMode:'list',briefMode:'auto',dirMode:'people',dirParl:'all',kind:'press'};
 const USER_TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin';
 const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
@@ -1998,7 +2005,7 @@ function setSt(t,m){const d=g('sdot');if(d)d.className='dot '+t;setC('stxt',m);}
    Jetzt wird eine Ansicht erst gebaut, wenn sie geöffnet wird, und danach nur
    noch, wenn sich die Daten geändert haben.
    ───────────────────────────────────────────────────────────── */
-const RENDERERS={monitor:()=>renderMonitor(),stories:()=>renderStories(),sources:()=>renderSources(),
+const RENDERERS={monitor:()=>renderMonitor(),stories:()=>renderStories(),archiv:()=>renderArchiv(),sources:()=>renderSources(),
   policy:()=>renderPolicy(),institutions:()=>renderInstitutions(),orgs:()=>renderOrgs(),reports:()=>renderReports(),
   wahl:()=>renderWahl(),dash:()=>renderDash(),docs:()=>renderDocs(),cal:()=>renderCal(),
                  brief:()=>renderBriefs(),dir:()=>renderDir(),types:()=>renderTypes(),trends:()=>renderTrends()};
@@ -3610,6 +3617,7 @@ const WORKSPACES={
     {id:'monitors', label:'Meine Monitore', icon:'◎', view:'monitor'},
     {id:'activity', label:'Alle Aktivität', icon:'≡', act:()=>{setSection('all');}},
     {id:'stories',  label:'Stories',        icon:'⧉', view:'stories'},
+    {id:'archiv',   label:'Archiv',         icon:'🗄', view:'archiv'},
     {id:'trends',   label:'Trends',         icon:'↗', view:'trends'},
     {id:'wahl',     label:'Wahlen',         icon:'✓', view:'wahl'},
   ]},
@@ -3633,7 +3641,7 @@ const WORKSPACES={
   ]},
 };
 /* Welcher Arbeitsbereich gehört zu welcher Ansicht (für Direktsprünge) */
-const VIEW_WS={dash:'dash',feed:'monitor',monitor:'monitor',stories:'monitor',trends:'monitor',sources:'monitor',wahl:'monitor',
+const VIEW_WS={dash:'dash',feed:'monitor',monitor:'monitor',stories:'monitor',archiv:'monitor',trends:'monitor',sources:'monitor',wahl:'monitor',
   policy:'policy',docs:'policy',types:'policy',cal:'policy',institutions:'policy',
   dir:'stakeholder',orgs:'stakeholder',brief:'reporting',reports:'reporting'};
 
@@ -3910,6 +3918,81 @@ function openStory(id){
 function storyText(id){const s=findStory(id);if(!s)return'';
   return`${s.title}\n${s.sources.length} Quellen · ${s.articles.length} Artikel\n\n`+
     s.articles.map(a=>`• [${a.source}] ${a.title}\n  ${a.link||''}`).join('\n');}
+
+/* ── ARCHIV ──────────────────────────────────────────────────────────
+   Die laufenden Dateien halten nur wenige Tage, damit die Seite schnell lädt.
+   Ältere Meldungen stehen in Monatsdateien unter archive/ und werden erst
+   geladen, wenn wirklich danach gesucht wird. */
+let ARCHIV_INDEX=null;const ARCHIV_CACHE={};
+async function archivIndex(){
+  if(ARCHIV_INDEX)return ARCHIV_INDEX;
+  try{
+    const r=await fetch('archive/index.json?t='+Date.now());
+    ARCHIV_INDEX=r.ok?await r.json():{months:[],total:0};
+  }catch{ARCHIV_INDEX={months:[],total:0};}
+  return ARCHIV_INDEX;
+}
+async function archivMonat(monat){
+  if(ARCHIV_CACHE[monat])return ARCHIV_CACHE[monat];
+  try{
+    const r=await fetch(`archive/${monat}.json?t=`+Date.now());
+    const d=r.ok?await r.json():{articles:[]};
+    return(ARCHIV_CACHE[monat]=(d.articles||[]).map(a=>({...a,_set:a._set||'news'})));
+  }catch{return(ARCHIV_CACHE[monat]=[]);}
+}
+async function archivSuche(){
+  const q=(g('arch-q')?.value||'').trim();
+  const box=g('arch-res');if(!box)return;
+  const idx=await archivIndex();
+  const monate=S.archMonat?[S.archMonat]:idx.months.map(m=>m.month).slice(0,6);
+  if(!q&&!S.archMonat){box.innerHTML='<div class="km-note">Suchbegriff eingeben oder einen Monat wählen.</div>';return;}
+  box.innerHTML=`<div class="km-note">Lade ${monate.length} Monatsdatei${monate.length===1?'':'en'}…</div>`;
+  const teile=await Promise.all(monate.map(archivMonat));
+  let treffer=teile.flat();
+  if(q){
+    const worte=q.toLowerCase().split(/\s+/).filter(Boolean);
+    treffer=treffer.filter(a=>{const t=((a.title||'')+' '+(a.desc||'')+' '+(a.source||'')).toLowerCase();
+      return worte.every(w=>t.includes(w));});
+  }
+  if(S.archTopic)treffer=treffer.filter(a=>(a.topics||[]).map(normTopic).includes(S.archTopic));
+  treffer.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  S.archTreffer=treffer;
+  box.innerHTML=`<div class="arch-count"><b>${treffer.length}</b> Treffer${q?` für „${esc(q)}"`:''}
+      ${S.archMonat?` im ${S.archMonat}`:` in ${monate.length} Monaten`}
+      ${treffer.length?`<button class="btn sm" style="margin-left:8px" onclick="archivExport()">↓ Als CSV</button>`:''}</div>`
+    +(treffer.length?treffer.slice(0,S.archLimit||60).map(a=>`<div class="mini-row" onclick="window.open('${esc(a.link)}','_blank','noopener')">
+        <div class="mt">${esc(a.title)}</div>
+        <div class="mm"><span style="color:${srcC(a.source).tc};font-weight:700">${esc(a.source)}</span>
+          <span>${fd(a.date)}</span>${accBadge(a)}${(a.topics||[]).slice(0,2).map(t=>`<span class="tag c" style="--tc:${topicColor(normTopic(t))}">${chipLabel(normTopic(t)).replace(/^\S+\s/,'')}</span>`).join('')}</div></div>`).join('')
+      :'<div class="gap-note">Nichts gefunden. Andere Begriffe oder einen anderen Monat versuchen.</div>')
+    +(treffer.length>(S.archLimit||60)?`<button class="btn" style="width:100%;justify-content:center;margin-top:8px" onclick="S.archLimit=(S.archLimit||60)+60;archivSuche()">Weitere ${Math.min(60,treffer.length-(S.archLimit||60))} anzeigen</button>`:'');
+}
+function archivExport(){
+  const rows=[['Datum','Quelle','Titel','Link','Zugang']].concat(
+    (S.archTreffer||[]).map(a=>[a.date||'',a.source||'',a.title||'',a.link||'',zugang(a)]));
+  dl_('archiv-suche.csv','\ufeff'+rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(';')).join('\n'),'text/csv;charset=utf-8');
+}
+async function renderArchiv(){
+  const el=g('view-archiv');if(!el)return;
+  const idx=await archivIndex();
+  const themen=Object.keys(NEWS_TL);
+  el.innerHTML=`<div class="plain-head"><div><h1>Archiv</h1>
+      <div class="sub" style="margin:0">${idx.total?`${idx.total.toLocaleString('de-DE')} ältere Meldungen in ${idx.months.length} Monatsdateien.`
+        :'Noch kein Archiv vorhanden – es entsteht, sobald die ersten Meldungen aus dem laufenden Zeitfenster fallen.'}
+        Diese Dateien werden erst geladen, wenn du suchst, damit die Seite schnell bleibt.</div></div></div>
+    <div class="arch-bar">
+      <input id="arch-q" placeholder="Im Archiv suchen – alle Begriffe müssen vorkommen" onkeydown="if(event.key==='Enter'){S.archLimit=60;archivSuche()}">
+      <button class="btn p" onclick="S.archLimit=60;archivSuche()">Suchen</button></div>
+    <div class="arch-filters">
+      <span class="fl">Monat</span>
+      <span class="chip${!S.archMonat?' active':''}" onclick="S.archMonat=null;archivSuche()">Alle geladenen</span>
+      ${idx.months.map(m=>`<span class="chip${S.archMonat===m.month?' active':''}" onclick="S.archMonat='${m.month}';S.archLimit=60;archivSuche()">${m.month} <span style="opacity:.6">${m.count}</span></span>`).join('')}
+    </div>
+    <div class="arch-filters"><span class="fl">Ressort</span>
+      <span class="chip${!S.archTopic?' active':''}" onclick="S.archTopic=null;archivSuche()">Alle</span>
+      ${themen.slice(0,10).map(t=>`<span class="chip${S.archTopic===t?' active':''}" onclick="S.archTopic='${t}';archivSuche()">${chipLabel(t)}</span>`).join('')}</div>
+    <div id="arch-res"><div class="km-note">Suchbegriff eingeben oder einen Monat wählen.</div></div>`;
+}
 
 /* ── STORIES-ÜBERSICHT ──────────────────────────────────────────────── */
 function renderStories(){
