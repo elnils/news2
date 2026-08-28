@@ -25,7 +25,14 @@ jobs:
           python-version: '3.12'
 
       - name: Feeds holen (News, EU, Bundestag, Bundesländer, USA, Dokumente)
-        timeout-minutes: 12
+        timeout-minutes: 14          # Reserve über dem Budget des Skripts
+        env:
+          NEWS_BUDGET_MIN: '9'       # Skript beendet sich selbst nach 9 Minuten
+          FEED_WORKERS: '8'          # parallele Abrufe
+          FEED_TIMEOUT: '10'         # Sekunden je Feed
+          ARCHIVE: '1'               # ältere Meldungen in archive/YYYY-MM.json sichern
+          NEWS_ARTICLE_SHARE: '0.75' # Anteil des Budgets für Nachrichten;
+                                     # Dokumente bekommen nur die Restzeit
         run: python fetch_news.py
 
       # Verzeichnis, DIP, Kalender, Newsletter.
@@ -47,6 +54,7 @@ jobs:
           EP_DETAILS_PER_RUN: '150' # ~720 MEPs in 5 Läufen
           ENRICH_PER_RUN: '40'
           WIKI_PER_RUN: '15'
+          AUSSCHUSS_DETAIL_PER_RUN: '8'   # Ausschuss-Mitglieder je Lauf von bundestag.de
           # KI: OpenRouter hat Vorrang, Groq ist die Rückfallebene. Ohne Schlüssel
           # läuft alles Übrige unverändert weiter.
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
@@ -100,10 +108,11 @@ jobs:
           for f in articles.json eu_articles.json bundestag_articles.json \
                    laender_articles.json us_articles.json documents.json \
                    people.json dip.json calendar.ics newsletters.json elections.json \
-                   people_cache.json landtage_cache.json groq_cache.json; do
+                   people_cache.json landtage_cache.json groq_cache.json ai.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
+          [ -d archive ] && git add archive/ && echo "  + archive/" || true
 
           if git diff --cached --quiet; then
             echo "Keine Änderungen zum Committen."
