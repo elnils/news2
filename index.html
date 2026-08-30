@@ -184,7 +184,13 @@ body.pro .pro-tag:not(.keep){display:none}
 .dash-head .right{margin-left:auto;display:flex;gap:6px}
 .dgrid{display:grid;grid-template-columns:minmax(280px,1fr) 2fr;gap:12px;margin-bottom:12px}
 .dgrid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
-.dcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.dcard{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;
+  display:flex;flex-direction:column;isolation:isolate}
+/* overflow:hidden schnitt gewachsenen Inhalt ab, statt ihn scrollbar zu machen –
+   das war die Ursache der gemeldeten Stories-Probleme. Ecken bleiben rund,
+   weil Kopf und Fuß der Karte selbst den Radius tragen. */
+.dcard>.dcard-hd:first-child{border-radius:var(--r) var(--r) 0 0}
+.dcard>.dcard-body:last-child,.dcard>*:last-child{border-radius:0 0 var(--r) var(--r)}
 /* Ein-/Ausklappen: spart auf dem Dashboard viel Scrollweg */
 .dcard-hd .fold{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:3px 5px;border-radius:5px;transition:transform .15s}
 .dcard-hd .fold:hover{background:var(--bg);color:var(--text)}
@@ -588,6 +594,104 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .arch-filters{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .arch-count{font-size:12px;color:var(--text2);margin:10px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 #arch-res{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px}
+/* ── Mobile Navigation im Stil von FT ──────────────────────────────
+   Feste Leiste unten mit fünf Zielen, Menü als dunkles Vollbild-Panel. */
+#mtab{display:none}
+@media (max-width:900px){
+  body{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+  #mtab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;
+    background:var(--surface);border-top:1px solid var(--border);
+    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -2px 14px rgba(13,18,32,.08)}
+  .mtab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    background:none;border:none;color:var(--muted);font-size:10px;font-weight:600;padding:4px 0;min-height:44px}
+  .mtab-btn svg{width:21px;height:21px}
+  .mtab-btn.on{color:var(--blue)}
+  #mt-ki.on,#mt-ki:active{color:#7c3aed}
+  /* Sidebar wird zum Vollbild-Menü, dunkel, FT-Stil */
+  #sidebar{position:fixed;inset:0;z-index:80;width:86vw;max-width:360px;
+    background:#1a2332;color:#e8ebf2;transform:translateX(-104%);
+    transition:transform .25s ease;padding:0;display:flex;flex-direction:column}
+  body.nav-open #sidebar{transform:translateX(0)}
+  #sidebar .ws{color:#c7cedb}
+  #sidebar .ws:hover{background:rgba(255,255,255,.06)}
+  #sidebar .ws.active{background:#0d9488;color:#fff}
+  #sidebar .ws-title{color:#8a94a8}
+  #sidebar .wsnav{color:#c7cedb}
+  #sidebar .wsnav:hover{background:rgba(255,255,255,.06);color:#fff}
+  #sidebar .wsnav.active{background:rgba(13,148,136,.25);color:#5eead4}
+  #sidebar::-webkit-scrollbar-thumb{background:#3a4557}
+  #sidebar .chip{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:#c7cedb}
+  #sidebar .chip.active,#sidebar .chip.sel{background:#0d9488;border-color:#0d9488;color:#fff}
+  #sidebar select.fsel,#sidebar input{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#fff}
+  #sidebar .cnt{background:rgba(255,255,255,.1);color:#c7cedb}
+  #sidebar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
+  #sidebar-hd{display:flex;align-items:center;gap:9px;padding:16px 16px 12px;
+    padding-top:calc(16px + env(safe-area-inset-top));border-bottom:1px solid rgba(255,255,255,.12)}
+  #sidebar-hd b{font-size:17px;letter-spacing:-.02em}
+  #sidebar-hd .x{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;
+    width:32px;height:32px;border-radius:50%;font-size:15px}
+  #rail-toggle{display:none!important}
+  #nav-toggle{display:none!important}
+  /* Layout-Werkzeuge kosten auf dem Handy zu viel Platz vor den Meldungen –
+     einklappbar machen, Region-Schnellwahl bleibt immer offen. */
+  .list-tools{display:none!important}
+  body.tools-open .list-tools{display:flex!important;flex-wrap:wrap}
+  .tools-toggle{display:flex;align-items:center;gap:5px;background:none;border:none;
+    font-size:11px;font-weight:600;color:var(--muted);padding:5px 7px}
+  /* Kopfzeile ruhiger: die Icons ballen sich sonst */
+  #topbar{gap:7px}
+  #ki-info-btn{order:5}
+  /* Das geteilte Kopfzeilen-Suchfeld war unübersichtlich (Filter, KI, Avatar
+     drängten sich davor) – eigene Suchansicht und Region-Leiste übernehmen das. */
+  /* Das komplette geteilte Suchfeld (samt Filter-Knopf) ausblenden – eigene
+     Suchansicht und Region-Leiste übernehmen das. Vorher überlappten sich
+     die Icons rechts, weil das leere Suchfeld trotzdem Platz beanspruchte. */
+  #topbar #search-wrap{display:none!important}
+  #topbar{padding:0 8px;gap:6px}
+  #topbar .logo{font-size:15px;flex:1;min-width:0}
+  .icon-btn{width:38px;height:38px;flex-shrink:0}
+  #avatar{flex-shrink:0}
+
+  /* Artikel mobil: Systemschrift, hohe Dichte. Zielgruppe scannt Meldungen,
+     liest kein Feuilleton – jede Verzierung kostet Lesegeschwindigkeit. */
+  .inline-body{display:block!important;padding:14px 2px 4px}
+  .inline-body .il{display:contents}
+  .inline-body .ir{display:contents}
+  .inline-body img.ip{width:calc(100% + 4px);margin:0 -2px 12px;height:170px;border-radius:8px;order:2}
+  .inline-body .meta{order:1;font-size:11px;color:var(--muted);margin-bottom:7px;display:flex;gap:8px;flex-wrap:wrap}
+  .inline-body .txt{order:3;font-size:14.5px;line-height:1.55;color:var(--text2);max-width:none}
+  .inline-body .eyebrow{order:4;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin-top:12px}
+  .inline-body .src-tiles{order:5;grid-template-columns:1fr}
+  .inline-body .src-list{order:6}
+  .inline-body .acts{order:7;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+  .top-row.open .dl-t,.fitem.open .ai-title{font-size:16px!important;line-height:1.34!important;
+    font-weight:700!important;letter-spacing:-.01em}
+  /* Eigene Suchansicht als Vollbild-Overlay */
+  #search-overlay{display:none}
+  body.search-open #search-overlay{display:block;position:fixed;inset:0;z-index:95;background:var(--bg);
+    padding-top:env(safe-area-inset-top);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .so-head{display:flex;gap:8px;align-items:center;padding:12px 12px 8px;position:sticky;top:0;
+    background:var(--bg);z-index:2}
+.so-back{background:var(--surface);border:1.5px solid var(--border);border-radius:50%;
+  width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.so-back svg{width:19px;height:19px}
+  .so-input{flex:1;display:flex;align-items:center;gap:8px;background:var(--surface);
+    border:1.5px solid var(--border);border-radius:11px;padding:9px 13px}
+  .so-input svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+  .so-input input{flex:1;border:none;outline:none;background:none;font-size:16px;color:var(--text)}
+  .so-scopes{display:flex;gap:6px;padding:0 12px 10px;flex-wrap:wrap}
+  #so-results{padding:0 12px 30px}
+  .so-group{margin-bottom:16px}
+  .so-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--border)}
+  .so-item{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--border);
+    cursor:pointer}
+  .so-item:active{background:var(--surface2)}
+  .so-t{flex:1;min-width:60%;font-size:14px;font-weight:600;line-height:1.35}
+  .so-m{font-size:11px;color:var(--muted);width:100%}
+}
 /* Die Lage – vorbereiteter Überblick */
 .lage-box{background:linear-gradient(180deg,#f5f3ff,var(--surface));border:1.5px solid #ddd6fe;
   border-radius:var(--r);padding:12px 15px;margin-bottom:12px;flex:0 0 auto}
@@ -673,6 +777,17 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .whytag{font-size:9.5px;font-weight:600;color:var(--muted);background:var(--bg);padding:1px 6px;border-radius:9px}
 .say{font-size:11px;line-height:1.45;color:var(--text2);margin-top:4px;padding-left:8px;border-left:2px solid var(--border)}
 .mon-count{font-size:11px;color:var(--muted);margin:-4px 0 8px}
+.mon-brief{font-size:12px;line-height:1.55;color:var(--text2);margin:-4px 0 9px}
+.mon-brief .crit{color:var(--red)}
+.mon-brief-lg{font-size:13.5px;line-height:1.65;color:var(--text2);max-width:74ch}
+.mon-brief-lg .crit{color:var(--red)}
+/* Desktop: bei sehr breiten Fenstern nicht ausufern lassen – Textspalten
+   bleiben lesbar, die Seitenkacheln wachsen nicht sinnlos mit. */
+@media (min-width:1500px){
+  .mon-detail{grid-template-columns:minmax(0,760px) 340px;justify-content:center}
+  body.panel-open .mon-detail{grid-template-columns:minmax(0,620px) 300px 360px}
+  .mon-grid{grid-template-columns:repeat(auto-fill,minmax(360px,1fr));max-width:1500px}
+}
 /* Story inline */
 .story.open{background:var(--surface2)}
 .story-thumb{width:74px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0}
@@ -948,9 +1063,15 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .mytopic button{background:none;border:none;cursor:pointer;font-size:12px;line-height:1;opacity:.55;padding:0}
 .mytopic .n{font-size:9px;font-weight:800;padding:0 5px;border-radius:9px;color:#fff}
 .rel{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--amber-lt);color:#92400e;border:1px solid #fcd34d;cursor:help}
-.acc{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;white-space:nowrap}
-.acc.paid{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
-.acc.free{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.acc{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.acc.paid{background:#92400e;color:#fff}
+.acc.free{background:#15803d;color:#fff}
+/* Zusaetzlich ein Farbrand an der Karte selbst – fuer Entscheidungstraeger ist
+   auf den ersten Blick wichtig, ob ein Beitrag frei oder nur mit Abo lesbar
+   ist, ohne dass sie den kleinen Chip suchen muessen. */
+.top-row[data-acc="paid"],.fitem[data-acc="paid"]{box-shadow:inset 3px 0 0 #92400e}
+.top-row[data-acc="free"],.fitem[data-acc="free"]{box-shadow:inset 3px 0 0 #15803d}
+.so-item .acc{flex-shrink:0}
 .cluster{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
 .tageslage{grid-column:1/-1;background:linear-gradient(120deg,#0d1220,#1e2a4a);color:#fff;border:none}
 .tageslage .bt,.tageslage .bd{color:#fff}
@@ -1132,7 +1253,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
       <span id="auth-label">Basis</span>
     </div>
     <button class="btn p" id="login-btn" onclick="openLogin()">Anmelden</button>
-    <div class="avatar" id="avatar" title="Angemeldet (Pro)">PS</div>
+    <div class="avatar" id="avatar" title="Angemeldet (Pro) – Klick zum Abmelden" onclick="isPro()&&PAYWALL_ACTIVE?doLogout():openLogin()">PS</div>
   </div>
 </header>
 
@@ -1181,9 +1302,28 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
 <div id="body">
   <div id="nav-scrim" onclick="toggleNav(false)"></div>
+  <!-- Feste untere Leiste auf dem Handy, im Stil von FT: Home · Bereich · Suche · KI · Menü -->
+  <!-- Fünf Hauptfunktionen für schnelle Lagebeurteilung: Nachrichten, Suche,
+       Monitor, Trends, Stories. Alles Weitere (Policy, Stakeholder, Reporting,
+       Archiv, KI) steckt im Menü – das sind Vertiefungswerkzeuge, keine
+       Dinge, die man im Sekundentakt braucht. -->
+  <div id="search-overlay"></div>
+  <nav id="mtab">
+    <button class="mtab-btn" onclick="setWorkspace('dash')" id="mt-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h11"/></svg><span>Nachrichten</span></button>
+    <button class="mtab-btn" onclick="mtabSearch()" id="mt-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Suche</span></button>
+    <button class="mtab-btn" onclick="setWorkspace('monitor')" id="mt-mon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3 8 4-16 3 8h6"/></svg><span>Monitor</span></button>
+    <button class="mtab-btn" onclick="wsGo('monitor','trends')" id="mt-trends">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg><span>Trends</span></button>
+    <button class="mtab-btn" onclick="mtabMenu()" id="mt-menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menü</span></button>
+  </nav>
 
   <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
   <nav id="sidebar">
+    <div id="sidebar-hd"><b>Presseschau</b><button class="x" onclick="toggleNav(false)">✕</button></div>
     <!-- Arbeitsbereiche: die oberste Ebene der Plattform -->
     <div id="ws-switch">
       <div class="ws" data-ws="dash"       onclick="setWorkspace('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></div>
@@ -1217,6 +1357,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
           <button class="btn sm" onclick="setSection('news')">Alle Meldungen →</button>
         </div>
       </div>
+      <div id="news-regions"></div>
       <div id="quickbar"></div>
       <div id="lage"></div>
       <div id="news-finder">
@@ -1283,7 +1424,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
     <!-- Trends -->
     <section class="view plain" id="view-trends">
-      <div class="plain-head"><div><h1>Trends</h1><div class="sub" style="margin:0">Was gerade aufgegriffen wird – Blasengröße = Meldungen, Farbe = Datensatz. Klick öffnet die Artikel.</div></div>
+      <div class="plain-head"><div><h1>Trends &amp; Stories</h1><div id="ts-bar-slot"></div><div class="sub" style="margin:0">Was gerade aufgegriffen wird – Blasengröße = Meldungen, Farbe = Datensatz. Klick öffnet die Artikel.</div></div>
         <div class="seg"><button class="active" onclick="setTrendWin(24,this)">24 h</button><button onclick="setTrendWin(72,this)">3 Tage</button><button onclick="setTrendWin(168,this)">7 Tage</button></div>
         <div class="seg"><button class="active" onclick="setTrendMode('topics',this)">Themen</button><button onclick="setTrendMode('words',this)">Schlagwörter</button><button onclick="setTrendMode('sources',this)">Quellen</button></div>
       </div>
@@ -1363,6 +1504,8 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
       </div>
       <div id="split">
         <div id="list-pane">
+          <div class="seg mini-seg" id="region-quick" style="margin:6px 7px 0"></div>
+          <button class="tools-toggle" onclick="document.body.classList.toggle('tools-open')">⚙ Ansicht ändern</button>
           <div class="list-tools">
             <button id="lt-paper" class="on" onclick="setLayout('paper')" title="Zeitungsansicht mit Bildern">📰 Zeitung</button>
             <button id="lt-compact" onclick="setLayout('compact')" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
@@ -1463,10 +1606,12 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
   <p id="login-reason"></p>
   <div class="feat-list" id="login-feats"></div>
-  <div class="fld"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
-  <div class="fld"><label>Passwort</label><input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <div class="fld" style="display:none"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@mail.de"></div>
+  <div class="fld"><label>Passwort <span class="km-note" style="font-weight:400">— gemeinsamer Zugang, kein Einzelkonto</span></label>
+    <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <div id="login-err" style="color:var(--red);font-size:12px;min-height:16px;margin-top:2px"></div>
   <div class="m-acts"><button class="btn p" onclick="doLogin()">Anmelden</button><button class="btn" onclick="closeLogin()">Weiter mit Basis</button></div>
-  <p class="km-note">Demo: Anmeldung schaltet die Pro-Ansicht frei. Später durch echten Auth-Provider ersetzen (setAuth wird mit dem Session-State aufgerufen).</p>
+  <p class="km-note">Ein Passwort für alle – keine E-Mail nötig, das Feld oben ist optional für später.</p>
 </div></div>
 
 <div class="modal" id="sf-modal" onclick="if(event.target.id==='sf-modal')closeSF()"><div class="modal-in">
@@ -1657,12 +1802,42 @@ function setAuth(on){
   store.set('ps_plan',S.plan);
   buildNavInsts();applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderMyTopics();updateMarkUI();markAllDirty();renderIfNeeded(S.view);
 }
-function doLogin(){setAuth(true);closeLogin();}
+/* Password*/
+async function sha256Hex(text){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+  return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function doLogin(){
+  const pw=(g('login-pw')?.value||'').trim();
+  const err=g('login-err');if(err)err.textContent='';
+  if(!ACCESS||!ACCESS.hash){
+    if(err)err.textContent='Kein Pro-Zugang eingerichtet (PREMIUM_PASSWORD-Secret fehlt). Weiter mit Basis.';
+    return;
+  }
+  if(!pw){if(err)err.textContent='Passwort eingeben.';return;}
+  const h=await sha256Hex(pw);
+  if(h===ACCESS.hash){
+    store.set('ps_pro_hash',h);   // zum Erkennen, ob das Passwort später rotiert wurde
+    setAuth(true);closeLogin();
+  }else{
+    if(err)err.textContent='Passwort stimmt nicht.';
+  }
+}
+/* Beim Start: ist noch ein gültiger Login gespeichert? Wurde das Passwort seit
+   dem letzten Login geändert (Secret rotiert), automatisch abmelden. */
+function checkProSession(){
+  const saved=store.get('ps_pro_hash');
+  if(!saved)return;
+  if(ACCESS&&ACCESS.hash&&saved===ACCESS.hash){setAuth(true);}
+  else{store.set('ps_pro_hash','');setAuth(false);}
+}
+function doLogout(){store.set('ps_pro_hash','');setAuth(false);}
 
 /* ═══════════════════════════════════════════════════════════
    STATE & DATEN
    ═══════════════════════════════════════════════════════════ */
 let AI=null;   /* Zusammenfassungen aus ai.json – beim nächtlichen Lauf erzeugt */
+let ACCESS=null; /* {hash} aus access.json – gemeinsamer Pro-Zugang, kein Einzelkonto */
 const LOADLOG=[];
 /* Demo-Daten nur noch auf ausdrücklichen Wunsch: index.html?demo=1
    Sonst erscheint eine Fehlermeldung mit der Liste der fehlenden Dateien. */
@@ -1920,9 +2095,10 @@ async function loadData(){
   const tag=(arr,set)=>(arr||[]).map(a=>{a._set=set;return a;});
   const [n,e,b] = await Promise.all([get('articles.json'),get('eu_articles.json'),get('bundestag_articles.json')]);
   const rest = Promise.all([get('documents.json'),get('people.json'),get('newsletters.json'),
-                            get('laender_articles.json'),get('us_articles.json'),get('dip.json'),get('elections.json'),get('ai.json')]);
-  const [d,pp,nl,la,us,dp,ele,aij] = await rest;
-  ELECT=ele||null;AI=aij||null;
+                            get('laender_articles.json'),get('us_articles.json'),get('dip.json'),get('elections.json'),get('ai.json'),get('access.json')]);
+  const [d,pp,nl,la,us,dp,ele,aij,acj] = await rest;
+  ELECT=ele||null;AI=aij||null;ACCESS=acj||null;
+  checkProSession();
   PEOPLE=pp?.people||[];COMMS=pp?.committees||[];NEWSL=nl?.items||[];PCHANGES=pp?.changes||null;
   ALL_LAENDER=tag(la?.articles,'laender');
   ALL_US=tag(us?.articles,'us');
@@ -2020,6 +2196,10 @@ function applyView(v){
   S.view=v;renderIfNeeded(v);
   if(VIEW_WS[v]&&VIEW_WS[v]!==S.ws){S.ws=VIEW_WS[v];
     document.querySelectorAll('#ws-switch .ws').forEach(e=>e.classList.toggle('active',e.dataset.ws===S.ws));}
+  document.getElementById('mt-home')?.classList.toggle('on',S.ws==='dash');
+  document.getElementById('mt-mon')?.classList.toggle('on',S.ws==='monitor'&&!['trends','stories'].includes(S.view));
+  document.getElementById('mt-trends')?.classList.toggle('on',S.view==='trends');
+  document.getElementById('mt-stories')?.classList.toggle('on',S.view==='stories');
   renderWsNav();renderWsContext();document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
   ['dash','news','eu','bt','br','laender','us','docs','cal','docs2','cal2','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));  /* Alt-Navigation: Elemente existieren in v6 nicht mehr, Aufruf bleibt gefahrlos */
   if(v==='docs'||v==='cal')g('nav-'+v+'2')?.classList.add('active');
@@ -2033,19 +2213,28 @@ function setView(v){
   if((v==='docs'||v==='cal')&&!isPro()){openLogin(v);return;}
   applyView(v);pushNav();
 }
+/* Schnellumschalter Region: Deutschland/EU/USA in einem Griff, ohne ins Menü
+   zu müssen. Genau die drei Blickwinkel, die ein Analyst ständig wechselt. */
+function renderRegionQuick(){
+  const el=g('region-quick');if(!el)return;
+  const REG=[['all','Alle'],['news','DE'],['eu','EU'],['us','USA']];
+  el.innerHTML=REG.map(([k,l])=>`<button class="${S.section===k?'active':''}" onclick="setSection('${k}')">${l}</button>`).join('');
+}
 function setSection(sec){
   S.section=sec;S.topic='all';S.src='all';S.inst='';S.idx=-1;S.art=null;buildNavInsts();
   setC('fb-set',SET_LABEL[sec]);setC('nav-themes-set','· '+SET_LABEL[sec==='all'?'news':sec]);
   buildNavTopics();buildChips();buildSrc();buildFilterSelects();buildSubChips();
   g('reader-content').style.display='none';g('reader-empty').style.display='flex';
-  setView('feed');applyFilters();
+  setView('feed');applyFilters();renderRegionQuick();
 }
 function toggleRail(){document.body.classList.toggle('rail');store.set('ps_rail',document.body.classList.contains('rail'));
   setTimeout(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},220);}
 function toggleNav(force){
   if(window.innerWidth>900){document.body.classList.remove('nav-open');return;}
   document.body.classList.toggle('nav-open',force===undefined?undefined:force);
+  document.getElementById('mt-menu')?.classList.toggle('on',document.body.classList.contains('nav-open'));
 }
+function mtabMenu(){toggleNav();}
 function toggleFilterPanel(){const p=g('filter-panel');p.classList.toggle('open');g('fp-arrow').textContent=p.classList.contains('open')?'▴':'▾';}
 function closeReader(){document.body.classList.remove('reader-open');}
 
@@ -2217,6 +2406,7 @@ function applyFilters(){
   const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
   const f={topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
   list=list.filter(a=>matches(a,f));
+  if(S.regionKw)list=list.filter(a=>poolRegion(S.regionKw).includes(a));
   if(S.onlyFree)list=list.filter(a=>zugang(a)!=='paid');
   /* Gleiche Meldung aus mehreren Quellen nur einmal – die übrigen stecken im
      Quellen-Zähler (📊). Über „Filter anpassen“ abschaltbar. */
@@ -2234,7 +2424,7 @@ function applyFilters(){
 const FEED_PAGE=60;
 function moreFeed(){S.shown=(S.shown||FEED_PAGE)+FEED_PAGE;renderFeed();}
 function renderFeed(){
-  const el=g('list-scroll');
+  const el=g('list-scroll');renderRegionQuick();
   if(!S.filt.length){el.innerHTML='<div style="text-align:center;padding:40px 12px;color:var(--muted);font-size:13px;line-height:1.5">Keine Artikel im aktuellen Filter.<br><button class="btn sm" style="margin-top:8px" onclick="resetFilters()">Filter zurücksetzen</button></div>'+archiveGate();return;}
   S.shown=Math.min(S.shown||FEED_PAGE,Math.max(FEED_PAGE,S.shown||FEED_PAGE));
   const paper=S.layout==='paper';
@@ -2244,7 +2434,7 @@ function renderFeed(){
     const col=a._set==='eu'?'#003399':a._set==='bt'?'#1d4ed8':srcC(a.source).tc;const lock=isLocked(a);const m=marked.has(a.id);
     const instK=instOf(a)||a.cat;const inst=INST_FLAT[instK]?`<span class="inst-badge">${esc(INST_FLAT[instK])}</span>`:(a.cat&&a._set!=='news'?`<span class="inst-badge">${esc(INST_LABELS[a.cat]||a.cat)}</span>`:'');
     const clu=(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster} Quellen</span>`:'';
-    return`<div class="fitem${lead?' lead':''}${txtOnly?' txt':''}" id="fi-${a.id}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
+    return`<div class="fitem${lead?' lead':''}${txtOnly?' txt':''}" id="fi-${a.id}" data-acc="${zugang(a)}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
       ${a.image?`<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
       <div class="ai-top">${badge(a.source)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
       <div class="ai-title">${esc(a.title)}</div>
@@ -2270,7 +2460,7 @@ function cycleCols(){
   document.documentElement.style.setProperty('--paper-min',S.cols===2?'440px':S.cols===3?'320px':'268px');
   g('lt-cols').textContent='▥ '+S.cols+' Spalten';
 }
-function setLayout(m){
+function setLayout(m){renderRegionQuick();
   S.layout=m;store.set('ps_layout',m);
   document.body.classList.toggle('paper',m==='paper');
   document.body.classList.toggle('compact',m==='compact');
@@ -2454,6 +2644,33 @@ function renderLage(){
       ${alt>30?`<div class="lage-alt">Dieser Überblick ist ${Math.round(alt)} Stunden alt.</div>`:''}`}
   </div>`;
 }
+/* China und Welt gibt es als eigene Feed-Kategorie nicht – sie werden aus dem
+   Gesamtbestand über Begriff bzw. Ressort "international" herausgefiltert.
+   Naeherung, aber die einzige, die ohne neue Datenquelle geht. */
+function poolRegion(key){
+  if(key==='china')return pool('all').filter(a=>kwHit('china',stext(a))||kwHit('peking',stext(a)));
+  if(key==='welt')return pool('all').filter(a=>(a.topics||[]).map(normTopic).includes('international'));
+  if(key==='news')return pool('news');
+  if(key==='eu')return pool('eu');
+  if(key==='us')return pool('us');
+  return pool('all');
+}
+function goRegion(key){
+  if(key==='dash'){setView('dash');setDashMode('overview',document.querySelector('#dash-seg button'));renderNewsRegions();return;}
+  if(key==='themen'){setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));renderNewsRegions();return;}
+  S.topics.clear();S.src='all';
+  if(['news','eu','us'].includes(key)){S.section=key;S.regionKw=null;}
+  else{S.section='all';S.regionKw=key;}
+  setC('fb-set',{news:'Nachrichten',eu:'EU Direkt',us:'USA',china:'China',welt:'International / Welt'}[key]||'Alle Feeds');
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();renderNewsRegions();
+}
+function renderNewsRegions(){
+  const el=g('news-regions');if(!el)return;
+  const cur=S.regionKw?S.regionKw:(S.view==='dash'?(S.dashMode==='themes'?'themen':'dash'):(S.section||''));
+  const REG=[['dash','Dashboard'],['news','🇩🇪 DE'],['eu','🇪🇺 EU'],['us','🇺🇸 USA'],['china','🇨🇳 China'],['welt','🌍 Welt'],['themen','Nach Themen']];
+  el.innerHTML=`<div class="seg mini-seg" style="overflow-x:auto;flex-wrap:nowrap">${REG.map(([k,l])=>
+    `<button class="${cur===k?'active':''}" onclick="goRegion('${k}')">${l}</button>`).join('')}</div>`;
+}
 function renderFinder(){
   const q=(g('nf-q')?.value||'').trim().toLowerCase();
   const win=pool('all').filter(a=>ageH(a.date)<=48);
@@ -2523,14 +2740,14 @@ function renderDash(){
   };
   const top=kand.sort((a,b)=>winScore(b)-winScore(a)).slice(0,12);
   const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
-  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-top-${a.id}" onclick="toggleInline('${a.id}','top')">
+  g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-top-${a.id}" data-acc="${zugang(a)}" onclick="toggleInline('${a.id}','top')">
       <span class="rank">${i+1}</span>
       <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${accBadge(a)}${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
       <div class="dl-t">${esc(a.title)}</div>${i===0&&a.desc?`<div class="dl-d">${esc(a.desc)}</div>`:''}
       <div class="dl-m">${rel(a.date)}${readMin(a)?' · '+readMin(a):''}</div></div><span class="chev">▶</span></div>
       <div id="inl-top-${a.id}"></div>`).join(''):empty('Noch keine Meldungen geladen.');
   renderDashSide();
-  renderLage();renderQuickbar();renderFinder();renderDashThemes();initFolds();
+  renderLage();renderQuickbar();renderFinder();renderNewsRegions();renderDashThemes();initFolds();
 }
 /* Inline lesen: Teaser, Bild und Aktionen direkt an Ort und Stelle.
    Kein Ansichtswechsel nötig – der Feed bleibt für langes Lesen erhalten. */
@@ -2671,6 +2888,74 @@ function kiQuota(){
   const log=(store.get('ps_ki_log')||[]).filter(t=>jetzt-t<h);
   if(log.length>=max)return false;
   log.push(jetzt);store.set('ps_ki_log',log);return true;
+}
+/* Eine eigene Suchansicht statt des geteilten Felds oben in der Kopfzeile –
+   dort stand die Suche neben Filtern, KI-Knopf und Menü und war leicht zu
+   übersehen. Jetzt: eigene Funktion, eigener Bildschirm, große Eingabe. */
+/* Trends und Stories beantworten dieselbe Frage aus zwei Blickwinkeln – welche
+   Themen bewegen sich, und welche Meldungen stecken dahinter. Ein Tab, ein
+   Umschalter oben, damit man nicht zwischen zwei Bottom-Tabs wechseln muss. */
+function mtabTrends(){wsGo('monitor',S.tsMode==='stories'?'stories':'trends');}
+function tsSwitch(mode){S.tsMode=mode;store.set('ps_tsmode',mode);setView(mode);}
+function tsBar(active){
+  return`<div class="seg" id="ts-bar" style="margin:6px 0 10px">
+    <button class="${active==='trends'?'active':''}" onclick="tsSwitch('trends')">↗ Trends</button>
+    <button class="${active==='stories'?'active':''}" onclick="tsSwitch('stories')">⧉ Stories</button>
+  </div>`;
+}
+function mtabSearch(){
+  const el=g('search-overlay');if(!el)return;
+  document.body.classList.add('search-open');
+  renderSearchOverlay();
+  setTimeout(()=>g('search-input')?.focus(),80);
+}
+function closeSearchOverlay(){document.body.classList.remove('search-open');}
+function renderSearchOverlay(){
+  const el=g('search-overlay');if(!el)return;
+  const q=(g('search-input')?.value)||S.searchLast||'';
+  el.innerHTML=`<div class="so-head">
+      <button class="so-back" onclick="closeSearchOverlay()" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="so-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search-input" value="${esc(q)}" placeholder="Nachrichten, Personen, Vorgänge durchsuchen…" oninput="debounce(searchOverlayRun,150)" onkeydown="if(event.key==='Enter')searchOverlayRun()"></div>
+    </div>
+    <div class="so-scopes">
+      <span class="chip${(S.soScope||'all')==='all'?' active':''}" onclick="S.soScope='all';searchOverlayRun()">Alle</span>
+      <span class="chip${S.soScope==='news'?' active':''}" onclick="S.soScope='news';searchOverlayRun()">Nachrichten</span>
+      <span class="chip${S.soScope==='people'?' active':''}" onclick="S.soScope='people';searchOverlayRun()">Personen</span>
+      <span class="chip${S.soScope==='policy'?' active':''}" onclick="S.soScope='policy';searchOverlayRun()">Vorgänge</span>
+    </div>
+    <div id="so-results"></div>`;
+  searchOverlayRun();
+}
+function searchOverlayRun(){
+  const q=(g('search-input')?.value||'').trim();
+  S.searchLast=q;
+  const box=g('so-results');if(!box)return;
+  if(q.length<2){box.innerHTML='<div class="km-note">Mindestens zwei Zeichen eingeben.</div>';return;}
+  const scope=S.soScope||'all';
+  let html='';
+  if(scope==='all'||scope==='news'){
+    const treffer=dedupe(pool('all').filter(a=>kwHit(q,stext(a))||stext(a).includes(q.toLowerCase())))
+      .sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,30);
+    html+=`<div class="so-group"><div class="so-lbl">Nachrichten (${treffer.length})</div>
+      ${treffer.map(a=>`<div class="so-item" onclick="closeSearchOverlay();openById('${a.id}','${a._set}')">
+        ${accBadge(a)}<span class="so-t">${esc(a.title)}</span>
+        <span class="so-m">${esc(a.source)} · ${rel(a.date)}</span></div>`).join('')||'<div class="km-note">Keine Treffer.</div>'}</div>`;
+  }
+  if(scope==='all'||scope==='people'){
+    const p=PEOPLE.filter(x=>(x.name||'').toLowerCase().includes(q.toLowerCase())).slice(0,15);
+    if(p.length||scope==='people')html+=`<div class="so-group"><div class="so-lbl">Personen (${p.length})</div>
+      ${p.map(x=>`<div class="so-item" onclick="closeSearchOverlay();openPerson('${x.id}')">
+        <span class="so-t">${esc(x.name)}</span><span class="so-m">${esc(x.party||'')} · ${esc(parlLabel(x))}</span></div>`).join('')||'<div class="km-note">Keine Treffer.</div>'}</div>`;
+  }
+  if(scope==='all'||scope==='policy'){
+    const v=(DIP.procedures||[]).filter(x=>(x.title||'').toLowerCase().includes(q.toLowerCase())).slice(0,15);
+    if(v.length||scope==='policy')html+=`<div class="so-group"><div class="so-lbl">Vorgänge (${v.length})</div>
+      ${v.map(x=>`<div class="so-item" onclick="closeSearchOverlay();openProcess('${x.id}')">
+        <span class="so-t">${esc(x.title)}</span><span class="so-m">${STAGE_L[x.stage]||x.stage}</span></div>`).join('')||'<div class="km-note">Keine Treffer.</div>'}</div>`;
+  }
+  box.innerHTML=html;
 }
 function retrievalAnswer(q){
   const worte=q.toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/)
@@ -3543,6 +3828,19 @@ function monitorScore(a,m){
 }
 const MON_MIN=3;
 function monitorMatch(a,m){return monitorScore(a,m)>=(m.minScore||MON_MIN);}
+/* Ein Satz, der sagt, worum es geht – ohne KI, rein aus den Daten. Genau das
+   fehlte: Zahlen allein ("3 kritisch, 25 wichtig") sagen einem Entscheider
+   nichts, wenn er nicht erst reinklickt. */
+function monitorBrief(st,m){
+  if(!st.stories.length)return `Keine neuen Entwicklungen zu „${esc(m.name)}" in den letzten 48 Stunden.`;
+  const top=st.stories[0];
+  const teile=[`<b>${st.stories.length}</b> Entwicklung${st.stories.length===1?'':'en'}`];
+  if(st.bySeverity.critical)teile.push(`<b class="crit">${st.bySeverity.critical} kritisch</b>`);
+  teile.push(`dominiert von „${esc(top.title.slice(0,70))}" (${top.sources.length} Quellen)`);
+  if(st.policy.length)teile.push(`<b>${st.policy.length}</b> Verfahren in Bewegung`);
+  if(st.stakeholders.length)teile.push(`am häufigsten: <b>${esc(st.stakeholders[0].p.name)}</b>`);
+  return teile.join(' · ')+'.';
+}
 function monitorState(m){
   /* Treffer mit Punktzahl, damit die Liste nach Nähe zum Thema sortiert ist. */
   const scored=[];
@@ -3733,7 +4031,7 @@ function renderMonitor(){
     return`<div class="mon-card" onclick="openMonitor('${m.id}')" style="--mc:${m.color||'#2563eb'}">
       <div class="mon-hd"><span class="mon-dot"></span><h3>${esc(m.name)}</h3>
         ${st.neu.length?`<span class="mon-new">${st.neu.length} neu</span>`:''}</div>
-      <div class="mon-count">${st.all.length} Treffer · ${st.allStories.length} Themen · ${st.policy.length} Verfahren</div>
+      <div class="mon-brief">${monitorBrief(st,m)}</div>
       <div class="mon-sev">
         ${st.bySeverity.critical?`<span class="sev crit">🔴 ${st.bySeverity.critical} kritisch</span>`:''}
         ${st.bySeverity.important?`<span class="sev imp">🟠 ${st.bySeverity.important} wichtig</span>`:''}
@@ -3792,7 +4090,8 @@ function renderMonitorDetail(){
   g('view-monitor').innerHTML=`
     <div class="plain-head"><button class="btn sm" onclick="closeMonitor()">← Monitore</button>
       <div style="flex:1"><h1 style="display:flex;align-items:center;gap:8px"><span class="mon-dot" style="--mc:${m.color||'#2563eb'}"></span>${esc(m.name)}</h1>
-      <div class="sub" style="margin:0">${st.all.length} Meldungen insgesamt · ${st.win.length} in 48 h · ${st.neu.length} seit dem letzten Besuch</div></div>
+      <div class="mon-brief-lg">${monitorBrief(st,m)}</div>
+      <div class="sub" style="margin:4px 0 0">${st.all.length} Meldungen insgesamt · ${st.win.length} in 48 h · ${st.neu.length} seit dem letzten Besuch</div></div>
       <button class="btn sm" onclick="editMonitor('${m.id}')">Bearbeiten</button>
       <button class="btn sm" onclick="buildReport('monitor','${m.id}')">↓ Report</button></div>
     <div class="mon-detail" id="mon-detail">
@@ -3997,9 +4296,10 @@ async function renderArchiv(){
 /* ── STORIES-ÜBERSICHT ──────────────────────────────────────────────── */
 function renderStories(){
   const el=g('view-stories');if(!el)return;
+  if(g('ts-bar-slot'))g('ts-bar-slot').innerHTML=tsBar('stories');
   const all=buildStories(storyWin());
   const list=all.filter(s=>S.storySev==='all'||!S.storySev?true:s.severity===S.storySev);
-  el.innerHTML=`<div class="plain-head"><div><h1>Stories</h1>
+  el.innerHTML=`<div class="plain-head"><div><h1>Trends &amp; Stories</h1><div id="ts-bar-slot"></div>
       <div class="sub" style="margin:0">Meldungen, die dieselbe Sache behandeln, zu einer Story zusammengefasst – je mehr unabhängige Quellen, desto höher die Einstufung.
         <b>kritisch</b> ab fünf Quellen in sechs Stunden · <b>wichtig</b> ab drei Quellen · sonst <b>neu</b>.</div></div>
     <div class="seg"><button class="${!S.storySev||S.storySev==='all'?'active':''}" onclick="S.storySev='all';reRender('stories')">Alle ${all.length}</button>
@@ -4492,6 +4792,7 @@ function trendData(){
 }
 const SET_C={news:'#2563eb',eu:'#003399',bt:'#7c3aed',laender:'#0f766e',us:'#dc2626'};
 function renderTrends(){
+  if(g('ts-bar-slot'))g('ts-bar-slot').innerHTML=tsBar('trends');
   const wrap=g('bubble-wrap');
   if(wrap&&!wrap.clientWidth){requestAnimationFrame(()=>renderTrends());return;}
   const data=trendData();setC('cnt-trends',data.length);
@@ -4514,9 +4815,21 @@ function renderTrends(){
       ${show?`<text x="${d.x.toFixed(1)}" y="${(d.y-1).toFixed(1)}" text-anchor="middle" font-size="${Math.min(13,d.r/2.6).toFixed(0)}" font-weight="700" fill="${c}" font-family="inherit">${esc(lbl.slice(0,16))}</text>
       <text x="${d.x.toFixed(1)}" y="${(d.y+12).toFixed(1)}" text-anchor="middle" font-size="10" fill="${c}" opacity=".75" font-family="inherit">${d.n}</text>`:`<title>${esc(lbl)}: ${d.n}</title>`}</g>`;}).join('');
   renderTrendSummary(data);
-  const mv=data.slice().sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,14);
+  /* Auffaellige Ausschlaege (≥75 % Veraenderung bei mind. 3 Meldungen) zuerst –
+     genau das, was ein Analyst zuerst sehen will: was sich gerade stark bewegt. */
+  const mv=data.slice().sort((a,b)=>{
+    const aa=Math.abs(a.delta)>=75&&a.n>=3,ba=Math.abs(b.delta)>=75&&b.n>=3;
+    if(aa!==ba)return aa?-1:1;
+    return Math.abs(b.delta)-Math.abs(a.delta);
+  }).slice(0,14);
+  /* Auffaellige Ausschlaege (>=75% bei mind. 3 Meldungen) nach vorn – das ist,
+     was ein Analyst zuerst sehen will, bevor er sich durch die Liste arbeitet. */
+  mv.sort((a,b)=>{const aa=Math.abs(a.delta)>=75&&a.n>=3,ba=Math.abs(b.delta)>=75&&b.n>=3;return aa===ba?0:aa?-1:1;});
   g('trend-list').innerHTML=mv.map(d=>{const lbl=S.trendMode==='topics'?chipLabel(d.k):d.k;const sm=Math.max(1,...d.spark);
-    return`<div class="trend-row" onclick="trendDetail('${encodeURIComponent(d.k)}')"><span class="tn">${esc(lbl)}</span>
+    const auffaellig=Math.abs(d.delta)>=75&&d.n>=3;
+    return`<div class="trend-row" onclick="trendDetail('${encodeURIComponent(d.k)}')">
+      ${auffaellig?`<span class="flag" title="Auffällige Bewegung: mindestens 75 % Veränderung bei drei oder mehr Meldungen">⚡</span>`:''}
+      <span class="tn">${esc(lbl)}</span>
       <span class="spark">${d.spark.map(v=>`<i style="height:${Math.max(2,v/sm*26)}px"></i>`).join('')}</span>
       <span class="tdelta ${d.delta>15?'tup':d.delta<-15?'tdown':'tflat'}">${d.delta>0?'+':''}${d.delta}%</span><span class="ds-cnt">${d.n}</span></div>`;}).join('');
 }
@@ -4527,6 +4840,7 @@ function renderTrendSummary(data){
   if(!data.length){el.innerHTML=`<div class="sum-hd">Auswertung</div>Zu wenige Meldungen in ${win} für eine Auswertung.`;return;}
   const lbl=k=>S.trendMode==='topics'?chipLabel(k):titleCase(k);
   const chip=d=>`<span class="hl" style="background:${(S.trendMode==='topics'?topicColor(d.k):'#2563eb')}1e;color:${S.trendMode==='topics'?topicColor(d.k):'#2563eb'}">${esc(lbl(d.k))}</span>`;
+  const auffaellig=d=>Math.abs(d.delta)>=75&&d.n>=3;
   const total=data.reduce((n,d)=>n+d.n,0), prevTotal=data.reduce((n,d)=>n+d.prev,0);
   const trend=prevTotal?Math.round((total-prevTotal)/prevTotal*100):0;
   const steiger=data.filter(d=>d.delta>=25&&d.n>=3).sort((a,b)=>b.delta-a.delta).slice(0,3);
@@ -4548,6 +4862,11 @@ function renderTrendSummary(data){
   el.innerHTML=`<div class="sum-hd">Auswertung · ${S.trendMode==='topics'?'Themen':S.trendMode==='words'?'Schlagwörter':'Quellen'}</div>
     Das Meldungsaufkommen liegt <b class="${trend>0?'up':trend<0?'down':''}">${trend>0?'um '+trend+' % höher':trend<0?'um '+Math.abs(trend)+' % niedriger':'etwa gleichauf'}</b> ${trend===0?'mit der':'als in der'} Vorperiode.
     <ul>${zeilen.map(z=>`<li>${z}</li>`).join('')}</ul>`;
+  /* Kennzeichnung an der bestehenden Bewegungsliste ergaenzen */
+  setTimeout(()=>{document.querySelectorAll('#trend-list .trend-row').forEach((row,i)=>{
+    const d=data[i];if(!d)return;
+    if(auffaellig(d)&&!row.querySelector('.flag')){const f=document.createElement('span');f.className='flag';f.title='Auffällige Bewegung: mindestens 75 % Veränderung bei drei oder mehr Meldungen';f.textContent='⚡';row.prepend(f);}
+  });},0);
 }
 function trendDetail(kEnc){
   const k=decodeURIComponent(kEnc);const d=trendData().find(x=>x.k===k);if(!d)return;
