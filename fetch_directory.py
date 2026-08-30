@@ -778,6 +778,28 @@ def build_ai_json(procs=None):
     print(f"  → ai.json: Lage ({len(out['lage'])} Zeichen) + {len(out['themen'])} Ressorts")
 
 # ─────────────────────────────────────────────────────────────
+# EINFACHER PRO-ZUGANG (ein gemeinsames Passwort, kein Konto pro Person)
+#
+# Ehrliche Grenze zuerst: das ist eine Zugangsschranke fuer eine kleine,
+# vertrauenswuerdige Gruppe (Team, Redaktion) - keine echte Benutzerverwaltung.
+# Das Passwort selbst steht NIE im Repo, nur sein SHA-256-Hash in access.json.
+# Im Browser wird derselbe Hash aus der Eingabe gebildet und verglichen. Wer
+# den Hash im Quelltext sieht, koennte theoretisch offline raten (Bruteforce) -
+# deshalb ein langes, zufaelliges Passwort verwenden, keinen Merksatz.
+# Fuer echte einzelne Konten braucht es einen Server (siehe ACCOUNTS_und_DEPLOY.md).
+# ─────────────────────────────────────────────────────────────
+def build_access():
+    pw = os.environ.get("PREMIUM_PASSWORD", "").strip()
+    if not pw:
+        print("── Pro-Zugang: kein PREMIUM_PASSWORD gesetzt – übersprungen ──"); return
+    import hashlib
+    h = hashlib.sha256(pw.encode("utf-8")).hexdigest()
+    _atomic_dump({"updated": datetime.now(timezone.utc).isoformat(), "hash": h,
+                 "hinweis": "Gemeinsamer Zugang, kein Einzelkonto. Passwort ändern = Secret ändern."},
+                "access.json")
+    print(f"── Pro-Zugang: access.json geschrieben (Hash {h[:10]}…) ──")
+
+# ─────────────────────────────────────────────────────────────
 # WIKIPEDIA – Kurzbiografie als Hintergrund (inkrementell wie die Profile)
 # ─────────────────────────────────────────────────────────────
 WIKI_BLOCKED = [False]
@@ -1269,6 +1291,7 @@ def fetch_dip(days=90):
     if not (procs or docs or protocols):
         print("  ⚠ DIP lieferte nichts – dip.json bleibt unverändert."); return
     safe("Groq-Zusammenfassungen", lambda: enrich_groq(procs), None)
+    safe("Pro-Zugang", build_access, None)
     _atomic_dump(out, "dip.json")
     print(f"  → dip.json: {len(procs)} Vorgänge, {len(docs)} Drucksachen, {len(protocols)} Protokolle, {os.path.getsize('dip.json')//1024} KB")
 
