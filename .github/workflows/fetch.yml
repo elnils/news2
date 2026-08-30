@@ -30,6 +30,7 @@ jobs:
           NEWS_BUDGET_MIN: '9'       # Skript beendet sich selbst nach 9 Minuten
           FEED_WORKERS: '8'          # parallele Abrufe
           FEED_TIMEOUT: '10'         # Sekunden je Feed
+          PREMIUM_PASSWORD: ${{ secrets.PREMIUM_PASSWORD }}   # optional: gemeinsamer Pro-Zugang
           ARCHIVE: '1'               # ältere Meldungen in archive/YYYY-MM.json sichern
           NEWS_ARTICLE_SHARE: '0.75' # Anteil des Budgets für Nachrichten;
                                      # Dokumente bekommen nur die Restzeit
@@ -108,7 +109,7 @@ jobs:
           for f in articles.json eu_articles.json bundestag_articles.json \
                    laender_articles.json us_articles.json documents.json \
                    people.json dip.json calendar.ics newsletters.json elections.json \
-                   people_cache.json landtage_cache.json groq_cache.json ai.json; do
+                   people_cache.json landtage_cache.json groq_cache.json ai.json access.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
