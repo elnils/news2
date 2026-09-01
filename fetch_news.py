@@ -791,7 +791,7 @@ def parse_feed(fetch_result, source, topic_rules):
             if m: img=m.group(1)
         author=(g('{http://purl.org/dc/elements/1.1/}creator') or g('author') or
                 g('{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name') or '')[:120]
-        access = detect_access(source, title, cats, link)
+        access = detect_access_cat(source, title, cats, link, cat)
         if access == "paid":
             title = clean_paid_marker(title)
         title = improve_title(title, desc, source)
@@ -852,6 +852,16 @@ PAID_MARK_RE = re.compile(
     r'plus-artikel|abo|abonnenten|paywall|premium|exklusiv f[üu]r'
     r')([\s\])|:.\-–]|$)', re.I)
 
+# Kategorien, deren Inhalte per Definition oeffentlich sind: Behoerden,
+# Parlamente, Gerichte, Zentralbanken, Denkfabriken. Diese Stellen veroeffentlichen
+# ihre Mitteilungen und Dokumente ohne Bezahlschranke - das ist keine Vermutung,
+# sondern folgt aus ihrem Auftrag.
+FREE_CATS = {
+    "ec", "ep", "eu-council", "ecb", "eu-think",          # EU-Organe und Institute
+    "bundesrat", "bt-allg", "breg", "bverfg", "bgh",       # Bund, Parlament, Gerichte
+    "bundesbank", "us-whitehouse", "us-house", "us-senate",
+}
+
 def detect_access(source, title, cats, link=""):
     """'paid', 'free' oder 'unknown' – bewusst zurueckhaltend."""
     if source in PAID_SOURCES: return "paid"
@@ -862,6 +872,12 @@ def detect_access(source, title, cats, link=""):
     if re.search(r"[/\-.](plus|premium|abo|paywall)[/\-.?]|[/\-]plus\b", l): return "paid"
     if source in FREE_SOURCES: return "free"
     return "unknown"
+
+def detect_access_cat(source, title, cats, link="", cat=""):
+    """Wie detect_access, beruecksichtigt zusaetzlich die Feed-Kategorie."""
+    a = detect_access(source, title, cats, link)
+    if a == "unknown" and cat in FREE_CATS: return "free"
+    return a
 
 def clean_paid_marker(title):
     """Entfernt die Kennzeichnung aus dem Titel, damit sie nicht doppelt erscheint."""
