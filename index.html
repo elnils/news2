@@ -127,6 +127,7 @@ body.pro #login-btn{display:none}
 
 /* ── Body: Sidebar + Main ─────────────────────────────────── */
 #body{flex:1;display:flex;min-height:0;position:relative}
+#sidebar-hd{display:none}   /* nur mobil sichtbar – @media weiter unten schaltet auf flex */
 #sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
   overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:10px 8px 40px;display:block;
   transition:width .18s ease}
@@ -628,11 +629,30 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   #sidebar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
   #sidebar-hd{display:flex;align-items:center;gap:9px;padding:16px 16px 12px;
     padding-top:calc(16px + env(safe-area-inset-top));border-bottom:1px solid rgba(255,255,255,.12)}
+  /* Nur hier, innerhalb der mobilen @media-Regel, sichtbar. */
   #sidebar-hd b{font-size:17px;letter-spacing:-.02em}
   #sidebar-hd .x{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#fff;
     width:32px;height:32px;border-radius:50%;font-size:15px}
   #rail-toggle{display:none!important}
   #nav-toggle{display:none!important}
+  /* GEMESSENES PROBLEM: Auf dem Handy begann die erste Schlagzeile erst bei
+     y=1178 px bei 844 px Bildhöhe – man musste 334 px scrollen, bevor eine
+     einzige Meldung sichtbar war. Für eine App, die "sofort sehen, was läuft"
+     verspricht, ist das der schwerste Bedienfehler. Deshalb auf dem Handy:
+     Meldungen nach oben, Suchfeld und Themen-Radar darunter. Die Reihenfolge
+     im HTML bleibt unveraendert (Desktop profitiert vom Überblick zuerst). */
+  #view-dash{display:flex;flex-direction:column}
+  #view-dash .dash-head{order:1}
+  #view-dash #news-regions{order:2}
+  #view-dash #dash-overview{order:3}   /* enthält Top-Meldungen und Seitenkacheln */
+  #view-dash #dash-themes{order:3}
+  #view-dash #lage{order:4}
+  #view-dash #quickbar{order:5}
+  #view-dash #news-finder{order:6}
+  /* "Die Lage" auf dem Handy standardmaessig kompakt: Kernsatz sichtbar,
+     Ressort-Kacheln erst auf Tippen – spart rund 300 px vor den Meldungen. */
+  #lage .lage-themen{display:none}
+  body.lage-voll #lage .lage-themen{display:grid}
   /* Layout-Werkzeuge kosten auf dem Handy zu viel Platz vor den Meldungen –
      einklappbar machen, Region-Schnellwahl bleibt immer offen. */
   .list-tools{display:none!important}
@@ -708,6 +728,15 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .lt-t{font-size:12px;line-height:1.5;color:var(--text2)}
 .lt-q{font-size:10px;color:var(--muted);margin-top:5px}
 .lage-alt{font-size:10.5px;color:var(--amber);margin-top:7px}
+/* Breadcrumb: zeigt jederzeit den Weg zurück, jede Ebene anklickbar */
+#crumb:empty{display:none}
+#crumb{padding:7px 16px;font-size:12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0}
+.crumb-in{display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:1400px}
+.cl{color:var(--blue);cursor:pointer;font-weight:600}
+.cl:hover{text-decoration:underline}
+.cc{color:var(--text2);font-weight:700}
+.cs{color:var(--muted)}
+@media (max-width:900px){#crumb{padding:7px 12px;font-size:11.5px}}
 /* KI-Hinweis und KI-Suche */
 #ki-ask{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:20px;
   padding:5px 13px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -870,6 +899,8 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .st-d{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 .st-t{font-weight:600;line-height:1.35}
 .st-b{font-size:11px;color:var(--muted)}
+.st-doc{font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;margin-top:3px}
+.st-doc:hover{text-decoration:underline}
 /* Quellen / Organisationen */
 .src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .src-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .12s}
@@ -916,7 +947,15 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .mini-row .mt{font-size:12px;font-weight:600;line-height:1.32}
 .mini-row .mm{font-size:10px;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .mini-row .when{font-weight:700;color:var(--blue)}
-@media (max-width:1000px){.dmain{grid-template-columns:1fr}.dside{flex-direction:row;overflow-x:auto;gap:10px}.dside .dcard{min-width:270px;flex:0 0 auto}}
+/* Die Seitenkacheln werden schmal nebeneinander scrollbar. WICHTIG: min-width:0
+   am Grid-Element, sonst dehnt die 270px-Mindestbreite der Kacheln die ganze
+   Zeile ueber die Bildschirmbreite und schneidet die Meldungstexte rechts ab. */
+@media (max-width:1000px){
+  .dmain{grid-template-columns:minmax(0,1fr)}
+  .dmain>*{min-width:0}
+  .dside{flex-direction:row;overflow-x:auto;gap:10px;max-width:100%}
+  .dside .dcard{min-width:270px;flex:0 0 auto}
+}
 @media (max-width:620px){.dside{flex-direction:column}.dside .dcard{min-width:0}}
 /* Themen und Quellen vollständig, aber platzsparend */
 .nav-chip-wrap{max-height:none}
@@ -932,6 +971,11 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 #quickbar::-webkit-scrollbar{height:5px}
 #quickbar::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
 #quickbar>*{flex:0 0 auto}
+/* Das Themen-Radar bringt auf dem Desktop nichts: dort steht links ohnehin die
+   vollstaendige Ressortliste. Nur auf schmalen Bildschirmen eine sinnvolle
+   Abkuerzung. Diese Regel muss NACH der Basisregel oben stehen, sonst gewinnt
+   deren display:flex (gleiche Spezifitaet, spaetere Regel gewinnt). */
+@media (min-width:901px){#quickbar{display:none}}
 .qb-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);margin-right:4px}
 .qb-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;
   border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .12s;white-space:nowrap}
@@ -1308,6 +1352,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
        Archiv, KI) steckt im Menü – das sind Vertiefungswerkzeuge, keine
        Dinge, die man im Sekundentakt braucht. -->
   <div id="search-overlay"></div>
+  <div id="crumb"></div>
   <nav id="mtab">
     <button class="mtab-btn" onclick="setWorkspace('dash')" id="mt-home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h11"/></svg><span>Nachrichten</span></button>
@@ -1323,7 +1368,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
   <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
   <nav id="sidebar">
-    <div id="sidebar-hd"><b>Presseschau</b><button class="x" onclick="toggleNav(false)">✕</button></div>
+    <div id="sidebar-hd" style="display:none"><b>Presseschau</b><button class="x" onclick="toggleNav(false)">✕</button></div>
     <!-- Arbeitsbereiche: die oberste Ebene der Plattform -->
     <div id="ws-switch">
       <div class="ws" data-ws="dash"       onclick="setWorkspace('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></div>
@@ -1378,7 +1423,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         <div class="dcard">
           <div class="dcard-hd"><h2>Top-Meldungen</h2>
             <select class="fsel mini-sel" id="top-scope" onchange="S.topScope=this.value;store.set('ps_topscope',this.value);reRender('dash')"></select>
-            <div class="seg mini-seg" id="top-win"></div>
+            <select class="fsel mini-sel" id="top-win" onchange="setTopWin(+this.value)"></select>
             <button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
           <div class="dcard-body top-list" id="dash-top"></div>
         </div>
@@ -1606,7 +1651,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
   <p id="login-reason"></p>
   <div class="feat-list" id="login-feats"></div>
-  <div class="fld" style="display:none"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@mail.de"></div>
+  <div class="fld" style="display:none"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
   <div class="fld"><label>Passwort <span class="km-note" style="font-weight:400">— gemeinsamer Zugang, kein Einzelkonto</span></label>
     <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
   <div id="login-err" style="color:var(--red);font-size:12px;min-height:16px;margin-top:2px"></div>
@@ -1802,7 +1847,13 @@ function setAuth(on){
   store.set('ps_plan',S.plan);
   buildNavInsts();applyFilters();renderDash();renderSaved();renderDocs();renderCal();renderMyTopics();updateMarkUI();markAllDirty();renderIfNeeded(S.view);
 }
-/* Password*/
+/* Ein gemeinsames Passwort für eine kleine Gruppe, kein Einzelkonto.
+   Das Passwort selbst steht nirgends im Quelltext – nur sein SHA-256-Hash in
+   access.json (aus dem GitHub-Secret PREMIUM_PASSWORD erzeugt). Hier wird aus
+   der Eingabe derselbe Hash gebildet und verglichen; nichts wird übers Netz
+   geschickt. Wer den Quelltext liest, sieht den Hash, nicht das Passwort –
+   ein langes, zufälliges Passwort macht Rateversuche unpraktikabel, ist aber
+   keine echte Zugriffskontrolle wie ein Server-Login. */
 async function sha256Hex(text){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
   return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -1977,10 +2028,16 @@ let _df=null,_dfKey='';
 function dfIndex(){
   const key=[ALL_NEWS.length,ALL_EU.length,ALL_BT.length,ALL_LAENDER.length,ALL_US.length].join(',');
   if(_df&&_dfKey===key)return _df;
+  /* BEHOBENER FEHLER: Hier wurden unveraenderte Wörter gezaehlt ("gesetzes"),
+     waehrend sigWords() gestammte Wörter liefert ("gesetz"). Dadurch tauchte
+     "gesetz" nie in der Haeufigkeitstabelle auf, galt als "selten" (0 Treffer)
+     und die Verknüpfungslogik hielt zwei völlig verschiedene Gesetzentwürfe für
+     verwandt, weil beide zufällig "entwurf" und "gesetz" enthielten. Jetzt wird
+     mit derselben Stammform gezaehlt wie beim Abgleich – gleiche Normalisierung
+     auf beiden Seiten ist hier die eigentliche Regel, nicht nur ein Detail. */
   const df={},all=rawPool('all');
   all.forEach(a=>{const seen=new Set();
-    (a.title||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).forEach(w=>{
-      if(w.length>3&&!seen.has(w)){seen.add(w);df[w]=(df[w]||0)+1;}});});
+    sigWords(a.title).forEach(w=>{if(!seen.has(w)){seen.add(w);df[w]=(df[w]||0)+1;}});});
   _dfKey=key;_df={df,n:Math.max(1,all.length)};
   return _df;
 }
@@ -2053,13 +2110,20 @@ function relChip(a){const b=a.boost||0;if(!b)return'';
 const PAID_SRC=new Set(['Handelsblatt','Table.Briefings','Table.Media','Tagesspiegel Background',
   'Politico Pro','WirtschaftsWoche','Financial Times','Bloomberg','The Economist','New York Times']);
 const PAID_RE=/(^|[\s\[(|])(s\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|sz\s*plus|plus-artikel|abo|paywall|premium)([\s\])|:.\-–]|$)/i;
+/* Behoerden, Parlamente, Gerichte, Zentralbanken und Denkfabriken veroeffentlichen
+   ohne Bezahlschranke – das folgt aus ihrem Auftrag und ist keine Vermutung.
+   Gilt auch fuer aeltere Daten, die noch kein access-Feld mitbringen. */
+const FREE_CATS=new Set(['ec','ep','eu-council','ecb','eu-think','bundesrat','bt-allg','breg',
+  'bverfg','bgh','bundesbank','us-whitehouse','us-house','us-senate']);
 function zugang(a){
   if(a._acc)return a._acc;
   let v=a.access;
   if(!v){
-    v=PAID_SRC.has(a.source)||PAID_RE.test(a.title||'')||/[/\-.](plus|premium|abo)[/\-.?]/i.test(a.link||'')
-      ?'paid':'unknown';
+    if(PAID_SRC.has(a.source)||PAID_RE.test(a.title||'')||/[/\-.](plus|premium|abo)[/\-.?]/i.test(a.link||''))v='paid';
+    else if(FREE_CATS.has(a.cat))v='free';
+    else v='unknown';
   }
+  else if(v==='unknown'&&FREE_CATS.has(a.cat))v='free';
   return(a._acc=v);
 }
 function accBadge(a){
@@ -2200,7 +2264,7 @@ function applyView(v){
   document.getElementById('mt-mon')?.classList.toggle('on',S.ws==='monitor'&&!['trends','stories'].includes(S.view));
   document.getElementById('mt-trends')?.classList.toggle('on',S.view==='trends');
   document.getElementById('mt-stories')?.classList.toggle('on',S.view==='stories');
-  renderWsNav();renderWsContext();document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
+  renderWsNav();renderWsContext();renderCrumb();document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
   ['dash','news','eu','bt','br','laender','us','docs','cal','docs2','cal2','brief','dir','comm','types','trends','news2','wahl'].forEach(k=>g('nav-'+k)?.classList.remove('active'));  /* Alt-Navigation: Elemente existieren in v6 nicht mehr, Aufruf bleibt gefahrlos */
   if(v==='docs'||v==='cal')g('nav-'+v+'2')?.classList.add('active');
   if(v==='feed')g('nav-'+S.section)?.classList.add('active');else if(v==='dir')g(S.dirMode==='comm'?'nav-comm':'nav-dir')?.classList.add('active');else g('nav-'+v)?.classList.add('active');
@@ -2244,6 +2308,18 @@ function buildNavTopics(){
   if(!g('nav-topics'))return;   /* Ressortliste existiert nur im Monitor-Kontext */
   const sec=S.section==='all'?'news':S.section;
   const all=chipsFor(sec).slice(1);
+  /* Auf dem Handy sind 24 Chips eine Leseliste, keine Auswahl - dort ein
+     Auswahlfeld. Am Desktop bleiben die Chips, weil dort Platz ist und das
+     Überfliegen aller Ressorts auf einen Blick schneller geht als ein Dropdown. */
+  if(window.innerWidth<=900){
+    g('nav-topics').className='';
+    g('nav-topics').innerHTML=`<select class="fsel" style="width:100%" onchange="if(this.value){setTopic(this.value)}else{setTopic('all')}">
+        <option value="">Alle Ressorts (${all.length})</option>
+        ${all.map(c=>`<option value="${c.t}"${S.topic===c.t?' selected':''}>${esc(chipLabel(c.t))}${c.n?' ('+c.n+')':''}</option>`).join('')}
+      </select>`;
+    if(g('nav-topics-more'))g('nav-topics-more').innerHTML='';
+    return;
+  }
   g('nav-topics').className='nav-chip-wrap'+(S.topicsExpanded||all.length<=8?'':' capped');
   g('nav-topics').innerHTML=all.map(c=>`<span class="chip${S.topics.has(c.t)?' sel':(S.topic===c.t?' active':'')}" onclick="(event.metaKey||event.ctrlKey)?toggleTopic('${c.t}'):setTopic('${c.t}');if(S.view!=='feed')setView('feed')">${c.l}</span>`).join('')
   ;
@@ -2436,7 +2512,7 @@ function renderFeed(){
     const clu=(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster} Quellen</span>`:'';
     return`<div class="fitem${lead?' lead':''}${txtOnly?' txt':''}" id="fi-${a.id}" data-acc="${zugang(a)}"><div class="art-item${i===S.idx?' active':''}${m?' marked':''}${lock?' locked':''}" id="ai-${i}" style="border-left:3px solid ${col}" onclick="feedClick(${i},'${a.id}')">
       ${a.image?`<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.remove()">`:''}
-      <div class="ai-top">${badge(a.source)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
+      <div class="ai-top">${badge(a.source)}${accBadge(a)}${inst}${isBreaking(a)?'<span class="eil">Eil</span>':''}${isNew(a)?'<span class="newpill">Neu</span>':''}${clu}${lock?'<span class="pro-tag">PRO</span>':''}<span class="ai-date">${rel(a.date)}</span></div>
       <div class="ai-title">${esc(a.title)}</div>
       ${a.desc?`<div class="ai-desc">${esc(a.desc)}</div>`:''}
       <div class="ai-tags">${tagsHTML(a)}${relChip(a)}</div>
@@ -2704,8 +2780,13 @@ function nfOpen(){
 function renderDash(){
   const hrs=S.topWin||24;
   /* Zeitfenster der Top-Meldungen: 3 bis 48 Stunden */
+  /* Als Dropdown statt fuenf nebeneinander stehender Knoepfe: die waren auf dem
+     iPhone zu schmal zum Treffen und drueckten die Kopfzeile auseinander. */
   const tw=g('top-win');
-  if(tw)tw.innerHTML=[3,6,12,24,48].map(h=>`<button class="${hrs===h?'active':''}" onclick="setTopWin(${h})">${h} h</button>`).join('');
+  /* Kurze Beschriftung: "letzte 24 Stunden" wurde im schmalen Feld zu "letz…"
+     abgeschnitten und war damit unlesbar. */
+  if(tw)tw.innerHTML=[3,6,12,24,48].map(h=>
+    `<option value="${h}"${hrs===h?' selected':''}>${h} Std.</option>`).join('');
   /* Worauf beziehen sich die Top-Meldungen? Alle Quellen, ein Datensatz oder ein
      Ressort. Vorher mischten sich Bundesratsmeldungen unter die Schlagzeilen. */
   const ts=g('top-scope');
@@ -2730,13 +2811,30 @@ function renderDash(){
   /* Erst grob vorsortieren, dann nur die aussichtsreichsten entdoppeln –
      eine vollständige Dublettenprüfung über tausende Meldungen ist unnötig,
      wenn am Ende zwölf angezeigt werden. */
-  const vor=win.filter(a=>!PRO_CATS.has(a.cat))
-    .sort((a,b)=>((b.cluster||1)+(b.boost||0))-((a.cluster||1)+(a.boost||0))).slice(0,150);
+  /* GEMELDETER FEHLER: Konferenzeinladungen und Bundesrats-Mitteilungen standen
+     als Top-Meldung ganz oben. Ursache: es gab gar keinen Filter dagegen – eine
+     Behörden-Mitteilung mit hohem boost gewann automatisch. Top-Meldungen sollen
+     aber BERICHTERSTATTUNG sein, nicht Terminorganisation. Zwei Regeln:
+     1. Reine Organisations-Meldungen (Einladung, Tagesordnung, Akkreditierung,
+        Terminvorschau) fliegen ganz raus.
+     2. Amtliche Mitteilungen einzelner Institutionen kommen nur nach oben, wenn
+        MEHRERE Quellen darüber berichten – dann ist es echte Nachrichtenlage. */
+  const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für redaktionen|sperrfrist)/i;
+  const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb','bverfg','bgh','bundesbank']);
+  const vor=win.filter(a=>{
+    if(PRO_CATS.has(a.cat))return false;
+    if(ORGA_RE.test(a.title||''))return false;
+    if(AMT_CATS.has(a.cat)&&(a.cluster||1)<2&&!(a._dupes||[]).length)return false;
+    return true;
+  }).sort((a,b)=>((b.cluster||1)+(b.boost||0))-((a.cluster||1)+(a.boost||0))).slice(0,150);
   const kand=dedupe(vor,new Set());
   const winScore=a=>{
     const quellen=1+((a._dupes||[]).length);
     const frisch=Math.max(0,1-ageH(a.date)/Math.max(1,hrs));
-    return quellen*3+(a.boost||0)+frisch*(hrs<=6?8:hrs<=24?5:3);
+    /* Eine Behörden-Mitteilung ist erst dann eine Top-Nachricht, wenn sie
+       aufgegriffen wurde – der eingebaute boost allein reicht nicht. */
+    const amtlichAllein=AMT_CATS.has(a.cat)&&quellen<2;
+    return quellen*3+(amtlichAllein?0:(a.boost||0))+frisch*(hrs<=6?8:hrs<=24?5:3);
   };
   const top=kand.sort((a,b)=>winScore(b)-winScore(a)).slice(0,12);
   const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
@@ -3103,11 +3201,20 @@ function themeBuckets(){
 function topicColor(t){return NEWS_TC[t]||EU_TC[t]||BT_TC[t]||US_TC[t]||'#6b7280';}
 function renderDashThemes(){
   const all=themeBuckets();
-  g('theme-bar').innerHTML='<span class="fl">Spalten</span>'+all.map(([t,arts])=>{const on=dashPick.has(t),c=topicColor(t);
-    return`<span class="chip${on?' sel':''}" style="${on?`background:${c};border-color:${c}`:`border-color:${c}55;color:${c}`}" onclick="toggleDashTheme('${t}')">${chipLabel(t)} <span style="opacity:.6">${arts.length}</span></span>`;}).join('')
-    +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ alle zeigen</span>`:'');
+  /* Vorher: 24 Chips als Leiste plus 24 Spalten - eine Textwand. Jetzt die
+     sechs stärksten Themen als Spalten, der Rest über ein Auswahlfeld. */
+  const TOP_N=6;
+  g('theme-bar').innerHTML='<span class="fl">Themen</span>'
+    +all.slice(0,TOP_N).map(([t,arts])=>{const on=dashPick.has(t),c=topicColor(t);
+      return`<span class="chip${on?' sel':''}" style="${on?`background:${c};border-color:${c}`:`border-color:${c}55;color:${c}`}" onclick="toggleDashTheme('${t}')">${chipLabel(t)} <span style="opacity:.6">${arts.length}</span></span>`;}).join('')
+    +(all.length>TOP_N?`<select class="fsel mini-sel" style="max-width:190px" onchange="if(this.value){toggleDashTheme(this.value);this.value=''}">
+        <option value="">weitere Themen …</option>
+        ${all.slice(TOP_N).map(([t,arts])=>`<option value="${t}">${esc(chipLabel(t))} (${arts.length})</option>`).join('')}
+      </select>`:'')
+    +(dashPick.size?`<span class="chip" style="margin-left:auto" onclick="dashPick.clear();renderDashThemes()">✕ Auswahl aufheben</span>`:'');
   const sel=dashPick.size?dashPick:S.topics;
-  const shown=sel.size?all.filter(([t])=>sel.has(t)):all;
+  /* Ohne eigene Auswahl nur die stärksten Themen zeigen statt aller 24 */
+  const shown=sel.size?all.filter(([t])=>sel.has(t)):all.slice(0,TOP_N);
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
     return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-th${t}-${a.id}" onclick="toggleInline('${a.id}','th${t}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-th${t}-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
@@ -3609,30 +3716,55 @@ const SEV={critical:{l:'kritisch',c:'#dc2626'},important:{l:'wichtig',c:'#d97706
 /* ── POLICY PROCESS: aus dip.json ───────────────────────────────────── */
 function processes(){return(DIP.procedures||[]);}
 function processById(id){return processes().find(p=>p.id===id);}
+/* Verfahrens-Bürokratensprache: diese Wörter sagen NICHTS über das Thema aus,
+   egal wie selten sie im Gesamtbestand wirken – "Entwurf eines Gesetzes zur
+   Reform..." ist die Standardformel für praktisch jeden Gesetzestitel. Eine
+   reine Häufigkeitsschwelle reicht hier nicht, weil sie vom Gesamtbestand
+   abhängt; das ist eine feste, inhaltliche Sperrliste zusätzlich zu selten(). */
+/* Wichtig: die Liste muss die gleiche Stammform enthalten, die sigWords()
+   tatsaechlich erzeugt ("modernisierung" wird zu "modernisi") - sonst greift
+   der Filter nicht. Deshalb wird sie hier automatisch durch dieselbe Funktion
+   erzeugt, statt zwei Formen von Hand synchron halten zu muessen. */
+const POLICY_STOP=new Set(['entwurf','entwurfs','gesetz','gesetzes','gesetzentwurf','gesetzesentwurf',
+  'reform','novelle','novellierung','aenderung','änderung','neuregelung','neufassung','vorlage','vorschlag',
+  'verordnung','richtlinie','beschluss','beschlussempfehlung','empfehlung','antrag','stellungnahme',
+  'bericht','unterrichtung','drucksache','bundestag','bundesrat','bundesregierung','ausschuss','plenum',
+  'lesung','beratung','kabinett','ministerium','vorgang','initiative','massnahme','maßnahme','regelung',
+  'staerkung','stärkung','modernisierung','beschleunigung','umsetzung','einfuehrung','einführung']
+  .flatMap(w=>sigWords(w)));
 function processNews(p,limit=12){
   const nums=drucksachen(p.title+' '+(p.gesta||''));
   /* Deskriptoren sind die vom Bundestag vergebenen Schlagwoerter – das beste
      Bindeglied zwischen Verfahren und Berichterstattung. */
-  /* Amtliche Deskriptoren plus die von Groq erzeugten Suchbegriffe */
   const desk=[...(p.deskriptoren||[]),...(p.ki_keywords||[])].map(d=>String(d).toLowerCase());
   const w=[...new Set([...sigWords(p.title+' '+(p.abstract||'')),...desk.flatMap(sigWords)])];
+  /* BEHOBENER FEHLER: "shared>=2" zählte JEDES gemeinsame Wort – auch Allerwelts-
+     wörter wie "entwurf", "gesetzes", "reform", die in fast jedem Gesetzestitel
+     stehen. Ein Gesundheits- und ein Waffenrechts-Gesetz galten damit faelschlich
+     als verwandt. Jetzt zaehlen nur SELTENE Wörter (unter 2 % Vorkommen im
+     Bestand) als Beleg – dieselbe Regel, die schon die Dublettenerkennung nutzt. */
   return pool('all').filter(a=>{
     const txt=stext(a);
     if(nums.some(n=>txt.includes(n)))return true;
     const aw=a._w||(a._w=sigWords(a.title));
-    /* Ein Deskriptor in der Schlagzeile genügt – er ist präzise vergeben. */
     if(desk.some(d=>d.length>5&&kwHit(d,(a.title||'').toLowerCase())))return true;
-    const shared=w.filter(x=>aw.includes(x)).length;
-    return shared>=2||jaccard(w,aw)>=0.22;
+    const rareShared=w.filter(x=>aw.includes(x)&&selten(x)&&!POLICY_STOP.has(x));
+    /* Ein einzelnes, langes, sehr spezifisches Wort (deutsche Komposita sind
+       von Natur aus praezise, z. B. "Vergaberecht") reicht als Beleg; kuerzere
+       Wörter brauchen zwei Treffer, damit ein Zufallstreffer nicht genuegt. */
+    return rareShared.some(x=>x.length>=9)||rareShared.length>=2;
   }).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,limit);
 }
 function processDocs(p,limit=10){
   const nums=drucksachen(p.title),w=sigWords(p.title);
+  /* Derselbe Fehler wie bei processNews behoben: nur seltene, aussagekräftige
+     Wörter zählen als Beleg, nicht jedes gemeinsame Allerweltswort. */
   return[...(DIP.documents||[]),...ALL_DOCS].filter(d=>{
     const t=(d.title||'')+' '+(d.number||'');
     if(nums.some(n=>t.includes(n)))return true;
     const dw=sigWords(d.title);
-    return w.filter(x=>dw.includes(x)).length>=2||jaccard(w,dw)>=0.22;
+    const rareShared=w.filter(x=>dw.includes(x)&&selten(x)&&!POLICY_STOP.has(x));
+    return rareShared.some(x=>x.length>=9)||rareShared.length>=2;
   }).slice(0,limit);
 }
 function processStakeholders(p,limit=8){
@@ -3943,7 +4075,21 @@ const VIEW_WS={dash:'dash',feed:'monitor',monitor:'monitor',stories:'monitor',ar
   policy:'policy',docs:'policy',types:'policy',cal:'policy',institutions:'policy',
   dir:'stakeholder',orgs:'stakeholder',brief:'reporting',reports:'reporting'};
 
+/* Klick auf einen Arbeitsbereich in der Leiste musste bisher immer zur Übersicht
+   fuehren – tat es aber nicht, wenn man bereits eine Detailansicht offen hatte
+   (Monitor-Detail, Verfahren, Person blieben stehen). Jetzt: ein Klick auf den
+   BEREITS aktiven Bereich raeumt gezielt dessen Detail-Zustand auf. */
+function clearWorkspaceDetail(ws){
+  if(ws==='monitor'){S.monitorId=null;closeStoryPanel&&closeStoryPanel();}
+  if(ws==='policy')S.processId=null;
+  if(ws==='stakeholder')S.personId=null;
+  /* Detail und Übersicht teilen denselben Ansichtsnamen (beide "monitor" bzw.
+     "policy") - setView(gleicher Name) erkennt daher keine Änderung und
+     rendert nicht neu. Deshalb hier ausdrücklich erzwingen. */
+  DIRTY.add(ws==='stakeholder'?'dir':ws);
+}
 function setWorkspace(ws,skipView){
+  if(!skipView&&S.ws===ws)clearWorkspaceDetail(ws);
   S.ws=ws;store.set('ps_ws',ws);
   document.querySelectorAll('#ws-switch .ws').forEach(e=>e.classList.toggle('active',e.dataset.ws===ws));
   renderWsNav();
@@ -3953,6 +4099,62 @@ function setWorkspace(ws,skipView){
     else if(first){first.act?first.act():setView(first.view);}
   }
   renderWsContext();
+}
+/* Breadcrumb: zeigt jederzeit, wo man sich befindet, jede Ebene fuehrt zurueck.
+   Das ersetzt "echte Unterseiten" ohne Architekturwechsel – siehe Notiz dazu
+   im Statusbericht. Wird bei jedem relevanten Zustandswechsel neu gezeichnet. */
+/* Hash-Routing beantwortet die "Unterseiten"-Frage praktisch: eigene URLs je
+   Ansicht, der Browser-Zurück-Knopf funktioniert, Links lassen sich teilen und
+   als Lesezeichen speichern - ohne die Architektur (eine Datei, clientseitige
+   Filterung über alle Artikel) aufzugeben. Eine echte Mehrseiten-Seite wuerde
+   entweder serverseitiges Rendering oder einen Build-Schritt brauchen; beides
+   passt nicht zu "eine HTML-Datei + JSON-Dateien, kein Server". */
+let _hashSyncing=false;
+function syncHash(){
+  if(_hashSyncing)return;
+  let h='#'+S.ws;
+  if(S.ws==='monitor'&&S.monitorId)h+='/'+encodeURIComponent(S.monitorId);
+  else if(S.ws==='monitor'&&(S.view==='trends'||S.view==='stories'))h+='/'+S.view;
+  else if(S.ws==='monitor'&&S.view==='archiv')h+='/archiv';
+  else if(S.ws==='policy'&&S.processId)h+='/'+encodeURIComponent(S.processId);
+  else if(S.ws==='dash'&&S.view==='dash'&&S.dashMode==='themes')h+='/themen';
+  if(location.hash!==h){_hashSyncing=true;history.pushState(null,'',h);_hashSyncing=false;}
+}
+function applyHashRoute(){
+  _hashSyncing=true;
+  const parts=(location.hash||'#dash').slice(1).split('/').map(decodeURIComponent);
+  const ws=parts[0]||'dash',sub=parts[1];
+  if(ws==='monitor'&&sub&&MONITORS.find(m=>m.id===sub)){S.ws='monitor';openMonitor(sub);}
+  else if(ws==='monitor'&&(sub==='trends'||sub==='stories')){S.ws='monitor';S.monitorId=null;wsGo('monitor',sub);}
+  else if(ws==='monitor'&&sub==='archiv'){S.ws='monitor';S.monitorId=null;wsGo('monitor','archiv');}
+  else if(ws==='policy'&&sub&&processById(sub)){S.ws='policy';openProcess(sub);}
+  else if(ws==='dash'&&sub==='themen'){setWorkspace('dash',true);setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));}
+  else if(['dash','monitor','policy','stakeholder','reporting'].includes(ws)){
+    /* Rueckkehr auf die reine Arbeitsbereichs-Route (kein Detail mehr in der URL):
+       Detail-Zustand explizit aufräumen und neu zeichnen lassen - sonst bleibt
+       z. B. S.monitorId von vorher stehen und die Übersicht erscheint nicht. */
+    clearWorkspaceDetail(ws);setWorkspace(ws,false);
+  }
+  _hashSyncing=false;
+  renderCrumb();
+}
+window.addEventListener('popstate',applyHashRoute);
+function renderCrumb(){
+  const el=g('crumb');if(!el)return;
+  const WS_L={dash:'Dashboard',monitor:'Monitor',policy:'Policy',stakeholder:'Stakeholder',reporting:'Reporting'};
+  const teile=[{l:WS_L[S.ws]||S.ws,fn:`setWorkspace('${S.ws}')`}];
+  if(S.ws==='monitor'&&S.monitorId){const m=MONITORS.find(x=>x.id===S.monitorId);
+    teile.push({l:m?m.name:'Monitor',fn:null});}
+  else if(S.ws==='monitor'&&(S.view==='trends'||S.view==='stories'))teile.push({l:'Trends & Stories',fn:null});
+  else if(S.ws==='monitor'&&S.view==='archiv')teile.push({l:'Archiv',fn:null});
+  else if(S.ws==='policy'&&S.processId){const p=processById(S.processId);teile.push({l:p?p.title.slice(0,50):'Verfahren',fn:null});}
+  else if(S.ws==='dash'&&S.view==='dash'&&S.dashMode==='themes')teile.push({l:'Nach Themen',fn:null});
+  /* syncHash() muss IMMER laufen, auch ohne sichtbaren Breadcrumb - sonst fehlt
+     der Verlaufseintrag fuer die reine Arbeitsbereichs-Ansicht und "Zurück"
+     springt am Detail vorbei auf die zuletzt VERSCHIEDENE Route. */
+  el.innerHTML=teile.length<2?'':`<div class="crumb-in">${teile.map((t,i)=>
+    `${i>0?'<span class="cs">›</span>':''}${t.fn&&i<teile.length-1?`<span class="cl" onclick="${t.fn}">${esc(t.l)}</span>`:`<span class="cc">${esc(t.l)}</span>`}`).join('')}</div>`;
+  syncHash();
 }
 function renderWsNav(){
   const ws=WORKSPACES[S.ws]||WORKSPACES.dash;
@@ -3972,7 +4174,7 @@ function wsGo(ws,id){
   const v=(WORKSPACES[ws].views||[]).find(x=>x.id===id);if(!v)return;
   S.ws=ws;
   if(v.act)v.act();else setView(v.view);
-  renderWsNav();renderWsContext();
+  renderWsNav();renderWsContext();renderCrumb();
 }
 /* Kontextfilter je Arbeitsbereich – Themen und Feeds nur dort, wo sie wirken */
 /* Einklappbare Gruppe in der Kontextleiste; Zustand wird gemerkt */
@@ -4081,8 +4283,8 @@ function upgradeToMonitor(kind,id){
       notify:src.notify||{app:true,mail:false},createdAt:new Date().toISOString()});
   monitorStore.save();reRender('monitor');renderWsNav();updateWsBadges();
 }
-function openMonitor(id){S.monitorId=id;setView('monitor');reRender('monitor');}
-function closeMonitor(){S.monitorId=null;reRender('monitor');}
+function openMonitor(id){S.monitorId=id;setView('monitor');reRender('monitor');renderCrumb();}
+function closeMonitor(){S.monitorId=null;reRender('monitor');renderCrumb();}
 function renderMonitorDetail(){
   const m=MONITORS.find(x=>x.id===S.monitorId);if(!m){closeMonitor();return;}
   const st=monitorState(m);
@@ -4180,6 +4382,21 @@ function openStoryPanel(id){
   el.scrollTop=0;
 }
 function closeStoryPanel(){document.body.classList.remove('panel-open');const el=g('story-panel');if(el)el.innerHTML='';}
+/* Bei einer Story zählt nicht nur, ob DIE Leitmeldung frei ist, sondern ob
+   IRGENDEINE der Quellen frei zugänglich ist – dann kann man die Story lesen,
+   auch wenn ausgerechnet die zuerst gefundene Quelle hinter einer Schranke steht. */
+function storyAccess(s){
+  const all=[s.lead,...(s.articles||[])];
+  if(all.some(a=>zugang(a)==='free'))return'free';
+  if(all.every(a=>zugang(a)==='paid'))return'paid';
+  return'unknown';
+}
+function storyAccBadge(s){
+  const v=storyAccess(s);
+  if(v==='free')return`<span class="acc free" title="Mindestens eine Quelle ist frei zugänglich">🔓 frei verfügbar</span>`;
+  if(v==='paid')return`<span class="acc paid" title="Alle bekannten Quellen sind kostenpflichtig">🔒 nur Abo</span>`;
+  return'';
+}
 function storyRow(s,why){
   const sev=SEV[s.severity],kn=KINDS_MON[s.kind]||KINDS_MON.presse;
   const thumb=s.articles.find(a=>a.image);
@@ -4189,7 +4406,8 @@ function storyRow(s,why){
       <div class="dl-eb"><span class="kindbadge" style="background:${kn.c}18;color:${kn.c};border-color:${kn.c}44" title="${kn.d}">${kn.ic} ${kn.l}</span>
         <span class="tag" style="color:${sev.c}">${sev.l}</span>
         ${s.topics.slice(0,2).map(t=>`<span class="tag c" style="--tc:${topicColor(t)}">${chipLabel(t).replace(/^\S+\s/,'')}</span>`).join('')}
-        ${(why||[]).length?`<span class="whytag" title="Warum diese Meldung im Monitor steht">↳ ${esc(why.join(' · '))}</span>`:''}</div>
+        ${(why||[]).length?`<span class="whytag" title="Warum diese Meldung im Monitor steht">↳ ${esc(why.join(' · '))}</span>`:''}
+        ${storyAccBadge(s)}</div>
       <div class="dl-t">${esc(s.title)}</div>
       <div class="dl-m">${s.sources.length} Quelle${s.sources.length===1?'':'n'} · ${s.articles.length} Artikel · ${rel(s.last)}${
         (s.speakers||[]).length?' · 🗣 '+s.speakers.map(p=>esc(p.name)).join(', '):''}</div>
@@ -4429,8 +4647,8 @@ function policyGroups(list){
   if(rest.length)g.push({key:'sonst',icon:'·',label:'Weitere Vorgänge',items:rest,limit:lim('sonst')});
   return g;
 }
-function openProcess(id){S.processId=id;setView('policy');reRender('policy');}
-function closeProcess(){S.processId=null;reRender('policy');}
+function openProcess(id){S.processId=id;setView('policy');reRender('policy');renderCrumb();}
+function closeProcess(){S.processId=null;reRender('policy');renderCrumb();}
 function renderProcess(){
   const p=processById(S.processId);if(!p){closeProcess();return;}
   const news=processNews(p),docs=processDocs(p),shs=processStakeholders(p),evs=processEvents(p);
@@ -4460,8 +4678,13 @@ function renderProcess(){
       <div>
         <div class="dcard"><div class="dcard-hd"><h2>Verlauf</h2><span class="cnt">${(p.stations||[]).length}</span></div>
           <div class="dcard-body">${(p.stations||[]).slice().reverse().map(st=>`<div class="station">
-            <div class="st-d">${esc(st.date||'')}</div><div><div class="st-t">${esc(st.title||st.type||'')}</div>
-            ${st.body?`<div class="st-b">${esc(st.body)}</div>`:''}</div></div>`).join('')||'<div class="mon-empty">Kein Verlauf im Datensatz. Die DIP-API liefert ihn im Feld <code>vorgangsverlauf</code>.</div>'}</div></div>
+            <div class="st-d">${esc(st.date||'')}</div><div>
+            <div class="st-t">${esc(st.title||st.type||'')}</div>
+            ${st.body?`<div class="st-b">${esc(st.body)}</div>`:''}
+            ${st.ueberweisung?`<div class="st-b">→ Ausschuss: ${esc(st.ueberweisung)}</div>`:''}
+            ${st.beschluss?`<div class="st-b"><b>Beschluss:</b> ${esc(st.beschluss)}</div>`:''}
+            ${st.doc?`<div class="st-doc" onclick="event.stopPropagation();${st.link?`window.open('${esc(st.link)}','_blank','noopener')`:`nfSearchTitle('${esc(st.doc)}')`}">📄 Drucksache ${esc(st.doc)}${st.link?' – öffnen ↗':' – im Bestand suchen'}</div>`:''}
+            </div></div>`).join('')||'<div class="mon-empty">Kein Verlauf im Datensatz für dieses Verfahren – die DIP-API liefert ihn über die Vorgangspositionen, die hier noch fehlen.</div>'}</div></div>
 
         <div class="dcard" style="margin-top:12px"><div class="dcard-hd"><h2>Berichterstattung</h2><span class="cnt">${news.length}</span>
           <span class="eyebrow">verknüpft über Drucksachennummer und Titelbezug</span></div>
@@ -4766,6 +4989,13 @@ function trendData(){
     entities(a.title||'');
   const count=list=>{const c={};list.forEach(a=>new Set(key(a)).forEach(k=>{if(!k)return;(c[k]=c[k]||{n:0,arts:[],sets:new Set()});c[k].n++;c[k].arts.push(a);c[k].sets.add(a._set);}));return c;};
   const now=count(win),before=count(prev);
+  /* Wochenmittel als zweite, robustere Vergleichsbasis: die unmittelbar
+     vorherige Periode allein kann zufaellig ungewoehnlich ruhig oder laut
+     sein und dann faelschlich Alarm ausloesen. Das Mittel der letzten 7 Tage
+     gleicht solche Zufallsschwankungen aus. */
+  const weekPool=dedupe(pool('all').filter(a=>ageH(a.date)<=168));
+  const weekCount=count(weekPool);
+  const periodenProWoche=Math.max(1,168/S.trendWin);
   /* Wörter, die in sehr vielen Meldungen vorkommen (Kabinett, Verordnung, Anhörung …),
      beschreiben das Grundrauschen und nicht einen Trend. Deshalb: Begriffe verwerfen,
      deren sämtliche Bestandteile in über 6 % aller Meldungen stehen – derselbe
@@ -4781,7 +5011,12 @@ function trendData(){
     const p=before[k]?.n||0;
     const hours={};v.arts.forEach(a=>{const h=Math.floor(ageH(a.date));hours[h]=(hours[h]||0)+1;});
     const spark=Array.from({length:Math.min(12,Math.ceil(S.trendWin/2))},(_,i)=>hours[Math.floor(S.trendWin-(i+1)*S.trendWin/12)]||0);
-    return{k,n:v.n,prev:p,delta:p?Math.round((v.n-p)/p*100):(v.n>=3?100:0),arts:v.arts.sort((a,b)=>(b.date||'').localeCompare(a.date||'')),set:[...v.sets][0],spark};
+    /* Erwartungswert je Fenstergroesse aus dem 7-Tage-Mittel */
+    const wochenSchnitt=(weekCount[k]?.n||0)/periodenProWoche;
+    const weekDelta=wochenSchnitt>=1?Math.round((v.n-wochenSchnitt)/wochenSchnitt*100):(v.n>=3?200:0);
+    return{k,n:v.n,prev:p,delta:p?Math.round((v.n-p)/p*100):(v.n>=3?100:0),
+           wochenSchnitt:Math.round(wochenSchnitt*10)/10,weekDelta,
+           arts:v.arts.sort((a,b)=>(b.date||'').localeCompare(a.date||'')),set:[...v.sets][0],spark};
   });
   /* Schwelle dynamisch: bei viel Material strenger, bei wenig Material milder,
      damit die Ansicht nie leer bleibt. */
@@ -4826,9 +5061,9 @@ function renderTrends(){
      was ein Analyst zuerst sehen will, bevor er sich durch die Liste arbeitet. */
   mv.sort((a,b)=>{const aa=Math.abs(a.delta)>=75&&a.n>=3,ba=Math.abs(b.delta)>=75&&b.n>=3;return aa===ba?0:aa?-1:1;});
   g('trend-list').innerHTML=mv.map(d=>{const lbl=S.trendMode==='topics'?chipLabel(d.k):d.k;const sm=Math.max(1,...d.spark);
-    const auffaellig=Math.abs(d.delta)>=75&&d.n>=3;
+    const auffaellig=Math.abs(d.weekDelta??d.delta)>=75&&d.n>=3;
     return`<div class="trend-row" onclick="trendDetail('${encodeURIComponent(d.k)}')">
-      ${auffaellig?`<span class="flag" title="Auffällige Bewegung: mindestens 75 % Veränderung bei drei oder mehr Meldungen">⚡</span>`:''}
+      ${auffaellig?`<span class="flag" title="${Math.round(d.weekDelta)}% über dem 7-Tage-Mittel (Ø ${d.wochenSchnitt} pro Fenster) – mindestens 75 % Abweichung bei drei oder mehr Meldungen">⚡</span>`:''}
       <span class="tn">${esc(lbl)}</span>
       <span class="spark">${d.spark.map(v=>`<i style="height:${Math.max(2,v/sm*26)}px"></i>`).join('')}</span>
       <span class="tdelta ${d.delta>15?'tup':d.delta<-15?'tdown':'tflat'}">${d.delta>0?'+':''}${d.delta}%</span><span class="ds-cnt">${d.n}</span></div>`;}).join('');
@@ -4840,7 +5075,9 @@ function renderTrendSummary(data){
   if(!data.length){el.innerHTML=`<div class="sum-hd">Auswertung</div>Zu wenige Meldungen in ${win} für eine Auswertung.`;return;}
   const lbl=k=>S.trendMode==='topics'?chipLabel(k):titleCase(k);
   const chip=d=>`<span class="hl" style="background:${(S.trendMode==='topics'?topicColor(d.k):'#2563eb')}1e;color:${S.trendMode==='topics'?topicColor(d.k):'#2563eb'}">${esc(lbl(d.k))}</span>`;
-  const auffaellig=d=>Math.abs(d.delta)>=75&&d.n>=3;
+  /* Auffaellig = deutlich ueber dem 7-Tage-Mittel, nicht nur ueber der Vorperiode -
+     robuster gegen einzelne zufaellig ruhige Nachbarstunden. */
+  const auffaellig=d=>Math.abs(d.weekDelta??d.delta)>=75&&d.n>=3;
   const total=data.reduce((n,d)=>n+d.n,0), prevTotal=data.reduce((n,d)=>n+d.prev,0);
   const trend=prevTotal?Math.round((total-prevTotal)/prevTotal*100):0;
   const steiger=data.filter(d=>d.delta>=25&&d.n>=3).sort((a,b)=>b.delta-a.delta).slice(0,3);
@@ -5242,7 +5479,10 @@ if(!PAYWALL_ACTIVE){
 pushNav();
 window.addEventListener('resize',()=>{debounce(()=>{if(S.view==='trends')renderTrends();if(S.view==='dash')renderQuickbar();},250);});
 userStore.load().then(t=>{MYTOPICS=t;renderMyTopics&&renderMyTopics();});
-monitorStore.load().then(()=>{setWorkspace(store.get('ps_ws')||'dash',true);renderWsNav();updateWsBadges();});
+monitorStore.load().then(()=>{
+  if(location.hash&&location.hash.length>1){applyHashRoute();}
+  else setWorkspace(store.get('ps_ws')||'dash',true);
+  renderWsNav();updateWsBadges();});
 if(store.get('ps_sport')===false){S.hideSport=false;g('fp-sport').checked=false;}
 S.lageZu=!!store.get('ps_lagezu');
 S.topWin=store.get('ps_topwin')||24;S.topScope=store.get('ps_topscope')||'';
