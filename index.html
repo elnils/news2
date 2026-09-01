@@ -655,10 +655,10 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   body.lage-voll #lage .lage-themen{display:grid}
   /* Layout-Werkzeuge kosten auf dem Handy zu viel Platz vor den Meldungen –
      einklappbar machen, Region-Schnellwahl bleibt immer offen. */
+  /* Die Layout-Werkzeuge (Zeitung/Kompakt/Karten/Spalten) sind auf dem Handy
+     ohne Nutzen – dort gibt es nur eine sinnvolle Darstellung. Ersatzlos weg,
+     statt hinter einem Schalter zu verstecken, der selbst Verwirrung stiftet. */
   .list-tools{display:none!important}
-  body.tools-open .list-tools{display:flex!important;flex-wrap:wrap}
-  .tools-toggle{display:flex;align-items:center;gap:5px;background:none;border:none;
-    font-size:11px;font-weight:600;color:var(--muted);padding:5px 7px}
   /* Kopfzeile ruhiger: die Icons ballen sich sonst */
   #topbar{gap:7px}
   #ki-info-btn{order:5}
@@ -728,6 +728,13 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .lt-t{font-size:12px;line-height:1.5;color:var(--text2)}
 .lt-q{font-size:10px;color:var(--muted);margin-top:5px}
 .lage-alt{font-size:10.5px;color:var(--amber);margin-top:7px}
+/* Themen-Spalten: eigene Scrollflaeche je Spalte statt einer endlos langen
+   Seite - so bleiben die Spaltenkoepfe sichtbar und man kann gezielt in einem
+   Ressort blaettern. */
+.theme-cols .ds{display:flex;flex-direction:column;max-height:520px}
+.theme-cols .ds-body{overflow-y:auto;flex:1;min-height:0}
+.theme-cols .ds-item{cursor:pointer}
+@media (max-width:900px){.theme-cols .ds{max-height:none}.theme-cols .ds-body{overflow:visible}}
 /* Breadcrumb: zeigt jederzeit den Weg zurück, jede Ebene anklickbar */
 #crumb:empty{display:none}
 #crumb{padding:7px 16px;font-size:12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -1368,7 +1375,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
   <!-- ═══ SIDEBAR (Politico-Rail) ═══ -->
   <nav id="sidebar">
-    <div id="sidebar-hd" style="display:none"><b>Presseschau</b><button class="x" onclick="toggleNav(false)">✕</button></div>
+    <div id="sidebar-hd"><b>Presseschau</b></div>
     <!-- Arbeitsbereiche: die oberste Ebene der Plattform -->
     <div id="ws-switch">
       <div class="ws" data-ws="dash"       onclick="setWorkspace('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></div>
@@ -1403,9 +1410,8 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         </div>
       </div>
       <div id="news-regions"></div>
-      <div id="quickbar"></div>
       <div id="lage"></div>
-      <div id="news-finder">
+      <div id="news-finder" hidden>
         <div class="nf-row">
           <input id="nf-q" placeholder="Nachrichten durchsuchen – Stichwort, Name, Begriff…" oninput="debounce(renderFinder,180)" onkeydown="if(event.key==='Enter')nfOpen()">
           <button class="btn p sm" onclick="nfOpen()">Im Feed öffnen</button>
@@ -1550,7 +1556,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
       <div id="split">
         <div id="list-pane">
           <div class="seg mini-seg" id="region-quick" style="margin:6px 7px 0"></div>
-          <button class="tools-toggle" onclick="document.body.classList.toggle('tools-open')">⚙ Ansicht ändern</button>
+
           <div class="list-tools">
             <button id="lt-paper" class="on" onclick="setLayout('paper')" title="Zeitungsansicht mit Bildern">📰 Zeitung</button>
             <button id="lt-compact" onclick="setLayout('compact')" title="Nur Schlagzeilen – mehr auf einen Blick">☰ Kompakt</button>
@@ -2110,6 +2116,14 @@ function relChip(a){const b=a.boost||0;if(!b)return'';
 const PAID_SRC=new Set(['Handelsblatt','Table.Briefings','Table.Media','Tagesspiegel Background',
   'Politico Pro','WirtschaftsWoche','Financial Times','Bloomberg','The Economist','New York Times']);
 const PAID_RE=/(^|[\s\[(|])(s\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|sz\s*plus|plus-artikel|abo|paywall|premium)([\s\])|:.\-–]|$)/i;
+/* Werbung und Eigenwerbung sind keine Nachrichten. Manche Feeds liefern sie mit
+   ("Anzeige", "Sponsored", "Advertorial", "In eigener Sache", "Gewinnspiel").
+   Solche Eintraege fliegen ueberall raus, nicht nur aus den Top-Meldungen. */
+const WERBUNG_RE=/^\s*(anzeige|werbung|sponsored|advertorial|promotion|partnerinhalt|gewinnspiel|in eigener sache)\b|\[anzeige\]|\(anzeige\)/i;
+function istWerbung(a){
+  return WERBUNG_RE.test(a.title||'')||WERBUNG_RE.test(a.source||'')||
+         /^(anzeige|sponsored)$/i.test((a.author||'').trim());
+}
 /* Behoerden, Parlamente, Gerichte, Zentralbanken und Denkfabriken veroeffentlichen
    ohne Bezahlschranke – das folgt aus ihrem Auftrag und ist keine Vermutung.
    Gilt auch fuer aeltere Daten, die noch kein access-Feld mitbringen. */
@@ -2479,7 +2493,8 @@ function matches(a,f){
   return true;
 }
 function applyFilters(){
-  const all=pool(S.section);let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
+  const all=pool(S.section).filter(a=>!istWerbung(a));
+  let list=all.filter(inWindow);S.hidden=isPro()?0:all.length-list.length;
   const f={topic:S.topic,topics:[...S.topics],topicMode:S.topicMode,src:S.src,prio:S.prio,tokens:S.tokens,inst:S.inst,q:(g('q').value||'').trim().toLowerCase()};
   list=list.filter(a=>matches(a,f));
   if(S.regionKw)list=list.filter(a=>poolRegion(S.regionKw).includes(a));
@@ -2823,6 +2838,7 @@ function renderDash(){
   const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb','bverfg','bgh','bundesbank']);
   const vor=win.filter(a=>{
     if(PRO_CATS.has(a.cat))return false;
+    if(istWerbung(a))return false;
     if(ORGA_RE.test(a.title||''))return false;
     if(AMT_CATS.has(a.cat)&&(a.cluster||1)<2&&!(a._dupes||[]).length)return false;
     return true;
@@ -3199,6 +3215,14 @@ function themeBuckets(){
   return Object.entries(b).sort((a,c)=>c[1].length-a[1].length);
 }
 function topicColor(t){return NEWS_TC[t]||EU_TC[t]||BT_TC[t]||US_TC[t]||'#6b7280';}
+/* Ein Ressort als Text herausziehen – fuer Weitergabe per Mail oder Chat. */
+function exportThema(t){
+  const arts=(themeBuckets().find(([k])=>k===t)||[,[]])[1].slice(0,25);
+  const txt=`${chipLabel(t)} · ${new Date().toLocaleString('de-DE')}\n${'='.repeat(46)}\n\n`
+    +arts.map(a=>`• ${a.title}\n  ${a.source} · ${fd(a.date)}${zugang(a)==='paid'?' · kostenpflichtig':''}\n  ${a.link||''}`).join('\n\n');
+  navigator.clipboard?.writeText(txt);
+  const btn=event?.target;if(btn){const alt=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=alt,1200);}
+}
 function renderDashThemes(){
   const all=themeBuckets();
   /* Vorher: 24 Chips als Leiste plus 24 Spalten - eine Textwand. Jetzt die
@@ -3216,7 +3240,11 @@ function renderDashThemes(){
   /* Ohne eigene Auswahl nur die stärksten Themen zeigen statt aller 24 */
   const shown=sel.size?all.filter(([t])=>sel.has(t)):all.slice(0,TOP_N);
   g('theme-cols').innerHTML=shown.map(([t,arts])=>{const col=topicColor(t);
-    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}"><span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span></div>${arts.slice(0,7).map(a=>`<div class="ds-item" id="tr-th${t}-${a.id}" onclick="toggleInline('${a.id}','th${t}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-th${t}-${a.id}"></div>`).join('')}${arts.length>7?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
+    return`<div class="ds"><div class="ds-hd" style="border-left:3px solid ${col}">
+      <span class="ds-title">${chipLabel(t)}</span><span class="ds-cnt">${arts.length}</span>
+      <button class="all" title="Alle Meldungen dieses Ressorts im Feed öffnen" onclick="event.stopPropagation();S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">↗</button>
+      <button class="all" title="Ressort als Text kopieren" onclick="event.stopPropagation();exportThema('${t}')">⧉</button>
+      </div><div class="ds-body">${arts.slice(0,25).map(a=>`<div class="ds-item" id="tr-th${t}-${a.id}" onclick="toggleInline('${a.id}','th${t}')"><div class="ds-it">${esc(a.title)}${isLocked(a)?' <span class="pro-tag">PRO</span>':''}</div><div class="ds-im"><span style="color:${srcC(a.source).tc};font-weight:600">${esc(a.source)}</span><span>${rel(a.date)}</span>${(a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:''}</div></div><div id="inl-th${t}-${a.id}"></div>`).join('')}</div>${arts.length>25?`<div class="ds-more" onclick="S.topics=new Set(['${t}']);S.section='all';setC('fb-set','Alle Feeds');buildChips();setView('feed');applyFilters()">Alle ${arts.length} →</div>`:''}</div>`;}).join('')
     ||'<div style="padding:30px;color:var(--muted)">Keine Meldungen im Zeitfenster.</div>';
 }
 
@@ -3447,7 +3475,7 @@ function buildBriefs(){_briefsBuilt=true;
   for(const[set,tl,tc]of sets){const b={};win.filter(a=>a._set===set).forEach(a=>(a.topics||[]).slice(0,2).forEach(t=>(b[t]=b[t]||[]).push(a)));
     for(const[t,items]of Object.entries(b)){if(items.length<3)continue;items.sort((x,y)=>((y.boost||0)-(x.boost||0))||((y.date||'').localeCompare(x.date||'')));
       const rm=Math.max(2,Math.round(items.reduce((n,a)=>n+words(a),0)/180));
-      BRIEFS.push({id:'b-'+set+'-'+t,set,topic:t,label:(tl[t]||t).replace(/^\S+\s/,''),color:tc[t]||'#6b7280',title:'Morgenbriefing '+(tl[t]||t).replace(/^\S+\s/,'')+(set==='eu'?' · EU':set==='bt'?' · Bundestag':''),items:items.slice(0,12),readMin:rm,date:items[0].date});}}
+      BRIEFS.push({id:'b-'+set+'-'+t,set,topic:t,label:(tl[t]||t).replace(/^\S+\s/,''),color:tc[t]||'#6b7280',title:'Briefing '+(tl[t]||t).replace(/^\S+\s/,'')+(set==='eu'?' · EU':set==='bt'?' · Bundestag':''),items:items.slice(0,12),readMin:rm,date:items[0].date});}}
   BRIEFS.sort((a,b)=>b.items.length-a.items.length);
 }
 function setBriefMode(m,btn){
@@ -4774,9 +4802,20 @@ function buildReport(kind,ref){
       if(gewaehlt&&!gewaehlt.includes(t))return;
       (nachRessort[t]=nachRessort[t]||[]).push(st);
     });
+    /* BEHOBEN: Eine Story mit zwei Ressorts (z. B. "energie" und "wirtschaft")
+       landete in BEIDEN Abschnitten – dieselbe Meldung stand zweimal im Briefing.
+       Jetzt wird jede Story nur einmal vergeben, und zwar an das Ressort, in dem
+       sie am stärksten vertreten ist. */
+    const vergeben=new Set();
     const ressorts=Object.entries(nachRessort)
-      .map(([t,arr])=>[t,arr.sort((a,b)=>b.sources.length-a.sources.length).slice(0,3)])
       .sort((a,b)=>b[1].reduce((n,s)=>n+s.sources.length,0)-a[1].reduce((n,s)=>n+s.sources.length,0))
+      .map(([t,arr])=>{
+        const frei=arr.filter(st=>!vergeben.has(st.id))
+                      .sort((a,b)=>b.sources.length-a.sources.length).slice(0,3);
+        frei.forEach(st=>vergeben.add(st.id));
+        return[t,frei];
+      })
+      .filter(([,arr])=>arr.length)
       .slice(0,gewaehlt?gewaehlt.length:6);
     title='Tagesbriefing '+now.toLocaleDateString('de-DE');
     sections=[{h:'Zusammenfassung',t:`${stories.length} Themen in 24 Stunden, davon `+
