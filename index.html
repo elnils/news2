@@ -641,14 +641,16 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
      verspricht, ist das der schwerste Bedienfehler. Deshalb auf dem Handy:
      Meldungen nach oben, Suchfeld und Themen-Radar darunter. Die Reihenfolge
      im HTML bleibt unveraendert (Desktop profitiert vom Überblick zuerst). */
-  #view-dash{display:flex;flex-direction:column}
+  /* BEHOBENER FEHLER: "#view-dash{display:flex}" hat hoehere Spezifitaet als
+     ".view{display:none}" – das Dashboard blieb dadurch IMMER sichtbar, auch
+     wenn Trends, Monitor oder Feed aktiv waren. Ergebnis: zwei Ansichten
+     uebereinander. Deshalb ausdruecklich nur im aktiven Zustand. */
+  #view-dash.active{display:flex;flex-direction:column}
   #view-dash .dash-head{order:1}
-  #view-dash #news-regions{order:2}
-  #view-dash #dash-overview{order:3}   /* enthält Top-Meldungen und Seitenkacheln */
-  #view-dash #dash-themes{order:3}
-  #view-dash #lage{order:4}
-  #view-dash #quickbar{order:5}
-  #view-dash #news-finder{order:6}
+  #view-dash #dash-overview{order:2}   /* Meldungen zuerst */
+  #view-dash #dash-themes{order:2}
+  #view-dash #lage{order:3}
+  #view-dash #news-finder{order:4}
   /* "Die Lage" auf dem Handy standardmaessig kompakt: Kernsatz sichtbar,
      Ressort-Kacheln erst auf Tippen – spart rund 300 px vor den Meldungen. */
   #lage .lage-themen{display:none}
@@ -734,9 +736,15 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .theme-cols .ds{display:flex;flex-direction:column;max-height:520px}
 .theme-cols .ds-body{overflow-y:auto;flex:1;min-height:0}
 .theme-cols .ds-item{cursor:pointer}
-@media (max-width:900px){.theme-cols .ds{max-height:none}.theme-cols .ds-body{overflow:visible}}
+/* Auch auf dem Handy je Spalte eine eigene Scrollflaeche: sonst muesste man
+   durch alle 25 Meldungen eines Ressorts scrollen, um zum naechsten zu kommen.
+   Etwas niedriger als am Desktop, damit zwei Spaltenkoepfe sichtbar bleiben. */
+@media (max-width:900px){.theme-cols .ds{max-height:62vh}.theme-cols .ds-body{overflow-y:auto;-webkit-overflow-scrolling:touch}}
 /* Breadcrumb: zeigt jederzeit den Weg zurück, jede Ebene anklickbar */
 #crumb:empty{display:none}
+#news-regions:empty{display:none}
+#news-regions{padding:7px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+@media (max-width:900px){#news-regions{padding:6px 10px}}
 #crumb{padding:7px 16px;font-size:12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0}
 .crumb-in{display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:1400px}
 .cl{color:var(--blue);cursor:pointer;font-weight:600}
@@ -1041,7 +1049,16 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 #trend-summary .sum-hd{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 #trend-summary ul{margin:7px 0 0 16px;padding:0}
 #trend-summary li{margin-bottom:3px}
-#bubble-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;height:420px}
+#bubble-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;height:420px;min-width:0}
+/* Festes Raster "1fr 320px" liess auf schmalen Bildschirmen keinen Platz fuer
+   die erste Spalte – bubble-wrap bekam Breite 0 und renderTrends brach ab,
+   wartete dann endlos auf eine Breite, die nie kam. Deshalb responsiv. */
+.trend-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.trend-layout>*{min-width:0}
+@media (max-width:900px){
+  .trend-layout{grid-template-columns:minmax(0,1fr)}
+  #bubble-wrap{height:300px}
+}
 #bubbles{width:100%;height:100%;display:block;cursor:grab}
 .bub{cursor:pointer;transition:opacity .2s}
 .bub:hover{opacity:.85}
@@ -1114,6 +1131,10 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 .mytopic button{background:none;border:none;cursor:pointer;font-size:12px;line-height:1;opacity:.55;padding:0}
 .mytopic .n{font-size:9px;font-weight:800;padding:0 5px;border-radius:9px;color:#fff}
 .rel{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--amber-lt);color:#92400e;border:1px solid #fcd34d;cursor:help}
+.acc-fix{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:9px;font-size:10.5px;color:var(--muted)}
+.acc-fix button{background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:2px 9px;
+  font-size:10.5px;font-weight:700;color:var(--text2);cursor:pointer}
+.acc-fix button.on{background:var(--text);color:#fff;border-color:var(--text)}
 .acc{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
 .acc.paid{background:#92400e;color:#fff}
 .acc.free{background:#15803d;color:#fff}
@@ -1168,8 +1189,9 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   #filterbar{display:none}
   body.filters-open #filterbar{display:flex;max-height:38vh;overflow-y:auto}
   #nav-toggle{display:inline-flex}
-  #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:40;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 40px rgba(13,18,32,.2)}
-  body.nav-open #sidebar{transform:none}
+  /* Alte Sidebar-Regel entfernt: sie ueberschrieb die neuere Vollbild-Variante
+     (position:fixed) und liess die Leiste Platz im Flex-Layout beanspruchen –
+     dadurch hatte #main die Breite 0 und Inhalte blieben unsichtbar. */
   #nav-scrim{position:absolute;inset:0;background:rgba(13,18,32,.35);z-index:35;display:none}
   body.nav-open #nav-scrim{display:block}
   .logo small{display:none}
@@ -1359,7 +1381,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
        Archiv, KI) steckt im Menü – das sind Vertiefungswerkzeuge, keine
        Dinge, die man im Sekundentakt braucht. -->
   <div id="search-overlay"></div>
-  <div id="crumb"></div>
+
   <nav id="mtab">
     <button class="mtab-btn" onclick="setWorkspace('dash')" id="mt-home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h11"/></svg><span>Nachrichten</span></button>
@@ -1394,6 +1416,10 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
 
   <!-- ═══ MAIN ═══ -->
   <main id="main">
+    <div id="crumb"></div>
+    <!-- Regionswahl gilt für Dashboard UND Nachrichten-Feed, liegt deshalb
+         oberhalb der Ansichten – nicht in einer davon. -->
+    <div id="news-regions"></div>
 
     <!-- Dashboard -->
     <section class="view active" id="view-dash">
@@ -1405,11 +1431,10 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         <span class="upd" id="dash-upd"></span>
         <div class="right">
           <div class="seg" id="dash-seg"><button class="active" onclick="setDashMode('overview',this)">Übersicht</button><button onclick="setDashMode('themes',this)">Nach Themen</button></div>
-          <button class="fold-all" id="fold-all-btn" onclick="foldAll()">Alle einklappen</button>
-          <button class="btn sm" onclick="setSection('news')">Alle Meldungen →</button>
+          <button class="fold-all" id="fold-all-btn" onclick="foldAll()">Kacheln zuklappen</button>
+          <button class="btn sm" onclick="setSection('news')">Zum Nachrichten-Feed →</button>
         </div>
       </div>
-      <div id="news-regions"></div>
       <div id="lage"></div>
       <div id="news-finder" hidden>
         <div class="nf-row">
@@ -1430,6 +1455,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
           <div class="dcard-hd"><h2>Top-Meldungen</h2>
             <select class="fsel mini-sel" id="top-scope" onchange="S.topScope=this.value;store.set('ps_topscope',this.value);reRender('dash')"></select>
             <select class="fsel mini-sel" id="top-win" onchange="setTopWin(+this.value)"></select>
+            <button class="all" title="Top-Meldungen als Text kopieren" onclick="exportTop()">⧉</button>
             <button class="all" onclick="S.sort='boost';setSection('all')">Alle</button></div>
           <div class="dcard-body top-list" id="dash-top"></div>
         </div>
@@ -1480,7 +1506,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
         <div class="seg"><button class="active" onclick="setTrendMode('topics',this)">Themen</button><button onclick="setTrendMode('words',this)">Schlagwörter</button><button onclick="setTrendMode('sources',this)">Quellen</button></div>
       </div>
       <div id="trend-summary"></div>
-      <div class="dir-layout" style="grid-template-columns:1fr 320px">
+      <div class="trend-layout">
         <div id="bubble-wrap"><svg id="bubbles"></svg></div>
         <div class="trend-side">
           <div class="eyebrow" style="margin-bottom:8px">Stärkste Bewegung</div>
@@ -1657,7 +1683,7 @@ body.panel-open #mon-detail{grid-template-columns:minmax(0,1fr) 300px 340px}
   <h2><span class="pro-tag keep">PRO</span> Presseschau Pro</h2>
   <p id="login-reason"></p>
   <div class="feat-list" id="login-feats"></div>
-  <div class="fld" style="display:none"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@redaktion.de"></div>
+  <div class="fld" style="display:none"><label>E-Mail</label><input type="text" id="login-mail" placeholder="name@mail.de"></div>
   <div class="fld"><label>Passwort <span class="km-note" style="font-weight:400">— gemeinsamer Zugang, kein Einzelkonto</span></label>
     <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
   <div id="login-err" style="color:var(--red);font-size:12px;min-height:16px;margin-top:2px"></div>
@@ -2120,8 +2146,14 @@ const PAID_RE=/(^|[\s\[(|])(s\+|z\+|f\+|w\+|zeit\+|spiegel\+|welt\+|faz\+|sz\s*p
    ("Anzeige", "Sponsored", "Advertorial", "In eigener Sache", "Gewinnspiel").
    Solche Eintraege fliegen ueberall raus, nicht nur aus den Top-Meldungen. */
 const WERBUNG_RE=/^\s*(anzeige|werbung|sponsored|advertorial|promotion|partnerinhalt|gewinnspiel|in eigener sache)\b|\[anzeige\]|\(anzeige\)/i;
+/* Fachportale (besonders im IT-Bereich) mischen Veranstaltungswerbung unter die
+   Meldungen: "[Virtual Event]", "Webinar", "Whitepaper", "Register now".
+   Das sind Marketingtexte, keine Berichterstattung – sie gehoeren nicht in die
+   Top-Meldungen und auch sonst nicht in den Nachrichtenstrom. */
+const EVENT_RE=/^\s*[\[(]?\s*(virtual event|webinar|web ?seminar|online event|live event|roundtable|masterclass|workshop|whitepaper|white paper|ebook|e-book|report download|sponsored content)\b|\[(virtual event|webinar|sponsored|partner)\]|\b(jetzt anmelden|register now|kostenlos herunterladen|download the report|save your seat)\b/i;
 function istWerbung(a){
-  return WERBUNG_RE.test(a.title||'')||WERBUNG_RE.test(a.source||'')||
+  const t=a.title||'';
+  return WERBUNG_RE.test(t)||EVENT_RE.test(t)||WERBUNG_RE.test(a.source||'')||
          /^(anzeige|sponsored)$/i.test((a.author||'').trim());
 }
 /* Behoerden, Parlamente, Gerichte, Zentralbanken und Denkfabriken veroeffentlichen
@@ -2129,7 +2161,19 @@ function istWerbung(a){
    Gilt auch fuer aeltere Daten, die noch kein access-Feld mitbringen. */
 const FREE_CATS=new Set(['ec','ep','eu-council','ecb','eu-think','bundesrat','bt-allg','breg',
   'bverfg','bgh','bundesbank','us-whitehouse','us-house','us-senate']);
+/* Korrekturen des Nutzers, je Quelle gespeichert. Die Zuordnung frei/Abo haengt
+   fast immer am Anbieter, nicht am einzelnen Artikel – deshalb genuegt eine
+   Quellenliste und es braucht kein statistisches Modell. Eine Korrektur wirkt
+   sofort fuer alle Artikel dieser Quelle, auch rueckwirkend. */
+let ACC_FIX=store.get('ps_acc_fix')||{};
+function setZugangFix(quelle,wert){
+  if(wert)ACC_FIX[quelle]=wert;else delete ACC_FIX[quelle];
+  store.set('ps_acc_fix',ACC_FIX);
+  pool('all').forEach(a=>{if(a.source===quelle)delete a._acc;});   // Zwischenspeicher leeren
+  if(S.view==='feed')applyFilters();else reRender(S.view);
+}
 function zugang(a){
+  if(ACC_FIX[a.source])return ACC_FIX[a.source];
   if(a._acc)return a._acc;
   let v=a.access;
   if(!v){
@@ -2294,9 +2338,10 @@ function setView(v){
 /* Schnellumschalter Region: Deutschland/EU/USA in einem Griff, ohne ins Menü
    zu müssen. Genau die drei Blickwinkel, die ein Analyst ständig wechselt. */
 function renderRegionQuick(){
-  const el=g('region-quick');if(!el)return;
-  const REG=[['all','Alle'],['news','DE'],['eu','EU'],['us','USA']];
-  el.innerHTML=REG.map(([k,l])=>`<button class="${S.section===k?'active':''}" onclick="setSection('${k}')">${l}</button>`).join('');
+  /* Entfaellt: Es gab ZWEI Regionsleisten uebereinander - die grosse oben mit
+     DE/EU/USA/China/Welt und hier noch einmal eine kleinere, unvollstaendige
+     mit Alle/DE/EU/USA. Das war der "zweimal angezeigt"-Effekt. */
+  const el=g('region-quick');if(el)el.innerHTML='';
 }
 function setSection(sec){
   S.section=sec;S.topic='all';S.src='all';S.inst='';S.idx=-1;S.art=null;buildNavInsts();
@@ -2506,6 +2551,19 @@ function applyFilters(){
   else if(S.sort==='new')list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   else list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   S.filt=list;S.shown=FEED_PAGE;setC('acnt',list.length);searchHits();
+  /* Leere Liste ohne Erklaerung ist ratlos machend – benennen, WARUM nichts da
+     ist, und den wahrscheinlichsten Ausweg gleich anbieten. */
+  if(!list.length&&g('list-scroll')){
+    const grund=S.regionKw?`Für „${esc({china:'China',welt:'International / Welt'}[S.regionKw]||S.regionKw)}" liegt im gewählten Zeitraum nichts vor.`
+      :S.onlyFree?'Keine frei zugänglichen Artikel in dieser Auswahl.'
+      :'Keine Meldungen in dieser Auswahl.';
+    g('list-scroll').innerHTML=`<div class="gap-note" style="margin:16px">
+      <strong>${grund}</strong><br>
+      ${S.range!=='alle'?`<button class="btn sm" style="margin-top:8px" onclick="S.range='alle';applyFilters()">Zeitraum auf „alle" erweitern</button> `:''}
+      ${S.regionKw?`<button class="btn sm" style="margin-top:8px" onclick="goRegion('news')">Zurück zu allen Nachrichten</button>`:''}
+      ${S.onlyFree?`<button class="btn sm" style="margin-top:8px" onclick="S.onlyFree=false;const c=g('fp-free');if(c)c.checked=false;applyFilters()">Auch kostenpflichtige zeigen</button>`:''}
+    </div>`;
+  }
   const eb=g('eil-back');
   if(eb)eb.style.display=S.prio.eil?'':'none';
   const hi=g('hidden-info');if(hi){hi.style.display=S.hidden?'':'none';hi.textContent='+'+S.hidden+' im Archiv';}
@@ -2516,7 +2574,20 @@ const FEED_PAGE=60;
 function moreFeed(){S.shown=(S.shown||FEED_PAGE)+FEED_PAGE;renderFeed();}
 function renderFeed(){
   const el=g('list-scroll');renderRegionQuick();
-  if(!S.filt.length){el.innerHTML='<div style="text-align:center;padding:40px 12px;color:var(--muted);font-size:13px;line-height:1.5">Keine Artikel im aktuellen Filter.<br><button class="btn sm" style="margin-top:8px" onclick="resetFilters()">Filter zurücksetzen</button></div>'+archiveGate();return;}
+  if(!S.filt.length){
+    /* "Keine Artikel im aktuellen Filter" sagt nicht, WORAN es liegt. Jetzt den
+       konkreten Grund benennen und den passenden Ausweg als Knopf anbieten. */
+    const grund=S.regionKw?`Für „${({china:'China',welt:'International / Welt'})[S.regionKw]||S.regionKw}" liegt im gewählten Zeitraum nichts vor.`
+      :S.onlyFree?'Keine frei zugänglichen Artikel in dieser Auswahl.'
+      :'Keine Meldungen in dieser Auswahl.';
+    el.innerHTML=`<div class="gap-note" style="margin:16px"><strong>${esc(grund)}</strong>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+        ${S.range!=='alle'?`<button class="btn sm" onclick="S.range='alle';applyFilters()">Zeitraum erweitern</button>`:''}
+        ${S.regionKw?`<button class="btn sm" onclick="goRegion('news')">Alle Nachrichten</button>`:''}
+        ${S.onlyFree?`<button class="btn sm" onclick="S.onlyFree=false;const c=g('fp-free');if(c)c.checked=false;applyFilters()">Auch kostenpflichtige zeigen</button>`:''}
+        <button class="btn sm" onclick="resetFilters()">Alle Filter zurücksetzen</button>
+      </div></div>`+archiveGate();
+    return;}
   S.shown=Math.min(S.shown||FEED_PAGE,Math.max(FEED_PAGE,S.shown||FEED_PAGE));
   const paper=S.layout==='paper';
   el.innerHTML=S.filt.slice(0,S.shown).map((a,i)=>{
@@ -2648,7 +2719,7 @@ function foldCard(id){FOLD.has(id)?FOLD.delete(id):FOLD.add(id);store.set('ps_fo
 function applyFolds(){document.querySelectorAll('#view-dash .dcard').forEach(c=>{
   const id=c.dataset.fold;if(!id)return;c.classList.toggle('folded',FOLD.has(id));});
   const n=document.querySelectorAll('#view-dash .dcard[data-fold]').length;
-  g('fold-all-btn').textContent=FOLD.size>=n?'Alle ausklappen':'Alle einklappen';}
+  g('fold-all-btn').textContent=FOLD.size>=n?'Kacheln aufklappen':'Kacheln zuklappen';}
 function foldAll(){
   const ids=[...document.querySelectorAll('#view-dash .dcard[data-fold]')].map(c=>c.dataset.fold);
   if(FOLD.size>=ids.length)FOLD.clear();else ids.forEach(i=>FOLD.add(i));
@@ -2686,6 +2757,18 @@ function dashTopic(t){
   if(S.view!=='dash')setView('dash');
   setDashMode(S.topics.size?'themes':'overview',document.querySelector('#dash-seg button'+(S.topics.size?':nth-child(2)':'')));
   renderQuickbar();renderDashThemes();
+}
+/* Top-Meldungen als Text herausziehen – fuer Weitergabe per Mail oder Chat. */
+function exportTop(){
+  const zeilen=[...document.querySelectorAll('#dash-top .top-row')].map((row,i)=>{
+    const a=articleById(row.id.replace('tr-top-',''));
+    if(!a)return null;
+    const q=Math.max(a.cluster||1,1+((a._dupes||[]).length));
+    return `${i+1}. ${a.title}\n   ${a.source}${q>1?` · ${q} Quellen`:''} · ${fd(a.date)}${zugang(a)==='paid'?' · kostenpflichtig':''}\n   ${a.link||''}`;
+  }).filter(Boolean);
+  const txt=`Top-Meldungen · letzte ${S.topWin||24} Stunden · ${new Date().toLocaleString('de-DE')}\n${'='.repeat(52)}\n\n${zeilen.join('\n\n')}`;
+  navigator.clipboard?.writeText(txt);
+  const btn=event?.target;if(btn){const alt=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=alt,1200);}
 }
 function setTopWin(h){S.topWin=h;store.set('ps_topwin',h);reRender('dash');}
 function renderQuickbar(){
@@ -2747,18 +2830,26 @@ function poolRegion(key){
   return pool('all');
 }
 function goRegion(key){
-  if(key==='dash'){setView('dash');setDashMode('overview',document.querySelector('#dash-seg button'));renderNewsRegions();return;}
-  if(key==='themen'){setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));renderNewsRegions();return;}
+  /* Zurueck aufs Dashboard: die Regionsauswahl aufheben, sonst blieb die zuletzt
+     gewaehlte Region (z. B. "Welt") markiert, obwohl sie nicht mehr wirkt. */
+  if(key==='dash'){S.regionKw=null;setView('dash');setDashMode('overview',document.querySelector('#dash-seg button'));renderNewsRegions();return;}
+  if(key==='themen'){S.regionKw=null;setView('dash');setDashMode('themes',document.querySelector('#dash-seg button:nth-child(2)'));renderNewsRegions();return;}
   S.topics.clear();S.src='all';
   if(['news','eu','us'].includes(key)){S.section=key;S.regionKw=null;}
   else{S.section='all';S.regionKw=key;}
   setC('fb-set',{news:'Nachrichten',eu:'EU Direkt',us:'USA',china:'China',welt:'International / Welt'}[key]||'Alle Feeds');
-  buildNavTopics();buildChips();buildSrc();buildFilterSelects();setView('feed');applyFilters();renderNewsRegions();
+  buildNavTopics();buildChips();buildSrc();buildFilterSelects();
+  setView('feed');            /* blendet die Dashboard-Ansicht aus */
+  applyFilters();renderNewsRegions();
 }
 function renderNewsRegions(){
   const el=g('news-regions');if(!el)return;
+  /* Nur dort zeigen, wo sie etwas bewirkt: Dashboard und Nachrichten-Feed. */
+  if(!(S.view==='dash'||S.view==='feed')){el.innerHTML='';return;}
   const cur=S.regionKw?S.regionKw:(S.view==='dash'?(S.dashMode==='themes'?'themen':'dash'):(S.section||''));
-  const REG=[['dash','Dashboard'],['news','🇩🇪 DE'],['eu','🇪🇺 EU'],['us','🇺🇸 USA'],['china','🇨🇳 China'],['welt','🌍 Welt'],['themen','Nach Themen']];
+  /* "Dashboard" und "Nach Themen" standen hier UND in der Kopfzeile darüber –
+     doppelt und verwirrend. Hier bleiben nur die Regionen. */
+  const REG=[['news','🇩🇪 DE'],['eu','🇪🇺 EU'],['us','🇺🇸 USA'],['china','🇨🇳 China'],['welt','🌍 Welt']];
   el.innerHTML=`<div class="seg mini-seg" style="overflow-x:auto;flex-wrap:nowrap">${REG.map(([k,l])=>
     `<button class="${cur===k?'active':''}" onclick="goRegion('${k}')">${l}</button>`).join('')}</div>`;
 }
@@ -2834,10 +2925,18 @@ function renderDash(){
         Terminvorschau) fliegen ganz raus.
      2. Amtliche Mitteilungen einzelner Institutionen kommen nur nach oben, wenn
         MEHRERE Quellen darüber berichten – dann ist es echte Nachrichtenlage. */
-  const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für redaktionen|sperrfrist)/i;
+  const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für nutzer|sperrfrist)/i;
   const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb','bverfg','bgh','bundesbank']);
+  /* PRO_CATS (Euractiv, Denkfabriken) wurden bisher IMMER aus den Top-Meldungen
+     verbannt – auch bei abgeschalteter Bezahlschranke. Das nahm ohne Grund
+     Quellen weg und konnte die Liste leeren. Jetzt nur noch, wenn sie wirklich
+     gesperrt sind. */
   const vor=win.filter(a=>{
-    if(PRO_CATS.has(a.cat))return false;
+    /* Denkfabriken (eu-think) liefern Analysen und Positionspapiere, keine
+       tagesaktuellen Nachrichten – sie haben eine eigene Kachel "Studien &
+       Analysen". Nachrichtenquellen wie Euractiv (eu-media) bleiben dagegen. */
+    if(a.cat==='eu-think')return false;
+    if(PRO_CATS.has(a.cat)&&!isPro())return false;
     if(istWerbung(a))return false;
     if(ORGA_RE.test(a.title||''))return false;
     if(AMT_CATS.has(a.cat)&&(a.cluster||1)<2&&!(a._dupes||[]).length)return false;
@@ -2845,15 +2944,48 @@ function renderDash(){
   }).sort((a,b)=>((b.cluster||1)+(b.boost||0))-((a.cluster||1)+(a.boost||0))).slice(0,150);
   const kand=dedupe(vor,new Set());
   const winScore=a=>{
-    const quellen=1+((a._dupes||[]).length);
+    /* BEHOBENER FEHLER: Gezaehlt wurden nur die im Browser erkannten Dubletten
+       (_dupes) – der vom Backend gelieferte cluster-Wert blieb unberuecksichtigt.
+       Eine Meldung, ueber die 15 Quellen berichten, wurde deshalb wie eine
+       Einzelmeldung bewertet und verlor gegen ein frisches Werbe-Webinar.
+       Jetzt zaehlt der groessere der beiden Werte. */
+    const quellen=Math.max(a.cluster||1, 1+((a._dupes||[]).length));
     const frisch=Math.max(0,1-ageH(a.date)/Math.max(1,hrs));
-    /* Eine Behörden-Mitteilung ist erst dann eine Top-Nachricht, wenn sie
-       aufgegriffen wurde – der eingebaute boost allein reicht nicht. */
     const amtlichAllein=AMT_CATS.has(a.cat)&&quellen<2;
-    return quellen*3+(amtlichAllein?0:(a.boost||0))+frisch*(hrs<=6?8:hrs<=24?5:3);
+    /* Aktualitaet zaehlt, darf aber die Nachrichtenlage nicht ueberstimmen:
+       eine Einzelmeldung von vor einer Minute ist nicht wichtiger als eine
+       Meldung, ueber die fuenfzehn Redaktionen berichten. */
+    return quellen*4+(amtlichAllein?0:Math.min(a.boost||0,3))+frisch*(hrs<=6?5:3);
   };
   const top=kand.sort((a,b)=>winScore(b)-winScore(a)).slice(0,12);
   const dupInfo=a=>(a._dupes||[]).length?`<span class="cluster" title="${esc((a._dupes||[]).map(x=>x.source).join(', '))}">📊 ${1+a._dupes.length} Quellen</span>`:((a.cluster||0)>=3?`<span class="cluster">📊 ${a.cluster}</span>`:'');
+  /* Wenn im gewaehlten Fenster (fast) nichts vorliegt, ist das meist KEIN
+     Anzeigefehler, sondern eine Datenluecke: die Feeds liefern gerade nichts.
+     Das ausdruecklich sagen und den naechstgroesseren Zeitraum anbieten,
+     statt den Nutzer vor einer leeren Liste raten zu lassen. */
+  if(!top.length){
+    /* Statt nur "nichts da" die Filterkette offenlegen: so ist sofort erkennbar,
+       ob die Quellen nichts geliefert haben oder ein Filter zu scharf greift. */
+    const alle=pool('all');
+    const imFenster=alle.filter(a=>ageH(a.date)<=hrs);
+    const ohneWerbung=imFenster.filter(a=>!istWerbung(a));
+    const naechste=[3,6,12,24,48].find(h=>h>hrs&&alle.filter(a=>ageH(a.date)<=h&&!istWerbung(a)).length>2);
+    const juengste=alle.filter(a=>!istWerbung(a)).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+    const weg=imFenster.length-ohneWerbung.length;
+    g('dash-top').innerHTML=`<div class="gap-note" style="margin:14px">
+      <strong>Keine Top-Meldungen in den letzten ${hrs} Stunden.</strong>
+      <div style="margin-top:7px;font-size:11.5px;line-height:1.7">
+        ${alle.length.toLocaleString('de-DE')} Meldungen geladen ·
+        <b>${imFenster.length}</b> davon aus den letzten ${hrs} Stunden
+        ${weg>0?`· davon <b>${weg}</b> als Werbung/Veranstaltung aussortiert`:''}<br>
+        ${juengste?`Jüngste Meldung im Bestand: ${rel(juengste.date)}`:''}
+      </div>
+      <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">
+        ${naechste?`<button class="btn sm p" onclick="setTopWin(${naechste})">Auf ${naechste} Stunden erweitern</button>`:''}
+        <button class="btn sm" onclick="location.reload()">Neu laden</button>
+      </div></div>`;
+    renderDashSide();return;
+  }
   g('dash-top').innerHTML=top.length?top.map((a,i)=>`<div class="top-row${i===0?' first':''}" id="tr-top-${a.id}" data-acc="${zugang(a)}" onclick="toggleInline('${a.id}','top')">
       <span class="rank">${i+1}</span>
       <div class="dl-main"><div class="dl-eb"><span class="tag" style="color:${srcC(a.source).tc}">${esc(a.source)}</span>${accBadge(a)}${dupInfo(a)}${isBreaking(a)?'<span class="eil">Eil</span>':''}${tagsHTML(a,2)}</div>
@@ -2891,6 +3023,12 @@ function toggleInline(id,ctx){
         <div class="src-tiles">${weitere.map(x=>`<div class="src-tile" onclick="event.stopPropagation();window.open('${esc(x.link)}','_blank','noopener')">
           <div class="st-s">${esc(x.source)}</div><div class="st-t">${esc(x.title)}</div></div>`).join('')}</div>`:''}
       <div>${tagsHTML(a,4)}</div>
+      <div class="acc-fix">
+        <span>Zugang${ACC_FIX[a.source]?' (von dir korrigiert)':''}:</span>
+        <button class="${zugang(a)==='free'?'on':''}" onclick="event.stopPropagation();setZugangFix('${esc(a.source).replace(/'/g,"\\'")}','free')" title="Diese Quelle ist frei zugänglich">🔓 frei</button>
+        <button class="${zugang(a)==='paid'?'on':''}" onclick="event.stopPropagation();setZugangFix('${esc(a.source).replace(/'/g,"\\'")}','paid')" title="Diese Quelle ist kostenpflichtig">🔒 Abo</button>
+        ${ACC_FIX[a.source]?`<button onclick="event.stopPropagation();setZugangFix('${esc(a.source).replace(/'/g,"\\'")}',null)" title="Eigene Korrektur aufheben">↺</button>`:''}
+      </div>
     </div>
     <div class="ir">
     <div class="txt">${esc(a.desc||'Dieser Feed liefert keinen Vorschautext – bitte die Quelle öffnen.')}</div>
@@ -3077,7 +3215,20 @@ function retrievalAnswer(q){
   const kern=worte.filter(selten);
   const suchbegriffe=(kern.length?kern:worte).slice(0,5);
   if(!suchbegriffe.length)return null;
-  const treffer=a=>suchbegriffe.filter(w=>kwHit(w,stext(a))).length;
+  /* BEHOBEN: Verglichen wurde die exakte Wortform im Rohtext. Eine Suche nach
+     "Krankenhaus" fand deshalb keine Meldung über "Krankenhäuser", und
+     "Reform" fand nicht "Reformen". Jetzt wird zusätzlich über den Wortstamm
+     verglichen – dieselbe Normalisierung, die auch die Verknüpfung nutzt. */
+  const staemme=suchbegriffe.map(stem);
+  const treffer=a=>{
+    const txt=stext(a);
+    let n=suchbegriffe.filter(w=>kwHit(w,txt)).length;
+    if(!n){
+      const artStaemme=new Set(sigWords(a.title+' '+(a.desc||'').slice(0,300)));
+      n=staemme.filter(st=>st.length>3&&artStaemme.has(st)).length;
+    }
+    return n;
+  };
   const meldungen=dedupe(pool('all').filter(a=>treffer(a)>0)
     .sort((a,b)=>(treffer(b)-treffer(a))||((b.date||'').localeCompare(a.date||'')))).slice(0,8);
   const verfahren=(DIP.procedures||[]).map(p=>{
@@ -3681,8 +3832,20 @@ const STOPW=new Set('der die das den dem des ein eine einer eines und oder aber 
 /* Deutsche Beugung: „Glasfaserausbaus" und „Glasfaserausbau" sind dasselbe Wort.
    Ein grober Stammabgleich genügt – Endungen abschneiden, Rest vergleichen. */
 function stem(w){
-  return w.replace(/(ungen|ungs|erung|heiten|keiten|lichen|ischen|enden|enen|esse|es|en|em|er|e|s|n)$/,'')
-          .replace(/(ss)$/,'s');
+  /* Reihenfolge ist entscheidend und war zweimal falsch:
+     1. Umlaute ZUERST zurueckbilden (Krankenhäuser → krankenhauser),
+        sonst laufen Singular und Plural auseinander.
+     2. Dann die Endung entfernen – aber nur bei Woertern, die danach noch
+        lang genug bleiben. Vorher wurde aus "krankenhaus" das "s" entfernt
+        ("krankenhau"), waehrend "krankenhäuser" zu "krankenhaus" wurde:
+        derselbe Begriff ergab zwei verschiedene Staemme. */
+  const u=w.replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u');
+  /* Das Genitiv-s muss weg ("Vergaberechts" → "vergaberecht"), aber nicht bei
+     Woertern, die auf -aus/-eis/-us enden ("Krankenhaus" darf nicht zu
+     "krankenhau" werden). Deshalb das s nur nach Konsonant oder langem Wort. */
+  let gek=u.replace(/(ungen|ungs|erung|heiten|keiten|lichen|ischen|enden|enen|esse|ern|er|en|em|es|e|n)$/,'');
+  if(gek===u&&/[^aeiou]s$/.test(u)&&!/(aus|eis|ous|us)$/.test(u))gek=u.slice(0,-1);
+  return(gek.length>=4?gek:u).replace(/(ss)$/,'s');
 }
 function sigWords(t){
   return[...new Set((t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/)
@@ -4234,8 +4397,10 @@ function renderWsContext(){
       `<div class="wsnav${S.view==='feed'&&S.section===k?' active':''}" onclick="setSection('${k}')">${SET_LABEL[k]}<span class="cnt">${rawPool(k).length}</span></div>`).join('');
     buildNavTopics();renderMyTopics();renderSaved();
   }else if(S.ws==='dash'){
-    el.innerHTML=grp('ressorts','Ressorts',`<div class="nav-chip-wrap" id="nav-topics"></div><div id="nav-topics-more"></div>`);
-    buildNavTopics();
+    /* Die Ressortliste wirkt nur auf den Nachrichten-Feed. Im Dashboard führte
+       sie in die Irre, weil dort die Themen-Ansicht und die Regionsleiste
+       zuständig sind – deshalb dort nicht mehr zeigen. */
+    el.innerHTML='';
   }else if(S.ws==='policy'){
     el.innerHTML=grp('inst','Institutionen',`<div id="nav-insts"></div>`)
       +grp('land','Bundesländer',`<select class="fsel" style="width:100%" id="land-pick" onchange="pickLand(this.value)">
