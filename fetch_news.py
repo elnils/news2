@@ -722,7 +722,7 @@ def parse_date(raw):
     try: return datetime.fromisoformat(raw.replace('Z','+00:00')).astimezone(timezone.utc).isoformat()
     except: return ""
 
-def parse_feed(fetch_result, source, topic_rules):
+def parse_feed(fetch_result, source, topic_rules, cat=""):
     if fetch_result is None:
         return []
     xml_bytes, http_charset = fetch_result
@@ -1140,7 +1140,7 @@ def fetch_all(feed_list, topic_rules, label):
             print("FAIL")
             continue
         try:
-            arts=parse_feed(result,name,topic_rules)
+            arts=parse_feed(result,name,topic_rules,cat)
         except Exception as e:
             fail+=1
             FAILED_FEEDS.append((label,name,url,f"Parser: {type(e).__name__}"))
