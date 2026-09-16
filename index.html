@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v15</title>
+<title>Presseschau – Entwurf v16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -144,6 +144,13 @@ svg.i{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-
 .side-item .n.new{color:#fff;background:var(--red);padding:0 6px;border-radius:9px}
 main{flex:1;min-width:0}
 .page{max-width:1180px;padding:14px 24px 80px}
+.lb{font-size:var(--fs-sm);line-height:1.5;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);margin-bottom:12px}
+.lb b{color:var(--text)}
+.lb code{font-size:.92em;background:var(--surface2);padding:1px 5px;border-radius:5px}
+.lb.err{border-color:#fca5a5;background:var(--red-lt);color:var(--text)}
+.lb.warn{border-color:#fcd34d;background:var(--amber-lt);color:var(--text)}
+.lb.demo{border-color:#fcd34d;background:var(--amber-lt);color:var(--text)}
+.lb a{font-weight:600}
 .page-hd{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--border);margin-bottom:12px;padding-top:2px}
 .page-hd h1{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.2;white-space:nowrap;align-self:flex-end;padding-bottom:7px}
 .tabs{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
@@ -595,7 +602,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')">Presse<em>schau</em></a>
-    <span class="demo-pill" title="Alle Inhalte sind erfundene Beispieldaten">Entwurf v15 · Demo-Daten</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v16</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -627,7 +634,10 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
       <div id="side-monitors"></div>
     </nav>
     <main id="main">
-      <div class="page" id="page"></div>
+      <div class="page">
+        <div id="loadbar" class="lb" hidden></div>
+        <div id="page"></div>
+      </div>
     </main>
   </div>
   <footer><span>Presseschau · Entwurf v10</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
@@ -1017,7 +1027,7 @@ const MARKET_CATALOG=[
   {sym:'HG=F',n:'Kupfer',grp:'Rohstoffe',unit:'USD/lb',p:4.32,dec:2,vol:1.3,drift:6},
 ];
 const MARKET_BY_SYM=Object.fromEntries(MARKET_CATALOG.map(m=>[m.sym,m]));
-const MARKET_RANGES=[['1t','24 Std.',24],['1w','7 Tage',7],['1m','1 Monat',30],['1j','1 Jahr',52],['max','5 Jahre',60]];
+const MARKET_RANGES=[['1t','1 Tag',24],['1w','7 Tage',7],['1m','1 Monat',30],['1j','1 Jahr',52],['max','5 Jahre',60]];
 const DEFAULT_WATCH=['^GDAXI','^STOXX50E','^GSPC','BZ=F','TTF=F','DEBASE27','DE10Y','EURUSD=X'];
 /* Sachfragen: benannte Vorgänge, die quer zu den Ressorts laufen.
    Im Betrieb kommen sie aus den Themenregeln von fetch_news.py. */
@@ -1077,7 +1087,7 @@ INSTITUTIONS.forEach(i=>{i.src=i.type;i.title=i.name;i.link='https://demo.presse
 <script>
 /* ───────────────────────────── Speicher & Zustand ───────────────────────────── */
 const store={get(k,d){try{const v=localStorage.getItem('ps11_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('ps11_'+k,JSON.stringify(v))}catch(e){}}};
-const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
+const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,dedupe:true,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
 function applyPrefs(){
   const de=document.documentElement;
   if(PREF.theme==='system')delete de.dataset.theme;else de.dataset.theme=PREF.theme;
@@ -1184,24 +1194,42 @@ function render(){
 
 /* ── Nachrichten: Übersicht ── */
 const topScore=a=>a.rel*2-a.ago/6;
+/* Dubletten: dieselbe Meldung aus mehreren Quellen einmal zeigen. Schlüssel ist
+   die Themenlage, sonst die normalisierte Schlagzeile. */
+function dubKey(a){
+  const st=STORIES.find(s=>s.arts.includes(a.id));
+  if(st)return 'st:'+st.id;
+  const k=typeof normTitel==='function'?normTitel(a.title):'';
+  return k.length>=20?'t:'+k:'id:'+a.id;
+}
+function entdoppeln(arr){
+  if(!PREF.dedupe)return arr;
+  const gesehen=new Set();
+  return arr.filter(a=>{const k=dubKey(a);if(gesehen.has(k))return false;gesehen.add(k);return true});
+}
 /* Welche anderen Meldungen berichten dasselbe? Im Betrieb liefert das der
    Cluster aus fetch_news.py; hier die übrigen Meldungen derselben Themenlage,
    sonst zeitnahe Meldungen anderer Quellen mit gleichem Ressort. */
 function clusterArts(a){
   if(a._cl)return a._cl;
   const st=STORIES.find(s=>s.arts.includes(a.id));
-  let arr=st?st.arts.filter(id=>id!==a.id).map(id=>ITEMS[id])
-    :ARTICLES.filter(x=>x.id!==a.id&&x.src!==a.src&&Math.abs(x.ago-a.ago)<14&&x.topics.some(t=>a.topics.includes(t)));
-  return arr.sort((x,y)=>y.date-x.date).slice(0,Math.max(0,(a.clusterZiel||a.cluster||1)-1));
+  let arr=st?st.arts.filter(id=>id!==a.id).map(id=>ITEMS[id]).filter(Boolean):[];
+  if(!arr.length){
+    /* Keine Themenlage: Meldungen anderer Quellen mit fast gleicher Schlagzeile */
+    const k=typeof normTitel==='function'?normTitel(a.title):'';
+    arr=ARTICLES.filter(x=>x.id!==a.id&&x.src!==a.src&&k&&k.length>=20&&normTitel(x.title)===k);
+  }
+  const grenze=Math.max(0,(a.clusterZiel||a.cluster||1)-1);
+  return arr.sort((x,y)=>y.date-x.date).slice(0,Math.max(grenze,arr.length&&st?arr.length:grenze));
 }
-/* Angezeigte Quellenzahl und aufklappbare Liste müssen dieselbe sein. */
-ARTICLES.forEach(a=>{a.clusterZiel=a.cluster;const l=clusterArts(a);a._cl=l;a.cluster=l.length+1});
+/* Angezeigte Quellenzahl und aufklappbare Liste müssen dieselbe sein –
+   gesetzt in indexieren(), nachdem die Daten geladen sind. */
 function newsBase(){return ARTICLES.filter(a=>a.ago<=48&&inRegion(a))}
 function renderTop(){
   const base=newsBase();
-  const top=base.filter(a=>a.ago<=24&&a.herkunft!=='think').sort((a,b)=>topScore(b)-topScore(a)).slice(0,6);
+  const top=entdoppeln(base.filter(a=>a.ago<=24&&a.herkunft!=='think').sort((a,b)=>topScore(b)-topScore(a))).slice(0,6);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
-  all=S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date);
+  all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
   let h=`<div class="ov ${S.view==='paper'?'wide':''}"><div class="ov-main">`;
   h+=secHd('top','Top-Meldungen','letzte 24 Std.'+(S.region!=='all'?' · '+REGION_NAME[S.region]:''),copyBtn(TOPLIST,'Top-Meldungen'));
@@ -1259,7 +1287,9 @@ function mkSeries(m,range){
 }
 function fmtNum(x,dec){return x.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
 function mkData(m,range){
-  const s=mkSeries(m,range),first=s[0],last=s[s.length-1];
+  /* Echte Reihe aus markets.json, sonst die erzeugte Beispielreihe (?demo=1). */
+  const echt=m.series&&m.series[range]&&m.series[range].length>1?m.series[range]:null;
+  const s=echt||mkSeries(m,range),first=s[0],last=s[s.length-1];
   const pp=m.unit==='%';
   const c=pp?+(last-first).toFixed(2):+((last-first)/first*100).toFixed(2);
   return {s,last,c,pp};
@@ -1297,7 +1327,13 @@ function openMarket(sym){
   g('mkd-ft').innerHTML=`<button class="btn ${drin?'':'primary'}" onclick="watchToggle('${sym}');openMarket('${sym}')">${drin?'Aus meinen Werten entfernen':'Zu meinen Werten'}</button><span class="grow"></span><button class="btn quiet" onclick="closeSheet('market')">Schließen</button>`;
   if(!g('sheet-market').classList.contains('open'))openSheet('market');
 }
-function watchlist(){return (store.get('watch',DEFAULT_WATCH)||[]).filter(s=>MARKET_BY_SYM[s])}
+function watchlist(){
+  const g=store.get('watch',null);
+  const liste=g||DEFAULT_WATCH.filter(s=>MARKET_BY_SYM[s]);
+  const da=liste.filter(s=>MARKET_BY_SYM[s]);
+  /* Noch nichts gewählt und keine Vorauswahl vorhanden: die ersten Werte zeigen */
+  return da.length?da:MARKET_CATALOG.slice(0,8).map(m=>m.sym);
+}
 function watchToggle(sym){const w=watchlist();const n=w.includes(sym)?w.filter(x=>x!==sym):[...w,sym];store.set('watch',n);toast(w.includes(sym)?'Aus der Liste entfernt':'Zur Liste hinzugefügt');render()}
 function listByTime(arr,listName){
   if(!arr.length)return '<div class="box"><div class="empty"><b>Nichts gefunden</b>Andere Region, anderes Ressort oder Suchbegriff kürzen.</div></div>';
@@ -1319,7 +1355,7 @@ function toggleTeasers(){setPref('teasers',!document.body.classList.contains('te
 function renderStories(){
   const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date);window.STORYLIST=list.map(s=>s.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools">${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
-  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>ITEMS[id].src))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span></div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Story</b>Für diese Auswahl gibt es gerade keine Meldung, die mehrere Quellen aufgreifen.</div>'}</div>`;
+  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>ITEMS[id].src))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span></div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
 const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte']];
@@ -1379,14 +1415,14 @@ function renderMarkets(){
   }
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
   b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
-    :'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>';
+    :(MARKET_CATALOG.length?'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>':'<div class="box"><div class="empty"><b>Keine Kursdaten</b>Sie kommen aus <code>markets.json</code>; die Datei schreibt <code>fetch_markets.py</code> im Lauf.</div></div>');
   const rel=ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))).sort((a,b)=>b.date-a.date).slice(0,6);window.MKLIST=rel.map(a=>a.id);
   b+=`<div class="sec-hd" style="margin-top:20px"><h2 style="font-size:var(--fs-md)">Meldungen mit Marktbezug</h2><span class="cnt">Energie, Finanzen, Handel</span></div><div class="box list">${rel.map(a=>rowHTML(a,'MKLIST',true)).join('')}</div>`;
-  b+=`<p class="note" style="margin-top:12px">Kurse im Entwurf sind erzeugte Beispielwerte. Im Betrieb liefert <code>fetch_markets.py</code> die Datei <code>markets.json</code>; Strom und CO₂ kommen von der EEX, alles Übrige von Yahoo Finance.</p>`;
+  b+=`<p class="note" style="margin-top:12px">${typeof DEMO!=='undefined'&&DEMO?'Kurse sind hier erzeugte Beispielwerte. ':''}Im Betrieb liefert <code>fetch_markets.py</code> die Datei <code>markets.json</code> (Yahoo Finance, Tagesschlusskurse).</p>`;
   return h+body('mkr',b);
 }
 function renderArchive(){
-  const list=ARTICLES.filter(a=>a.ago>48&&a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date);window.ARCHLIST=list.map(a=>a.id);
+  const list=entdoppeln(ARTICLES.filter(a=>a.ago>48&&a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date));window.ARCHLIST=list.map(a=>a.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Archiv</h2><span class="cnt">${list.length} · älter als 48 Std.</span><div class="tools"><div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.archRange===7}" onclick="S.archRange=7;render()">7 Tage</button><button aria-pressed="${S.archRange===30}" onclick="S.archRange=30;render()">30 Tage</button><button aria-pressed="${S.archRange===365}" onclick="S.archRange=365;render()">Alles</button></div>${copyBtn(ARCHLIST,'Archiv')}</div></div>`;
   h+=`<div class="filters"><div class="bar">${lsearch('ar','Archiv durchsuchen – Titel, Quelle, Begriff …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select></div></div>`;
   h+=list.length?`<div class="box list">${list.map(a=>rowHTML(a,'ARCHLIST')).join('')}</div>`:'<div class="box"><div class="empty"><b>Nichts im Archiv</b>Suchbegriff oder Zeitraum ändern.</div></div>';
@@ -1424,7 +1460,7 @@ function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('mon
 /* ── Policy ── */
 function renderProcs(){
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Verfahren</h2><span class="cnt">${PROCS.length} laufende Gesetzgebungsverfahren</span></div>`;
-  h+=`<div class="box">${PROCS.map(p=>`<div class="proc"><div class="bar"><b>${esc(p.title)}</b><span class="pill ${p.src==='EU'?'eu':'grey'}">${p.src}</span>${p.story?`<button class="btn sm quiet" style="margin-left:auto" onclick="openReader('${p.story}')">Zur Story</button>`:''}</div><div class="steps">${p.steps.map((s,i)=>`<span class="step ${i<p.now?'done':i===p.now?'now':''}">${s}</span>`).join('')}</div></div>`).join('')}</div>`;
+  h+=`<div class="box">${PROCS.length?PROCS.map(p=>`<div class="proc"><div class="bar"><b>${esc(p.title)}</b><span class="pill ${p.src==='EU'?'eu':'grey'}">${esc(p.type||p.src)}</span>${p.date?`<span class="note">${fmtAgo(new Date(p.date).getTime())}</span>`:''}${p.link?`<a class="btn sm quiet" style="margin-left:auto" href="${p.link}" target="_blank" rel="noopener">Öffnen</a>`:(p.story?`<button class="btn sm quiet" style="margin-left:auto" onclick="openReader('${p.story}')">Zur Themenlage</button>`:'')}</div><div class="steps">${p.steps.map((s,i)=>`<span class="step ${i<p.now?'done':i===p.now?'now':''}">${s}</span>`).join('')}</div>${p.ki?`<div class="note" style="margin-top:8px">${esc(p.ki)}</div>`:''}</div>`).join(''):'<div class="empty"><b>Keine Verfahren</b>Sie kommen aus <code>dip.json</code>; die Datei schreibt <code>fetch_directory.py</code> mit dem DIP-Schlüssel.</div>'}</div>`;
   return h;
 }
 function renderDocs(){
@@ -1432,7 +1468,7 @@ function renderDocs(){
   const list=DOCS.filter(d=>matchLQ('dc',d)&&(S.docType==='all'||d.type===S.docType)).sort((a,b)=>b.date-a.date);window.DOCLIST=list.map(d=>d.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Dokumente</h2><span class="cnt">${list.length}</span><div class="tools">${copyBtn(DOCLIST,'Dokumente')}</div></div>`;
   h+=`<div class="filters"><div class="bar">${lsearch('dc','Dokumente durchsuchen – Titel, Nummer, Herkunft …')}<select class="sel" aria-label="Dokumenttyp" onchange="S.docType=this.value;render()"><option value="all">Alle Typen</option>${types.map(t=>`<option ${S.docType===t?'selected':''}>${t}</option>`).join('')}</select></div></div>`;
-  h+=`<div class="box list">${list.map(d=>`<div class="row" role="button" tabindex="0" onclick="openReader('${d.id}',DOCLIST)" onkeydown="rowKey(event,'${d.id}')"><div class="meta">${srcHTML(d)}<span class="pill grey">${esc(d.type)}</span><span>${fmtAgo(d.date)}</span></div><div class="ttl">${esc(d.title)}</div>${d.desc?`<div class="teaser" style="display:block">${esc(d.desc)}</div>`:''}${starHTML(d.id)}</div>`).join('')||'<div class="empty"><b>Kein Dokument</b>Suchbegriff oder Typ ändern.</div>'}</div>`;
+  h+=`<div class="box list">${list.map(d=>`<div class="row" role="button" tabindex="0" onclick="openReader('${d.id}',DOCLIST)" onkeydown="rowKey(event,'${d.id}')"><div class="meta">${srcHTML(d)}<span class="pill grey">${esc(d.type)}</span><span>${fmtAgo(d.date)}</span></div><div class="ttl">${esc(d.title)}</div>${d.desc?`<div class="teaser" style="display:block">${esc(d.desc)}</div>`:''}${starHTML(d.id)}</div>`).join('')||'<div class="empty"><b>Kein Dokument</b>Drucksachen, Protokolle und Tagesordnungen kommen aus <code>documents.json</code>.</div>'}</div>`;
   return h;
 }
 function eventsFiltered(){return EVENTS.filter(e=>matchLQ('ev',e)&&(!S.calDay||sameDay(e.date,S.calDay))).sort((a,b)=>a.date-b.date)}
@@ -1469,13 +1505,13 @@ function renderRulings(){
   const courts=[...new Set(ARTICLES.filter(a=>a.herkunft==='gericht').map(a=>a.gericht))];
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Urteile</h2><span class="cnt">${list.length} · EuGH, BVerfG, BGH, BVerwG, Supreme Court</span><div class="tools">${copyBtn(RULIST,'Urteile')}</div></div>`;
   h+=`<div class="filters"><div class="bar">${lsearch('ru','Urteile durchsuchen – Aktenzeichen, Thema …')}<select class="sel" aria-label="Gericht" onchange="S.gericht=this.value;render()"><option value="all">Alle Gerichte</option>${courts.map(c=>`<option ${S.gericht===c?'selected':''}>${c}</option>`).join('')}</select></div></div>`;
-  h+=`<div class="box">${list.map(a=>`<div class="rul" role="button" tabindex="0" onclick="openReader('${a.id}',RULIST)" onkeydown="rowKey(event,'${a.id}')"><div><div class="meta">${srcHTML(a)}<span class="pill grey">${esc(a.az)}</span><span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}</div><div class="ttl">${esc(a.title)}</div><div class="ls">${esc(a.ls)}</div></div>${starHTML(a.id)}</div>`).join('')||'<div class="empty"><b>Kein Urteil</b>Suchbegriff oder Gericht ändern.</div>'}</div>`;
+  h+=`<div class="box">${list.map(a=>`<div class="rul" role="button" tabindex="0" onclick="openReader('${a.id}',RULIST)" onkeydown="rowKey(event,'${a.id}')"><div><div class="meta">${srcHTML(a)}<span class="pill grey">${esc(a.az)}</span><span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}</div><div class="ttl">${esc(a.title)}</div><div class="ls">${esc(a.ls)}</div></div>${starHTML(a.id)}</div>`).join('')||'<div class="empty"><b>Kein Urteil</b>Entscheidungen von EuGH, BVerfG, BGH und BVerwG erscheinen hier, sobald die Gerichte etwas veröffentlichen.</div>'}</div>`;
   h+=`<p class="note" style="margin-top:12px">Leitsätze stammen aus den Pressemitteilungen der Gerichte; Verhandlungstermine erscheinen unter Termine.</p>`;
   return h;
 }
 function renderElections(){
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Wahlen</h2><span class="cnt">bevorstehend</span></div>`;
-  h+=ELECTIONS.map(e=>{const days=Math.round((e.date-NOW)/D);return `<div class="box" style="padding:14px 16px;margin-bottom:10px"><div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span></div>${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span><span class="pill amber">Beispielwerte</span></div>${e.polls.map(([n,v,c])=>`<div class="poll"><span class="tag">${n}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i></div><span class="v">${v} %</span></div>`).join('')}</div>`:'<p class="note" style="margin-top:6px">Umfragen liegen für diese Wahl nicht vor.</p>'}</div>`}).join('');
+  h+=ELECTIONS.map(e=>{const days=Math.round((e.date-NOW)/D);return `<div class="box" style="padding:14px 16px;margin-bottom:10px"><div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span></div>${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span>${e.quelle?`<span>${esc(e.quelle)}</span>`:''}${e.stand?`<span>Stand ${esc(e.stand)}</span>`:''}${typeof DEMO!=='undefined'&&DEMO?'<span class="pill amber">Beispielwerte</span>':''}</div>${e.polls.map(([n,v,c])=>`<div class="poll"><span class="tag">${n}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i></div><span class="v">${v} %</span></div>`).join('')}</div>`:'<p class="note" style="margin-top:6px">Umfragen liegen für diese Wahl nicht vor.</p>'}</div>`}).join('');
   return h;
 }
 
@@ -1488,7 +1524,7 @@ function renderStakeholder(tab){
   const list=cfg[1].filter(x=>inRegion(x)&&matchLQ('sh',x));const lname='SHLIST';window.SHLIST=list.map(x=>x.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>${cfg[0]}</h2><span class="cnt">${list.length}</span><div class="tools">${lsearch('sh',cfg[2])}${copyBtn(SHLIST,cfg[0])}</div></div>`;
   h+=`<div class="box">${list.map(x=>{const extra=tab==='committees'?` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`:tab==='institutions'||tab==='orgs'?(bySrc(x).length?` · ${bySrc(x).length} ${bySrc(x).length===1?'Meldung':'Meldungen'}`:''):(mentionsOf(x).length?` · ${mentionsOf(x).length}× erwähnt`:'');
-    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||x.city,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>Andere Region oder Suchbegriff kürzen.</div>`}</div>`;
+    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||x.city,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${PEOPLE.length?'Andere Region oder Suchbegriff kürzen.':'Das Verzeichnis kommt aus <code>people.json</code> (fetch_directory.py).'}</div>`}</div>`;
   return h;
 }
 
@@ -1566,7 +1602,7 @@ async function aiBrief(){const box=g('ai-brief');if(!box)return;box.hidden=false
 function renderNewsletter(){
   const list=NEWSLETTERS.filter(n=>matchLQ('nl',n));window.NLLIST=list.map(n=>n.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Newsletter</h2><span class="cnt">${list.length} Ausgaben</span><div class="tools">${lsearch('nl','Ausgaben durchsuchen …')}</div></div>`;
-  h+=`<div class="box list">${list.map(n=>`<div class="row" role="button" tabindex="0" onclick="openReader('${n.id}',NLLIST)" onkeydown="rowKey(event,'${n.id}')"><div class="meta">${srcHTML(n)}<span>${fmtAgo(n.date)}</span></div><div class="ttl">${esc(n.title)}</div><div class="teaser" style="display:block">${esc(n.desc)}</div>${starHTML(n.id)}</div>`).join('')||'<div class="empty"><b>Keine Ausgabe</b>Suchbegriff kürzen.</div>'}</div>`;
+  h+=`<div class="box list">${list.map(n=>`<div class="row" role="button" tabindex="0" onclick="openReader('${n.id}',NLLIST)" onkeydown="rowKey(event,'${n.id}')"><div class="meta">${srcHTML(n)}<span>${fmtAgo(n.date)}</span></div><div class="ttl">${esc(n.title)}</div><div class="teaser" style="display:block">${esc(n.desc)}</div>${starHTML(n.id)}</div>`).join('')||'<div class="empty"><b>Keine Ausgabe</b>Newsletter kommen aus <code>newsletters.json</code>.</div>'}</div>`;
   return h;
 }
 
@@ -1629,13 +1665,13 @@ function openReader(id,list){
     b=`<div class="meta">${srcHTML(x)}${x.type?`<span class="pill grey">${esc(x.type)}</span>`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${tags}${aiBox}
       ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Auch berichtet von</h2><span class="cnt">${clusterArts(x).length}</span></div><div class="box list">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
       ${story?`<div class="box" style="margin-top:18px;padding:12px 14px"><div class="meta" style="margin-bottom:4px"><span class="pill blue">${story.arts.length} Quellen</span><span>Teil einer Story</span></div><b>${esc(story.title)}</b><div class="note" style="margin-top:4px">${esc(story.sum)}</div><button class="btn sm" style="margin-top:8px" onclick="openReader('${story.id}')">Story öffnen</button></div>`:''}
-      ${x.kind==='doc'&&QUOTES.some(q=>q.doc===x.id)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert daraus</h2></div>${QUOTES.filter(q=>q.doc===x.id).map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.pid}')">${esc(ITEMS[q.pid].name)}</a></span></div>`).join('')}`:''}`;
+      ${x.kind==='doc'&&QUOTES.some(q=>q.doc===x.id&&ITEMS[q.pid])?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert daraus</h2></div>${QUOTES.filter(q=>q.doc===x.id&&ITEMS[q.pid]).map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.pid}')">${esc(ITEMS[q.pid].name)}</a></span></div>`).join('')}`:''}`;
   } else if(x.kind==='story'){
     b=`<div class="meta"><span class="pill blue">${x.arts.length} Quellen</span><span>${fmtAgo(x.date)}</span></div><h3 class="reader-title">${esc(x.title)}</h3><div class="reader-text">${esc(x.sum)}</div>${tags}${aiBox}<div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2></div><div class="box list">${x.arts.map(id=>rowHTML(ITEMS[id],'READERSUB')).join('')}</div>`;window.READERSUB=x.arts;
   } else if(x.kind==='event'){
     b=`<div class="meta">${srcHTML(x)}</div><h3 class="reader-title">${esc(x.title)}</h3><div class="reader-text">${fmtDay(x.date)}, ${fmtTime(x.date)} Uhr</div><div class="bar" style="margin-top:8px"><button class="btn sm" onclick="exportICS(['${x.id}'],'termin.ics')"><svg class="i" style="width:15px;height:15px"><use href="#i-download"/></svg>.ics</button><a class="btn sm" href="${gcalUrl(x)}" target="_blank" rel="noopener">Google Kalender</a></div>`;
   } else if(x.kind==='person'){
-    const men=mentionsOf(x),qs=QUOTES.filter(q=>q.pid===x.id);const rel=ARTICLES.filter(a=>a.ago<=48&&!men.includes(a)&&a.topics.some(t=>x.topics.includes(t))&&a.regions.some(r=>x.regions.includes(r))).slice(0,3);window.READERSUB=[...men,...rel].map(a=>a.id);
+    const men=mentionsOf(x),qs=QUOTES.filter(q=>q.pid===x.id&&ITEMS[q.doc]);const rel=ARTICLES.filter(a=>a.ago<=48&&!men.includes(a)&&a.topics.some(t=>x.topics.includes(t))&&a.regions.some(r=>x.regions.includes(r))).slice(0,3);window.READERSUB=[...men,...rel].map(a=>a.id);
     b=`<div class="meta"><span class="src">${esc(x.org)}</span>${x.party?`<span class="pill grey">${esc(x.party)}</span>`:''}</div><h3 class="reader-title">${esc(x.name)}</h3><div class="reader-text">${esc(x.role)}</div><div class="reader-tags">${x.topics.map(t=>`<span class="pill grey">${TOPICS[t]||t}</span>`).join('')}${COMMITTEES.filter(k=>k.members.includes(x.id)).map(k=>`<button class="chip" onclick="openReader('${k.id}')">${esc(k.name.split(' – ')[0])}</button>`).join('')}</div>
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert in Protokollen</h2><span class="cnt">${qs.length}</span></div>${qs.length?qs.map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.doc}')">${esc(ITEMS[q.doc].title)}</a> · ${esc(ITEMS[q.doc].src)}</span></div>`).join(''):'<p class="note">Keine Wortmeldung in den ausgewerteten Protokollen.</p>'}
@@ -1646,7 +1682,7 @@ function openReader(id,list){
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">${x.kind==='institution'?'Aktuelle Meldungen und Entscheidungen':'Veröffentlichungen'}</h2><span class="cnt">${arts.length}</span></div>${arts.length?`<div class="box list">${arts.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Meldungen aus dieser Quelle im Zeitraum.</p>'}
       ${evs.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Nächste Termine</h2></div><div class="box">${evs.map(e=>`<div class="ev" role="button" tabindex="0" onclick="openReader('${e.id}')" onkeydown="rowKey(event,'${e.id}')"><span class="time">${fmtTime(e.date)}</span><div><div class="ttl" style="font-size:var(--fs-sm)">${esc(e.title)}</div><div class="meta"><span>${fmtDay(e.date)}</span></div></div>${starHTML(e.id)}</div>`).join('')}</div>`:''}`;
   } else if(x.kind==='committee'){
-    b=`<div class="meta"><span class="src">${esc(x.org)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Mitglieder im Verzeichnis</h2></div><div class="box">${x.members.map(id=>ITEMS[id]).map(p=>`<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}')" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div><span></span></div>`).join('')}</div>`;
+    b=`<div class="meta"><span class="src">${esc(x.org)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Mitglieder im Verzeichnis</h2><span class="cnt">${x.members.filter(id=>ITEMS[id]).length}</span></div><div class="box">${x.members.map(id=>ITEMS[id]).filter(Boolean).map(p=>`<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}')" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div><span></span></div>`).join('')}</div>`;
   }
   if(x.kind==='article')window.READERSRC=clusterArts(x).map(y=>y.id);
   g('reader-body').innerHTML=b;g('reader-body').scrollTop=0;renderReaderFooter();
@@ -1727,6 +1763,7 @@ function renderSettings(){
       +row('Schriftgröße','',segHTML('font',[['normal','Normal'],['large','Größer']]))
       +row('Bewegung','Animationen beim Öffnen von Fenstern',segHTML('motion',[['system','System'],['reduced','Reduziert']]))
       +`<div class="set-sec">Listen</div>`
+      +row('Dubletten zusammenfassen','Gleiche Meldung aus mehreren Quellen nur einmal zeigen',swHTML('dedupe',PREF.dedupe))
       +row('Kästen scrollen intern','Lange Listen bleiben im Kasten; aus = Seite wird lang',swHTML('inner',PREF.inner))
       +row('Teaser in Listen zeigen','',swHTML('teasers',PREF.teasers))
       +`<div class="set-sec">Start</div>`
@@ -1788,7 +1825,315 @@ document.addEventListener('keydown',e=>{
   }
 });
 window.addEventListener('hashchange',fromHash);
-updateMarks();fromHash();
+updateMarks();
+fromHash();
 </script>
 </body>
 </html>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   DATEN LADEN
+   Ohne ?demo=1 werden die Beispieldaten sofort verworfen und durch die
+   JSON-Dateien aus dem Repo ersetzt. Fehlt eine Datei, bleibt der
+   betroffene Bereich leer und sagt warum – es erscheinen nie Beispiel-
+   inhalte, die für echte gehalten werden könnten.
+   ═══════════════════════════════════════════════════════════════════ */
+const DEMO = new URLSearchParams(location.search).has('demo');
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v16 · Beispieldaten';
+const LOADLOG = [];
+const DATEIEN = {
+  news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
+  laender:'laender_articles.json', us:'us_articles.json',
+  docs:'documents.json', people:'people.json', newsletters:'newsletters.json',
+  dip:'dip.json', elections:'elections.json', markets:'markets.json', ki:'ki_meldungen.json',
+};
+const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
+
+async function hole(datei){
+  try{
+    const r = await fetch(datei+'?t='+Date.now());
+    if(!r.ok){LOADLOG.push({f:datei,ok:false,why:'HTTP '+r.status});return null}
+    const txt = await r.text();
+    if(txt.trimStart().startsWith('<<<<<<<')||(txt.includes('\n=======\n')&&txt.includes('>>>>>>>'))){
+      LOADLOG.push({f:datei,ok:false,why:'Git-Konfliktmarker in der Datei'});return null}
+    if(txt.trimStart().startsWith('<')){LOADLOG.push({f:datei,ok:false,why:'HTML statt JSON – liegt die Datei neben index.html?'});return null}
+    const j = JSON.parse(txt);
+    LOADLOG.push({f:datei,ok:true,n:(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||j.groups||[]).length});
+    return j;
+  }catch(e){
+    LOADLOG.push({f:datei,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':'nicht erreichbar'});
+    return null;
+  }
+}
+
+/* ── Regionen: gleiche Regel wie im Backend-Frontend v9 ───────────── */
+const REGION_KW={
+  china:/\b(china|chinas|chinesisch\w*|peking|beijing|taiwan|hongkong|xi jinping|volksrepublik|huawei|tsmc|alibaba)\b/i,
+  us:/\b(usa|u\.s\.|amerika\w*|washington|weiß(es)? haus|white house|trump|kongress|senat|repräsentantenhaus|pentagon|wall street|fed\b)\b/i,
+  eu:/\b(eu-\w+|\beu\b|europäische union|europäisch(e|en|er) (kommission|parlament|rat|union|zentralbank)|europaparlament|brüssel|straßburg|ezb|eurogruppe|binnenmarkt)\b/i,
+  welt:/\b(ukraine|russland|moskau|nahost|gaza|israel|iran|indien|afrika|nato|un\b|vereinte nationen|klimakonferenz|g7|g20|welthandel)\b/i,
+};
+function regionsOf(a){
+  const r=new Set();
+  if(a._set==='eu')r.add('eu');
+  if(a._set==='us')r.add('us');
+  if(a._set==='news'||a._set==='bt'||a._set==='laender')r.add('de');
+  const titel=a.title||'';
+  const text=titel+' '+String(a.desc||'').slice(0,240)+' '+((a.ents||[]).join(' '));
+  for(const k of ['china','us','eu','welt']){
+    if(r.has(k))continue;
+    const treffer=new Set((text.match(new RegExp(REGION_KW[k].source,'gi'))||[]).map(x=>x.toLowerCase()));
+    /* Eine einzelne Erwähnung genügt nur in der Schlagzeile selbst. */
+    if(treffer.size>=2||(treffer.size===1&&REGION_KW[k].test(titel)))r.add(k);
+  }
+  if(!r.size)r.add('de');
+  return [...r];
+}
+
+/* ── Herkunft: nutzt das Feld aus fetch_news.py, sonst hilfsweise cat ── */
+const HERK_VON_CAT={cjeu:'gericht',bverfg:'gericht',bgh:'gericht',bverwg:'gericht',bag:'gericht',bsg:'gericht',bfh:'gericht',eug:'gericht','us-scotus':'gericht',
+  'eu-think':'think',ep:'eu-inst','ep-committee':'eu-inst',ec:'eu-inst',council:'eu-inst','eu-council':'eu-inst',ecb:'eu-inst',eca:'eu-inst','eu-inst':'eu-inst',
+  'bt-allg':'parlament','bt-thema':'parlament',breg:'parlament',bundesrat:'parlament',bundesbank:'parlament',
+  'us-house':'parlament','us-senate':'parlament','us-congress':'parlament','us-whitehouse':'parlament','us-agency':'parlament'};
+const LAND_CODES=new Set(['bw','by','be','bb','hb','hh','he','mv','ni','nw','rp','sl','sn','st','sh','th']);
+function herkunftOf(a){
+  if(a.herkunft)return a.herkunft;
+  const c=(a.cat||'').toLowerCase();
+  if(HERK_VON_CAT[c])return HERK_VON_CAT[c];
+  if(LAND_CODES.has(c)||/^(landtag|lreg)-/.test(a.inst||''))return 'laender';
+  return 'medien';
+}
+
+/* ── Themenlagen: Meldungen bündeln, die dasselbe berichten ───────── */
+const WORT_STOP=new Set(['gegen','wegen','nach','über','unter','beim','durch','mehr','neue','neuen','neuer','wieder','sollen','sollte','könnte','werden','wurde','wurden','haben','hatte','ihre','seine','diese','dieser','einer','eines','einem','warnt','fordert','kritisiert','sagt','erklärt','bericht','berichten','million','milliarden','prozent']);
+function sigWorte(t){
+  return [...new Set((String(t).toLowerCase().match(/[a-zäöüß]{5,}/g)||[]).filter(w=>!WORT_STOP.has(w)))].slice(0,10);
+}
+function normTitel(t){return String(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60)}
+function baueStories(arts){
+  const kandidaten=arts.filter(a=>a.ago<=96).sort((a,b)=>b.date-a.date);
+  /* Zwei Wege, dieselbe Meldung zu erkennen – erst die exakte Schlagzeile
+     (so zählt auch fetch_news.py die Quellen), dann ähnliche Formulierungen. */
+  const gruppen=[];const nachTitel={};
+  for(const a of kandidaten){
+    const k=normTitel(a.title);
+    if(k.length>=20&&nachTitel[k]){nachTitel[k].arts.push(a);sigWorte(a.title).forEach(w=>nachTitel[k].worte.add(w));continue}
+    const w=new Set(sigWorte(a.title));
+    let ziel=null;
+    if(w.size>=2)for(const gr of gruppen){
+      const gemeinsam=[...w].filter(x=>gr.worte.has(x)).length;
+      const union=new Set([...w,...gr.worte]).size;
+      if(union&&gemeinsam>=2&&gemeinsam/union>=0.4){ziel=gr;break}
+    }
+    if(ziel){ziel.arts.push(a);w.forEach(x=>ziel.worte.add(x))}
+    else{const gr={arts:[a],worte:w};gruppen.push(gr);if(k.length>=20)nachTitel[k]=gr}
+  }
+  return gruppen
+    .filter(gr=>new Set(gr.arts.map(a=>a.src)).size>=2)
+    .map((gr,i)=>{
+      const arts=gr.arts.sort((a,b)=>b.date-a.date);
+      const leit=arts.slice().sort((a,b)=>(b.cluster||1)-(a.cluster||1)||b.rel-a.rel)[0];
+      return {id:'st'+i,kind:'story',title:leit.title,sum:(leit.desc||'').slice(0,240),
+        src:arts.length+' Quellen',link:leit.link,date:arts[0].date,
+        topics:[...new Set(arts.flatMap(a=>a.topics))].slice(0,4),
+        regions:[...new Set(arts.flatMap(a=>a.regions))],
+        arts:arts.map(a=>a.id)};
+    })
+    .sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date)
+    .slice(0,40);
+}
+
+/* ── Termine aus Tagesordnungen und Sitzungsdokumenten ────────────── */
+const MONATE={januar:1,februar:2,'märz':3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
+function datumAusTitel(t){
+  let m=String(t).match(/(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/);
+  if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  m=String(t).match(/(\d{1,2})\.\s*(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/i);
+  if(m)return new Date(m[3]?+m[3]:new Date().getFullYear(),MONATE[m[2].toLowerCase()]-1,+m[1]);
+  return null;
+}
+function zeitAusTitel(t){
+  const m=String(t).match(/(\d{1,2})[:.](\d{2})\s*uhr/i)||String(t).match(/(\d{1,2})\s*uhr/i);
+  if(!m)return null;const h=+m[1];return h<24?{h,mi:m[2]?+m[2]:0}:null;
+}
+function baueTermine(docs){
+  return docs.filter(d=>/tagesordnung|plenarprotokoll|sitzung|agenda|plenartagung|ausschusstermin|verhandlungstermin/i.test((d.type||'')+' '+(d.title||'')))
+    .map(d=>{
+      const dt=datumAusTitel(d.title)||(d.date?new Date(d.date):null);
+      if(!dt||isNaN(dt))return null;
+      const tm=zeitAusTitel((d.title||'')+' '+(d.desc||''));
+      if(tm)dt.setHours(tm.h,tm.mi,0,0);else dt.setHours(9,0,0,0);
+      return {id:'ev-'+d.id,kind:'event',src:d.source||d.src||'',title:d.title,link:d.link,
+        date:dt.getTime(),ganztags:!tm,regions:/eurlex|europ|ep\b|eugh/i.test((d.source||'')+' '+(d.origin||''))?['eu']:['de']};
+    })
+    .filter(Boolean)
+    .filter(e=>e.date>NOW-2*D)
+    .sort((a,b)=>a.date-b.date)
+    .slice(0,300);
+}
+
+/* ── Personen, Gremien, Organisationen, Institutionen ─────────────── */
+const PARL_REGION={bt:'de',br:'de',breg:'de',ep:'eu','eu':'eu',us:'us','us-house':'us','us-senate':'us'};
+const FARBEN=['#1f2937','#c81e1e','#15803d','#ca8a04','#003399','#6d28d9','#0f766e','#b91c1c'];
+const farbeFuer=s=>FARBEN[[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%FARBEN.length];
+function mapPerson(p,i){
+  const parl=p.parliament||'';
+  const region=PARL_REGION[parl]||(parl.startsWith('lt-')?'de':parl.startsWith('us')?'us':'de');
+  const name=p.name||[p.first_name,p.last_name].filter(Boolean).join(' ');
+  const rolle=p.role||p.function||(p.committees||[]).map(c=>c.name).slice(0,2).join(', ')||'Abgeordnete/r';
+  return {id:p.id||('p'+i),kind:'person',name,aliases:[name,p.last_name].filter(Boolean),
+    party:p.party||'',role:rolle,org:p.parliament_label||parl||'',regions:[region],
+    topics:[],color:farbeFuer(p.party||name),committees:(p.committees||[]).map(c=>c.id),
+    src:p.parliament_label||parl||'',title:name,link:p.url||p.link||'#'};
+}
+const INST_LABEL={bundestag:['Deutscher Bundestag','Verfassungsorgan','Berlin','de'],bundesrat:['Bundesrat','Verfassungsorgan','Berlin','de'],
+  bundesregierung:['Bundesregierung','Regierung','Berlin','de'],bundesbank:['Deutsche Bundesbank','Notenbank','Frankfurt','de'],
+  bverfg:['Bundesverfassungsgericht','Gericht','Karlsruhe','de'],bgh:['Bundesgerichtshof','Gericht','Karlsruhe','de'],
+  bverwg:['Bundesverwaltungsgericht','Gericht','Leipzig','de'],bag:['Bundesarbeitsgericht','Gericht','Erfurt','de'],
+  bsg:['Bundessozialgericht','Gericht','Kassel','de'],bfh:['Bundesfinanzhof','Gericht','München','de'],
+  ec:['Europäische Kommission','EU-Institution','Brüssel','eu'],ep:['Europäisches Parlament','EU-Institution','Straßburg / Brüssel','eu'],
+  'eu-council':['Rat der EU','EU-Institution','Brüssel','eu'],ecb:['Europäische Zentralbank','Notenbank','Frankfurt','eu'],
+  eca:['Europäischer Rechnungshof','EU-Institution','Luxemburg','eu'],cjeu:['Europäischer Gerichtshof','Gericht','Luxemburg','eu'],
+  eug:['Gericht der EU','Gericht','Luxemburg','eu'],
+  'us-whitehouse':['Weißes Haus','Regierung','Washington','us'],'us-house':['Repräsentantenhaus','Parlament','Washington','us'],
+  'us-senate':['US-Senat','Parlament','Washington','us'],'us-scotus':['Supreme Court','Gericht','Washington','us'],
+  'us-congress':['US-Kongress','Parlament','Washington','us']};
+const LAND_NAME={bw:'Baden-Württemberg',by:'Bayern',be:'Berlin',bb:'Brandenburg',hb:'Bremen',hh:'Hamburg',he:'Hessen',mv:'Mecklenburg-Vorpommern',
+  ni:'Niedersachsen',nw:'Nordrhein-Westfalen',rp:'Rheinland-Pfalz',sl:'Saarland',sn:'Sachsen',st:'Sachsen-Anhalt',sh:'Schleswig-Holstein',th:'Thüringen'};
+function baueInstitutionen(arts){
+  const nach={};
+  arts.forEach(a=>{const i=a.inst;if(!i)return;(nach[i]=nach[i]||[]).push(a)});
+  return Object.entries(nach).map(([code,liste])=>{
+    let name,typ,ort,region;
+    if(INST_LABEL[code])[name,typ,ort,region]=INST_LABEL[code];
+    else if(/^landtag-(\w\w)$/.test(code)){const k=code.slice(8);name='Landtag '+(LAND_NAME[k]||k.toUpperCase());typ='Landesparlament';ort=LAND_NAME[k]||'';region='de'}
+    else if(/^lreg-(\w\w)$/.test(code)){const k=code.slice(5);name='Landesregierung '+(LAND_NAME[k]||k.toUpperCase());typ='Landesregierung';ort=LAND_NAME[k]||'';region='de'}
+    else {name=liste[0].src;typ='Institution';ort='';region=liste[0].regions[0]||'de'}
+    return {id:'inst-'+code,kind:'institution',name,type:typ,city:ort,regions:[region],
+      srcs:[...new Set(liste.map(a=>a.src))],color:farbeFuer(name),src:typ,title:name,link:'#'};
+  }).sort((a,b)=>a.name.localeCompare(b.name,'de'));
+}
+function baueOrgs(arts){
+  const think=arts.filter(a=>a.herkunft==='think');
+  const nach={};think.forEach(a=>(nach[a.src]=nach[a.src]||[]).push(a));
+  return Object.entries(nach).map(([q,liste])=>({id:'org-'+q.replace(/\W+/g,''),kind:'org',name:q,type:'Think Tank',city:'',
+    regions:[...new Set(liste.flatMap(a=>a.regions))],srcs:[q],color:farbeFuer(q),src:'Think Tank',title:q,link:'#'}))
+    .sort((a,b)=>a.name.localeCompare(b.name,'de'));
+}
+
+/* ── Verfahren aus dip.json ───────────────────────────────────────── */
+const STAGE_L={eingebracht:'Eingebracht',ausschuss:'Ausschuss',bundestag:'Bundestag',bundesrat:'Bundesrat',verkuendet:'Verkündet'};
+const STAGES=['eingebracht','ausschuss','bundestag','bundesrat','verkuendet'];
+function mapVerfahren(p){
+  const idx=Math.max(0,STAGES.indexOf(p.stage));
+  return {id:p.id,title:p.title,src:p.art==='eu'||/EU|Richtlinie/.test(p.type||'')?'EU':'Bundestag',
+    steps:STAGES.map(s=>STAGE_L[s]),now:idx,type:p.type||p.art||'Vorgang',date:p.updated||p.date||null,
+    link:p.link||p.url||'',ki:p.ki_summary||'',desk:p.deskriptoren||[]};
+}
+
+/* ── Wahlen aus elections.json ────────────────────────────────────── */
+const PARTEI_FARBE={'CDU':'#1f2937','CSU':'#1f2937','CDU/CSU':'#1f2937','SPD':'#c81e1e','GRÜNE':'#15803d','Grüne':'#15803d','B90/Grüne':'#15803d',
+  'FDP':'#ca8a04','AfD':'#0ea5e9','LINKE':'#a21caf','Die Linke':'#a21caf','BSW':'#7c3aed','FW':'#0891b2','SSW':'#0891b2','Sonstige':'#94a3b8'};
+function mapWahlen(el){
+  const wahlen=(el.elections||[]).filter(e=>e.status!=='past').sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,12);
+  return wahlen.map(e=>{
+    const umfrage=(el.polls||{})[e.region_id];
+    const parteien=umfrage&&umfrage.parties?Object.entries(umfrage.parties).sort((a,b)=>b[1]-a[1]).slice(0,7)
+      .map(([n,v])=>[n,v,PARTEI_FARBE[n]||farbeFuer(n)]):null;
+    return {title:(e.region||'')+(e.type?' · '+e.type:''),date:new Date(e.date).getTime(),polls:parteien,
+      quelle:umfrage&&umfrage.institute?umfrage.institute:'',stand:umfrage&&umfrage.date?umfrage.date:''};
+  });
+}
+
+/* ── Märkte aus markets.json ──────────────────────────────────────── */
+function mapMaerkte(mk){
+  const out=[];
+  (mk.groups||[]).forEach(gr=>(gr.items||[]).forEach(i=>{
+    out.push({sym:i.sym||i.n,n:i.n,grp:gr.grp,unit:i.unit||'',dec:i.dec!=null?i.dec:2,
+      series:i.series||null,p:i.last!=null?i.last:(i.s&&i.s.length?i.s[i.s.length-1]:0),
+      s1:i.s||null,vol:1,drift:0});
+  }));
+  return out;
+}
+
+/* ── Alles zusammensetzen ─────────────────────────────────────────── */
+function leeren(){
+  [ARTICLES,STORIES,DOCS,EVENTS,PEOPLE,ORGS,COMMITTEES,INSTITUTIONS,NEWSLETTERS,PROCS,ELECTIONS,MARKET_CATALOG,QUOTES].forEach(a=>{a.length=0});
+  [ITEMS,AI,MARKET_BY_SYM].forEach(o=>Object.keys(o).forEach(k=>delete o[k]));
+}
+function indexieren(){
+  [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS].forEach(x=>{ITEMS[x.id]=x});
+  MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
+  ARTICLES.forEach(a=>{delete a._cl;a.clusterZiel=a.cluster;const l=clusterArts(a);a._cl=l;a.cluster=l.length+1});
+}
+function mapArtikel(j,set){
+  return (j&&j.articles||[]).map(a=>{
+    const o={...a,kind:'article',_set:set,src:a.source,ago:(NOW-new Date(a.date).getTime())/H,
+      date:new Date(a.date).getTime(),paid:a.access==='paid',cluster:a.cluster||1,
+      topics:a.topics||[],desc:a.desc||''};
+    o.herkunft=herkunftOf(o);
+    o.think=o.herkunft==='think';
+    o.regions=regionsOf(o);
+    o.rel=(o.cluster-1)*2+(a.boost||0)+(o.think?1:0)+(a.priority==='eil'?3:0);
+    return o;
+  }).filter(a=>a.date&&!isNaN(a.date));
+}
+async function laden(){
+  if(DEMO){document.body.classList.add('demo-daten');indexieren();zeigeLadebalken();render();return}
+  leeren();render();
+  zeigeLadebalken('Lade Daten …');
+  const [n,e,b]=await Promise.all([hole(DATEIEN.news),hole(DATEIEN.eu),hole(DATEIEN.bt)]);
+  const [la,us,dc,pp,nl,dip,el,mk,ki]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
+    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki)]);
+
+  ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
+                ...mapArtikel(la,'laender'),...mapArtikel(us,'us'));
+  /* Themen-Beschriftungen für alles, was das Backend liefert */
+  ARTICLES.forEach(a=>a.topics.forEach(t=>{if(!TOPICS[t])TOPICS[t]=t.replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
+
+  DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,date:new Date(d.date).getTime(),
+    regions:d.origin==='eurlex'||/europ|EP |EU-/i.test(d.source||'')?['eu']:['de']})).filter(d=>!isNaN(d.date))));
+  EVENTS.push(...baueTermine(dc&&dc.documents||[]));
+  STORIES.push(...baueStories(ARTICLES));
+  PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)));
+  COMMITTEES.push(...((pp&&pp.committees||[]).map((c,i)=>({id:c.id||('k'+i),kind:'committee',name:c.name,org:c.parliament_label||c.parliament||'',
+    regions:[PARL_REGION[c.parliament]||'de'],members:PEOPLE.filter(p=>(p.committees||[]).includes(c.id)).map(p=>p.id),
+    color:farbeFuer(c.name),src:c.parliament_label||'',title:c.name,link:'#'}))));
+  INSTITUTIONS.push(...baueInstitutionen(ARTICLES));
+  ORGS.push(...baueOrgs(ARTICLES));
+  NEWSLETTERS.push(...((nl&&nl.items||[]).map(x=>({...x,kind:'doc',type:'Newsletter',src:x.source||'Newsletter',
+    date:new Date(x.date).getTime(),regions:['de']})).filter(x=>!isNaN(x.date))));
+  if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,60).map(mapVerfahren));
+  if(el)ELECTIONS.push(...mapWahlen(el));
+  if(mk)MARKET_CATALOG.push(...mapMaerkte(mk));
+  if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v});
+
+  indexieren();
+  zeigeLadebalken();
+  render();
+}
+function zeigeLadebalken(text){
+  const el=g('loadbar');if(!el)return;
+  if(DEMO){el.hidden=false;el.className='lb demo';el.innerHTML='<b>Beispieldaten.</b> Aufruf ohne <code>?demo=1</code> zeigt die echten Feeds.';return}
+  if(text){el.hidden=false;el.className='lb';el.textContent=text;return}
+  const fehlt=LOADLOG.filter(x=>!x.ok);
+  const kernFehlt=fehlt.filter(x=>KERN.includes(x.f));
+  if(kernFehlt.length){
+    el.hidden=false;el.className='lb err';
+    el.innerHTML=`<b>Nachrichtendaten fehlen.</b> ${kernFehlt.map(x=>`<code>${x.f}</code> – ${esc(x.why)}`).join(' · ')}.
+      Der letzte Lauf von <code>fetch_news.py</code> ist wahrscheinlich fehlgeschlagen; im Actions-Log nachsehen.
+      <a href="?demo=1">Mit Beispieldaten ansehen</a>`;
+    return;
+  }
+  if(fehlt.length){
+    el.hidden=false;el.className='lb warn';
+    el.innerHTML=`<b>Noch nicht eingerichtet:</b> ${fehlt.map(x=>`<code>${x.f}</code>`).join(', ')}. Die betroffenen Bereiche bleiben leer.
+      <button class="btn sm quiet" onclick="this.parentNode.hidden=true">Ausblenden</button>`;
+    return;
+  }
+  el.className='lb ok';el.hidden=true;
+}
+
+/* Start: fromHash() hat schon gezeichnet, laden() ersetzt die Inhalte. */
+laden();
+</script>
