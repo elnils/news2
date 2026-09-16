@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Presseschau – Entwurf v15</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────────── Tokens ───────────────────────────── */
+:root{
+  --bg:#eef0f5;--surface:#ffffff;--surface2:#f6f7fa;--border:#e2e6f0;--border2:#c9d0de;
+  --text:#0d1220;--text2:#4a5168;--muted:#737b91;
+  --blue:#2563eb;--blue-dk:#1d4ed8;--blue-lt:#eaf1ff;
+  --eu:#003399;--eu-lt:#e8ecff;
+  --green:#15803d;--green-lt:#ecfdf3;--red:#dc2626;--red-lt:#fef2f2;
+  --amber:#b45309;--amber-lt:#fff7e6;--mark:#d97706;
+  --scrim:rgba(13,18,32,.38);
+  --shadow:0 1px 2px rgba(13,18,32,.06);
+  --shadow-md:0 12px 40px rgba(13,18,32,.18);
+  --r:10px;--f:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --sidebar:204px;--topbar:52px;--tabbar:60px;
+  --fs-xs:12px;--fs-sm:13px;--fs:14px;--fs-md:15px;--fs-lg:17px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1420;--surface:#161c2a;--surface2:#1b2232;--border:#28324a;--border2:#3a4560;
+    --text:#e9ecf3;--text2:#b7bfd0;--muted:#8891a6;
+    --blue:#6ea0ff;--blue-dk:#8fb4ff;--blue-lt:#1c2a4b;
+    --eu:#8aa4ff;--eu-lt:#1b2350;
+    --green:#4ade80;--green-lt:#122a1c;--red:#f87171;--red-lt:#3a1d1d;
+    --amber:#fbbf24;--amber-lt:#3a2e12;--mark:#fbbf24;
+    --scrim:rgba(0,0,0,.55);--shadow:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 12px 40px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1420;--surface:#161c2a;--surface2:#1b2232;--border:#28324a;--border2:#3a4560;
+  --text:#e9ecf3;--text2:#b7bfd0;--muted:#8891a6;
+  --blue:#6ea0ff;--blue-dk:#8fb4ff;--blue-lt:#1c2a4b;
+  --eu:#8aa4ff;--eu-lt:#1b2350;
+  --green:#4ade80;--green-lt:#122a1c;--red:#f87171;--red-lt:#3a1d1d;
+  --amber:#fbbf24;--amber-lt:#3a2e12;--mark:#fbbf24;
+  --scrim:rgba(0,0,0,.55);--shadow:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 12px 40px rgba(0,0,0,.6);
+}
+
+/* ───────────────────────────── Basis ───────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--f);font-size:var(--fs);line-height:1.45;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:var(--f);font-size:inherit;color:inherit}
+button{cursor:pointer;-webkit-appearance:none;appearance:none}
+a{color:var(--blue);text-decoration:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+[hidden]{display:none!important}
+svg.i{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ───────────────────────────── Atome ───────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-dk);border-color:var(--blue-dk);color:#fff}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--text2)}
+.btn.quiet:hover{background:var(--surface2);color:var(--text)}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:var(--fs-xs)}
+.btn[aria-pressed="true"]{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:9px;border:0;background:transparent;color:var(--text2);position:relative}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn .badge{position:absolute;top:4px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--mark);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:2px}
+.seg button{border:0;background:transparent;color:var(--text2);font-size:var(--fs-xs);font-weight:600;padding:5px 10px;border-radius:7px;min-height:28px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.chip{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--bg)}
+.chip .n{font-size:11px;font-weight:700;opacity:.65}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.chips::-webkit-scrollbar{display:none}
+.sel{appearance:none;-webkit-appearance:none;min-height:32px;padding:4px 28px 4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23737b91' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;color:var(--text2);font-size:var(--fs-sm);font-weight:600;cursor:pointer}
+.pill{display:inline-flex;align-items:center;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:700;line-height:1.5;white-space:nowrap}
+.pill.blue{background:var(--blue-lt);color:var(--blue)}
+.pill.eu{background:var(--eu-lt);color:var(--eu)}
+.pill.red{background:var(--red-lt);color:var(--red)}
+.pill.green{background:var(--green-lt);color:var(--green)}
+.pill.grey{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.pill.amber{background:var(--amber-lt);color:var(--amber)}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:var(--fs-xs);color:var(--muted);line-height:1.4}
+.meta .src{color:var(--text2);font-weight:700}
+.meta .src.eu{color:var(--eu)}
+.meta .src.us{color:#b91c1c}
+:root[data-theme="dark"] .meta .src.us{color:#fca5a5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .meta .src.us{color:#fca5a5}}
+.box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r)}
+.note{font-size:var(--fs-sm);color:var(--text2);line-height:1.5}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:var(--fs-sm)}
+.empty b{display:block;color:var(--text2);font-size:var(--fs);margin-bottom:4px}
+.star{width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.star:hover{background:var(--surface2);color:var(--mark)}
+.star svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round}
+.star[aria-pressed="true"]{color:var(--mark)}
+.star[aria-pressed="true"] svg{fill:currentColor}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:var(--fs-sm);font-weight:600;color:var(--text2)}
+.field .seg{align-self:flex-start}
+.field input,.field textarea{min-height:40px;padding:8px 12px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);font-size:16px}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt)}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.grow{flex:1}
+.kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid var(--border2);border-bottom-width:2px;border-radius:5px;background:var(--surface2);font-size:11px;font-weight:700;text-align:center}
+
+/* ───────────────────────────── Rahmen ───────────────────────────── */
+#app{display:flex;flex-direction:column;min-height:100dvh}
+#topbar{position:sticky;top:0;z-index:40;height:var(--topbar);display:flex;align-items:center;gap:8px;padding:0 12px 0 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.logo{font-size:17px;font-weight:800;letter-spacing:-.03em;white-space:nowrap;color:var(--text);margin-right:6px}
+.logo em{font-style:normal;color:var(--blue)}
+.demo-pill{font-size:11px;font-weight:700;color:var(--amber);background:var(--amber-lt);border-radius:5px;padding:2px 7px;white-space:nowrap}
+#search{flex:1;display:flex;align-items:center;gap:8px;max-width:560px;min-width:0;height:38px;padding:0 10px 0 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+#search:focus-within{border-color:var(--blue);background:var(--surface);box-shadow:0 0 0 3px var(--blue-lt)}
+#search svg{color:var(--muted)}
+#q{flex:1;min-width:0;border:0;background:transparent;font-size:var(--fs);outline:none;padding:6px 0}
+#q::placeholder{color:var(--muted)}
+#q-hits{font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-lt);padding:2px 8px;border-radius:12px;white-space:nowrap}
+#q-clear{width:26px;height:26px;border-radius:50%;border:0;background:var(--border);color:var(--text2);font-size:13px;line-height:1}
+#topbar .spacer{flex:1}
+#marks-btn{gap:7px}
+#marks-btn .cnt{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--mark);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+#marks-btn[data-n="0"] .cnt{background:var(--border);color:var(--text2)}
+#mob-search-btn,#mob-search-row{display:none}
+#frame{flex:1;display:flex;min-height:0}
+#sidebar{width:var(--sidebar);flex-shrink:0;position:sticky;top:var(--topbar);height:calc(100dvh - var(--topbar));overflow-y:auto;padding:14px 10px 24px;background:var(--surface);border-right:1px solid var(--border)}
+.nav{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:9px;background:transparent;color:var(--text2);font-size:var(--fs);font-weight:600;text-align:left}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav[aria-current="page"]{background:var(--text);color:var(--bg)}
+.nav .n{margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);background:var(--surface2);padding:1px 7px;border-radius:10px}
+.nav[aria-current="page"] .n{background:rgba(255,255,255,.18);color:inherit}
+.side-sec{margin-top:18px;padding:0 12px 6px;font-size:var(--fs-xs);font-weight:700;color:var(--muted)}
+.side-item{display:flex;align-items:center;gap:8px;width:100%;padding:7px 12px;border:0;border-radius:8px;background:transparent;color:var(--text2);font-size:var(--fs-sm);font-weight:500;text-align:left}
+.side-item:hover{background:var(--surface2);color:var(--text)}
+.side-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.side-item .n{margin-left:auto;font-size:11px;font-weight:700;color:var(--muted)}
+.side-item .n.new{color:#fff;background:var(--red);padding:0 6px;border-radius:9px}
+main{flex:1;min-width:0}
+.page{max-width:1180px;padding:14px 24px 80px}
+.page-hd{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--border);margin-bottom:12px;padding-top:2px}
+.page-hd h1{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.2;white-space:nowrap;align-self:flex-end;padding-bottom:7px}
+.tabs{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
+.tab{display:inline-flex;align-items:center;gap:6px;background:none;border:0;border-bottom:2px solid transparent;padding:7px 10px;font-size:var(--fs-sm);font-weight:600;color:var(--text2);white-space:nowrap;border-radius:7px 7px 0 0}
+.tab svg{display:none;width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab[aria-selected="true"]{color:var(--blue);border-bottom-color:var(--blue)}
+#regions{display:flex;flex-wrap:wrap;gap:5px;width:100%;padding:0 0 8px}
+#regions .chip{min-height:28px;padding:3px 12px;font-size:var(--fs-xs)}
+#regions .chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+#regions .chip[data-r="eu"][aria-pressed="true"]{background:var(--eu);border-color:var(--eu)}
+.sec-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.sec-hd h2{font-size:var(--fs-lg);font-weight:800;letter-spacing:-.01em;white-space:nowrap;flex:0 0 auto}
+.sec-hd .fold{display:inline-flex;align-items:center;gap:7px;min-width:max-content;flex-shrink:0;border:0;background:transparent;padding:2px 6px 2px 2px;border-radius:8px;color:var(--text);margin-left:-2px}
+.sec-hd .fold:hover{background:var(--surface2)}
+.sec-hd .fold svg{width:15px;height:15px;color:var(--muted);transition:transform .15s}
+.sec-hd .fold[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.sec-hd .fold[aria-expanded="false"] h2{color:var(--text2)}
+.sec-hd .cnt{font-size:var(--fs-sm);color:var(--muted);font-weight:600}
+.sec-hd .fold{width:28px;height:28px;border:0;background:transparent;color:var(--muted);border-radius:7px;display:inline-flex;align-items:center;justify-content:center;margin-left:-6px}
+.sec-hd .fold:hover{background:var(--surface2);color:var(--text)}
+.sec-hd .fold svg{transition:transform .15s}
+.sec-hd .fold[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.lsearch{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin:0 0 10px}
+.lsearch:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt)}
+.lsearch svg{color:var(--muted)}
+.lsearch input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:var(--fs);padding:6px 0}
+.lsearch .n{font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-lt);padding:2px 8px;border-radius:12px;white-space:nowrap}
+.lsearch button{width:26px;height:26px;border-radius:50%;border:0;background:var(--border);color:var(--text2);font-size:13px;line-height:1}
+.chips.sm .chip{min-height:28px;padding:2px 10px;font-size:var(--fs-xs)}
+.chips.sm{margin-top:6px}
+.sec-hd .tools{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ───────────────────────────── Top-Meldungen ───────────────────────────── */
+.top{margin-bottom:6px}
+.top-row{display:grid;grid-template-columns:30px minmax(0,1fr) 36px;gap:2px 8px;align-items:start;padding:11px 10px 11px 14px;border-top:1px solid var(--border);cursor:pointer}
+.top-row:first-child{border-top:0}
+.top-row:hover{background:var(--surface2)}
+.top-row .rank{font-size:16px;font-weight:800;color:var(--muted);line-height:1.35;grid-row:1/3}
+.top-row .ttl{font-size:var(--fs-md);font-weight:700;line-height:1.35;color:var(--text)}
+.top-row .meta{margin-top:3px}
+.top-row .ttl,.top-row .meta{grid-column:2}
+.top-row .star{grid-column:3;grid-row:1/3;align-self:center}
+.top-row .meta button.pill{border:0;cursor:pointer;font-family:inherit}
+.srclist{grid-column:2/4;margin-top:8px;border-top:1px solid var(--border);padding-top:4px}
+.srcrow{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:6px 0;border-bottom:1px dashed var(--border);font-size:var(--fs-sm)}
+.srcrow:last-child{border-bottom:0}
+.srcrow:hover .t{color:var(--blue)}
+.srcrow .src{flex:0 0 auto;font-size:var(--fs-xs)}
+.srcrow .t{flex:1;min-width:0;font-weight:600;color:var(--text)}
+.srcrow .note{flex:0 0 auto;font-size:var(--fs-xs)}
+@media (max-width:560px){.srcrow{flex-wrap:wrap;gap:4px 8px}.srcrow .t{flex:1 1 100%;order:2}}
+
+/* ───────────────────────────── Listen ───────────────────────────── */
+.grp{font-size:var(--fs-xs);font-weight:700;color:var(--muted);padding:14px 2px 6px}
+.list .row{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:2px 8px;align-items:start;padding:10px 10px 10px 14px;border-top:1px solid var(--border);cursor:pointer}
+.list .row:first-child{border-top:0}
+.list .row:hover{background:var(--surface2)}
+.row .ttl{font-size:var(--fs);font-weight:600;line-height:1.35;color:var(--text)}
+.row .teaser{display:none;font-size:var(--fs-sm);color:var(--text2);line-height:1.5;margin-top:3px}
+body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
+.list .row>*{grid-column:1}
+.list .row .star{grid-column:2;grid-row:1/4;align-self:center}
+.row.active{background:var(--blue-lt)}
+.tag{color:var(--text2);font-weight:600}
+.tag.k{color:var(--blue)}
+
+/* Zeitung */
+.paper{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 12px 10px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-height:150px}
+.card:hover{border-color:var(--border2)}
+.card .top-line{display:flex;align-items:center;gap:8px}
+.card .tile{width:34px;height:34px;border-radius:8px;font-size:12px;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 4px,transparent 4px 8px)}
+.card .ttl{font-size:var(--fs-md);font-weight:700;line-height:1.3}
+.card .teaser{font-size:var(--fs-sm);color:var(--text2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .foot{display:flex;align-items:center;gap:6px;margin-top:auto}
+.card .foot .meta{flex:1}
+.card .star{width:32px;height:32px}
+.card.lead{grid-column:span 2}
+.card.lead .ttl{font-size:19px}
+.card.lead .teaser{-webkit-line-clamp:4}
+@media (max-width:560px){.card.lead{grid-column:span 1}.paper{grid-template-columns:1fr}}
+
+/* Stories */
+.story{padding:14px 14px 12px;border-top:1px solid var(--border);cursor:pointer}
+.story:first-child{border-top:0}
+.story .ttl{font-size:var(--fs-md);font-weight:700;line-height:1.35}
+.story .sum{font-size:var(--fs-sm);color:var(--text2);margin:4px 0 6px;line-height:1.5}
+.story .srcs{display:flex;flex-wrap:wrap;gap:5px}
+.story .hd{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:8px;align-items:start}
+
+/* Trends */
+.trend{display:grid;grid-template-columns:150px minmax(0,1fr) 110px;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid var(--border)}
+.trend:first-child{border-top:0}
+.trend .lbl{font-weight:700;font-size:var(--fs-sm)}
+.trend .lbl small{display:block;font-weight:500;color:var(--muted);font-size:var(--fs-xs)}
+.trend .barw{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.trend .barw i{display:block;height:100%;border-radius:5px;background:var(--blue)}
+.trend .mv{font-size:var(--fs-xs);font-weight:700;text-align:right}
+.mv.up{color:var(--green)}.mv.dn{color:var(--red)}.mv.eq{color:var(--muted)}.mv.new{color:var(--blue)}
+
+/* Monitore */
+.mon{padding:12px 14px;border-top:1px solid var(--border)}
+.mon:first-child{border-top:0}
+.mon .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mon .hd b{font-size:var(--fs-md)}
+.mon .kw{font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
+.mon .hits{margin-top:8px;display:none}
+.mon.open .hits{display:block}
+.mon .hit{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:2px 8px;align-items:start;padding:7px 0;border-top:1px dashed var(--border);font-size:var(--fs-sm);cursor:pointer}
+.mon .hit>*{grid-column:1}
+.mon .hit .star{grid-column:2;grid-row:1/3;align-self:center}
+.mon .hit:hover .ttl{color:var(--blue)}
+.mon .hit .ttl{font-weight:600}
+
+/* Policy */
+.proc{padding:12px 14px;border-top:1px solid var(--border)}
+.proc:first-child{border-top:0}
+.proc b{font-size:var(--fs-md)}
+.steps{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.step{font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.step.done{background:var(--green-lt);color:var(--green);border-color:transparent}
+.step.now{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ev{display:grid;grid-template-columns:62px minmax(0,1fr) 36px;gap:8px;align-items:start;padding:10px 10px 10px 14px;border-top:1px solid var(--border);cursor:pointer}
+.ev:first-child{border-top:0}
+.ev .time{font-weight:800;font-size:var(--fs-sm);color:var(--text2);padding-top:1px}
+.ev .ttl{font-weight:600;font-size:var(--fs)}
+.poll{display:grid;grid-template-columns:90px minmax(0,1fr) 46px;gap:10px;align-items:center;padding:6px 0}
+.poll .barw{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden}
+.poll .barw i{display:block;height:100%;border-radius:6px}
+.poll .v{font-weight:800;font-size:var(--fs-sm);text-align:right}
+
+/* Kalender Monat */
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mcal .wd{font-size:var(--fs-xs);font-weight:700;color:var(--muted);text-align:center;padding:4px 0}
+.mday{min-height:64px;border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:5px 6px;text-align:left;font-size:var(--fs-xs);color:var(--text2);display:flex;flex-direction:column;gap:3px}
+.mday.out{opacity:.4}
+.mday.today{border-color:var(--blue);color:var(--blue);font-weight:700}
+.mday[aria-pressed="true"]{background:var(--blue-lt);border-color:var(--blue)}
+.mday .d{font-weight:700}
+.mday .dots{display:flex;gap:3px;flex-wrap:wrap}
+.mday .dots i{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+.mday .dots i.eu{background:var(--eu)}
+@media (max-width:560px){.mday{min-height:52px;padding:4px 5px}}
+
+/* Urteile */
+.ruling .az{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted)}
+
+/* Briefing-Baukasten */
+.bform{padding:14px 16px 6px;margin-bottom:12px}
+.bform .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.bform .row2{grid-template-columns:1fr}}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:var(--fs-sm)}
+.checks label{display:flex;align-items:center;gap:6px;min-height:32px}
+.checks input{width:16px;height:16px;accent-color:var(--blue)}
+
+/* KI */
+.ai-box{margin-top:16px;border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r);padding:12px 14px;background:var(--surface2)}
+.ai-box .hd{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);font-weight:700;margin-bottom:6px;padding:0;border:0}
+.ai-box .txt{font-size:var(--fs-sm);line-height:1.55;white-space:pre-wrap}
+.ai-box .txt.wait{color:var(--muted)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;letter-spacing:.02em}
+
+/* Stakeholder */
+.person{display:grid;grid-template-columns:40px minmax(0,1fr) 36px;gap:10px;align-items:center;padding:10px 10px 10px 14px;border-top:1px solid var(--border);cursor:pointer}
+.person:first-child{border-top:0}
+.person:hover{background:var(--surface2)}
+.tile{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--fs-sm);color:#fff;letter-spacing:.02em}
+.person .nm{font-weight:700;font-size:var(--fs)}
+.person .role{font-size:var(--fs-xs);color:var(--muted);margin-top:1px}
+
+/* Reporting */
+.brief{padding:16px 18px;font-size:var(--fs-md);line-height:1.6;max-width:70ch}
+.brief h3{font-size:var(--fs-lg);margin:14px 0 6px}
+.brief h3:first-child{margin-top:0}
+.brief li{margin:4px 0 4px 18px}
+.brief li a{font-weight:600;color:var(--text)}
+.brief li a:hover{color:var(--blue)}
+
+
+/* ───────────────────────────── Scrollboxen ─────────────────────────────
+   Listen scrollen in ihrem Kasten, damit die Seite bei tausenden Meldungen
+   nicht endlos wird. Abschaltbar in den Einstellungen (body.no-inner). */
+.scrollbox{max-height:var(--boxh,340px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.scrollbox.main{--boxh:min(72vh,900px)}
+.scrollbox .grp:first-child{padding-top:6px}
+.scrollbox .box.list{border-radius:0;border-left:0;border-right:0}
+.scrollbox .box.list:first-child{border-top:0}
+.scrollbox .box.list:last-child{border-bottom:0}
+.scrollbox .grp{padding-left:14px}
+body.no-inner .scrollbox{max-height:none;overflow:visible}
+.more{display:flex;justify-content:center;padding:10px}
+.ov-side .scrollbox{--boxh:320px}
+/* ───────────────────────────── Übersicht: zwei Spalten, Falten, Zeitung ───────────────────────────── */
+.ov{display:grid;grid-template-columns:minmax(0,1fr);gap:0 24px}
+@media (min-width:1100px){.ov:not(.wide){grid-template-columns:minmax(0,1fr) 300px}.ov-side{padding-top:2px}.ov.wide .ov-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;margin-top:8px}.ov.wide .ov-side>*{grid-column:auto}}
+.ov-side .sec-hd{margin-top:4px}
+.ov-side .box+.sec-hd,.ov-main .box+.sec-hd{margin-top:20px}
+.fold-btn{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+.fold-btn:hover{background:var(--surface2);color:var(--text)}
+.fold-btn svg{width:16px;height:16px;transition:transform .15s}
+.fold-btn[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.sec-hd.folded{margin-bottom:0}
+.lsearch{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);min-width:0;flex:1 1 220px;max-width:420px}
+.lsearch:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-lt)}
+.lsearch svg{color:var(--muted);width:16px;height:16px}
+.lsearch input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:var(--fs-sm)}
+.lsearch input::placeholder{color:var(--muted)}
+.lsearch .x{width:22px;height:22px;border:0;border-radius:50%;background:var(--border);color:var(--text2);font-size:12px;line-height:1}
+.filters{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.vmode{display:inline-flex;gap:2px}
+.vmode .icon-btn{width:34px;height:34px}
+.vmode .icon-btn[aria-pressed="true"]{background:var(--blue-lt);color:var(--blue)}
+.paper{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;position:relative;min-width:0}
+.card:hover{border-color:var(--border2)}
+.card .mono{height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:.02em;background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 6px,transparent 6px 14px)}
+.card .ttl{font-size:var(--fs-md);font-weight:700;line-height:1.3}
+.card .teaser{font-size:var(--fs-sm);color:var(--text2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.card .star{position:absolute;top:8px;right:8px;background:var(--surface);opacity:.92}
+.card.active{border-color:var(--blue)}
+.mk{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.mk .t{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px 8px;min-width:0}
+.mk .t .nm{font-size:var(--fs-xs);color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}
+.mk .t .v{font-size:var(--fs-lg);font-weight:800;letter-spacing:-.01em;margin-top:2px}
+.mk .t .c{font-size:var(--fs-xs);font-weight:700}
+.mk .t .c.up{color:var(--green)}.mk .t .c.dn{color:var(--red)}
+.mk .t svg{width:100%;height:28px;margin-top:4px}
+.mk.small{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--border)}
+.mrow:first-child{border-top:0}
+.mrow .nm{font-weight:700;font-size:var(--fs)}
+.mrow .val{text-align:right;font-weight:800}
+.mrow .val small{display:block;font-size:var(--fs-xs)}
+.mkd-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.mkd-v{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.mkd-c{font-size:var(--fs-md);font-weight:700}
+.mkd-chart{width:100%;height:150px;background:var(--surface2);border-radius:10px;margin:10px 0}
+.mkd-chart svg{width:100%;height:100%}
+.mkd-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px;margin:10px 0}
+.mkd-stats div{background:var(--surface2);border-radius:8px;padding:8px 10px}
+.mkd-stats b{display:block;font-size:var(--fs-sm)}
+.mkd-stats span{font-size:var(--fs-xs);color:var(--muted)}
+@media (max-width:560px){.mrow{grid-template-columns:minmax(0,1fr) auto;row-gap:8px}.mrow .btn{grid-column:1/-1;justify-content:center}}
+.mcal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:10px}
+.mcal .wd{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding:2px 0 6px}
+.mday{aspect-ratio:1;border:0;padding:0;min-width:0;border-radius:8px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:var(--fs-sm);color:var(--text2);position:relative}
+.mday:hover{background:var(--surface2)}
+.mday.other{color:var(--border2)}
+.mday.has{font-weight:700;color:var(--text)}
+.mday.today{box-shadow:inset 0 0 0 2px var(--blue)}
+.mday[aria-pressed="true"]{background:var(--blue);color:#fff}
+.mday .dots{display:flex;gap:2px;height:5px}
+.mday .dots i{width:5px;height:5px;border-radius:50%;background:var(--blue)}
+.mday[aria-pressed="true"] .dots i{background:#fff}
+.mcal-hd{display:flex;align-items:center;gap:8px;padding:10px 12px 0}
+.mcal-hd b{flex:1;font-size:var(--fs-md)}
+.rul{padding:11px 10px 11px 14px;border-top:1px solid var(--border);display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:8px;cursor:pointer}
+.rul:first-child{border-top:0}
+.rul:hover{background:var(--surface2)}
+.rul .ttl{font-weight:700;font-size:var(--fs)}
+.rul .ls{font-size:var(--fs-sm);color:var(--text2);margin-top:3px;line-height:1.45}
+.res-grp{margin:18px 0 6px;display:flex;align-items:baseline;gap:8px}
+.res-grp h2{font-size:var(--fs-md);font-weight:800}
+.res-grp .cnt{font-size:var(--fs-xs);color:var(--muted);font-weight:600}
+.avatar{width:32px;height:32px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.pill.pro{background:#7c3aed;color:#fff}
+.ai{margin-top:16px;border:1px solid var(--border);border-left:3px solid #7c3aed;border-radius:8px;padding:12px 14px;background:var(--surface2)}
+.ai .hd{display:flex;align-items:center;gap:8px;font-weight:700;font-size:var(--fs-sm);margin-bottom:6px}
+.ai .txt{font-size:var(--fs-sm);line-height:1.55;white-space:pre-wrap}
+.chk{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:var(--fs-sm);cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--blue)}
+.cfg{padding:14px 16px 6px;margin-bottom:12px}
+.cfg .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 20px}
+.brief-pick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:10px}
+.quote{border-left:3px solid var(--border2);padding:6px 12px;margin:8px 0;font-size:var(--fs-sm);color:var(--text2);line-height:1.5}
+.quote .who{display:block;font-size:var(--fs-xs);color:var(--muted);margin-top:4px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+
+.set-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:-4px -18px 14px;padding:0 12px;overflow-x:auto;scrollbar-width:none}
+.set-tabs .tab{padding:9px 10px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--border)}
+.set-row:first-of-type{border-top:0}
+.set-row .lbl{flex:1;min-width:0}
+.set-row .lbl b{display:block;font-size:var(--fs-sm);font-weight:600}
+.set-row .lbl span{display:block;font-size:var(--fs-xs);color:var(--muted);margin-top:1px}
+.set-row .seg,.set-row .sel{flex-shrink:0}
+.set-sec{font-size:var(--fs-xs);font-weight:700;color:var(--muted);margin:18px 0 2px}
+.set-sec:first-child{margin-top:0}
+.switch{position:relative;width:40px;height:24px;flex-shrink:0}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch i{position:absolute;inset:0;background:var(--border2);border-radius:12px;transition:.15s;cursor:pointer}
+.switch i::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.switch input:checked+i{background:var(--blue)}
+.switch input:checked+i::before{transform:translateX(16px)}
+.switch input:focus-visible+i{outline:2px solid var(--blue);outline-offset:2px}
+html[data-font="large"] body{zoom:1.08}
+body.reduce-motion *{animation:none!important;transition:none!important}
+/* ───────────────────────────── Sheets (Reader, Gemerkt, Hilfe) ───────────────────────────── */
+.sheet{position:fixed;inset:0;z-index:60;display:none}
+.sheet.open{display:block}
+.sheet .scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet .panel{position:absolute;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);box-shadow:var(--shadow-md);display:flex;flex-direction:column;animation:slidein .22s ease}
+@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.panel:focus{outline:none}
+.panel .hd{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel .hd h2{font-size:var(--fs-md);font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel .body{flex:1;overflow-y:auto;padding:18px;-webkit-overflow-scrolling:touch}
+.panel .ft{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
+.reader-title{font-size:20px;font-weight:800;line-height:1.3;letter-spacing:-.01em;margin:8px 0 10px}
+.reader-text{font-size:var(--fs-md);line-height:1.6;color:var(--text);margin:12px 0}
+.reader-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mark-item{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:8px;align-items:start;padding:9px 0;border-top:1px solid var(--border)}
+.mark-item:first-child{border-top:0}
+.mark-item .ttl{font-weight:600;font-size:var(--fs-sm);line-height:1.35}
+.mark-item .rm{width:34px;height:34px;border:0;background:transparent;color:var(--muted);border-radius:8px;font-size:15px}
+.mark-item .rm:hover{background:var(--red-lt);color:var(--red)}
+#copy-preview{width:100%;min-height:150px;margin-top:8px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.5;color:var(--text2);resize:vertical}
+.help-row{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:var(--fs-sm)}
+.help-row:first-child{border-top:0}
+.help-row .keys{min-width:90px;display:flex;gap:4px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);z-index:90;background:var(--text);color:var(--bg);font-size:var(--fs-sm);font-weight:600;padding:10px 16px;border-radius:10px;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#tabbar{display:none}
+footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1px solid var(--border);background:var(--surface);display:flex;gap:12px;flex-wrap:wrap}
+
+/* ───────────────────────────── Mobil ───────────────────────────── */
+@media (max-width:900px){
+  body{font-size:15px;padding-bottom:calc(var(--tabbar) + env(safe-area-inset-bottom))}
+  :root{--fs:15px;--fs-sm:14px;--fs-xs:13px;--fs-md:16px;--fs-lg:18px}
+  #topbar{padding:0 6px 0 14px;gap:4px}
+  #search,#help-btn,.demo-pill{display:none}
+  #mob-search-btn{display:inline-flex}
+  #mob-search-row{display:none;position:sticky;top:var(--topbar);z-index:39;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border)}
+  body.search-open #mob-search-row{display:flex;gap:8px;align-items:center}
+  #mob-search-row .wrap{flex:1;display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;border:1px solid var(--blue);border-radius:10px;background:var(--surface);box-shadow:0 0 0 3px var(--blue-lt)}
+  #mob-search-row input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:16px}
+  #marks-btn .lbl{display:none}
+  #login-btn .lbl{display:none}
+  .lsearch{max-width:none;flex-basis:100%}
+  .lsearch input{font-size:16px}
+  .mcal{padding:6px}
+  #sidebar{display:none}
+  .page{padding:12px 14px 40px}
+  .page-hd{margin:0 -14px 10px;padding:6px 14px 0;gap:8px;border-bottom:0}
+  .page-hd.has-tabs h1{display:none}
+  .tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:5px}
+  .tab{justify-content:flex-start;gap:5px;padding:9px 7px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12px;color:var(--text2);overflow:hidden}
+  .tab svg{width:15px;height:15px}
+  .tab svg{display:block;color:var(--muted)}
+  .tab[aria-selected="true"]{background:var(--text);border-color:var(--text);color:var(--bg)}
+  .tab[aria-selected="true"] svg{color:inherit}
+  #regions{padding:2px 0 6px}
+  #login-btn .lbl{display:none}
+  #login-btn{padding:0;width:38px;justify-content:center}
+  .sec-hd{margin-top:18px}
+  .sec-hd .cp .t,.filters .cp .t{display:none}
+  .sec-hd .cp,.filters .cp{padding:4px 9px}
+  #toast{bottom:calc(var(--tabbar) + 18px + env(safe-area-inset-bottom))}
+  .trend{grid-template-columns:112px minmax(0,1fr) 78px;padding:9px 12px}
+  .trend .dsk{display:none}
+  .sheet .panel{top:auto;left:0;right:0;bottom:0;width:100%;max-height:92dvh;border-radius:16px 16px 0 0;animation:slideup .22s ease}
+  @keyframes slideup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+  .panel .hd{padding-left:16px}
+  .panel .body{padding:14px 16px}
+  #tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;height:calc(var(--tabbar) + env(safe-area-inset-bottom));padding:4px 4px env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--border)}
+  .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:600;border-radius:8px;min-height:48px}
+  .tb svg.i{width:22px;height:22px}
+  .tb[aria-current="page"]{color:var(--blue)}
+  footer{display:none}
+}
+@media (max-width:420px){.tb{font-size:10.5px}}
+
+/* ───────────────────────────── Überschriften – endgültige Regeln ─────────────────────────────
+   Stehen am Ende, damit sie alles Vorherige überstimmen. Safari hatte die
+   Kopfzeile auf 28 px zusammengeschoben, weil eine ältere Regel den Knopf
+   fest so breit machte. */
+.sec-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.sec-l{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0;flex-wrap:wrap}
+.sec-hd h2{font-size:var(--fs-lg);font-weight:800;letter-spacing:-.01em;white-space:nowrap;flex:0 0 auto;margin:0}
+.sec-hd h2.sec-t{display:block}
+.sec-hd .fold{display:flex;width:max-content;min-width:0;max-width:100%;height:auto;align-items:center;justify-content:flex-start;gap:7px;margin:0 0 0 -4px;padding:3px 8px 3px 4px;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:var(--fs-lg);font-weight:800;letter-spacing:-.01em;white-space:nowrap;line-height:1.25;-webkit-appearance:none;appearance:none;cursor:pointer}
+.sec-hd .fold:hover{background:var(--surface2)}
+.sec-hd .fold svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;color:var(--muted);transition:transform .15s;transform:none}
+.sec-hd .fold[aria-expanded="false"]{color:var(--text2)}
+.sec-hd .fold[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.sec-hd .cnt{font-size:var(--fs-sm);color:var(--muted);font-weight:600}
+.sec-hd .tools{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+@media (max-width:900px){.sec-hd{margin-top:18px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-news" viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><path d="M2 12h4l3 8 4-16 3 8h6"/></symbol>
+  <symbol id="i-policy" viewBox="0 0 24 24"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5M17 5.5a3.2 3.2 0 0 1 0 6M21.5 20c0-2.7-1.7-5-4.2-6"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 15v-4M12 15V8M16 15v-2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 17.4l-5.4 2.9 1.1-6.1L3.2 9.9l6.1-.8z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7M8 11h7"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M6 8h12l-3 5a3 3 0 0 1-6 0z"/><path d="M12 8l6-2M12 8L6 6"/></symbol>
+  <symbol id="i-vote" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h6v6"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M10 9v9M14 9v9M19 9v9M3 21h18"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h7M8 11h7"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M6 8h12l-3 5a3 3 0 0 1-6 0z"/><path d="M12 8l6-2M12 8L6 6"/></symbol>
+  <symbol id="i-vote" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h6v6"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M10 9v9M14 9v9M19 9v9M3 21h18"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+</svg>
+
+<div id="app">
+  <header id="topbar">
+    <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')">Presse<em>schau</em></a>
+    <span class="demo-pill" title="Alle Inhalte sind erfundene Beispieldaten">Entwurf v15 · Demo-Daten</span>
+    <div id="search" role="search">
+      <svg class="i"><use href="#i-search"/></svg>
+      <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
+      <span id="q-hits" hidden></span>
+      <button id="q-clear" hidden onclick="clearSearch()" aria-label="Suche leeren">×</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="mob-search-btn" onclick="toggleMobSearch()" aria-label="Suchen" aria-expanded="false"><svg class="i"><use href="#i-search"/></svg></button>
+    <button class="btn quiet" id="marks-btn" data-n="0" onclick="openSheet('marks')" aria-label="Gemerkte Links">
+      <svg class="i"><use href="#i-star"/></svg><span class="lbl">Gemerkt</span><span class="cnt" id="marks-n">0</span>
+    </button>
+    <button class="icon-btn" id="settings-btn" onclick="openSheet('settings')" aria-label="Einstellungen" title="Einstellungen"><svg class="i"><use href="#i-gear"/></svg></button>
+    <button class="btn quiet" id="login-btn" onclick="openSheet('login')"><svg class="i"><use href="#i-user"/></svg><span class="lbl">Anmelden</span></button>
+    <button class="avatar" id="avatar" hidden onclick="openSheet('account')" aria-label="Konto"></button>
+  </header>
+  <div id="mob-search-row">
+    <div class="wrap">
+      <svg class="i"><use href="#i-search"/></svg>
+      <input id="q-mob" placeholder="Suchen …" autocomplete="off" oninput="onSearch(this.value)" aria-label="Suchen">
+      <span id="q-hits-mob" class="pill blue" hidden></span>
+    </div>
+    <button class="btn quiet" onclick="clearSearch();toggleMobSearch(false)">Fertig</button>
+  </div>
+
+  <div id="frame">
+    <nav id="sidebar" aria-label="Bereiche">
+      <div id="side-nav"></div>
+      <div class="side-sec">Monitore</div>
+      <div id="side-monitors"></div>
+    </nav>
+    <main id="main">
+      <div class="page" id="page"></div>
+    </main>
+  </div>
+  <footer><span>Presseschau · Entwurf v10</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
+</div>
+
+<nav id="tabbar" aria-label="Bereiche"></nav>
+
+<!-- Reader -->
+<div class="sheet" id="sheet-reader" role="dialog" aria-modal="true" aria-labelledby="reader-h">
+  <div class="scrim" onclick="closeSheet('reader')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="reader-h">Meldung</h2>
+      <button class="icon-btn" onclick="readerNav(-1)" aria-label="Vorherige" id="reader-prev"><svg class="i"><use href="#i-left"/></svg></button>
+      <button class="icon-btn" onclick="readerNav(1)" aria-label="Nächste" id="reader-next"><svg class="i"><use href="#i-right"/></svg></button>
+      <button class="icon-btn" onclick="closeSheet('reader')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="body" id="reader-body"></div>
+    <div class="ft" id="reader-ft"></div>
+  </div>
+</div>
+
+<!-- Gemerkt / Kopieren -->
+<div class="sheet" id="sheet-marks" role="dialog" aria-modal="true" aria-labelledby="marks-h">
+  <div class="scrim" onclick="closeSheet('marks')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="marks-h">Gemerkte Links</h2>
+      <button class="icon-btn" onclick="closeSheet('marks')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="body" id="marks-body"></div>
+    <div class="ft" id="marks-ft"></div>
+  </div>
+</div>
+
+<!-- Einstellungen -->
+<div class="sheet" id="sheet-settings" role="dialog" aria-modal="true" aria-labelledby="set-h">
+  <div class="scrim" onclick="closeSheet('settings')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="set-h">Einstellungen</h2><button class="icon-btn" onclick="closeSheet('settings')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="set-body"></div>
+  </div>
+</div>
+
+<!-- Kursdetail -->
+<div class="sheet" id="sheet-market" role="dialog" aria-modal="true" aria-labelledby="mkd-h">
+  <div class="scrim" onclick="closeSheet('market')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="mkd-h">Kurs</h2><button class="icon-btn" onclick="closeSheet('market')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="mkd-body"></div>
+    <div class="ft" id="mkd-ft"></div>
+  </div>
+</div>
+
+<!-- Neues Briefing -->
+<div class="sheet" id="sheet-newbrief" role="dialog" aria-modal="true" aria-labelledby="nb-h">
+  <div class="scrim" onclick="closeSheet('newbrief')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="nb-h">Neues Briefing</h2><button class="icon-btn" onclick="closeSheet('newbrief')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="nb-body"></div>
+    <div class="ft"><button class="btn primary" onclick="createBrief()">Briefing anlegen</button><button class="btn quiet" onclick="closeSheet('newbrief')">Abbrechen</button></div>
+  </div>
+</div>
+
+<!-- Anmelden -->
+<div class="sheet" id="sheet-login" role="dialog" aria-modal="true" aria-labelledby="login-h">
+  <div class="scrim" onclick="closeSheet('login')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="login-h">Anmelden</h2><button class="icon-btn" onclick="closeSheet('login')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body">
+      <p class="note" id="login-reason" style="margin-bottom:14px"></p>
+      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@redaktion.de" autocomplete="username"></div>
+      <div class="field"><label for="login-pw">Passwort</label><input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <p class="note">Mit Konto: KI-Zusammenfassungen, eigene Briefings, Archiv über 48 Stunden und Monitore auf allen Geräten. Im Entwurf genügt eine beliebige Eingabe.</p>
+    </div>
+    <div class="ft"><button class="btn primary" onclick="doLogin()">Anmelden</button><button class="btn quiet" onclick="closeSheet('login')">Weiter ohne Konto</button></div>
+  </div>
+</div>
+<div class="sheet" id="sheet-account" role="dialog" aria-modal="true" aria-labelledby="account-h">
+  <div class="scrim" onclick="closeSheet('account')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="account-h">Konto</h2><button class="icon-btn" onclick="closeSheet('account')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="account-body"></div>
+    <div class="ft"><button class="btn" onclick="doLogout()">Abmelden</button></div>
+  </div>
+</div>
+
+<!-- Einstellungen -->
+<div class="sheet" id="sheet-settings" role="dialog" aria-modal="true" aria-labelledby="set-h">
+  <div class="scrim" onclick="closeSheet('settings')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="set-h">Einstellungen</h2><button class="icon-btn" onclick="closeSheet('settings')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="set-body"></div>
+  </div>
+</div>
+
+<!-- Kursdetail -->
+<div class="sheet" id="sheet-market" role="dialog" aria-modal="true" aria-labelledby="mkd-h">
+  <div class="scrim" onclick="closeSheet('market')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="mkd-h">Kurs</h2><button class="icon-btn" onclick="closeSheet('market')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="mkd-body"></div>
+    <div class="ft" id="mkd-ft"></div>
+  </div>
+</div>
+
+<!-- Neues Briefing -->
+<div class="sheet" id="sheet-newbrief" role="dialog" aria-modal="true" aria-labelledby="nb-h">
+  <div class="scrim" onclick="closeSheet('newbrief')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="nb-h">Neues Briefing</h2><button class="icon-btn" onclick="closeSheet('newbrief')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="nb-body"></div>
+    <div class="ft"><button class="btn primary" onclick="createBrief()">Briefing anlegen</button><button class="btn quiet" onclick="closeSheet('newbrief')">Abbrechen</button></div>
+  </div>
+</div>
+
+<!-- Anmelden -->
+<div class="sheet" id="sheet-login" role="dialog" aria-modal="true" aria-labelledby="login-h">
+  <div class="scrim" onclick="closeSheet('login')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="login-h">Anmelden</h2><button class="icon-btn" onclick="closeSheet('login')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body">
+      <p class="note" style="margin-bottom:14px">Mit Konto bleiben gemerkte Links, Monitore und Briefings auf allen Geräten gleich. KI-Zusammenfassungen laufen über Groq; Briefings per Mail brauchen ein Konto.</p>
+      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@redaktion.de" autocomplete="username"></div>
+      <div class="field"><label for="login-pw">Passwort</label><input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="login-err" class="note" style="color:var(--red);min-height:18px"></div>
+      <p class="note" style="margin-top:10px">Im Entwurf genügt eine beliebige E-Mail; es wird nichts gespeichert außer dem Anzeigenamen im Browser.</p>
+    </div>
+    <div class="ft"><button class="btn primary" onclick="doLogin()">Anmelden</button><button class="btn quiet" onclick="closeSheet('login')">Weiter ohne Konto</button></div>
+  </div>
+</div>
+<div class="sheet" id="sheet-account" role="dialog" aria-modal="true" aria-labelledby="account-h">
+  <div class="scrim" onclick="closeSheet('account')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="account-h">Konto</h2><button class="icon-btn" onclick="closeSheet('account')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="body" id="account-body"></div>
+    <div class="ft"><button class="btn quiet" onclick="doLogout()">Abmelden</button></div>
+  </div>
+</div>
+
+<!-- Hilfe -->
+<div class="sheet" id="sheet-help" role="dialog" aria-modal="true" aria-labelledby="help-h">
+  <div class="scrim" onclick="closeSheet('help')"></div>
+  <div class="panel" tabindex="-1">
+    <div class="hd"><h2 id="help-h">Tastenkürzel</h2>
+      <button class="icon-btn" onclick="closeSheet('help')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="body">
+      <div class="help-row"><span class="keys"><span class="kbd">/</span></span>Suche fokussieren</div>
+      <div class="help-row"><span class="keys"><span class="kbd">1</span>–<span class="kbd">5</span></span>Bereich wechseln</div>
+      <div class="help-row"><span class="keys"><span class="kbd">Z</span></span>Liste und Zeitung umschalten</div>
+      <div class="help-row"><span class="keys"><span class="kbd">↑</span><span class="kbd">↓</span></span>Im Lesefenster vor und zurück</div>
+      <div class="help-row"><span class="keys"><span class="kbd">M</span></span>Meldung merken</div>
+      <div class="help-row"><span class="keys"><span class="kbd">C</span></span>Gemerkte Links öffnen</div>
+      <div class="help-row"><span class="keys"><span class="kbd">Enter</span></span>Meldung im Original öffnen</div>
+      <div class="help-row"><span class="keys"><span class="kbd">Esc</span></span>Schließen</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Zugangsdaten für die KI liegen bewusst in einer eigenen Datei neben index.html.
+     Fehlt sie, läuft alles Übrige unverändert weiter. -->
+<script src="config.js" onerror="void 0"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   Presseschau · Entwurf v11 · Alle Daten unten sind erfundene Beispiele.
+   ═══════════════════════════════════════════════════════════════════ */
+const NOW=Date.now(), H=36e5, D=864e5;
+const TOPICS={politik:'Politik',wirtschaft:'Wirtschaft',tech:'Technik',ki:'KI',energie:'Energie',gesundheit:'Gesundheit',digitales:'Digitales',verteidigung:'Verteidigung',finanzen:'Finanzen',migration:'Migration',handel:'Handel',klima:'Klima',haushalt:'Haushalt',aussenpolitik:'Außenpolitik',netzpolitik:'Netzpolitik',recht:'Recht'};
+const REGIONS=[['all','Alle'],['de','Deutschland'],['eu','EU'],['us','USA'],['china','China'],['welt','Welt']];
+const REGION_NAME=Object.fromEntries(REGIONS);
+const HERKUENFTE=[['all','Alle Herkünfte'],['medien','Medien'],['parlament','Parlamente & Regierungen'],['eu-inst','EU-Institutionen'],['laender','Bundesländer'],['gericht','Gerichte'],['think','Think Tanks']];
+const HERKUNFT_NAME=Object.fromEntries(HERKUENFTE);
+const SRC_HERKUNFT={'EU-Kommission':'eu-inst','EP':'eu-inst','EU-Rat':'eu-inst','EZB':'eu-inst','BT hib':'parlament','BT Digitales':'parlament','Bundesregierung':'parlament','Bundesrat':'parlament','White House':'parlament','Supreme Court':'gericht','EuGH':'gericht','BVerfG':'gericht','BGH':'gericht','BVerwG':'gericht','Landtag Bayern':'laender','LReg Sachsen':'laender','Landtag NRW':'laender','SWP':'think','Bruegel':'think','ECFR':'think','Bertelsmann Stiftung':'think','CER':'think'};
+const HERKUNFT_COLOR={medien:'#4a5168',parlament:'#1f2937','eu-inst':'#003399',laender:'#0f766e',gericht:'#6d28d9',think:'#b45309'};
+const SRC_KIND={'EU-Kommission':'eu','EP':'eu','EU-Rat':'eu','EZB':'eu','EuGH':'eu','Politico EU':'eu','Euractiv':'eu','Politico US':'us','White House':'us','Supreme Court':'us'};
+
+/* Feldnamen wie in den JSON-Dateien des Fetch-Laufs:
+   herkunft = medien|parlament|eu-inst|laender|gericht|think  (aus presseschau_anreicherung.py)
+   gericht / az / ls = Gericht, Aktenzeichen, Leitsatz
+   cluster = Zahl der Quellen mit derselben Meldung, paid = Bezahlschranke */
+const A=(id,src,title,ago,topics,regions,o={})=>({id,kind:'article',src,title,ago,topics,regions,cluster:1,paid:false,herkunft:SRC_HERKUNFT[src]||'medien',link:'https://demo.presseschau.example/meldung/'+id,
+  desc:o.desc||'Beispiel-Teaser. Im echten Betrieb steht hier der Vorschautext aus dem Feed (bis 600 Zeichen).',...o});
+const ARTICLES=[
+  A('a1','Tagesschau','Kabinett beschließt Gesetzentwurf zur digitalen Verwaltung',0.5,['politik','digitales'],['de'],{cluster:5,desc:'Das Bundeskabinett hat den Entwurf für ein Digitalgesetz gebilligt. Behörden sollen Anträge künftig vollständig elektronisch bearbeiten; für Kommunen ist eine Übergangsfrist von drei Jahren vorgesehen.'}),
+  A('a2','Spiegel','Digitalgesetz: Was sich für Bürgerämter ändert',0.9,['politik','digitales'],['de'],{desc:'Vom Personalausweis bis zum Wohngeld: Ein Überblick, welche Leistungen zuerst digital werden sollen und wo es hakt.'}),
+  A('a3','FAZ','Kommunen warnen vor Kosten der Verwaltungsdigitalisierung',1.4,['politik','digitales','haushalt'],['de'],{desc:'Der Städtetag rechnet mit Mehrausgaben im dreistelligen Millionenbereich. Ausschussvorsitzende Miriam Held (SPD) kündigt an, die Finanzierung in der Anhörung zu klären.'}),
+  A('a4','DLF','Opposition kritisiert Zeitplan für digitale Verwaltung',2.1,['politik'],['de'],{desc:'Haushaltspolitiker Tobias Renner (CDU) nennt den Fahrplan „ambitioniert, aber ohne Deckung“.'}),
+  A('b2','BT Digitales','Anhörung zum Digitalgesetz angesetzt',11,['digitales'],['de'],{desc:'Der Ausschuss für Digitales lädt für kommende Woche Sachverständige ein.'}),
+  A('a5','Handelsblatt','Industrie warnt vor Energiekosten im Winter',3,['wirtschaft','energie'],['de'],{cluster:3,paid:true,desc:'Verbände fordern eine Verlängerung der Netzentgelt-Entlastung. Das Wirtschaftsministerium verweist auf laufende Gespräche.'}),
+  A('a6','Heise','Neue EU-Vorgaben für KI-Modelle treten in Kraft',1.2,['ki','digitales'],['eu','de'],{cluster:3,desc:'Ab heute gelten die Transparenzpflichten für Anbieter großer Modelle. Was das für Unternehmen bedeutet.'}),
+  A('a7','Golem','Glasfaserausbau erreicht neuen Rekordwert',7,['netzpolitik','tech'],['de']),
+  A('a8','FAZ','Bundesbank senkt Wachstumsprognose',9,['wirtschaft','finanzen'],['de'],{cluster:2}),
+  A('a9','DLF','Debatte über Wehrpflicht gewinnt an Fahrt',20,['verteidigung','politik'],['de'],{cluster:2,desc:'Jan Kowalczyk (FDP) fordert im Verteidigungsausschuss ein Freiwilligenmodell statt einer Pflicht.'}),
+  A('a13','Tagesschau','Regierungserklärung zur Sicherheitslage',6,['verteidigung','politik'],['de'],{cluster:2}),
+  A('a10','Spiegel','Koalition streitet über Haushalt 2027',5,['politik','haushalt'],['de']),
+  A('b1','BT hib','Ausschuss berät Gesetzentwurf zur Krankenhausreform',1.5,['gesundheit','politik'],['de'],{cluster:2,desc:'Leyla Aydın (Grüne) verlangt eine Folgenabschätzung für ländliche Kliniken, bevor der Ausschuss abstimmt.'}),
+  A('b3','Bundesrat','Bundesrat berät Stellungnahme zum Digitalgesetz',3.5,['digitales','politik'],['de']),
+  A('l1','Landtag Bayern','Landtag beschließt Nachtragshaushalt',4,['haushalt'],['de']),
+  A('l2','LReg Sachsen','Ministerpräsident stellt Digitalstrategie vor',14,['digitales'],['de']),
+  A('l3','Landtag NRW','Anhörung zur Krankenhausplanung in NRW',9,['gesundheit'],['de']),
+  A('a11','SZ','Krankenhausreform: Länder fordern Nachbesserungen',26,['gesundheit','politik'],['de'],{paid:true}),
+  A('a12','Zeit','Wie Städte mit Hitze umgehen',30,['klima'],['de']),
+  A('e1','EU-Kommission','Kommission legt Vorschlag zur Netzsicherheit vor',0.8,['digitales','politik'],['eu'],{cluster:3,desc:'Betreiber kritischer Netze sollen Vorfälle künftig binnen 24 Stunden melden. Berichterstatterin Sofia Marchetti kündigt eine schnelle Beratung im ITRE an.'}),
+  A('e7','EU-Kommission','Konsultation zur Überarbeitung der NIS-2-Richtlinie eröffnet',5,['digitales'],['eu']),
+  A('e2','Politico EU','Wie Brüssel den Industrieplan nachschärft',2,['wirtschaft','klima'],['eu'],{paid:true}),
+  A('e3','EP','Parlament stimmt über Lieferkettenrichtlinie ab',4,['politik','wirtschaft'],['eu'],{cluster:3,desc:'Henrik Lund (EVP) rechnet mit einer knappen Mehrheit.'}),
+  A('e4','EU-Rat','Rat einigt sich auf Verhandlungsmandat zur Migrationsreform',6,['migration','politik'],['eu']),
+  A('e6','Euractiv','Hintergrund: Der Streit um die Migrationsreform',8,['migration'],['eu'],{desc:'Claire Dubois (Renew) will im LIBE Nachbesserungen beim Rechtsschutz durchsetzen.'}),
+  A('e5','EZB','EZB belässt Leitzins unverändert',10,['wirtschaft','finanzen'],['eu'],{cluster:4,desc:'Der Rat der Europäischen Zentralbank hält den Einlagensatz bei 2,00 Prozent und sieht die Inflation nahe am Ziel.'}),
+  A('e8','Handelsblatt','EZB-Entscheid: Was der Zinsstopp für Sparer bedeutet',9,['finanzen'],['eu','de'],{paid:true}),
+  A('u1','Politico US','Senate advances funding bill ahead of shutdown deadline',1,['politik','haushalt'],['us'],{cluster:4,desc:'Sen. Dana Whitfield secured a carve-out for disaster relief in the stopgap.'}),
+  A('u5','Tagesschau','US-Haushaltsstreit: Senat macht Weg für Übergangsetat frei',1.3,['politik','haushalt'],['us']),
+  A('u2','White House','Executive order on AI procurement signed',3,['ki','tech'],['us'],{cluster:3}),
+  A('u3','Supreme Court','Court agrees to hear tariff case',6,['handel','recht'],['us'],{gericht:'Supreme Court',az:'No. 26-114',ls:'Zulassung der Revision zur Frage, ob Zölle unter dem IEEPA ohne Zustimmung des Kongresses verhängt werden dürfen.'}),
+  A('u4','Reuters','Tech firms brace for new export rules',4,['handel','tech'],['us','china'],{cluster:2}),
+  A('c1','Reuters','Peking kündigt Gegenzölle auf europäische Autos an',1.6,['handel','wirtschaft'],['china','eu'],{cluster:4,desc:'Das Handelsministerium reagiert auf die Brüsseler Ausgleichszölle. Sprecher Li Wenjun nannte die Maßnahme „verhältnismäßig“.'}),
+  A('c3','Handelsblatt','Deutsche Autobauer reagieren auf Pekings Zölle',2.4,['wirtschaft','handel'],['china','de'],{paid:true}),
+  A('c2','SCMP','Chinas Halbleiterindustrie meldet Rekordinvestitionen',11,['tech','wirtschaft'],['china'],{paid:true}),
+  A('w1','Tagesschau','Nato-Treffen: Streit um Verteidigungsausgaben',2.8,['verteidigung','aussenpolitik'],['welt'],{cluster:3}),
+  A('w2','Reuters','Klimakonferenz: Verhandler ringen um Abschlusstext',7,['klima'],['welt'],{cluster:2,desc:'Chefverhandlerin Amara Okafor sieht „einen Text in Reichweite“.'}),
+  A('w3','SZ','Ukraine: Neue Hilfszusagen der G7',13,['aussenpolitik'],['welt']),
+  /* Gerichte */
+  A('g1','EuGH','Datenweitergabe an Behörden nur mit Richtervorbehalt',2.2,['recht','digitales'],['eu','de'],{cluster:3,gericht:'EuGH',az:'C-412/24',ls:'Nationale Regelungen, die Telekommunikationsanbieter zur anlasslosen Weitergabe von Verkehrsdaten verpflichten, sind mit der Grundrechtecharta nur vereinbar, wenn ein Gericht oder eine unabhängige Stelle vorab prüft.',desc:'Der Gerichtshof stärkt den Richtervorbehalt und setzt der Vorratsdatenspeicherung erneut Grenzen.'}),
+  A('g2','BVerfG','Eilantrag gegen Wehrdienstgesetz abgelehnt',5.5,['recht','verteidigung'],['de'],{cluster:2,gericht:'BVerfG',az:'2 BvR 1188/26',ls:'Die Nachteile eines vorläufigen Vollzugs wiegen weniger schwer als die einer Aussetzung; die Hauptsache bleibt offen.',desc:'Das Gesetz kann vorerst in Kraft treten. Über die Verfassungsbeschwerde selbst ist damit nicht entschieden.'}),
+  A('g3','BGH','Plattformhaftung bei gefälschten Bewertungen',28,['recht','wirtschaft'],['de'],{gericht:'BGH',az:'I ZR 77/25',ls:'Ein Bewertungsportal haftet als Störer, sobald es nach konkretem Hinweis eine offensichtlich unwahre Bewertung nicht entfernt.',desc:'Der Senat verschärft die Prüfpflichten von Portalen nach Hinweisen Betroffener.'}),
+  A('g4','BVerwG','Windkraft: Genehmigungsbehörden dürfen Artenschutz pauschalieren',52,['recht','energie','klima'],['de'],{gericht:'BVerwG',az:'4 C 3.25',ls:'Bei der Prüfung des Tötungsrisikos darf die Behörde auf standardisierte Abstände zurückgreifen, wenn keine besonderen örtlichen Umstände vorliegen.'}),
+  /* Think Tanks */
+  A('t1','SWP','Studie zur europäischen Verteidigungsfähigkeit',15,['verteidigung','aussenpolitik'],['eu','de'],{desc:'Die Autoren empfehlen gemeinsame Beschaffung und einen Fonds für Munition; ohne Bündelung bleibe Europa von US-Fähigkeiten abhängig.'}),
+  A('t2','Bruegel','Policy Brief zum EU-Haushalt',30,['haushalt'],['eu'],{desc:'Vorschlag für einen kleineren, stärker leistungsbezogenen Mehrjahreshaushalt ab 2028.'}),
+  A('t3','ECFR','Europas Sicherheitsarchitektur nach dem Nato-Treffen',8,['aussenpolitik','verteidigung'],['eu','welt'],{desc:'Analyse zu den Folgen des Ausgabenstreits für die europäische Säule der Nato.'}),
+  A('t4','Bertelsmann Stiftung','Digitale Verwaltung im Ländervergleich',22,['digitales'],['de'],{desc:'Studie: Bayern und Hamburg vorn, Flächenländer im Osten holen auf. Datengrundlage sind 40 Verwaltungsleistungen.'}),
+  A('t5','CER','EU-Handelspolitik gegenüber China: Optionen für 2027',40,['handel','aussenpolitik'],['eu','china'],{desc:'Policy Brief zu Ausgleichszöllen, Investitionsprüfung und der Rolle der WTO.'}),
+  /* Archiv (älter als 48 Stunden) */
+  A('r1','Zeit','Bilanz: Ein Jahr Digitalstrategie',80,['digitales'],['de']),
+  A('r2','FAZ','Netzsicherheit: Wo Europa noch nachlegen muss',120,['digitales'],['eu']),
+  A('r3','Tagesschau','Bundestag beschließt Haushalt 2026',200,['haushalt','politik'],['de'],{cluster:6}),
+  A('r4','Politico EU','Wie das Parlament die KI-Verordnung nachschärfte',260,['ki'],['eu'],{paid:true}),
+  A('r5','Handelsblatt','Energiepreise: Was die Entlastung bringt',330,['energie'],['de'],{paid:true}),
+  A('r6','Reuters','Zollstreit: Chronologie der Eskalation',400,['handel'],['china','us']),
+];
+ARTICLES.forEach(a=>{a.date=NOW-a.ago*H;a.rel=(a.cluster-1)*2+a.topics.length+(a.herkunft==='think'?1:0);a.think=a.herkunft==='think'});
+
+const STORIES=[
+  {id:'s1',kind:'story',title:'Digitale Verwaltung: Kabinett bringt Gesetz auf den Weg',regions:['de'],topics:['politik','digitales'],arts:['a1','a2','a3','a4','b2','b3'],sum:'Der Kabinettsbeschluss löst Streit über Kosten und Zeitplan aus; Kommunen fordern Geld vom Bund, der Bundesrat berät seine Stellungnahme.'},
+  {id:'s2',kind:'story',title:'Zölle: Peking und Brüssel im Handelsstreit',regions:['china','eu','de'],topics:['handel','wirtschaft'],arts:['c1','c3','u4'],sum:'Nach den EU-Ausgleichszöllen antwortet China mit Gegenzöllen auf Autos. Deutsche Hersteller warnen vor Absatzverlusten.'},
+  {id:'s3',kind:'story',title:'EZB hält Leitzins stabil',regions:['eu','de'],topics:['finanzen','wirtschaft'],arts:['e5','e8','a8'],sum:'Die Notenbank pausiert; Beobachter erwarten den nächsten Schritt erst im Frühjahr. Die Bundesbank senkt parallel ihre Prognose.'},
+  {id:'s4',kind:'story',title:'Shutdown-Frist in Washington',regions:['us'],topics:['politik','haushalt'],arts:['u1','u5'],sum:'Der Senat bringt einen Übergangsetat auf den Weg, das Repräsentantenhaus muss bis Freitag zustimmen.'},
+  {id:'s5',kind:'story',title:'Migrationsreform: Rat findet Verhandlungsmandat',regions:['eu'],topics:['migration','politik'],arts:['e4','e6'],sum:'Nach monatelangem Streit einigen sich die Innenminister; nun beginnen die Verhandlungen mit dem Parlament.'},
+  {id:'s6',kind:'story',title:'Wehrpflicht: Debatte nimmt Fahrt auf',regions:['de','welt'],topics:['verteidigung','politik'],arts:['a9','a13','w1','g2'],sum:'Regierungserklärung, Nato-Treffen und der Karlsruher Eilbeschluss bringen die Frage nach Personal und Ausgaben zurück auf die Tagesordnung.'},
+  {id:'s7',kind:'story',title:'Richtervorbehalt: EuGH setzt Datenweitergabe Grenzen',regions:['eu','de'],topics:['recht','digitales'],arts:['g1','e1'],sum:'Das Urteil trifft den Kommissionsvorschlag zur Netzsicherheit mitten in der Beratung.'},
+];
+STORIES.forEach(s=>{s.link='https://demo.presseschau.example/story/'+s.id;s.src=s.arts.length+' Quellen';s.date=Math.max(...s.arts.map(i=>ARTICLES.find(a=>a.id===i).date))});
+
+const day=(n,h=9,m=0)=>{const d=new Date(NOW+n*D);d.setHours(h,m,0,0);return d.getTime()};
+const DOCS=[
+  {id:'d1',kind:'doc',src:'Bundestag',type:'Tagesordnung',title:'Tagesordnung 42. Sitzung',date:NOW-2*H,regions:['de']},
+  {id:'d2',kind:'doc',src:'Bundestag',type:'Drucksache',title:'Drucksache 21/1234 – Entwurf eines Gesetzes zur Digitalisierung der Verwaltung',date:NOW-5*H,regions:['de'],desc:'Gesetzentwurf der Bundesregierung'},
+  {id:'d3',kind:'doc',src:'EUR-Lex',type:'Amtsblatt L',title:'Verordnung (EU) 2026/000 über die Sicherheit von Netzen',date:NOW-9*H,regions:['eu']},
+  {id:'d4',kind:'doc',src:'Bundestag',type:'Wissenschaftlicher Dienst',title:'Ausarbeitung zu verfassungsrechtlichen Fragen der Wehrpflicht',date:NOW-26*H,regions:['de']},
+  {id:'d5',kind:'doc',src:'Bundestag',type:'Tagesordnung',title:'Anhörung Gesundheitsausschuss zur Pflegereform',date:NOW-3*H,regions:['de']},
+  {id:'d6',kind:'doc',src:'Bundestag',type:'Plenarprotokoll',title:'Plenarprotokoll 21/44',date:NOW-20*H,regions:['de'],desc:'Wortprotokoll der Sitzung'},
+  {id:'d7',kind:'doc',src:'EU-Kommission',type:'Konsultation',title:'Konsultation zur Überarbeitung der NIS-2-Richtlinie',date:NOW-5*H,regions:['eu']},
+  {id:'d8',kind:'doc',src:'EP',type:'Plenarprotokoll',title:'Wortprotokoll der Plenardebatte zur Netzsicherheit',date:NOW-8*H,regions:['eu']},
+  {id:'d9',kind:'doc',src:'Bundesrat',type:'Drucksache',title:'BR-Drucksache 310/26 – Stellungnahme zum Digitalgesetz',date:NOW-4*H,regions:['de']},
+];
+DOCS.forEach(d=>d.link='https://demo.presseschau.example/dokument/'+d.id);
+const QUOTES=[
+  {pid:'p1',doc:'d6',text:'Wir digitalisieren nicht, um Formulare zu ersetzen, sondern um Wege zu ersparen. Dafür müssen die Kommunen ausgestattet sein, bevor die Frist läuft.'},
+  {pid:'p2',doc:'d6',text:'Ein Gesetz ohne Finanzierungsvorbehalt ist ein Versprechen an die Länder, das der Bund nicht halten kann.'},
+  {pid:'p3',doc:'d6',text:'Bevor wir Standorte schließen, brauchen wir eine ehrliche Folgenabschätzung für den ländlichen Raum.'},
+  {pid:'p5',doc:'d8',text:'Twenty-four hours to report an incident is ambitious, but it is the only timeline that protects the grid.'},
+  {pid:'p7',doc:'d8',text:'Le mandat du Conseil est un point de départ, pas une ligne d’arrivée.'},
+];
+const EVENTS=[
+  {id:'v1',kind:'event',src:'Bundestag',title:'Plenarsitzung – Regierungserklärung zur Sicherheitslage',date:day(0,9),regions:['de']},
+  {id:'v2',kind:'event',src:'Bundestag',title:'Anhörung Gesundheitsausschuss zur Pflegereform',date:day(1,11),regions:['de']},
+  {id:'v3',kind:'event',src:'Bundestag',title:'Ausschuss für Digitales – Anhörung zum Digitalgesetz',date:day(1,14,30),regions:['de']},
+  {id:'v4',kind:'event',src:'EP',title:'Plenum – Abstimmung über die Lieferkettenrichtlinie',date:day(2,10),regions:['eu']},
+  {id:'v8',kind:'event',src:'EuGH',title:'Urteilsverkündung C-388/24 (Plattformregulierung)',date:day(2,9,30),regions:['eu']},
+  {id:'v5',kind:'event',src:'EU-Rat',title:'Rat Wirtschaft und Finanzen',date:day(5,9),regions:['eu']},
+  {id:'v9',kind:'event',src:'Bundesrat',title:'1067. Sitzung – Stellungnahme zum Digitalgesetz',date:day(5,9,30),regions:['de']},
+  {id:'v6',kind:'event',src:'Landtag Bayern',title:'Haushaltsdebatte, 2. Lesung',date:day(6,10),regions:['de']},
+  {id:'v7',kind:'event',src:'EZB',title:'Ratssitzung (nicht geldpolitisch)',date:day(8,9),regions:['eu']},
+  {id:'v10',kind:'event',src:'BVerfG',title:'Mündliche Verhandlung zur Wehrdienstpflicht',date:day(13,10),regions:['de']},
+  {id:'v11',kind:'event',src:'EZB',title:'Zinsentscheidung und Pressekonferenz',date:day(22,14,15),regions:['eu']},
+];
+EVENTS.forEach(e=>e.link='https://demo.presseschau.example/termin/'+e.id);
+const PROCS=[
+  {title:'Digitalgesetz (Verwaltungsdigitalisierung)',src:'Bundestag',steps:['Referentenentwurf','Kabinett','Bundesrat (1. Durchgang)','1. Lesung','Ausschuss','2./3. Lesung','Bundesrat'],now:2,story:'s1'},
+  {title:'Lieferkettenrichtlinie',src:'EU',steps:['Vorschlag','Rat','EP-Plenum','Trilog','Annahme'],now:2},
+  {title:'Krankenhausreform',src:'Bundestag',steps:['Kabinett','1. Lesung','Ausschuss','2./3. Lesung','Bundesrat'],now:2},
+  {title:'Überarbeitung NIS-2',src:'EU',steps:['Konsultation','Kommissionsvorschlag','EP','Rat','Trilog'],now:0,story:'s7'},
+];
+const ELECTIONS=[
+  {title:'Landtagswahl Musterland',date:day(18),polls:[['Partei A',31,'#2563eb'],['Partei B',24,'#dc2626'],['Partei C',15,'#16a34a'],['Partei D',11,'#d97706'],['Partei E',8,'#7c3aed']]},
+  {title:'Kommunalwahlen Beispielstadt',date:day(46)},
+];
+const PEOPLE=[
+  {id:'p1',kind:'person',name:'Dr. Miriam Held',aliases:['Miriam Held','Held'],party:'SPD',role:'Vorsitzende, Ausschuss für Digitales',org:'Bundestag',regions:['de'],topics:['digitales'],color:'#c81e1e'},
+  {id:'p2',kind:'person',name:'Tobias Renner',aliases:['Tobias Renner','Renner'],party:'CDU',role:'Haushaltsausschuss, Berichterstatter Digitales',org:'Bundestag',regions:['de'],topics:['haushalt','digitales'],color:'#1f2937'},
+  {id:'p3',kind:'person',name:'Leyla Aydın',aliases:['Leyla Aydın','Aydın'],party:'Grüne',role:'Gesundheitsausschuss',org:'Bundestag',regions:['de'],topics:['gesundheit'],color:'#15803d'},
+  {id:'p4',kind:'person',name:'Jan Kowalczyk',aliases:['Jan Kowalczyk','Kowalczyk'],party:'FDP',role:'Verteidigungsausschuss',org:'Bundestag',regions:['de'],topics:['verteidigung'],color:'#ca8a04'},
+  {id:'p5',kind:'person',name:'Sofia Marchetti',aliases:['Sofia Marchetti','Marchetti'],party:'S&D',role:'Berichterstatterin Netzsicherheit, ITRE',org:'Europäisches Parlament',regions:['eu'],topics:['digitales'],color:'#003399'},
+  {id:'p6',kind:'person',name:'Henrik Lund',aliases:['Henrik Lund','Lund'],party:'EVP',role:'Koordinator IMCO',org:'Europäisches Parlament',regions:['eu'],topics:['wirtschaft'],color:'#003399'},
+  {id:'p7',kind:'person',name:'Claire Dubois',aliases:['Claire Dubois','Dubois'],party:'Renew',role:'Schattenberichterstatterin Migrationsreform, LIBE',org:'Europäisches Parlament',regions:['eu'],topics:['migration'],color:'#003399'},
+  {id:'p8',kind:'person',name:'Sen. Dana Whitfield',aliases:['Dana Whitfield','Whitfield'],party:'D',role:'Appropriations Committee',org:'US-Senat',regions:['us'],topics:['haushalt'],color:'#b91c1c'},
+  {id:'p9',kind:'person',name:'Rep. Marcus Hale',aliases:['Marcus Hale','Hale'],party:'R',role:'Energy & Commerce',org:'Repräsentantenhaus',regions:['us'],topics:['energie','tech'],color:'#b91c1c'},
+  {id:'p10',kind:'person',name:'Li Wenjun',aliases:['Li Wenjun'],party:'',role:'Sprecher, Handelsministerium',org:'Volksrepublik China',regions:['china'],topics:['handel'],color:'#7c3aed'},
+  {id:'p11',kind:'person',name:'Amara Okafor',aliases:['Amara Okafor','Okafor'],party:'',role:'Chefverhandlerin Klimakonferenz',org:'UN',regions:['welt'],topics:['klima'],color:'#0f766e'},
+];
+const ORGS=[
+  {id:'o1',kind:'org',name:'SWP – Stiftung Wissenschaft und Politik',type:'Think Tank',city:'Berlin',regions:['de','eu'],color:'#b45309',srcs:['SWP']},
+  {id:'o2',kind:'org',name:'Bruegel',type:'Think Tank',city:'Brüssel',regions:['eu'],color:'#b45309',srcs:['Bruegel']},
+  {id:'o3',kind:'org',name:'ECFR',type:'Think Tank',city:'Berlin / Brüssel',regions:['eu','welt'],color:'#b45309',srcs:['ECFR']},
+  {id:'o8',kind:'org',name:'Bertelsmann Stiftung',type:'Stiftung',city:'Gütersloh',regions:['de'],color:'#b45309',srcs:['Bertelsmann Stiftung']},
+  {id:'o4',kind:'org',name:'BDI',type:'Verband',city:'Berlin',regions:['de'],color:'#c81e1e',srcs:[]},
+  {id:'o5',kind:'org',name:'Bitkom',type:'Verband',city:'Berlin',regions:['de'],color:'#2563eb',srcs:[]},
+  {id:'o6',kind:'org',name:'Brookings Institution',type:'Think Tank',city:'Washington',regions:['us'],color:'#b91c1c',srcs:[]},
+  {id:'o7',kind:'org',name:'Chatham House',type:'Think Tank',city:'London',regions:['welt'],color:'#0f766e',srcs:[]},
+];
+const COMMITTEES=[
+  {id:'k1',kind:'committee',name:'Ausschuss für Digitales',org:'Bundestag',regions:['de'],members:['p1','p2'],color:'#1f2937'},
+  {id:'k2',kind:'committee',name:'Haushaltsausschuss',org:'Bundestag',regions:['de'],members:['p2'],color:'#1f2937'},
+  {id:'k3',kind:'committee',name:'Gesundheitsausschuss',org:'Bundestag',regions:['de'],members:['p3'],color:'#1f2937'},
+  {id:'k4',kind:'committee',name:'Verteidigungsausschuss',org:'Bundestag',regions:['de'],members:['p4'],color:'#1f2937'},
+  {id:'k5',kind:'committee',name:'ITRE – Industrie, Forschung und Energie',org:'Europäisches Parlament',regions:['eu'],members:['p5'],color:'#003399'},
+  {id:'k6',kind:'committee',name:'LIBE – Bürgerliche Freiheiten, Justiz und Inneres',org:'Europäisches Parlament',regions:['eu'],members:['p7'],color:'#003399'},
+  {id:'k7',kind:'committee',name:'Appropriations Committee',org:'US-Senat',regions:['us'],members:['p8'],color:'#b91c1c'},
+];
+const INSTITUTIONS=[
+  {id:'i1',kind:'institution',name:'Europäische Zentralbank',type:'Notenbank',city:'Frankfurt',regions:['eu'],srcs:['EZB'],color:'#003399'},
+  {id:'i2',kind:'institution',name:'Europäischer Gerichtshof',type:'Gericht',city:'Luxemburg',regions:['eu'],srcs:['EuGH'],color:'#6d28d9'},
+  {id:'i3',kind:'institution',name:'Bundesverfassungsgericht',type:'Gericht',city:'Karlsruhe',regions:['de'],srcs:['BVerfG'],color:'#6d28d9'},
+  {id:'i4',kind:'institution',name:'Bundesgerichtshof',type:'Gericht',city:'Karlsruhe',regions:['de'],srcs:['BGH'],color:'#6d28d9'},
+  {id:'i5',kind:'institution',name:'Bundesverwaltungsgericht',type:'Gericht',city:'Leipzig',regions:['de'],srcs:['BVerwG'],color:'#6d28d9'},
+  {id:'i6',kind:'institution',name:'Bundesrat',type:'Verfassungsorgan',city:'Berlin',regions:['de'],srcs:['Bundesrat'],color:'#1f2937'},
+  {id:'i7',kind:'institution',name:'Bundesregierung',type:'Regierung',city:'Berlin',regions:['de'],srcs:['Bundesregierung'],color:'#1f2937'},
+  {id:'i8',kind:'institution',name:'Europäische Kommission',type:'EU-Institution',city:'Brüssel',regions:['eu'],srcs:['EU-Kommission'],color:'#003399'},
+  {id:'i9',kind:'institution',name:'Europäisches Parlament',type:'EU-Institution',city:'Straßburg / Brüssel',regions:['eu'],srcs:['EP'],color:'#003399'},
+  {id:'i10',kind:'institution',name:'Rat der EU',type:'EU-Institution',city:'Brüssel',regions:['eu'],srcs:['EU-Rat'],color:'#003399'},
+  {id:'i11',kind:'institution',name:'Landtag Bayern',type:'Landesparlament',city:'München',regions:['de'],srcs:['Landtag Bayern'],color:'#0f766e'},
+  {id:'i12',kind:'institution',name:'Landtag Nordrhein-Westfalen',type:'Landesparlament',city:'Düsseldorf',regions:['de'],srcs:['Landtag NRW'],color:'#0f766e'},
+  {id:'i13',kind:'institution',name:'Staatsregierung Sachsen',type:'Landesregierung',city:'Dresden',regions:['de'],srcs:['LReg Sachsen'],color:'#0f766e'},
+  {id:'i14',kind:'institution',name:'Weißes Haus',type:'Regierung',city:'Washington',regions:['us'],srcs:['White House'],color:'#b91c1c'},
+  {id:'i15',kind:'institution',name:'Supreme Court',type:'Gericht',city:'Washington',regions:['us'],srcs:['Supreme Court'],color:'#6d28d9'},
+];
+const NEWSLETTERS=[
+  {id:'n1',kind:'doc',src:'Die Tageslage',type:'Newsletter',title:'Die Tageslage – Ausgabe von heute',date:NOW-6*H,desc:'Digitalgesetz im Kabinett, Pekings Gegenzölle, EZB-Pause – die Ausgabe fasst die wichtigsten Stränge des Tages zusammen.'},
+  {id:'n2',kind:'doc',src:'Die Tageslage',type:'Newsletter',title:'Die Tageslage – Ausgabe von gestern',date:NOW-30*H,desc:'Krankenhausreform, Hitze in den Städten, G7-Hilfszusagen.'},
+];
+NEWSLETTERS.forEach(n=>n.link='https://demo.presseschau.example/newsletter/'+n.id);
+/* Märkte: Katalog wie er später aus markets.json kommt (fetch_markets.py).
+   p = letzter Kurs, vol = Tagesschwankung in Prozent, drift = Jahrestrend.
+   Die Kursreihen im Entwurf werden daraus deterministisch erzeugt. */
+const MARKET_CATALOG=[
+  {sym:'^GDAXI',n:'DAX',grp:'Indizes',unit:'',p:18412,dec:0,vol:0.9,drift:9},
+  {sym:'^MDAXI',n:'MDAX',grp:'Indizes',unit:'',p:26840,dec:0,vol:1.1,drift:5},
+  {sym:'^TECDAX',n:'TecDAX',grp:'Indizes',unit:'',p:3612,dec:0,vol:1.3,drift:7},
+  {sym:'^STOXX50E',n:'Euro Stoxx 50',grp:'Indizes',unit:'',p:4980,dec:0,vol:0.8,drift:8},
+  {sym:'^GSPC',n:'S&P 500',grp:'Indizes',unit:'',p:5610,dec:0,vol:0.8,drift:11},
+  {sym:'^NDX',n:'Nasdaq 100',grp:'Indizes',unit:'',p:19840,dec:0,vol:1.2,drift:14},
+  {sym:'^DJI',n:'Dow Jones',grp:'Indizes',unit:'',p:41230,dec:0,vol:0.7,drift:7},
+  {sym:'^N225',n:'Nikkei 225',grp:'Indizes',unit:'',p:38760,dec:0,vol:1.1,drift:6},
+  {sym:'^HSI',n:'Hang Seng',grp:'Indizes',unit:'',p:17905,dec:0,vol:1.4,drift:-3},
+  {sym:'^FTSE',n:'FTSE 100',grp:'Indizes',unit:'',p:8240,dec:0,vol:0.7,drift:4},
+  {sym:'^FCHI',n:'CAC 40',grp:'Indizes',unit:'',p:7615,dec:0,vol:0.9,drift:5},
+  {sym:'IWDA.AS',n:'iShares Core MSCI World',grp:'ETFs',unit:'EUR',p:96.42,dec:2,vol:0.7,drift:10},
+  {sym:'VWCE.DE',n:'Vanguard FTSE All-World',grp:'ETFs',unit:'EUR',p:128.30,dec:2,vol:0.7,drift:9},
+  {sym:'EXS1.DE',n:'iShares Core DAX',grp:'ETFs',unit:'EUR',p:166.85,dec:2,vol:0.9,drift:9},
+  {sym:'XMEU.DE',n:'Xtrackers MSCI Europe',grp:'ETFs',unit:'EUR',p:74.10,dec:2,vol:0.8,drift:6},
+  {sym:'INRG.L',n:'iShares Global Clean Energy',grp:'ETFs',unit:'USD',p:9.86,dec:2,vol:1.8,drift:-6},
+  {sym:'DFEN.DE',n:'VanEck Defense',grp:'ETFs',unit:'EUR',p:48.72,dec:2,vol:1.5,drift:26},
+  {sym:'EXH1.DE',n:'iShares STOXX Europe 600 Öl & Gas',grp:'ETFs',unit:'EUR',p:41.55,dec:2,vol:1.2,drift:3},
+  {sym:'XDWH.DE',n:'Xtrackers MSCI World Health Care',grp:'ETFs',unit:'EUR',p:58.20,dec:2,vol:0.8,drift:7},
+  {sym:'BZ=F',n:'Brent',grp:'Energie',unit:'USD/Barrel',p:71.40,dec:2,vol:1.6,drift:-8},
+  {sym:'CL=F',n:'WTI',grp:'Energie',unit:'USD/Barrel',p:67.85,dec:2,vol:1.7,drift:-9},
+  {sym:'TTF=F',n:'Erdgas TTF',grp:'Energie',unit:'EUR/MWh',p:34.80,dec:2,vol:2.6,drift:12},
+  {sym:'NG=F',n:'Erdgas Henry Hub',grp:'Energie',unit:'USD/MMBtu',p:3.12,dec:2,vol:3.1,drift:4},
+  {sym:'DEBASE27',n:'Strom Base DE 2027',grp:'Energie',unit:'EUR/MWh',p:82.50,dec:2,vol:1.1,drift:6},
+  {sym:'EUA',n:'CO₂-Zertifikat EUA',grp:'Energie',unit:'EUR/t',p:68.20,dec:2,vol:1.9,drift:-2},
+  {sym:'DE10Y',n:'Bund 10 Jahre',grp:'Zinsen & Devisen',unit:'%',p:2.54,dec:2,vol:1.2,drift:5},
+  {sym:'^TNX',n:'US-Staatsanleihe 10 Jahre',grp:'Zinsen & Devisen',unit:'%',p:4.12,dec:2,vol:1.2,drift:3},
+  {sym:'EURUSD=X',n:'EUR/USD',grp:'Zinsen & Devisen',unit:'',p:1.0923,dec:4,vol:0.4,drift:-2},
+  {sym:'EURCNY=X',n:'EUR/CNY',grp:'Zinsen & Devisen',unit:'',p:7.86,dec:2,vol:0.4,drift:1},
+  {sym:'GC=F',n:'Gold',grp:'Rohstoffe',unit:'USD/Unze',p:2418,dec:0,vol:0.9,drift:18},
+  {sym:'HG=F',n:'Kupfer',grp:'Rohstoffe',unit:'USD/lb',p:4.32,dec:2,vol:1.3,drift:6},
+];
+const MARKET_BY_SYM=Object.fromEntries(MARKET_CATALOG.map(m=>[m.sym,m]));
+const MARKET_RANGES=[['1t','24 Std.',24],['1w','7 Tage',7],['1m','1 Monat',30],['1j','1 Jahr',52],['max','5 Jahre',60]];
+const DEFAULT_WATCH=['^GDAXI','^STOXX50E','^GSPC','BZ=F','TTF=F','DEBASE27','DE10Y','EURUSD=X'];
+/* Sachfragen: benannte Vorgänge, die quer zu den Ressorts laufen.
+   Im Betrieb kommen sie aus den Themenregeln von fetch_news.py. */
+const ISSUES=[
+  {id:'digitalgesetz',name:'Digitalgesetz',kw:['digitalgesetz','digitale verwaltung','verwaltungsdigitalisierung','bürgeramt']},
+  {id:'nis2',name:'Netzsicherheit / NIS-2',kw:['nis-2','netzsicherheit','cyber']},
+  {id:'zoelle',name:'Zölle & Handelsstreit',kw:['zoll','zölle','gegenzölle','export rules','tariff']},
+  {id:'wehrpflicht',name:'Wehrpflicht & Verteidigung',kw:['wehrpflicht','wehrdienst','verteidigungsausgaben','nato','verteidigungsfähigkeit']},
+  {id:'klinik',name:'Krankenhausreform',kw:['krankenhausreform','pflegereform','klinik','krankenhausplanung']},
+  {id:'haushalt',name:'Haushalt & Etat',kw:['haushalt','etat','nachtragshaushalt','funding bill','shutdown']},
+  {id:'migration',name:'Migrationsreform',kw:['migrationsreform','migration','asyl']},
+  {id:'energiepreise',name:'Energiepreise',kw:['energiekosten','netzentgelt','strompreis','gaspreis','energiepreise']},
+  {id:'kiregeln',name:'KI-Regeln',kw:['ki-modelle','ki-verordnung','ai procurement','transparenzpflicht','ki-vorgaben']},
+  {id:'lieferkette',name:'Lieferkettenrichtlinie',kw:['lieferkette','lieferkettenrichtlinie']},
+  {id:'datenschutz',name:'Datenschutz & Richtervorbehalt',kw:['richtervorbehalt','verkehrsdaten','vorratsdaten','datenweitergabe']},
+];
+/* Orte für die Ansicht "Personen & Orte"; Personen kommen aus PEOPLE. */
+const ORTE=['Berlin','Brüssel','Straßburg','Karlsruhe','Luxemburg','Washington','Peking','München','Düsseldorf','Dresden','Frankfurt','Ukraine','Nato','China','Bayern','Nordrhein-Westfalen','Sachsen'];
+
+const DEFAULT_MONITORS=[
+  {id:'m1',name:'Digitalgesetz',kw:['digitalgesetz','digitale verwaltung','verwaltungsdigitalisierung'],color:'#2563eb'},
+  {id:'m2',name:'Netzsicherheit / NIS-2',kw:['nis-2','netzsicherheit'],color:'#7c3aed'},
+  {id:'m3',name:'Zölle China',kw:['zölle','zoll','peking'],color:'#dc2626'},
+];
+const BLOCKS=[['top','Top-Meldungen'],['stories','Stories'],['events','Termine heute & morgen'],['docs','Neue Dokumente'],['rulings','Urteile'],['studies','Studien & Analysen'],['markets','Märkte']];
+/* Vorauswahl: fertige Briefings, die beim ersten Start schon da sind. */
+const DEFAULT_BRIEFS=[
+  {id:'b1',name:'Morgenbriefing',region:'all',topics:[],blocks:['top','stories','events','docs'],n:5},
+  {id:'b2',name:'EU & Digital',region:'eu',topics:['digitales','ki','recht'],blocks:['top','stories','docs','rulings'],n:5},
+  {id:'b3',name:'Energie & Märkte',region:'all',topics:['energie','wirtschaft','finanzen','klima'],blocks:['top','markets','studies'],n:4},
+];
+/* Vorlagen für ein neues Briefing – Startpunkt, danach frei änderbar. */
+const BRIEF_TEMPLATES=[
+  {id:'t-morgen',name:'Morgenbriefing',was:'Das Wichtigste, Stories, Termine und neue Dokumente der letzten 24 Stunden.',region:'all',topics:[],blocks:['top','stories','events','docs'],n:5},
+  {id:'t-eu',name:'EU & Digital',was:'Alles aus Brüssel und Straßburg zu Digitalem, KI und Recht, samt Urteilen.',region:'eu',topics:['digitales','ki','recht'],blocks:['top','stories','docs','rulings'],n:5},
+  {id:'t-energie',name:'Energie & Märkte',was:'Energie, Wirtschaft und Finanzen mit den Kursen aus deiner Watchlist.',region:'all',topics:['energie','wirtschaft','finanzen','klima'],blocks:['top','markets','studies'],n:4},
+  {id:'t-recht',name:'Recht & Urteile',was:'Entscheidungen von EuGH, BVerfG, BGH und BVerwG mit Leitsatz.',region:'all',topics:['recht'],blocks:['rulings','top','events'],n:4},
+  {id:'t-termine',name:'Wochenvorschau',was:'Termine, Verfahren und Dokumente – für die Planung der kommenden Tage.',region:'all',topics:[],blocks:['events','docs','stories'],n:3},
+  {id:'t-leer',name:'Leeres Briefing',was:'Nur Top-Meldungen. Bausteine und Ressorts wählst du selbst.',region:'all',topics:[],blocks:['top'],n:5},
+];
+/* So kommen die Zusammenfassungen später aus ki_meldungen.json
+   (ki_zusammenfassungen.py, erzeugt im GitHub-Lauf mit OPEN_ROUTER_API oder GROQ_API_KEY). */
+const AI={
+  a1:{ki:'Das Kabinett hat den Entwurf für ein Digitalgesetz beschlossen; Behörden sollen Anträge vollständig elektronisch bearbeiten. Für Kommunen gilt eine Übergangsfrist von drei Jahren. Strittig bleibt die Finanzierung: Der Städtetag erwartet Mehrkosten im dreistelligen Millionenbereich und fordert eine Beteiligung des Bundes.',ts:1},
+  e1:{ki:'Die Kommission schlägt vor, Betreiber kritischer Netze zu einer Meldung binnen 24 Stunden zu verpflichten. Der Entwurf geht nun an Parlament und Rat. Für deutsche Betreiber hieße das kürzere Fristen als nach der bisherigen Umsetzung.',ts:1},
+  c1:{ki:'Peking erhebt Gegenzölle auf europäische Autos und reagiert damit auf die EU-Ausgleichszölle. Betroffen sind vor allem Fahrzeuge der Oberklasse. Für deutsche Hersteller steht ihr wichtigster Auslandsmarkt unter Druck.',ts:1},
+  g1:{ki:'Der EuGH erklärt die anlasslose Weitergabe von Verkehrsdaten nur mit vorheriger Prüfung durch ein Gericht für zulässig. Damit setzt er der Vorratsdatenspeicherung erneut Grenzen. Der laufende Kommissionsvorschlag zur Netzsicherheit muss an diesem Maßstab gemessen werden.',ts:1},
+  e5:{ki:'Die EZB lässt den Einlagensatz bei 2,00 Prozent und sieht die Inflation nahe am Ziel. Beobachter erwarten den nächsten Schritt erst im Frühjahr. Für Kreditnehmer bleibt es damit vorerst bei den aktuellen Konditionen.',ts:1},
+  s1:{ki:'Der Kabinettsbeschluss zum Digitalgesetz hat drei Konfliktlinien geöffnet: Kosten, Zeitplan und Zuständigkeit. Kommunen verlangen Geld vom Bund, die Opposition hält den Fahrplan für unrealistisch, der Bundesrat berät seine Stellungnahme. Die Anhörung im Digitalausschuss kommende Woche wird zeigen, ob die Frist von drei Jahren hält.',ts:1},
+};
+const ITEMS={};[...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS].forEach(x=>ITEMS[x.id]=x);
+PEOPLE.forEach(p=>{p.src=p.org;p.title=p.name;p.link='https://demo.presseschau.example/person/'+p.id});
+ORGS.forEach(o=>{o.src=o.type;o.title=o.name;o.link='https://demo.presseschau.example/organisation/'+o.id});
+COMMITTEES.forEach(k=>{k.src=k.org;k.title=k.name;k.link='https://demo.presseschau.example/gremium/'+k.id});
+INSTITUTIONS.forEach(i=>{i.src=i.type;i.title=i.name;i.link='https://demo.presseschau.example/institution/'+i.id});
+</script>
+<script>
+/* ───────────────────────────── Speicher & Zustand ───────────────────────────── */
+const store={get(k,d){try{const v=localStorage.getItem('ps11_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('ps11_'+k,JSON.stringify(v))}catch(e){}}};
+const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
+function applyPrefs(){
+  const de=document.documentElement;
+  if(PREF.theme==='system')delete de.dataset.theme;else de.dataset.theme=PREF.theme;
+  if(PREF.font==='large')de.dataset.font='large';else delete de.dataset.font;
+  document.body.classList.toggle('reduce-motion',PREF.motion==='reduced');
+  document.body.classList.toggle('no-inner',!PREF.inner);
+  document.body.classList.toggle('teasers',!!PREF.teasers);
+}
+function setPref(k,v){PREF[k]=v;store.set('pref',PREF);applyPrefs();if(g('sheet-settings').classList.contains('open'))renderSettings();render()}
+const WS=[
+  {id:'news',label:'Nachrichten',icon:'i-news',tabs:[['top','Übersicht','i-news'],['stories','Themenlagen','i-layers'],['trends','Trends','i-trend'],['studies','Studien','i-book'],['markets','Märkte','i-chart'],['archive','Archiv','i-archive']]},
+  {id:'monitor',label:'Beobachten',icon:'i-eye',tabs:[]},
+  {id:'policy',label:'Verfahren & Recht',kurz:'Verfahren',icon:'i-policy',tabs:[['procs','Verfahren','i-policy'],['docs','Dokumente','i-doc'],['events','Termine','i-cal'],['rulings','Urteile','i-scale'],['elections','Wahlen','i-vote']]},
+  {id:'stakeholder',label:'Akteure',icon:'i-people',tabs:[['people','Personen','i-user'],['orgs','Organisationen','i-building'],['committees','Gremien','i-people'],['institutions','Institutionen','i-bank']]},
+  {id:'reporting',label:'Briefings',icon:'i-report',tabs:[['brief','Briefings','i-report'],['newsletter','Newsletter','i-mail']]},
+];
+/* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
+const REGION_TABS={news:['top','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
+const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',sort:'new',view:store.get('view','list'),win:24,trendMode:'topics',trendPick:null,archRange:30,docType:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+let MARKS=new Set(store.get('marks',[]));
+let MONITORS=store.get('monitors',DEFAULT_MONITORS);
+let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
+applyPrefs();
+
+/* ───────────────────────────── Helfer ───────────────────────────── */
+const g=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').toLowerCase();
+const J=arr=>JSON.stringify(arr).replace(/"/g,'&quot;');
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'],MON=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const pad=n=>String(n).padStart(2,'0');
+const sameDay=(a,b)=>{const x=new Date(a),y=new Date(b);return x.getFullYear()===y.getFullYear()&&x.getMonth()===y.getMonth()&&x.getDate()===y.getDate()};
+function fmtAgo(t){const m=Math.round((NOW-t)/6e4);if(m<1)return 'gerade eben';if(m<60)return 'vor '+m+' Min';const h=Math.round(m/60);if(h<24&&sameDay(t,NOW))return 'vor '+h+' Std';const d=new Date(t);if(sameDay(t,NOW-D))return 'Gestern, '+pad(d.getHours())+':'+pad(d.getMinutes());return WD[d.getDay()]+', '+d.getDate()+'.'+(d.getMonth()+1)+'.'}
+function fmtDay(t){const d=new Date(t);const base=WD[d.getDay()]+', '+d.getDate()+'.'+(d.getMonth()+1)+'.';if(sameDay(t,NOW))return 'Heute · '+base;if(sameDay(t,NOW+D))return 'Morgen · '+base;return base}
+function fmtTime(t){const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())}
+const inRegion=x=>S.region==='all'||(x.regions||[]).includes(S.region);
+const textOf=x=>norm([x.title,x.desc,x.src,x.name,x.role,x.org,x.sum,x.type,x.city,x.gericht,x.az,x.ls].filter(Boolean).join(' '));
+const hasQ=(x,q)=>!q||textOf(x).includes(norm(q));
+const matchQ=x=>hasQ(x,S.q);
+const matchLQ=(k,x)=>hasQ(x,S.lq[k]);
+const srcHTML=a=>`<span class="src ${SRC_KIND[a.src]||''}">${esc(a.src)}</span>`;
+const starHTML=id=>`<button class="star" aria-pressed="${MARKS.has(id)}" aria-label="${MARKS.has(id)?'Nicht mehr merken':'Merken'}" onclick="event.stopPropagation();toggleMark('${id}')"><svg><use href="#i-star"/></svg></button>`;
+const copyBtn=(ids,label)=>`<button class="btn sm cp" onclick="copyList(${J(ids)},'${label}')"><svg class="i" style="width:15px;height:15px"><use href="#i-copy"/></svg><span class="t">Kopieren</span></button>`;
+function toast(msg){const t=g('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1900)}
+function rowKey(e,id){if(e.key==='Enter'||e.key===' '){e.preventDefault();openReader(id)}}
+function lsearch(key,ph){const v=S.lq[key]||'';return `<div class="lsearch"><svg class="i"><use href="#i-search"/></svg><input id="lq-${key}" value="${esc(v)}" placeholder="${ph}" aria-label="${ph}" oninput="setLQ('${key}',this.value)">${v?`<button class="x" onclick="setLQ('${key}','')" aria-label="Leeren">×</button>`:''}</div>`}
+function setLQ(k,v){S.lq[k]=v;S.focus='lq-'+k;render()}
+function secHd(key,title,cnt,tools,foldable=true){
+  const open=!S.fold[key];
+  const head=foldable
+    ? `<h2 class="sec-t"><button class="fold" aria-expanded="${open}" aria-controls="sec-${key}" onclick="toggleFold('${key}')"><svg aria-hidden="true"><use href="#i-chev"/></svg>${title}</button></h2>`
+    : `<h2>${title}</h2>`;
+  return `<div class="sec-hd ${open?'':'folded'}"><div class="sec-l">${head}${cnt?`<span class="cnt">${cnt}</span>`:''}</div><div class="tools">${open?(tools||''):''}</div></div>`;
+}
+const body=(key,html)=>S.fold[key]?'':`<div id="sec-${key}">${html}</div>`;
+function toggleFold(k){S.fold[k]=!S.fold[k];store.set('fold',S.fold);render()}
+const initials=n=>{const p=n.replace(/^(Dr\.|Sen\.|Rep\.)\s*/,'').split(/[\s–-]+/).filter(Boolean);return (p.length>1?p.map(x=>x[0]).join('').slice(0,2):p[0].slice(0,2)).toUpperCase()};
+const monoInit=s=>s.split(/[\s–-]+/).map(x=>x[0]).join('').slice(0,3).toUpperCase();
+function sparkline(s,up){const min=Math.min(...s),max=Math.max(...s),w=100,h=28;const pts=s.map((v,i)=>`${(i/(s.length-1)*w).toFixed(1)},${(h-2-((v-min)/((max-min)||1))*(h-4)).toFixed(1)}`).join(' ');return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${up?'var(--green)':'var(--red)'}" stroke-width="1.6" stroke-linejoin="round"/></svg>`}
+async function cap(n){try{if(window.claude&&typeof claude.use==='function')return await claude.use(n)}catch(e){}return null}
+
+/* ───────────────────────────── Navigation ───────────────────────────── */
+function go(ws,tab){
+  const w=WS.find(x=>x.id===ws)||WS[0];S.ws=w.id;
+  if(w.tabs.length){if(tab&&w.tabs.some(t=>t[0]===tab))S.tab[w.id]=tab;if(!w.tabs.some(t=>t[0]===S.tab[w.id]))S.tab[w.id]=w.tabs[0][0]}
+  store.set('tab',S.tab);S.lq={};S.calDay=null;S.shown=40;
+  const hash='#'+w.id+(w.tabs.length?'/'+S.tab[w.id]:'');if(location.hash!==hash)history.replaceState(null,'',hash);
+  render();window.scrollTo({top:0});
+}
+function fromHash(){const [ws,tab]=location.hash.replace('#','').split('/');go(ws||PREF.start||'news',tab)}
+function setRegion(r){S.region=r;store.set('region',r);render()}
+function setTopic(t){S.topic=t;render()}
+function setView(v){S.view=v;store.set('view',v);render()}
+function renderNav(){
+  g('side-nav').innerHTML=WS.map(x=>`<button class="nav" ${x.id===S.ws&&!S.q?'aria-current="page"':''} onclick="clearSearch(true);go('${x.id}')"><svg class="i"><use href="#${x.icon}"/></svg>${x.label}${x.id==='monitor'?`<span class="n">${monitorNew()}</span>`:''}</button>`).join('');
+  g('tabbar').innerHTML=WS.map(x=>`<button class="tb" ${x.id===S.ws&&!S.q?'aria-current="page"':''} onclick="clearSearch(true);go('${x.id}')"><svg class="i"><use href="#${x.icon}"/></svg>${x.kurz||x.label}</button>`).join('');
+  g('side-monitors').innerHTML=MONITORS.map(m=>{const n=monitorHits(m).filter(a=>a.ago<24).length;return `<button class="side-item" onclick="clearSearch(true);go('monitor');S.monOpen.add('${m.id}');render()"><span class="dot" style="background:${m.color}"></span><span class="grow" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.name)}</span><span class="n ${n?'new':''}">${n}</span></button>`}).join('')||'<div class="note" style="padding:0 12px">Noch keine Monitore.</div>';
+  store.set('ws',S.ws);
+  g('login-btn').hidden=!!S.user;g('avatar').hidden=!S.user;if(S.user)g('avatar').textContent=S.user.initials;
+}
+
+/* ───────────────────────────── Seite ───────────────────────────── */
+function render(){
+  renderNav();
+  let h='',hits=null;
+  if(S.q){h=renderSearch()}
+  else{
+    const w=WS.find(x=>x.id===S.ws);const tab=S.tab[w.id];
+    h=`<div class="page-hd ${w.tabs.length?'has-tabs':''}"><h1>${w.label}</h1>${w.tabs.length?`<div class="tabs" role="tablist">${w.tabs.map(t=>`<button class="tab" role="tab" aria-selected="${t[0]===tab}" onclick="go('${w.id}','${t[0]}')"><svg aria-hidden="true"><use href="#${t[2]}"/></svg>${t[1]}</button>`).join('')}</div>`:''}
+      ${(REGION_TABS[w.id]||[]).includes(tab)?`<div id="regions" role="group" aria-label="Region">${REGIONS.map(([k,l])=>`<button class="chip" data-r="${k}" aria-pressed="${S.region===k}" title="${l}" onclick="setRegion('${k}')">${REGION_SHORT[k]||l}</button>`).join('')}</div>`:''}</div>`;
+    if(w.id==='news'){
+      if(tab==='top')h+=renderTop();else if(tab==='stories')h+=renderStories();else if(tab==='trends')h+=renderTrends();else if(tab==='studies')h+=renderStudies();else if(tab==='markets')h+=renderMarkets();else h+=renderArchive();
+    } else if(w.id==='monitor')h+=renderMonitor();
+    else if(w.id==='policy'){if(tab==='procs')h+=renderProcs();else if(tab==='docs')h+=renderDocs();else if(tab==='events')h+=renderEvents();else if(tab==='rulings')h+=renderRulings();else h+=renderElections()}
+    else if(w.id==='stakeholder')h+=renderStakeholder(tab);
+    else{if(tab==='brief')h+=renderBrief();else h+=renderNewsletter()}
+  }
+  g('page').innerHTML=h;
+  g('q-clear').hidden=!S.q;
+  g('foot-upd').textContent='Stand '+fmtTime(NOW);
+  if(S.focus){const el=g(S.focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}S.focus=null}
+}
+
+/* ── Nachrichten: Übersicht ── */
+const topScore=a=>a.rel*2-a.ago/6;
+/* Welche anderen Meldungen berichten dasselbe? Im Betrieb liefert das der
+   Cluster aus fetch_news.py; hier die übrigen Meldungen derselben Themenlage,
+   sonst zeitnahe Meldungen anderer Quellen mit gleichem Ressort. */
+function clusterArts(a){
+  if(a._cl)return a._cl;
+  const st=STORIES.find(s=>s.arts.includes(a.id));
+  let arr=st?st.arts.filter(id=>id!==a.id).map(id=>ITEMS[id])
+    :ARTICLES.filter(x=>x.id!==a.id&&x.src!==a.src&&Math.abs(x.ago-a.ago)<14&&x.topics.some(t=>a.topics.includes(t)));
+  return arr.sort((x,y)=>y.date-x.date).slice(0,Math.max(0,(a.clusterZiel||a.cluster||1)-1));
+}
+/* Angezeigte Quellenzahl und aufklappbare Liste müssen dieselbe sein. */
+ARTICLES.forEach(a=>{a.clusterZiel=a.cluster;const l=clusterArts(a);a._cl=l;a.cluster=l.length+1});
+function newsBase(){return ARTICLES.filter(a=>a.ago<=48&&inRegion(a))}
+function renderTop(){
+  const base=newsBase();
+  const top=base.filter(a=>a.ago<=24&&a.herkunft!=='think').sort((a,b)=>topScore(b)-topScore(a)).slice(0,6);
+  let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
+  all=S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date);
+  window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
+  let h=`<div class="ov ${S.view==='paper'?'wide':''}"><div class="ov-main">`;
+  h+=secHd('top','Top-Meldungen','letzte 24 Std.'+(S.region!=='all'?' · '+REGION_NAME[S.region]:''),copyBtn(TOPLIST,'Top-Meldungen'));
+  h+=body('top',`<div class="box top">${top.length?top.map((a,i)=>{const cl=clusterArts(a),auf=S.openSrc===a.id;
+    return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl">${esc(a.title)}</div>
+      <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${a.paid?'<span>Abo</span>':''}</div>${starHTML(a.id)}
+      ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
+  const topics=[...new Set(base.flatMap(a=>a.topics))].map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
+  const srcs=[...new Set(base.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
+  h+=secHd('alle','Alle Meldungen',all.length+' · letzte 48 Std.',`
+    <div class="vmode" role="group" aria-label="Darstellung"><button class="icon-btn" aria-pressed="${S.view==='list'}" aria-label="Liste" title="Liste" onclick="setView('list')"><svg class="i"><use href="#i-list"/></svg></button><button class="icon-btn" aria-pressed="${S.view==='paper'}" aria-label="Zeitung" title="Zeitung" onclick="setView('paper')"><svg class="i"><use href="#i-grid"/></svg></button></div>
+    <div class="seg" role="group" aria-label="Sortierung"><button aria-pressed="${S.sort==='new'}" onclick="S.sort='new';render()">Neueste</button><button aria-pressed="${S.sort==='rel'}" onclick="S.sort='rel';render()">Relevanz</button></div>
+    ${S.view==='list'?`<button class="btn sm" aria-pressed="${document.body.classList.contains('teasers')}" onclick="toggleTeasers()">Mit Teaser</button>`:''}${copyBtn(ALLLIST,'Liste')}`);
+  let hAll=`<div class="filters"><div class="bar">${lsearch('all','Meldungen durchsuchen …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select><select class="sel" aria-label="Quelle" onchange="S.src=this.value;render()"><option value="all">Alle Quellen</option>${srcs.map(s=>`<option ${S.src===s?'selected':''}>${esc(s)}</option>`).join('')}</select></div>
+    <div class="chips" role="group" aria-label="Ressort"><button class="chip" aria-pressed="${S.topic==='all'}" onclick="setTopic('all')">Alle Ressorts</button>${topics.map(([t,n])=>`<button class="chip" aria-pressed="${S.topic===t}" onclick="setTopic('${t}')">${TOPICS[t]||t} <span class="n">${n}</span></button>`).join('')}</div></div>`;
+  const teil=all.slice(0,S.shown);
+  const mehr=all.length>S.shown?`<div class="more"><button class="btn" onclick="S.shown+=40;render()">Weitere ${Math.min(40,all.length-S.shown)} von ${all.length-S.shown} anzeigen</button></div>`:'';
+  hAll+=S.view==='paper'?paperHTML(teil,'ALLLIST')+mehr:`<div class="scrollbox main box" style="padding:0">${listByTime(teil,'ALLLIST')}${mehr}</div>`;
+  h+=body('alle',hAll);
+  h+='</div><aside class="ov-side">'+renderSideColumn(base)+'</aside></div>';
+  return h;
+}
+function renderSideColumn(base){
+  let h='';
+  const mk=watchlist().slice(0,4).map(s=>MARKET_BY_SYM[s]);
+  h+=secHd('mk','Märkte',MARKET_RANGES.find(r=>r[0]===S.mkRange)[1],`<button class="btn sm quiet" onclick="go('news','markets')">Alle</button>`);
+  h+=body('mk',mk.length?`<div class="mk small">${mk.map(m=>tileHTML(m)).join('')}</div>`:'<div class="box"><div class="empty">Keine Werte in der Liste.</div></div>');
+  const ev=EVENTS.filter(e=>e.date>=NOW-H&&e.date<NOW+8*D).sort((a,b)=>a.date-b.date);window.SIDEEV=ev.map(e=>e.id);
+  h+=secHd('ev','Termine','nächste 7 Tage',`<button class="btn sm quiet" onclick="go('policy','events')">Alle</button>`);
+  h+=body('ev',`<div class="box scrollbox">${ev.length?ev.map(e=>`<div class="ev" role="button" tabindex="0" onclick="openReader('${e.id}',SIDEEV)" onkeydown="rowKey(event,'${e.id}')"><span class="time">${sameDay(e.date,NOW)?'Heute':sameDay(e.date,NOW+D)?'Morgen':WD[new Date(e.date).getDay()]+' '+new Date(e.date).getDate()+'.'}<br><small style="font-weight:600;color:var(--muted)">${fmtTime(e.date)}</small></span><div><div class="ttl" style="font-size:var(--fs-sm)">${esc(e.title)}</div><div class="meta">${srcHTML(e)}</div></div>${starHTML(e.id)}</div>`).join(''):'<div class="empty">Keine Termine heute und morgen.</div>'}</div>`);
+  const st=ARTICLES.filter(a=>a.herkunft==='think'&&inRegion(a)).sort((a,b)=>b.date-a.date).slice(0,10);window.SIDEST=st.map(a=>a.id);
+  h+=secHd('st','Studien & Analysen','Think Tanks',`<button class="btn sm quiet" onclick="go('news','studies')">Alle</button>`);
+  h+=body('st',`<div class="box list scrollbox">${st.length?st.map(a=>rowHTML(a,'SIDEST',true)).join(''):'<div class="empty">Keine Studien in dieser Region.</div>'}</div>`);
+  const dc=DOCS.filter(d=>inRegion(d)).sort((a,b)=>b.date-a.date).slice(0,10);window.SIDEDC=dc.map(d=>d.id);
+  h+=secHd('dc','Neue Dokumente','',`<button class="btn sm quiet" onclick="go('policy','docs')">Alle</button>`);
+  h+=body('dc',`<div class="box list scrollbox">${dc.length?dc.map(d=>`<div class="row" role="button" tabindex="0" onclick="openReader('${d.id}',SIDEDC)" onkeydown="rowKey(event,'${d.id}')"><div class="meta">${srcHTML(d)}<span class="pill grey">${esc(d.type)}</span></div><div class="ttl" style="font-size:var(--fs-sm)">${esc(d.title)}</div>${starHTML(d.id)}</div>`).join(''):'<div class="empty">Keine neuen Dokumente.</div>'}</div>`);
+  const ru=ARTICLES.filter(a=>a.herkunft==='gericht'&&inRegion(a)).sort((a,b)=>b.date-a.date).slice(0,8);window.SIDERU=ru.map(a=>a.id);
+  h+=secHd('ru','Urteile','',`<button class="btn sm quiet" onclick="go('policy','rulings')">Alle</button>`);
+  h+=body('ru',`<div class="box list scrollbox">${ru.length?ru.map(a=>rowHTML(a,'SIDERU',true)).join(''):'<div class="empty">Keine Urteile in dieser Region.</div>'}</div>`);
+  return h;
+}
+/* Kursreihen im Entwurf: deterministisch aus dem Symbol erzeugt, damit die
+   Kurven bei jedem Aufruf gleich aussehen. Später ersetzt markets.json das hier. */
+function _prng(seed){let t=seed>>>0;return()=>{t+=0x6D2B79F5;let r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296}}
+function _seed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mkSeries(m,range){
+  const rr=MARKET_RANGES.find(r=>r[0]===range)||MARKET_RANGES[2],n=rr[2];
+  const jahre={'1t':1/365,'1w':7/365,'1m':30/365,'1j':1,'max':5}[range]||30/365;
+  const rnd=_prng(_seed(m.sym+range));
+  const schritt=m.vol/100*Math.sqrt(jahre*365/n);
+  const gesamt=Math.pow(1+m.drift/100,jahre);
+  const out=[];let v=m.p/gesamt;
+  for(let i=0;i<n;i++){v*=1+(rnd()-.5)*2*schritt+(Math.pow(gesamt,1/n)-1);out.push(v)}
+  const k=m.p/out[out.length-1];return out.map(x=>x*k);
+}
+function fmtNum(x,dec){return x.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
+function mkData(m,range){
+  const s=mkSeries(m,range),first=s[0],last=s[s.length-1];
+  const pp=m.unit==='%';
+  const c=pp?+(last-first).toFixed(2):+((last-first)/first*100).toFixed(2);
+  return {s,last,c,pp};
+}
+function tileHTML(m,range){
+  const d=mkData(m,range||S.mkRange),up=d.c>=0;
+  return `<div class="t" role="button" tabindex="0" style="cursor:pointer" onclick="openMarket('${m.sym}')" onkeydown="if(event.key==='Enter')openMarket('${m.sym}')"><div class="nm" title="${esc(m.n)}${m.unit?' · '+esc(m.unit):''}">${esc(m.n)}${m.unit&&m.unit!=='%'?` <span style="opacity:.75">· ${esc(m.unit)}</span>`:''}</div>
+    <div class="v">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}</div>
+    <div class="c ${up?'up':'dn'}">${up?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</div>
+    ${sparkline(d.s,up)}</div>`;
+}
+function bigChart(s,up){
+  const w=320,h=150,min=Math.min(...s),max=Math.max(...s),sp=(max-min)||1;
+  const pt=(v,i)=>`${(i/(s.length-1)*w).toFixed(1)},${(h-12-((v-min)/sp)*(h-28)).toFixed(1)}`;
+  const line=s.map(pt).join(' ');
+  const col=up?'var(--green)':'var(--red)';
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${h} ${line} ${w},${h}" fill="${col}" opacity=".10"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+function openMarket(sym){
+  const m=MARKET_BY_SYM[sym];if(!m)return;S.mkSym=sym;
+  const d=mkData(m,S.mkRange),up=d.c>=0,drin=watchlist().includes(sym);
+  const s=d.s,min=Math.min(...s),max=Math.max(...s);
+  const rel=ARTICLES.filter(a=>a.ago<=72&&norm(a.title+' '+a.desc).match(new RegExp(norm(m.n.split(' ')[0]),'i'))).slice(0,3);
+  const alle=ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))).slice(0,4);
+  const news=rel.length?rel:alle;window.MKDLIST=news.map(a=>a.id);
+  g('mkd-h').textContent=m.n;
+  g('mkd-body').innerHTML=`<div class="meta"><span class="src">${esc(m.grp)}</span><span>${esc(m.sym)}</span>${m.unit?`<span>${esc(m.unit)}</span>`:''}</div>
+    <div class="mkd-head"><span class="mkd-v">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}</span><span class="mkd-c" style="color:${up?'var(--green)':'var(--red)'}">${up?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</span><span class="note">${MARKET_RANGES.find(r=>r[0]===S.mkRange)[1]}</span></div>
+    <div class="seg" role="group" aria-label="Zeitraum">${MARKET_RANGES.map(([k,l])=>`<button aria-pressed="${S.mkRange===k}" onclick="S.mkRange='${k}';store.set('mkrange','${k}');openMarket('${sym}');render()">${l}</button>`).join('')}</div>
+    <div class="mkd-chart">${bigChart(s,up)}</div>
+    <div class="mkd-stats"><div><b>${fmtNum(max,m.dec)}</b><span>Höchstwert</span></div><div><b>${fmtNum(min,m.dec)}</b><span>Tiefstwert</span></div><div><b>${fmtNum(s.reduce((x,y)=>x+y,0)/s.length,m.dec)}</b><span>Durchschnitt</span></div>${MARKET_RANGES.map(([k,l])=>k===S.mkRange?'':`<div><b style="color:${mkData(m,k).c>=0?'var(--green)':'var(--red)'}">${mkData(m,k).c>=0?'+':'−'}${fmtNum(Math.abs(mkData(m,k).c),2)}${mkData(m,k).pp?'':' %'}</b><span>${l}</span></div>`).join('')}</div>
+    <div class="sec-hd" style="margin:14px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2></div>
+    <div class="box list">${news.length?news.map(a=>rowHTML(a,'MKDLIST',true)).join(''):'<div class="empty">Keine passenden Meldungen.</div>'}</div>
+    <p class="note" style="margin-top:10px">Beispielwerte. Im Betrieb kommen Kurs und Reihe aus markets.json.</p>`;
+  g('mkd-ft').innerHTML=`<button class="btn ${drin?'':'primary'}" onclick="watchToggle('${sym}');openMarket('${sym}')">${drin?'Aus meinen Werten entfernen':'Zu meinen Werten'}</button><span class="grow"></span><button class="btn quiet" onclick="closeSheet('market')">Schließen</button>`;
+  if(!g('sheet-market').classList.contains('open'))openSheet('market');
+}
+function watchlist(){return (store.get('watch',DEFAULT_WATCH)||[]).filter(s=>MARKET_BY_SYM[s])}
+function watchToggle(sym){const w=watchlist();const n=w.includes(sym)?w.filter(x=>x!==sym):[...w,sym];store.set('watch',n);toast(w.includes(sym)?'Aus der Liste entfernt':'Zur Liste hinzugefügt');render()}
+function listByTime(arr,listName){
+  if(!arr.length)return '<div class="box"><div class="empty"><b>Nichts gefunden</b>Andere Region, anderes Ressort oder Suchbegriff kürzen.</div></div>';
+  const groups=[['Letzte Stunde',a=>a.ago<=1],['Heute',a=>a.ago>1&&sameDay(a.date,NOW)],['Gestern',a=>sameDay(a.date,NOW-D)],['Älter',a=>!sameDay(a.date,NOW)&&!sameDay(a.date,NOW-D)]];
+  let h='';for(const [lbl,f] of groups){const part=arr.filter(f);if(!part.length)continue;h+=`<div class="grp">${lbl}</div><div class="box list">${part.map(a=>rowHTML(a,listName)).join('')}</div>`}return h;
+}
+function rowHTML(a,listName,small){
+  return `<div class="row ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">
+    <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}${a.paid?'<span>Abo</span>':''}${a.gericht?`<span class="pill grey">${esc(a.az)}</span>`:''}${small?'':`<span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span>`}</div>
+    <div class="ttl" ${small?'style="font-size:var(--fs-sm)"':''}>${esc(a.title)}</div>${small?'':`<div class="teaser">${esc(a.desc)}</div>`}${starHTML(a.id)}</div>`;
+}
+function paperHTML(arr,listName){
+  if(!arr.length)return '<div class="box"><div class="empty"><b>Nichts gefunden</b>Andere Region, anderes Ressort oder Suchbegriff kürzen.</div></div>';
+  return `<div class="paper">${arr.map(a=>`<div class="card ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')"><div class="mono" style="background-color:${HERKUNFT_COLOR[a.herkunft]||'#4a5168'}">${monoInit(a.src)}</div><div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}${a.paid?'<span>Abo</span>':''}</div><div class="ttl">${esc(a.title)}</div><div class="teaser">${esc(a.desc)}</div><div class="meta"><span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span></div>${starHTML(a.id)}</div>`).join('')}</div>`;
+}
+function toggleTeasers(){setPref('teasers',!document.body.classList.contains('teasers'))}
+
+/* ── Stories, Trends, Studien, Märkte, Archiv ── */
+function renderStories(){
+  const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date);window.STORYLIST=list.map(s=>s.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools">${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
+  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>ITEMS[id].src))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span></div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Story</b>Für diese Auswahl gibt es gerade keine Meldung, die mehrere Quellen aufgreifen.</div>'}</div>`;
+  return h;
+}
+const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte']];
+function trendRows(mode,von,bis){
+  const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a));
+  const m={};
+  const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),ids:[]};m[k].n++;m[k].s.add(a.src);m[k].ids.push(a.id)};
+  teil.forEach(a=>{
+    if(mode==='topics')a.topics.forEach(t=>add(t,TOPICS[t]||t,a));
+    else if(mode==='issues'){const txt=norm(a.title+' '+a.desc);ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}
+    else{const txt=a.title+' '+a.desc;
+      PEOPLE.forEach(p=>{if((p.aliases||[]).some(al=>txt.includes(al)))add('p:'+p.id,p.name,a)});
+      ORTE.forEach(o=>{if(new RegExp('\\b'+o,'i').test(txt))add('o:'+o,o,a)})}
+  });
+  return m;
+}
+function renderTrends(){
+  const mode=S.trendMode||'topics';
+  const c=trendRows(mode,0,S.win),p=trendRows(mode,S.win,2*S.win);
+  const rows=Object.entries(c).sort((a,b)=>b[1].n-a[1].n).slice(0,14);
+  const max=rows.length?rows[0][1].n:1;
+  let h=secHd('tr','Trends','',`
+    <div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.win===24}" onclick="S.win=24;render()">24 Std.</button><button aria-pressed="${S.win===72}" onclick="S.win=72;render()">3 Tage</button><button aria-pressed="${S.win===168}" onclick="S.win=168;render()">7 Tage</button></div>`);
+  let b=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
+  b+=`<p class="note" style="margin-bottom:10px">${mode==='topics'?'Ressorts der letzten Meldungen, verglichen mit dem gleich langen Zeitraum davor.':mode==='issues'?'Benannte Vorgänge, die quer zu den Ressorts laufen – ein Antippen zeigt die Meldungen dazu.':'Namen und Orte, die in Schlagzeilen und Teasern vorkommen.'}</p>`;
+  b+=`<div class="box">${rows.map(([k,v])=>{const pn=p[k]?p[k].n:0;let mv,cls;if(!pn){mv='neu';cls='new'}else{const d=v.n-pn;mv=(d>0?'+':d<0?'−':'±')+Math.abs(d);cls=d>=2?'up':d<=-2?'dn':'eq'}
+    const sel=S.trendPick===k;
+    return `<div class="trend" role="button" tabindex="0" aria-pressed="${sel}" style="cursor:pointer;${sel?'background:var(--blue-lt)':''}" onclick="S.trendPick=${sel?'null':`'${k}'`};render()" onkeydown="if(event.key==='Enter'){S.trendPick=${sel?'null':`'${k}'`};render()}">
+      <div class="lbl">${esc(v.label)}<small>${v.n} ${v.n===1?'Meldung':'Meldungen'}<span class="dsk"> · ${v.s.size} ${v.s.size===1?'Quelle':'Quellen'}</span></small></div><div class="barw"><i style="width:${Math.round(v.n/max*100)}%"></i></div>
+      <div class="mv ${cls}">${mv}<br><small style="font-weight:500;color:var(--muted)">${cls==='new'?'vorher nicht':cls==='up'?'zieht an':cls==='dn'?'klingt ab':'konstant'}</small></div></div>`}).join('')||'<div class="empty"><b>Keine Meldungen</b>In diesem Zeitraum und dieser Region liegt nichts vor.</div>'}</div>`;
+  if(S.trendPick&&c[S.trendPick]){
+    const v=c[S.trendPick];const arts=v.ids.map(id=>ITEMS[id]).sort((a,b)=>b.date-a.date);window.TRENDLIST=arts.map(a=>a.id);
+    b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">${esc(v.label)}</h2><span class="cnt">${arts.length} Meldungen</span><div class="tools">${copyBtn(TRENDLIST,esc(v.label))}<button class="btn sm quiet" onclick="S.trendPick=null;render()">Schließen</button></div></div>
+      <div class="box list">${arts.map(a=>rowHTML(a,'TRENDLIST')).join('')}</div>`;
+  }
+  return h+body('tr',b);
+}
+function renderStudies(){
+  const list=ARTICLES.filter(a=>a.herkunft==='think'&&inRegion(a)&&matchLQ('sd',a)).sort((a,b)=>b.date-a.date);window.STLIST=list.map(a=>a.id);
+  const orgs=ORGS.filter(o=>o.srcs.length&&inRegion(o));
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Studien & Analysen</h2><span class="cnt">${list.length} · nur Denkfabriken und Stiftungen, keine Medien</span><div class="tools">${lsearch('sd','Studien durchsuchen …')}${copyBtn(STLIST,'Studien')}</div></div>`;
+  h+=`<div class="chips" style="margin-bottom:10px">${orgs.map(o=>`<button class="chip" onclick="openReader('${o.id}')">${esc(o.srcs[0])}</button>`).join('')}</div>`;
+  h+=list.length?`<div class="box list teasers-on">${list.map(a=>rowHTML(a,'STLIST')).join('')}</div>`:'<div class="box"><div class="empty"><b>Keine Studie</b>Andere Region oder Suchbegriff kürzen.</div></div>';
+  return h;
+}
+function renderMarkets(){
+  const w=watchlist(),q=norm(S.mkQ);
+  const treffer=q?MARKET_CATALOG.filter(m=>norm(m.n+' '+m.sym+' '+m.grp).includes(q)):[];
+  let h=secHd('mkr','Märkte',MARKET_RANGES.find(r=>r[0]===S.mkRange)[1],
+    `<div class="seg" role="group" aria-label="Zeitraum">${MARKET_RANGES.map(([k,l])=>`<button aria-pressed="${S.mkRange===k}" onclick="S.mkRange='${k}';store.set('mkrange','${k}');render()">${l}</button>`).join('')}</div>`);
+  let b=`<div class="filters"><div class="bar"><div class="lsearch"><svg class="i"><use href="#i-search"/></svg><input id="mk-q" value="${esc(S.mkQ)}" placeholder="Index, ETF, Rohstoff suchen und hinzufügen …" aria-label="Werte suchen" oninput="S.mkQ=this.value;S.focus='mk-q';render()">${S.mkQ?`<button class="x" onclick="S.mkQ='';render()" aria-label="Leeren">×</button>`:''}</div><span class="note">${MARKET_CATALOG.length} Werte im Katalog</span></div></div>`;
+  if(q){
+    b+=`<div class="box">${treffer.length?treffer.map(m=>{const drin=w.includes(m.sym);const d=mkData(m,S.mkRange);
+      return `<div class="mrow"><div><div class="meta"><span class="src">${esc(m.grp)}</span><span>${esc(m.sym)}</span>${m.unit?`<span>${esc(m.unit)}</span>`:''}</div><div class="nm">${esc(m.n)}</div></div>
+      <div class="val">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}<small style="color:${d.c>=0?'var(--green)':'var(--red)'}">${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</small></div>
+      <button class="btn sm ${drin?'':'primary'}" onclick="watchToggle('${m.sym}')">${drin?'Entfernen':'Hinzufügen'}</button></div>`}).join(''):'<div class="empty"><b>Nichts gefunden</b>Anderer Name oder Symbol – der Katalog im Entwurf enthält Indizes, ETFs, Energie, Zinsen und Rohstoffe.</div>'}</div>`;
+  }
+  b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
+  b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
+    :'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>';
+  const rel=ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))).sort((a,b)=>b.date-a.date).slice(0,6);window.MKLIST=rel.map(a=>a.id);
+  b+=`<div class="sec-hd" style="margin-top:20px"><h2 style="font-size:var(--fs-md)">Meldungen mit Marktbezug</h2><span class="cnt">Energie, Finanzen, Handel</span></div><div class="box list">${rel.map(a=>rowHTML(a,'MKLIST',true)).join('')}</div>`;
+  b+=`<p class="note" style="margin-top:12px">Kurse im Entwurf sind erzeugte Beispielwerte. Im Betrieb liefert <code>fetch_markets.py</code> die Datei <code>markets.json</code>; Strom und CO₂ kommen von der EEX, alles Übrige von Yahoo Finance.</p>`;
+  return h+body('mkr',b);
+}
+function renderArchive(){
+  const list=ARTICLES.filter(a=>a.ago>48&&a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date);window.ARCHLIST=list.map(a=>a.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Archiv</h2><span class="cnt">${list.length} · älter als 48 Std.</span><div class="tools"><div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.archRange===7}" onclick="S.archRange=7;render()">7 Tage</button><button aria-pressed="${S.archRange===30}" onclick="S.archRange=30;render()">30 Tage</button><button aria-pressed="${S.archRange===365}" onclick="S.archRange=365;render()">Alles</button></div>${copyBtn(ARCHLIST,'Archiv')}</div></div>`;
+  h+=`<div class="filters"><div class="bar">${lsearch('ar','Archiv durchsuchen – Titel, Quelle, Begriff …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select></div></div>`;
+  h+=list.length?`<div class="box list">${list.map(a=>rowHTML(a,'ARCHLIST')).join('')}</div>`:'<div class="box"><div class="empty"><b>Nichts im Archiv</b>Suchbegriff oder Zeitraum ändern.</div></div>';
+  return h;
+}
+
+/* ── Monitor ── */
+function monitorHits(m){return ARTICLES.filter(a=>a.ago<=48&&m.kw.some(k=>norm(a.title+' '+a.desc).includes(norm(k)))).sort((a,b)=>b.date-a.date)}
+function monitorNew(){return MONITORS.reduce((n,m)=>n+monitorHits(m).filter(a=>a.ago<24).length,0)}
+function renderMonitor(){
+  const neu=monitorNew();
+  let h=`<div class="bar" style="margin:0 0 10px"><span class="note grow">${MONITORS.length} ${MONITORS.length===1?'Begriff':'Begriffe'} in Beobachtung${neu?` · ${neu} neue Treffer in 24 Std.`:''}</span>
+    <button class="btn sm" onclick="g('mon-form').hidden=!g('mon-form').hidden;g('mon-name').focus()"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg>Neuer Monitor</button></div>`;
+  h+=`<div class="box" id="mon-form" hidden style="padding:14px 16px 4px;margin-bottom:12px"><div class="field"><label for="mon-name">Name</label><input id="mon-name" placeholder="z. B. Glasfaser Bayern"></div><div class="field"><label for="mon-kw">Begriffe, mit Komma getrennt</label><input id="mon-kw" placeholder="glasfaser, ftth, breitband" onkeydown="if(event.key==='Enter')saveMonitor()"></div><div class="bar" style="margin-bottom:12px"><button class="btn primary" onclick="saveMonitor()">Monitor anlegen</button><span class="note">Zählt Meldungen der letzten 48 Stunden, in denen einer der Begriffe vorkommt.</span></div></div>`;
+  h+=`<div class="box">${MONITORS.map(m=>{const hits=monitorHits(m),nw=hits.filter(a=>a.ago<24).length,auf=S.monOpen.has(m.id);
+    return `<div class="mon ${auf?'open':''}"><div class="hd"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:${m.color};flex-shrink:0"></span>
+      <div class="grow"><b>${esc(m.name)}</b><div class="kw">${m.kw.map(esc).join(' · ')}</div></div>
+      ${nw?`<span class="pill red">${nw} neu</span>`:''}
+      <button class="btn sm" aria-expanded="${auf}" onclick="S.monOpen.has('${m.id}')?S.monOpen.delete('${m.id}'):S.monOpen.add('${m.id}');render()">${hits.length} Treffer ${auf?'▴':'▾'}</button>
+      <button class="icon-btn" aria-label="Begriffe ändern" title="Begriffe ändern" onclick="editMonitor('${m.id}')"><svg class="i" style="width:16px;height:16px"><use href="#i-policy"/></svg></button>
+      <button class="icon-btn" aria-label="Monitor löschen" title="Löschen" onclick="deleteMonitor('${m.id}')"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="hits">${hits.length?hits.map(a=>`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}',${J(hits.map(x=>x.id))})" onkeydown="rowKey(event,'${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span>${starHTML(a.id)}<span class="ttl">${esc(a.title)}</span></div>`).join(''):'<div class="note" style="padding:6px 0">Keine Treffer in den letzten 48 Stunden.</div>'}</div></div>`}).join('')||'<div class="empty"><b>Noch kein Monitor</b>Lege einen Suchbegriff an – neue Treffer erscheinen dann links in der Leiste und hier.</div>'}</div>`;
+  h+=`<p class="note" style="margin-top:12px">Ein Monitor sucht in Titel und Teaser aller Meldungen der letzten 48 Stunden.${S.user?' Mit Konto kommt zusätzlich eine tägliche Mail.':' Mit Konto gilt er auf allen Geräten und kann täglich per Mail kommen.'}</p>`;
+  return h;
+}
+function editMonitor(id){const m=MONITORS.find(x=>x.id===id);if(!m)return;
+  const kw=prompt('Begriffe für „'+m.name+'", mit Komma getrennt:',m.kw.join(', '));
+  if(kw===null)return;const liste=kw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!liste.length){toast('Mindestens ein Begriff nötig');return}
+  m.kw=liste;store.set('monitors',MONITORS);toast('Begriffe geändert');render()}
+function saveMonitor(){const name=g('mon-name').value.trim(),kw=g('mon-kw').value.split(',').map(s=>s.trim()).filter(Boolean);if(!name||!kw.length){toast('Name und mindestens ein Begriff nötig');return}
+  const colors=['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'];MONITORS.push({id:'m'+Date.now(),name,kw,color:colors[MONITORS.length%colors.length]});store.set('monitors',MONITORS);toast('Monitor angelegt');render()}
+function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('monitors',MONITORS);toast('Monitor gelöscht');render()}
+
+/* ── Policy ── */
+function renderProcs(){
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Verfahren</h2><span class="cnt">${PROCS.length} laufende Gesetzgebungsverfahren</span></div>`;
+  h+=`<div class="box">${PROCS.map(p=>`<div class="proc"><div class="bar"><b>${esc(p.title)}</b><span class="pill ${p.src==='EU'?'eu':'grey'}">${p.src}</span>${p.story?`<button class="btn sm quiet" style="margin-left:auto" onclick="openReader('${p.story}')">Zur Story</button>`:''}</div><div class="steps">${p.steps.map((s,i)=>`<span class="step ${i<p.now?'done':i===p.now?'now':''}">${s}</span>`).join('')}</div></div>`).join('')}</div>`;
+  return h;
+}
+function renderDocs(){
+  const types=[...new Set(DOCS.map(d=>d.type))];
+  const list=DOCS.filter(d=>matchLQ('dc',d)&&(S.docType==='all'||d.type===S.docType)).sort((a,b)=>b.date-a.date);window.DOCLIST=list.map(d=>d.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Dokumente</h2><span class="cnt">${list.length}</span><div class="tools">${copyBtn(DOCLIST,'Dokumente')}</div></div>`;
+  h+=`<div class="filters"><div class="bar">${lsearch('dc','Dokumente durchsuchen – Titel, Nummer, Herkunft …')}<select class="sel" aria-label="Dokumenttyp" onchange="S.docType=this.value;render()"><option value="all">Alle Typen</option>${types.map(t=>`<option ${S.docType===t?'selected':''}>${t}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="box list">${list.map(d=>`<div class="row" role="button" tabindex="0" onclick="openReader('${d.id}',DOCLIST)" onkeydown="rowKey(event,'${d.id}')"><div class="meta">${srcHTML(d)}<span class="pill grey">${esc(d.type)}</span><span>${fmtAgo(d.date)}</span></div><div class="ttl">${esc(d.title)}</div>${d.desc?`<div class="teaser" style="display:block">${esc(d.desc)}</div>`:''}${starHTML(d.id)}</div>`).join('')||'<div class="empty"><b>Kein Dokument</b>Suchbegriff oder Typ ändern.</div>'}</div>`;
+  return h;
+}
+function eventsFiltered(){return EVENTS.filter(e=>matchLQ('ev',e)&&(!S.calDay||sameDay(e.date,S.calDay))).sort((a,b)=>a.date-b.date)}
+function renderEvents(){
+  const list=eventsFiltered();window.EVLIST=list.map(e=>e.id);const marked=EVENTS.filter(e=>MARKS.has(e.id));
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Termine</h2><span class="cnt">${list.length} · Ortszeit</span><div class="tools"><div class="seg" role="group" aria-label="Ansicht"><button aria-pressed="${S.calMode==='list'}" onclick="S.calMode='list';render()">Liste</button><button aria-pressed="${S.calMode==='month'}" onclick="S.calMode='month';render()">Monat</button></div></div></div>`;
+  h+=`<div class="filters"><div class="bar">${lsearch('ev','Termine durchsuchen …')}
+    <button class="btn sm" onclick="exportICS(EVLIST,'presseschau-termine.ics')"><svg class="i" style="width:15px;height:15px"><use href="#i-download"/></svg>.ics</button>
+    ${marked.length?`<button class="btn sm" onclick="exportICS(${J(marked.map(e=>e.id))},'gemerkte-termine.ics')"><svg class="i" style="width:15px;height:15px"><use href="#i-star"/></svg>${marked.length} gemerkte als .ics</button>`:''}
+    <button class="btn sm" onclick="copyText('https://demo.presseschau.example/calendar.ics','Abo-Adresse kopiert – in Google (Weitere Kalender → Per URL) oder Apple (Ablage → Neues Kalenderabonnement) einfügen')">Abonnieren</button>
+    ${copyBtn(EVLIST,'Termine')}</div></div>`;
+  if(S.calMode==='month')h+=monthHTML();
+  if(S.calDay)h+=`<div class="bar" style="margin:8px 0"><span class="pill blue">${fmtDay(S.calDay)}</span><button class="btn sm quiet" onclick="S.calDay=null;render()">Alle Tage</button></div>`;
+  const days=[...new Set(list.map(e=>new Date(e.date).toDateString()))];
+  if(!days.length)h+='<div class="box"><div class="empty"><b>Keine Termine</b>Anderen Tag wählen oder Suchbegriff kürzen.</div></div>';
+  days.forEach(d=>{const part=list.filter(e=>new Date(e.date).toDateString()===d);h+=`<div class="grp">${fmtDay(part[0].date)}</div><div class="box">${part.map(e=>`<div class="ev" role="button" tabindex="0" onclick="openReader('${e.id}',EVLIST)" onkeydown="rowKey(event,'${e.id}')"><span class="time">${fmtTime(e.date)}</span><div><div class="ttl">${esc(e.title)}</div><div class="meta">${srcHTML(e)}</div></div>${starHTML(e.id)}</div>`).join('')}</div>`});
+  return h;
+}
+function monthHTML(){
+  const base=new Date(NOW);base.setDate(1);base.setMonth(base.getMonth()+S.calMonth);const y=base.getFullYear(),m=base.getMonth();
+  const first=(base.getDay()+6)%7;const dim=new Date(y,m+1,0).getDate();const prevDim=new Date(y,m,0).getDate();
+  const rows=Math.ceil((first+dim)/7);let cells='';
+  for(let i=0;i<rows*7;i++){const dnum=i-first+1;let d,other=false;if(dnum<1){d=new Date(y,m-1,prevDim+dnum);other=true}else if(dnum>dim){d=new Date(y,m+1,dnum-dim);other=true}else d=new Date(y,m,dnum);
+    const evs=EVENTS.filter(e=>sameDay(e.date,d.getTime()));const sel=S.calDay&&sameDay(S.calDay,d.getTime());
+    cells+=`<button class="mday ${other?'other':''} ${evs.length?'has':''} ${sameDay(d.getTime(),NOW)?'today':''}" aria-pressed="${!!sel}" aria-label="${d.getDate()}. ${MON[d.getMonth()]}, ${evs.length} Termine" onclick="S.calDay=${sel?'null':d.getTime()};S.calMode='month';render()"><span>${d.getDate()}</span><span class="dots">${evs.slice(0,3).map(()=>'<i></i>').join('')}</span></button>`}
+  return `<div class="box" style="margin-bottom:12px"><div class="mcal-hd"><button class="icon-btn" aria-label="Vormonat" onclick="S.calMonth--;render()"><svg class="i"><use href="#i-left"/></svg></button><b style="text-align:center">${MON[m]} ${y}</b><button class="icon-btn" aria-label="Nächster Monat" onclick="S.calMonth++;render()"><svg class="i"><use href="#i-right"/></svg></button>${S.calMonth?`<button class="btn sm quiet" onclick="S.calMonth=0;render()">Heute</button>`:''}</div><div class="mcal">${WD.slice(1).concat(WD[0]).map(w=>`<div class="wd">${w}</div>`).join('')}${cells}</div></div>`;
+}
+function icsDate(t){return new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')}
+function icsText(ids){const ev=ids.map(id=>ITEMS[id]).filter(e=>e&&e.kind==='event');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Presseschau//Termine//DE','CALSCALE:GREGORIAN',...ev.flatMap(e=>['BEGIN:VEVENT','UID:'+e.id+'@presseschau','DTSTAMP:'+icsDate(NOW),'DTSTART:'+icsDate(e.date),'DTEND:'+icsDate(e.date+H),'SUMMARY:'+e.title.replace(/,/g,'\\,'),'DESCRIPTION:'+e.src,'URL:'+e.link,'END:VEVENT']),'END:VCALENDAR'].join('\r\n')}
+async function exportICS(ids,name){const text=icsText(ids);if(!ids.length){toast('Keine Termine');return}const dl=await cap('downloads');if(dl){try{await dl.save({filename:name,data:text});toast('Kalenderdatei gespeichert')}catch(e){if(e&&e.code==='declined')return;copyText(text,'Speichern hier nicht möglich – .ics-Inhalt kopiert')}}else copyText(text,'Speichern hier nicht möglich – .ics-Inhalt kopiert')}
+const gcalUrl=e=>`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${icsDate(e.date)}/${icsDate(e.date+H)}&details=${encodeURIComponent(e.src+' · '+e.link)}`;
+function renderRulings(){
+  const list=ARTICLES.filter(a=>a.herkunft==='gericht'&&matchLQ('ru',a)&&(S.gericht==='all'||!S.gericht||a.gericht===S.gericht)).sort((a,b)=>b.date-a.date);window.RULIST=list.map(a=>a.id);
+  const courts=[...new Set(ARTICLES.filter(a=>a.herkunft==='gericht').map(a=>a.gericht))];
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Urteile</h2><span class="cnt">${list.length} · EuGH, BVerfG, BGH, BVerwG, Supreme Court</span><div class="tools">${copyBtn(RULIST,'Urteile')}</div></div>`;
+  h+=`<div class="filters"><div class="bar">${lsearch('ru','Urteile durchsuchen – Aktenzeichen, Thema …')}<select class="sel" aria-label="Gericht" onchange="S.gericht=this.value;render()"><option value="all">Alle Gerichte</option>${courts.map(c=>`<option ${S.gericht===c?'selected':''}>${c}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="box">${list.map(a=>`<div class="rul" role="button" tabindex="0" onclick="openReader('${a.id}',RULIST)" onkeydown="rowKey(event,'${a.id}')"><div><div class="meta">${srcHTML(a)}<span class="pill grey">${esc(a.az)}</span><span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}</div><div class="ttl">${esc(a.title)}</div><div class="ls">${esc(a.ls)}</div></div>${starHTML(a.id)}</div>`).join('')||'<div class="empty"><b>Kein Urteil</b>Suchbegriff oder Gericht ändern.</div>'}</div>`;
+  h+=`<p class="note" style="margin-top:12px">Leitsätze stammen aus den Pressemitteilungen der Gerichte; Verhandlungstermine erscheinen unter Termine.</p>`;
+  return h;
+}
+function renderElections(){
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Wahlen</h2><span class="cnt">bevorstehend</span></div>`;
+  h+=ELECTIONS.map(e=>{const days=Math.round((e.date-NOW)/D);return `<div class="box" style="padding:14px 16px;margin-bottom:10px"><div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span></div>${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span><span class="pill amber">Beispielwerte</span></div>${e.polls.map(([n,v,c])=>`<div class="poll"><span class="tag">${n}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i></div><span class="v">${v} %</span></div>`).join('')}</div>`:'<p class="note" style="margin-top:6px">Umfragen liegen für diese Wahl nicht vor.</p>'}</div>`}).join('');
+  return h;
+}
+
+/* ── Stakeholder ── */
+function personHTML(p,listName){return `<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}',window.${listName})" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}${p.party?` <span class="pill grey">${esc(p.party)}</span>`:''}</div><div class="role">${esc(p.role||p.type)}${p.org?' · '+esc(p.org):p.city?' · '+esc(p.city):''}</div></div>${starHTML(p.id)}</div>`}
+function mentionsOf(p){return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&norm(a.title+' '+a.desc).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
+function bySrc(x){return ARTICLES.filter(a=>(x.srcs||[]).includes(a.src)).sort((a,b)=>b.date-a.date)}
+function renderStakeholder(tab){
+  const cfg={people:['Personen',PEOPLE,'Personen durchsuchen – Name, Rolle, Gremium …','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen …','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen …','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen – Gerichte, EZB, Länder …','Keine Institution']}[tab];
+  const list=cfg[1].filter(x=>inRegion(x)&&matchLQ('sh',x));const lname='SHLIST';window.SHLIST=list.map(x=>x.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>${cfg[0]}</h2><span class="cnt">${list.length}</span><div class="tools">${lsearch('sh',cfg[2])}${copyBtn(SHLIST,cfg[0])}</div></div>`;
+  h+=`<div class="box">${list.map(x=>{const extra=tab==='committees'?` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`:tab==='institutions'||tab==='orgs'?(bySrc(x).length?` · ${bySrc(x).length} ${bySrc(x).length===1?'Meldung':'Meldungen'}`:''):(mentionsOf(x).length?` · ${mentionsOf(x).length}× erwähnt`:'');
+    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||x.city,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>Andere Region oder Suchbegriff kürzen.</div>`}</div>`;
+  return h;
+}
+
+/* ── Reporting: Briefings ── */
+function curBrief(){return BRIEFS.find(b=>b.id===S.brief)||BRIEFS[0]}
+function briefData(b){
+  const inR=x=>b.region==='all'||(x.regions||[]).includes(b.region);const inT=x=>!b.topics.length||(x.topics||[]).some(t=>b.topics.includes(t));
+  return {top:ARTICLES.filter(a=>a.ago<=24&&a.herkunft!=='think'&&inR(a)&&inT(a)).sort((a,c)=>topScore(c)-topScore(a)).slice(0,b.n),
+    stories:STORIES.filter(s=>inR(s)&&inT(s)).slice(0,3),
+    events:EVENTS.filter(e=>(sameDay(e.date,NOW)||sameDay(e.date,NOW+D))&&inR(e)).sort((a,c)=>a.date-c.date),
+    docs:DOCS.filter(d=>d.date>NOW-24*H&&inR(d)).sort((a,c)=>c.date-a.date).slice(0,4),
+    rulings:ARTICLES.filter(a=>a.herkunft==='gericht'&&a.ago<=168&&inR(a)&&inT(a)).slice(0,3),
+    studies:ARTICLES.filter(a=>a.herkunft==='think'&&a.ago<=168&&inR(a)&&inT(a)).slice(0,3),
+    markets:watchlist().map(s=>MARKET_BY_SYM[s]).filter(Boolean).slice(0,8)}
+}
+function renderBrief(){
+  const b=curBrief(),d=briefData(b),dt=new Date(NOW);
+  let h=`<div class="brief-pick">${BRIEFS.map(x=>`<button class="chip" aria-pressed="${x.id===b.id}" onclick="S.brief='${x.id}';store.set('brief','${x.id}');S.briefCfg=false;render()">${esc(x.name)}</button>`).join('')}<button class="chip" onclick="openNewBrief()"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg>Neues Briefing</button></div>`;
+  h+=`<div class="sec-hd" style="margin-top:0"><h2>${esc(b.name)}</h2><span class="cnt">${WD[dt.getDay()]}, ${dt.getDate()}.${dt.getMonth()+1}.${dt.getFullYear()}${b.region!=='all'?' · '+REGION_NAME[b.region]:''}</span><div class="tools"><button class="btn sm" aria-pressed="${S.briefCfg}" onclick="S.briefCfg=!S.briefCfg;render()">Anpassen</button><button class="btn sm" onclick="aiBrief()"><svg class="i" style="width:15px;height:15px"><use href="#i-spark"/></svg>KI-Fassung</button><a class="btn sm" href="mailto:?subject=${encodeURIComponent(b.name+' '+dt.getDate()+'.'+(dt.getMonth()+1)+'.')}&body=${encodeURIComponent(briefPlain(b))}">Per Mail</a><button class="btn sm cp" onclick="copyText(briefPlain(curBrief()),'Briefing kopiert')"><svg class="i" style="width:15px;height:15px"><use href="#i-copy"/></svg><span class="t">Kopieren</span></button></div></div>`;
+  if(S.briefCfg){
+    const topics=Object.keys(TOPICS);
+    h+=`<div class="box cfg"><div class="two"><div><div class="field"><label for="bf-name">Name</label><input id="bf-name" value="${esc(b.name)}" onchange="b_set('name',this.value)"></div>
+      <div class="field"><label>Region</label><select class="sel" onchange="b_set('region',this.value)">${REGIONS.map(([k,l])=>`<option value="${k}" ${b.region===k?'selected':''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label>Umfang Top-Meldungen</label><div class="seg">${[3,5,8].map(n=>`<button aria-pressed="${b.n===n}" onclick="b_set('n',${n})">${n}</button>`).join('')}</div></div></div>
+      <div><div class="field"><label>Bausteine</label>${BLOCKS.map(([k,l])=>`<label class="chk"><input type="checkbox" ${b.blocks.includes(k)?'checked':''} onchange="b_block('${k}',this.checked)">${l}</label>`).join('')}</div></div></div>
+      <div class="field"><label>Ressorts – leer bedeutet alle</label><div class="chips" style="flex-wrap:wrap">${topics.map(t=>`<button class="chip" aria-pressed="${b.topics.includes(t)}" onclick="b_topic('${t}')">${TOPICS[t]}</button>`).join('')}</div></div>
+      <div class="bar" style="margin-bottom:10px"><span class="note grow">Jede Änderung wird sofort gespeichert – ${S.user?'im Konto, also auf allen Geräten':'in diesem Browser. Mit Konto liegt das Briefing auf allen Geräten'}.</span>
+        <button class="btn sm" onclick="duplicateBrief()">Als Kopie sichern</button>${BRIEFS.length>1?`<button class="btn sm quiet" onclick="deleteBrief()">Löschen</button>`:''}</div></div>`;
+  }
+  const li=(x,extra)=>`<li><a href="#" onclick="event.preventDefault();openReader('${x.id}')">${esc(x.title)}</a> <span class="meta" style="display:inline">${extra}</span></li>`;
+  const sec=(k,title,inner)=>b.blocks.includes(k)?`<h3>${title}</h3>${inner}`:'';
+  h+=`<div class="box brief">${sec('top','Das Wichtigste',d.top.length?`<ul>${d.top.map(a=>li(a,esc(a.src)+(a.cluster>1?', '+a.cluster+' Quellen':''))).join('')}</ul>`:'<p class="note">Keine Meldungen für diese Auswahl.</p>')}
+    ${sec('stories','Stories',d.stories.length?`<ul>${d.stories.map(s=>li(s,s.arts.length+' Quellen')).join('')}</ul>`:'<p class="note">Keine Stories.</p>')}
+    ${sec('events','Termine heute und morgen',d.events.length?`<ul>${d.events.map(e=>`<li>${fmtDay(e.date).split(' · ')[0]}, ${fmtTime(e.date)} – ${esc(e.title)} <span class="meta" style="display:inline">${esc(e.src)}</span></li>`).join('')}</ul>`:'<p class="note">Keine Termine.</p>')}
+    ${sec('docs','Neue Dokumente',d.docs.length?`<ul>${d.docs.map(x=>li(x,esc(x.src)+', '+esc(x.type))).join('')}</ul>`:'<p class="note">Keine neuen Dokumente.</p>')}
+    ${sec('rulings','Urteile',d.rulings.length?`<ul>${d.rulings.map(x=>li(x,esc(x.gericht)+', '+esc(x.az))).join('')}</ul>`:'<p class="note">Keine Urteile.</p>')}
+    ${sec('studies','Studien & Analysen',d.studies.length?`<ul>${d.studies.map(x=>li(x,esc(x.src))).join('')}</ul>`:'<p class="note">Keine Studien.</p>')}
+    ${sec('markets','Märkte',`<ul>${d.markets.map(m=>{const x=mkData(m,S.mkRange);return `<li>${esc(m.n)}: <b>${fmtNum(x.last,m.dec)}${m.unit==='%'?' %':''}</b> <span class="meta" style="display:inline;color:${x.c>=0?'var(--green)':'var(--red)'}">${x.c>=0?'+':'−'}${fmtNum(Math.abs(x.c),2)}${x.pp?' Pkt.':' %'}</span></li>`}).join('')}</ul>`)}
+    <div id="ai-brief" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Fassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div></div>`;
+  return h;
+}
+function b_set(k,v){const b=curBrief();b[k]=v;store.set('briefs',BRIEFS);render()}
+function b_block(k,on){const b=curBrief();b.blocks=on?[...new Set([...b.blocks,k])]:b.blocks.filter(x=>x!==k);store.set('briefs',BRIEFS);render()}
+function b_topic(t){const b=curBrief();b.topics=b.topics.includes(t)?b.topics.filter(x=>x!==t):[...b.topics,t];store.set('briefs',BRIEFS);render()}
+let NB={tpl:'t-morgen',name:'Morgenbriefing',region:'all'};
+function openNewBrief(){NB={tpl:'t-morgen',name:'',region:'all'};renderNewBrief();openSheet('newbrief')}
+function nbPick(id){const t=BRIEF_TEMPLATES.find(x=>x.id===id);NB.tpl=id;NB.region=t.region;const el=g('nb-name');const frei=!el||!el.value.trim()||BRIEF_TEMPLATES.some(x=>x.name===el.value.trim());if(frei)NB.name=t.name==='Leeres Briefing'?'':t.name;else NB.name=el.value;renderNewBrief()}
+function renderNewBrief(){
+  g('nb-body').innerHTML=`<p class="note" style="margin-bottom:12px">Ein Briefing ist eine gespeicherte Zusammenstellung: Region, Ressorts und Bausteine. Es aktualisiert sich bei jedem Öffnen und lässt sich kopieren oder per Mail verschicken.</p>
+    <div class="field"><label>Vorlage</label><div style="display:grid;gap:6px">${BRIEF_TEMPLATES.map(t=>`<button class="box" style="text-align:left;padding:10px 12px;border-color:${NB.tpl===t.id?'var(--blue)':'var(--border)'};background:${NB.tpl===t.id?'var(--blue-lt)':'var(--surface)'}" aria-pressed="${NB.tpl===t.id}" onclick="nbPick('${t.id}')"><b style="font-size:var(--fs)">${esc(t.name)}</b><div class="note" style="margin-top:2px">${esc(t.was)}</div></button>`).join('')}</div></div>
+    <div class="field"><label for="nb-name">Name</label><input id="nb-name" value="${esc(NB.name)}" placeholder="z. B. Mein Morgenbriefing" oninput="NB.name=this.value" onkeydown="if(event.key==='Enter')createBrief()"></div>
+    <div class="field"><label for="nb-region">Region</label><select class="sel" id="nb-region" style="align-self:flex-start" onchange="NB.region=this.value">${REGIONS.map(([k,l])=>`<option value="${k}" ${NB.region===k?'selected':''}>${l}</option>`).join('')}</select></div>`;
+}
+function createBrief(){
+  const t=BRIEF_TEMPLATES.find(x=>x.id===NB.tpl)||BRIEF_TEMPLATES[0];
+  const name=(g('nb-name')?g('nb-name').value:NB.name).trim()||t.name;
+  const nb={id:'b'+Date.now(),name,region:NB.region||t.region,topics:[...t.topics],blocks:[...t.blocks],n:t.n};
+  BRIEFS.push(nb);S.brief=nb.id;S.briefCfg=true;store.set('briefs',BRIEFS);store.set('brief',nb.id);
+  closeSheet('newbrief');go('reporting','brief');toast('„'+name+'" angelegt und gespeichert');
+}
+function duplicateBrief(){const b=curBrief();const nb={...b,id:'b'+Date.now(),name:b.name+' (Kopie)',topics:[...b.topics],blocks:[...b.blocks]};BRIEFS.push(nb);S.brief=nb.id;store.set('briefs',BRIEFS);store.set('brief',nb.id);toast('Kopie angelegt');render()}
+function deleteBrief(){BRIEFS=BRIEFS.filter(x=>x.id!==S.brief);S.brief=BRIEFS[0].id;S.briefCfg=false;store.set('briefs',BRIEFS);store.set('brief',S.brief);toast('Briefing gelöscht');render()}
+function briefPlain(b){const d=briefData(b),dt=new Date(NOW);let t=`${b.name} – ${WD[dt.getDay()]}, ${dt.getDate()}.${dt.getMonth()+1}.${dt.getFullYear()}\n`;
+  const has=k=>b.blocks.includes(k);
+  if(has('top')){t+='\nDas Wichtigste\n';d.top.forEach(a=>t+=`– ${a.title} (${a.src}${a.cluster>1?', '+a.cluster+' Quellen':''})\n  ${a.link}\n`)}
+  if(has('stories')){t+='\nStories\n';d.stories.forEach(s=>t+=`– ${s.title} (${s.arts.length} Quellen)\n  ${s.link}\n`)}
+  if(has('events')){t+='\nTermine heute und morgen\n';d.events.forEach(e=>t+=`– ${fmtDay(e.date)}, ${fmtTime(e.date)}: ${e.title} (${e.src})\n`)}
+  if(has('docs')){t+='\nNeue Dokumente\n';d.docs.forEach(x=>t+=`– ${x.title} (${x.src}, ${x.type})\n  ${x.link}\n`)}
+  if(has('rulings')){t+='\nUrteile\n';d.rulings.forEach(x=>t+=`– ${x.gericht} ${x.az}: ${x.title}\n  ${x.link}\n`)}
+  if(has('studies')){t+='\nStudien & Analysen\n';d.studies.forEach(x=>t+=`– ${x.title} (${x.src})\n  ${x.link}\n`)}
+  if(has('markets')){t+='\nMärkte\n';d.markets.forEach(m=>{const x=mkData(m,S.mkRange);t+=`– ${m.n}: ${fmtNum(x.last,m.dec)} (${x.c>=0?'+':'−'}${fmtNum(Math.abs(x.c),2)}${x.pp?' Pkt.':' %'})\n`})}
+  return t}
+async function aiBrief(){const box=g('ai-brief');if(!box)return;box.hidden=false;const out=box.querySelector('.txt');
+  await kiLauf(out,'Schreibe aus diesen Stichpunkten ein knappes deutsches Morgenbriefing (Stil: politischer Morning-Newsletter, 120–180 Wörter, keine Überschriften, keine Links, keine Erfindungen über die Stichpunkte hinaus):\n\n'+briefPlain(curBrief()));}
+function renderNewsletter(){
+  const list=NEWSLETTERS.filter(n=>matchLQ('nl',n));window.NLLIST=list.map(n=>n.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Newsletter</h2><span class="cnt">${list.length} Ausgaben</span><div class="tools">${lsearch('nl','Ausgaben durchsuchen …')}</div></div>`;
+  h+=`<div class="box list">${list.map(n=>`<div class="row" role="button" tabindex="0" onclick="openReader('${n.id}',NLLIST)" onkeydown="rowKey(event,'${n.id}')"><div class="meta">${srcHTML(n)}<span>${fmtAgo(n.date)}</span></div><div class="ttl">${esc(n.title)}</div><div class="teaser" style="display:block">${esc(n.desc)}</div>${starHTML(n.id)}</div>`).join('')||'<div class="empty"><b>Keine Ausgabe</b>Suchbegriff kürzen.</div>'}</div>`;
+  return h;
+}
+
+/* ── Übergreifende Suche ── */
+function renderSearch(){
+  const groups=[['articles','Meldungen',ARTICLES.filter(a=>a.herkunft!=='think'&&a.herkunft!=='gericht'),'ALLLIST'],['stories','Stories',STORIES,'STORYLIST'],['studies','Studien',ARTICLES.filter(a=>a.herkunft==='think'),'STLIST'],['rulings','Urteile',ARTICLES.filter(a=>a.herkunft==='gericht'),'RULIST'],['docs','Dokumente',[...DOCS,...NEWSLETTERS],'DOCLIST'],['events','Termine',EVENTS,'EVLIST'],['people','Personen',PEOPLE,'SHLIST'],['orgs','Organisationen',ORGS,'SHLIST'],['committees','Gremien',COMMITTEES,'SHLIST'],['institutions','Institutionen',INSTITUTIONS,'SHLIST']]
+    .map(([k,l,arr])=>[k,l,arr.filter(matchQ).sort((a,b)=>(b.date||0)-(a.date||0)),'SR_'+k]).filter(x=>x[2].length);
+  const total=groups.reduce((n,x)=>n+x[2].length,0);
+  if(!groups.some(x=>x[0]===S.searchType))S.searchType='all';
+  let h=`<div class="page-hd has-tabs"><h1>Suche</h1><div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="${S.searchType==='all'}" onclick="S.searchType='all';render()">Alles <span class="cnt" style="font-size:11px;color:var(--muted)">${total}</span></button>${groups.map(([k,l,arr])=>`<button class="tab" role="tab" aria-selected="${S.searchType===k}" onclick="S.searchType='${k}';render()">${l} <span style="font-size:11px;color:var(--muted)">${arr.length}</span></button>`).join('')}</div></div>`;
+  h+=`<p class="note" style="margin-bottom:6px">${total} Treffer für „${esc(S.q)}“ in allen Bereichen. <button class="btn sm quiet" onclick="clearSearch()">Suche schließen</button></p>`;
+  if(!total)return h+'<div class="box"><div class="empty"><b>Nichts gefunden</b>Kürzerer Begriff oder andere Schreibweise.</div></div>';
+  groups.filter(([k])=>S.searchType==='all'||S.searchType===k).forEach(([k,l,arr,ln])=>{
+    const show=S.searchType==='all'?arr.slice(0,5):arr;window[ln]=arr.map(x=>x.id);
+    h+=`<div class="res-grp"><h2>${l}</h2><span class="cnt">${arr.length}</span>${S.searchType==='all'&&arr.length>5?`<button class="btn sm quiet" style="margin-left:auto" onclick="S.searchType='${k}';render()">Alle ${arr.length}</button>`:''}</div><div class="box list">`;
+    h+=show.map(x=>{if(x.kind==='article')return rowHTML(x,ln);if(x.kind==='story')return `<div class="row" role="button" tabindex="0" onclick="openReader('${x.id}',window.${ln})" onkeydown="rowKey(event,'${x.id}')"><div class="meta"><span class="pill blue">${x.arts.length} Quellen</span><span>${fmtAgo(x.date)}</span></div><div class="ttl">${esc(x.title)}</div>${starHTML(x.id)}</div>`;
+      if(x.kind==='doc')return `<div class="row" role="button" tabindex="0" onclick="openReader('${x.id}',window.${ln})" onkeydown="rowKey(event,'${x.id}')"><div class="meta">${srcHTML(x)}<span class="pill grey">${esc(x.type)}</span><span>${fmtAgo(x.date)}</span></div><div class="ttl">${esc(x.title)}</div>${starHTML(x.id)}</div>`;
+      if(x.kind==='event')return `<div class="ev" role="button" tabindex="0" onclick="openReader('${x.id}',window.${ln})" onkeydown="rowKey(event,'${x.id}')"><span class="time">${fmtTime(x.date)}</span><div><div class="ttl">${esc(x.title)}</div><div class="meta">${srcHTML(x)}<span>${fmtDay(x.date)}</span></div></div>${starHTML(x.id)}</div>`;
+      return personHTML({...x,role:x.role||x.type,org:x.org||x.city,city:''},ln)}).join('');
+    h+='</div>'});
+  return h;
+}
+
+/* ───────────────────────────── Merken & Kopieren ───────────────────────────── */
+function toggleMark(id){
+  if(MARKS.has(id))MARKS.delete(id);else MARKS.add(id);store.set('marks',[...MARKS]);updateMarks();
+  document.querySelectorAll(`.star[onclick*="'${id}'"]`).forEach(b=>{b.setAttribute('aria-pressed',MARKS.has(id));b.setAttribute('aria-label',MARKS.has(id)?'Nicht mehr merken':'Merken')});
+  if(g('sheet-marks').classList.contains('open'))renderMarks();if(S.reader===id)renderReaderFooter();
+  toast(MARKS.has(id)?'Gemerkt · '+MARKS.size+(MARKS.size===1?' Link':' Links'):'Entfernt');
+}
+function updateMarks(){const b=g('marks-btn');b.dataset.n=MARKS.size;g('marks-n').textContent=MARKS.size}
+function lineFor(x,fmt){const src=x.src||'',t=x.title;if(fmt==='links')return x.link;if(fmt==='md')return `- [${t}](${x.link})${src?' – '+src:''}`;return `${t}\n${src?src+' · ':''}${x.link}`}
+function copyTextOf(ids,fmt){return ids.map(id=>ITEMS[id]).filter(Boolean).map(x=>lineFor(x,fmt)).join(fmt==='full'?'\n\n':'\n')}
+function copyText(text,msg){const done=()=>toast(msg||'Kopiert');if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done))}else fallbackCopy(text,done)}
+function fallbackCopy(text,done){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){toast('Kopieren nicht möglich – Text markieren und kopieren')}ta.remove()}
+function copyList(ids,label){if(!ids.length){toast('Nichts zu kopieren');return}copyText(copyTextOf(ids,S.copyFmt),label+' kopiert · '+ids.length+(ids.length===1?' Link':' Links'))}
+function renderMarks(){
+  const ids=[...MARKS].filter(id=>ITEMS[id]);const evs=ids.filter(id=>ITEMS[id].kind==='event');
+  g('marks-body').innerHTML=ids.length?`<div class="bar" style="margin-bottom:10px"><div class="seg" role="group" aria-label="Format">${[['full','Titel + Quelle + Link'],['links','Nur Links'],['md','Markdown']].map(([k,l])=>`<button aria-pressed="${S.copyFmt===k}" onclick="S.copyFmt='${k}';store.set('copyfmt','${k}');renderMarks()">${l}</button>`).join('')}</div></div>
+    <textarea id="copy-preview" readonly aria-label="Vorschau">${esc(copyTextOf(ids,S.copyFmt))}</textarea>
+    <div class="sec-hd" style="margin:14px 0 4px"><h2 style="font-size:var(--fs-md)">${ids.length} ${ids.length===1?'Link':'Links'}</h2>${evs.length?`<button class="btn sm" style="margin-left:auto" onclick="exportICS(${J(evs)},'gemerkte-termine.ics')">${evs.length} Termine als .ics</button>`:''}</div>
+    <div>${ids.map(id=>{const x=ITEMS[id];return `<div class="mark-item"><div><div class="meta">${srcHTML(x)}${x.date?`<span>${fmtAgo(x.date)}</span>`:''}</div><div class="ttl">${esc(x.title)}</div></div><button class="rm" aria-label="Entfernen" onclick="toggleMark('${id}')">×</button></div>`}).join('')}</div>`
+  :`<div class="empty" style="padding-top:40px"><b>Noch nichts gemerkt</b>Tippe auf den Stern neben einer Meldung, einem Dokument, Termin oder einer Person. Hier sammelst du die Links und kopierst sie in einem Rutsch.</div>`;
+  g('marks-ft').innerHTML=ids.length?`<button class="btn primary" onclick="copyMarks()"><svg class="i" style="width:16px;height:16px"><use href="#i-copy"/></svg>Kopieren</button><label class="note" style="display:flex;align-items:center;gap:6px"><input type="checkbox" ${S.clearAfterCopy?'checked':''} onchange="S.clearAfterCopy=this.checked"> danach Liste leeren</label><span class="grow"></span><button class="btn quiet" onclick="clearMarks()">Alle entfernen</button>`:'';
+}
+function copyMarks(){const ids=[...MARKS];copyText(copyTextOf(ids,S.copyFmt),ids.length+(ids.length===1?' Link kopiert':' Links kopiert'));if(S.clearAfterCopy)clearMarks(true)}
+function clearMarks(quiet){MARKS.clear();store.set('marks',[]);updateMarks();renderMarks();document.querySelectorAll('.star').forEach(b=>b.setAttribute('aria-pressed','false'));if(!quiet)toast('Liste geleert')}
+
+/* ───────────────────────────── Sheets & Reader ───────────────────────────── */
+let lastFocus=null;
+function openSheet(name){lastFocus=document.activeElement;if(name==='marks')renderMarks();if(name==='account')renderAccount();if(name==='settings')renderSettings();const s=g('sheet-'+name);s.classList.add('open');document.body.style.overflow='hidden';s.querySelector('.panel').focus()}
+function closeSheet(name){g('sheet-'+name).classList.remove('open');if(!document.querySelector('.sheet.open'))document.body.style.overflow='';if(name==='reader'){S.reader=null;document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'))}lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function openReader(id,list){
+  const x=ITEMS[id];if(!x)return;S.reader=id;if(Array.isArray(list))S.readerList=list;else if(!S.readerList.includes(id))S.readerList=[id];
+  const story=x.kind==='article'?STORIES.find(s=>s.arts.includes(id)):null;let b='';
+  g('reader-h').textContent=x.gericht?'Urteil':{article:'Meldung',story:'Story',doc:'Dokument',event:'Termin',person:'Person',org:'Organisation',committee:'Gremium',institution:'Institution'}[x.kind];
+  const tags=`<div class="reader-tags">${(x.topics||[]).map(t=>`<button class="chip" onclick="closeSheet('reader');clearSearch(true);go('news','top');setTopic('${t}')">${TOPICS[t]||t}</button>`).join('')}${(x.regions||[]).map(r=>`<span class="pill ${r==='eu'?'eu':'grey'}">${REGION_NAME[r]}</span>`).join('')}</div>`;
+  const aiBox=`<div id="ai-box" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Zusammenfassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div>`;
+  if(x.kind==='article'||x.kind==='doc'){
+    b=`<div class="meta">${srcHTML(x)}${x.type?`<span class="pill grey">${esc(x.type)}</span>`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${tags}${aiBox}
+      ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Auch berichtet von</h2><span class="cnt">${clusterArts(x).length}</span></div><div class="box list">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
+      ${story?`<div class="box" style="margin-top:18px;padding:12px 14px"><div class="meta" style="margin-bottom:4px"><span class="pill blue">${story.arts.length} Quellen</span><span>Teil einer Story</span></div><b>${esc(story.title)}</b><div class="note" style="margin-top:4px">${esc(story.sum)}</div><button class="btn sm" style="margin-top:8px" onclick="openReader('${story.id}')">Story öffnen</button></div>`:''}
+      ${x.kind==='doc'&&QUOTES.some(q=>q.doc===x.id)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert daraus</h2></div>${QUOTES.filter(q=>q.doc===x.id).map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.pid}')">${esc(ITEMS[q.pid].name)}</a></span></div>`).join('')}`:''}`;
+  } else if(x.kind==='story'){
+    b=`<div class="meta"><span class="pill blue">${x.arts.length} Quellen</span><span>${fmtAgo(x.date)}</span></div><h3 class="reader-title">${esc(x.title)}</h3><div class="reader-text">${esc(x.sum)}</div>${tags}${aiBox}<div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2></div><div class="box list">${x.arts.map(id=>rowHTML(ITEMS[id],'READERSUB')).join('')}</div>`;window.READERSUB=x.arts;
+  } else if(x.kind==='event'){
+    b=`<div class="meta">${srcHTML(x)}</div><h3 class="reader-title">${esc(x.title)}</h3><div class="reader-text">${fmtDay(x.date)}, ${fmtTime(x.date)} Uhr</div><div class="bar" style="margin-top:8px"><button class="btn sm" onclick="exportICS(['${x.id}'],'termin.ics')"><svg class="i" style="width:15px;height:15px"><use href="#i-download"/></svg>.ics</button><a class="btn sm" href="${gcalUrl(x)}" target="_blank" rel="noopener">Google Kalender</a></div>`;
+  } else if(x.kind==='person'){
+    const men=mentionsOf(x),qs=QUOTES.filter(q=>q.pid===x.id);const rel=ARTICLES.filter(a=>a.ago<=48&&!men.includes(a)&&a.topics.some(t=>x.topics.includes(t))&&a.regions.some(r=>x.regions.includes(r))).slice(0,3);window.READERSUB=[...men,...rel].map(a=>a.id);
+    b=`<div class="meta"><span class="src">${esc(x.org)}</span>${x.party?`<span class="pill grey">${esc(x.party)}</span>`:''}</div><h3 class="reader-title">${esc(x.name)}</h3><div class="reader-text">${esc(x.role)}</div><div class="reader-tags">${x.topics.map(t=>`<span class="pill grey">${TOPICS[t]||t}</span>`).join('')}${COMMITTEES.filter(k=>k.members.includes(x.id)).map(k=>`<button class="chip" onclick="openReader('${k.id}')">${esc(k.name.split(' – ')[0])}</button>`).join('')}</div>
+      <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
+      <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert in Protokollen</h2><span class="cnt">${qs.length}</span></div>${qs.length?qs.map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.doc}')">${esc(ITEMS[q.doc].title)}</a> · ${esc(ITEMS[q.doc].src)}</span></div>`).join(''):'<p class="note">Keine Wortmeldung in den ausgewerteten Protokollen.</p>'}
+      ${rel.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Aktuelles aus dem Themenfeld</h2></div><div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:''}`;
+  } else if(x.kind==='org'||x.kind==='institution'){
+    const arts=bySrc(x);window.READERSUB=arts.map(a=>a.id);const evs=EVENTS.filter(e=>(x.srcs||[]).includes(e.src)&&e.date>NOW-H).sort((a,c)=>a.date-c.date);
+    b=`<div class="meta"><span class="src">${esc(x.type)}</span><span>${esc(x.city)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="reader-tags">${x.regions.map(r=>`<span class="pill ${r==='eu'?'eu':'grey'}">${REGION_NAME[r]}</span>`).join('')}</div>
+      <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">${x.kind==='institution'?'Aktuelle Meldungen und Entscheidungen':'Veröffentlichungen'}</h2><span class="cnt">${arts.length}</span></div>${arts.length?`<div class="box list">${arts.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Meldungen aus dieser Quelle im Zeitraum.</p>'}
+      ${evs.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Nächste Termine</h2></div><div class="box">${evs.map(e=>`<div class="ev" role="button" tabindex="0" onclick="openReader('${e.id}')" onkeydown="rowKey(event,'${e.id}')"><span class="time">${fmtTime(e.date)}</span><div><div class="ttl" style="font-size:var(--fs-sm)">${esc(e.title)}</div><div class="meta"><span>${fmtDay(e.date)}</span></div></div>${starHTML(e.id)}</div>`).join('')}</div>`:''}`;
+  } else if(x.kind==='committee'){
+    b=`<div class="meta"><span class="src">${esc(x.org)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Mitglieder im Verzeichnis</h2></div><div class="box">${x.members.map(id=>ITEMS[id]).map(p=>`<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}')" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div><span></span></div>`).join('')}</div>`;
+  }
+  if(x.kind==='article')window.READERSRC=clusterArts(x).map(y=>y.id);
+  g('reader-body').innerHTML=b;g('reader-body').scrollTop=0;renderReaderFooter();
+  const i=S.readerList.indexOf(id);g('reader-prev').disabled=i<=0;g('reader-next').disabled=i<0||i>=S.readerList.length-1;
+  document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'));document.querySelectorAll(`#page [data-id="${id}"]`).forEach(r=>r.classList.add('active'));
+  if(!g('sheet-reader').classList.contains('open'))openSheet('reader');
+}
+function renderReaderFooter(){const x=ITEMS[S.reader];if(!x)return;const m=MARKS.has(x.id);const ai=(x.kind==='article'||x.kind==='story'||x.kind==='doc');
+  g('reader-ft').innerHTML=`<a class="btn primary" href="${x.link}" target="_blank" rel="noopener"><svg class="i" style="width:16px;height:16px"><use href="#i-open"/></svg>Öffnen</a><button class="btn" aria-pressed="${m}" onclick="toggleMark('${x.id}')"><svg class="i" style="width:16px;height:16px;${m?'fill:currentColor':''}"><use href="#i-star"/></svg>${m?'Gemerkt':'Merken'}</button><button class="btn" onclick="copyText(lineFor(ITEMS['${x.id}'],'full'),'Link kopiert')"><svg class="i" style="width:16px;height:16px"><use href="#i-copy"/></svg>Link</button>${ai?`<button class="btn" onclick="aiSummarize('${x.id}')"><svg class="i" style="width:16px;height:16px"><use href="#i-spark"/></svg>${AI[x.id]?'Zusammenfassung':'KI'}</button>`:''}`}
+function readerNav(d){const i=S.readerList.indexOf(S.reader);const n=S.readerList[i+d];if(n)openReader(n)}
+async function aiSummarize(id){const x=ITEMS[id];const box=g('ai-box');if(!box)return;box.hidden=false;const out=box.querySelector('.txt');
+  const fertig=(AI[id]||{}).ki;
+  if(fertig){out.textContent=fertig;box.querySelector('.hd .note').textContent='im Lauf erzeugt · Groq';return}
+  box.querySelector('.hd .note').textContent='Groq';
+  const src=x.kind==='story'?x.arts.map(i=>ITEMS[i]).map(a=>`- ${a.title} (${a.src}): ${a.desc}`).join('\n'):`Quelle: ${x.src}\nTitel: ${x.title}\nText: ${x.desc||''}${x.ls?'\nLeitsatz: '+x.ls:''}`;
+  await kiLauf(out,'Fasse in 3 kurzen deutschen Sätzen zusammen und nenne die wichtigste Folge für Deutschland oder die EU. Nur die Zusammenfassung, keine Einleitung, nichts dazuerfinden.\n\n'+src);}
+
+/* ───────────────────────────── KI über Groq ─────────────────────────────
+   Der Groq-Schlüssel gehört NICHT in den Browser: alles, was in config.js
+   steht, kann jeder Besucher im Quelltext lesen. Deshalb läuft die Anfrage
+   über einen kleinen Proxy (ki_proxy_worker.js), der den Schlüssel hält:
+
+     // config.js, liegt neben index.html
+     window.PS_KI = { proxy: "https://dein-worker.workers.dev" };
+
+   Der Proxy nimmt {prompt} entgegen und antwortet mit {text}.
+   Nur für einen lokalen Test ohne Proxy – niemals auf einer öffentlichen
+   Seite – geht auch: { endpoint: "https://api.groq.com/openai/v1/chat/completions",
+   key: "gsk_…", model: "llama-3.3-70b-versatile" }. */
+const KI_DEFAULT_MODEL='llama-3.3-70b-versatile';
+function kiCfg(){const c=window.PS_KI||{};return {proxy:c.proxy||'',endpoint:c.endpoint||'',key:c.key||'',model:c.model||KI_DEFAULT_MODEL}}
+async function kiAnfrage(prompt,signal){
+  const c=kiCfg();
+  if(c.proxy){
+    const r=await fetch(c.proxy,{method:'POST',signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw {code:'http_'+r.status,message:j.fehler||''};
+    if(!j.text)throw {code:'leer'};
+    return j.text.trim();
+  }
+  if(!c.endpoint||!c.key)throw {code:'nicht_eingerichtet'};
+  const r=await fetch(c.endpoint,{method:'POST',signal,headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.key},
+    body:JSON.stringify({model:c.model,temperature:0.3,max_tokens:700,messages:[
+      {role:'system',content:'Du bist ein nüchterner deutscher Politikredakteur. Schreibe knapp, ohne Floskeln, ohne Wertung, und erfinde nichts hinzu.'},
+      {role:'user',content:prompt}]})});
+  if(!r.ok){let d='';try{d=(await r.json()).error?.message||''}catch(e){}throw {code:'http_'+r.status,message:d}}
+  const j=await r.json();
+  const t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+  if(!t)throw {code:'leer'};return t.trim();
+}
+let kiCtl=null;
+async function kiLauf(out,prompt){
+  kiCtl&&kiCtl.abort();kiCtl=new AbortController();
+  out.textContent='Groq schreibt …';
+  try{out.textContent=await kiAnfrage(prompt,kiCtl.signal)}
+  catch(e){
+    if(e&&e.name==='AbortError')return;
+    if(e&&e.code==='nicht_eingerichtet')out.textContent='Für diese Meldung liegt noch keine Fassung vor. Die Zusammenfassungen entstehen im GitHub-Lauf (ki_zusammenfassungen.py mit den Secrets OPEN_ROUTER_API oder GROQ_API_KEY) und stehen in ki_meldungen.json – im Browser wird kein Schlüssel gebraucht. Wer sie auf Zuruf erzeugen will, trägt in config.js zusätzlich einen Proxy ein.';
+    else if(e&&String(e.code).startsWith('http_401'))out.textContent='Groq lehnt den Schlüssel ab (401). Neuen Schlüssel erzeugen und im Proxy als Secret GROQ_KEY hinterlegen.';
+    else if(e&&String(e.code).startsWith('http_429'))out.textContent='Groq-Limit erreicht (429). In einer Minute noch einmal versuchen.';
+    else if(e&&String(e.code).startsWith('http_403'))out.textContent='Der Proxy nimmt Anfragen von dieser Adresse nicht an (403). Die Domain in der Variable ERLAUBT ergänzen.';
+    else if(e&&String(e.code).startsWith('http_404'))out.textContent='Modellname unbekannt (404). Im Proxy die Variable MODELL auf ein aktuelles Groq-Modell setzen.';
+    else out.textContent='Verbindung zu Groq nicht möglich'+(e&&e.message?': '+e.message:'')+'. In der veröffentlichten Vorschau blockiert der Browser fremde Server – auf eurem eigenen Server läuft der Aufruf.';
+  }
+}
+
+/* ───────────────────────────── Einstellungen ───────────────────────────── */
+S.setTab='anzeige';
+const swHTML=(k,on)=>`<label class="switch"><input type="checkbox" ${on?'checked':''} onchange="setPref('${k}',this.checked)"><i></i></label>`;
+const segHTML=(k,opts)=>`<div class="seg" role="group">${opts.map(([v,l])=>`<button aria-pressed="${PREF[k]===v}" onclick="setPref('${k}','${v}')">${l}</button>`).join('')}</div>`;
+const row=(b,s,ctrl)=>`<div class="set-row"><div class="lbl"><b>${b}</b>${s?`<span>${s}</span>`:''}</div>${ctrl}</div>`;
+function renderSettings(){
+  const tabs=[['anzeige','Anzeige'],['konto','Konto'],['mitteilungen','Mitteilungen'],['daten','Daten']];
+  let h=`<div class="set-tabs" role="tablist">${tabs.map(([k,l])=>`<button class="tab" role="tab" aria-selected="${S.setTab===k}" onclick="S.setTab='${k}';renderSettings()">${l}</button>`).join('')}</div>`;
+  if(S.setTab==='anzeige'){
+    h+=`<div class="set-sec">Darstellung</div>`
+      +row('Design','Folgt dem Gerät oder fest hell/dunkel',segHTML('theme',[['system','System'],['light','Hell'],['dark','Dunkel']]))
+      +row('Schriftgröße','',segHTML('font',[['normal','Normal'],['large','Größer']]))
+      +row('Bewegung','Animationen beim Öffnen von Fenstern',segHTML('motion',[['system','System'],['reduced','Reduziert']]))
+      +`<div class="set-sec">Listen</div>`
+      +row('Kästen scrollen intern','Lange Listen bleiben im Kasten; aus = Seite wird lang',swHTML('inner',PREF.inner))
+      +row('Teaser in Listen zeigen','',swHTML('teasers',PREF.teasers))
+      +`<div class="set-sec">Start</div>`
+      +row('Startbereich','',`<select class="sel" onchange="setPref('start',this.value)">${WS.map(w=>`<option value="${w.id}" ${PREF.start===w.id?'selected':''}>${w.label}</option>`).join('')}</select>`)
+      +row('Standardregion','Gilt beim Öffnen der App',`<select class="sel" onchange="setPref('region',this.value);setRegion(this.value)">${REGIONS.map(([k,l])=>`<option value="${k}" ${PREF.region===k?'selected':''}>${l}</option>`).join('')}</select>`)
+      +`<div class="set-sec">Hilfe</div>`
+      +row('Tastenkürzel','',`<button class="btn sm" onclick="openSheet('help')">Anzeigen</button>`);
+  } else if(S.setTab==='konto'){
+    h+=S.user?`<div class="bar" style="margin-bottom:12px"><span class="avatar" style="width:44px;height:44px;font-size:15px">${esc(S.user.initials)}</span><div><b style="font-size:var(--fs-md)">${esc(S.user.name)}</b><div class="note">${esc(S.user.mail)}</div></div></div>
+      ${row('Synchronisiert',`${MARKS.size} gemerkte Links, ${MONITORS.length} Monitore, ${BRIEFS.length} Briefings auf allen Geräten`,'')}
+      <div class="bar" style="margin-top:14px"><button class="btn quiet" onclick="doLogout();renderSettings()">Abmelden</button></div>`
+      :`<p class="note" style="margin-bottom:12px">Ohne Konto bleibt alles in diesem Browser: Gemerktes, Monitore, Briefings, Einstellungen. Mit Konto liegt es auf allen Geräten.</p><button class="btn primary" onclick="closeSheet('settings');openSheet('login')">Anmelden</button>`;
+  } else if(S.setTab==='mitteilungen'){
+    h+=`<p class="note" style="margin-bottom:8px">Mitteilungen brauchen ein Konto; im Entwurf werden die Schalter nur gespeichert.</p>`
+      +row('Monitor-Treffer per Mail','Einmal täglich, morgens',swHTML('mailMon',PREF.mailMon))
+      +row('Briefing per Mail','Werktags um 7 Uhr, das zuletzt geöffnete Briefing',swHTML('mailBrief',PREF.mailBrief))
+      +row('Eilmeldungen sofort','Push auf dieses Gerät',swHTML('pushEil',PREF.pushEil));
+  } else {
+    h+=`<div class="set-sec">Sichern</div>`
+      +row('Alles als Datei speichern','Gemerktes, Monitore, Briefings, Watchlist, Einstellungen',`<button class="btn sm" onclick="exportPrefs()">Speichern</button>`)
+      +row('Aus Datei laden','Ersetzt die hiesigen Daten',`<label class="btn sm">Laden<input type="file" accept="application/json" hidden onchange="importPrefs(this.files[0])"></label>`)
+      +`<div class="set-sec">Zurücksetzen</div>`
+      +row('Gemerkte Links leeren',`${MARKS.size} Einträge`,`<button class="btn sm quiet" onclick="clearMarks();renderSettings()">Leeren</button>`)
+      +row('Monitore auf Vorauswahl','',`<button class="btn sm quiet" onclick="MONITORS=JSON.parse(JSON.stringify(DEFAULT_MONITORS));store.set('monitors',MONITORS);toast('Monitore zurückgesetzt');renderSettings();render()">Zurücksetzen</button>`)
+      +row('Briefings auf Vorauswahl','',`<button class="btn sm quiet" onclick="BRIEFS=JSON.parse(JSON.stringify(DEFAULT_BRIEFS));S.brief='b1';store.set('briefs',BRIEFS);store.set('brief','b1');toast('Briefings zurückgesetzt');renderSettings();render()">Zurücksetzen</button>`)
+      +row('Alles löschen','Alle Daten dieser App in diesem Browser',`<button class="btn sm" style="border-color:var(--red);color:var(--red)" onclick="if(confirm('Wirklich alle gespeicherten Daten löschen?')){Object.keys(localStorage).filter(k=>k.startsWith('ps11_')).forEach(k=>localStorage.removeItem(k));location.reload()}">Löschen</button>`);
+  }
+  g('set-body').innerHTML=h;
+}
+function exportPrefs(){const d={version:'v15',datum:new Date().toISOString(),marks:[...MARKS],monitors:MONITORS,briefs:BRIEFS,watch:watchlist(),pref:PREF,fold:S.fold};
+  const text=JSON.stringify(d,null,2);cap('downloads').then(dl=>{if(dl){dl.save({filename:'presseschau-einstellungen.json',data:text}).then(()=>toast('Gespeichert')).catch(e=>{if(!e||e.code!=='declined')copyText(text,'Speichern hier nicht möglich – Inhalt kopiert')})}else copyText(text,'Speichern hier nicht möglich – Inhalt kopiert')})}
+function importPrefs(file){if(!file)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.marks){MARKS=new Set(d.marks);store.set('marks',d.marks)}if(d.monitors){MONITORS=d.monitors;store.set('monitors',MONITORS)}if(d.briefs){BRIEFS=d.briefs;store.set('briefs',BRIEFS)}if(d.watch)store.set('watch',d.watch);if(d.pref){Object.assign(PREF,d.pref);store.set('pref',PREF)}if(d.fold){S.fold=d.fold;store.set('fold',d.fold)}applyPrefs();updateMarks();toast('Geladen');renderSettings();render()}catch(e){toast('Datei nicht lesbar')}};r.readAsText(file)}
+
+/* ───────────────────────────── Konto ───────────────────────────── */
+function doLogin(){const mail=g('login-mail').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){g('login-err').textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return}
+  const name=mail.split('@')[0].replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());S.user={mail,name,initials:initials(name)};store.set('user',S.user);g('login-err').textContent='';closeSheet('login');toast('Angemeldet als '+name);render()}
+function doLogout(){S.user=null;store.set('user',null);closeSheet('account');toast('Abgemeldet');render()}
+function renderAccount(){const u=S.user;if(!u)return;g('account-body').innerHTML=`<div class="bar" style="margin-bottom:14px"><span class="avatar" style="width:44px;height:44px;font-size:15px">${esc(u.initials)}</span><div><b style="font-size:var(--fs-md)">${esc(u.name)}</b><div class="note">${esc(u.mail)} · <span class="pill pro">Pro</span></div></div></div>
+  <div class="box" style="padding:12px 14px"><b>Auf allen Geräten gleich</b><div class="note" style="margin-top:4px">${MARKS.size} gemerkte Links, ${MONITORS.length} Monitore und ${BRIEFS.length} Briefings werden mit dem Konto synchronisiert.</div></div>
+  <div class="box" style="padding:12px 14px;margin-top:10px"><b>Benachrichtigungen</b><label class="chk"><input type="checkbox" checked> Monitor-Treffer per Mail, einmal täglich</label><label class="chk"><input type="checkbox"> Briefing „${esc(curBrief().name)}“ werktags 7 Uhr per Mail</label></div>`}
+
+/* ───────────────────────────── Suche, Theme, Tastatur ───────────────────────────── */
+function onSearch(v){S.q=v.trim();if(g('q').value!==v)g('q').value=v;if(g('q-mob').value!==v)g('q-mob').value=v;render()}
+function clearSearch(quiet){if(!S.q&&quiet)return;S.q='';g('q').value='';g('q-mob').value='';g('q-hits').hidden=g('q-hits-mob').hidden=true;if(!quiet)render()}
+function toggleMobSearch(force){const on=force==null?!document.body.classList.contains('search-open'):force;document.body.classList.toggle('search-open',on);g('mob-search-btn').setAttribute('aria-expanded',on);if(on)setTimeout(()=>g('q-mob').focus(),30)}
+
+document.addEventListener('keydown',e=>{
+  const tag=e.target.tagName;const typing=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+  if(e.key==='Escape'){const open=[...document.querySelectorAll('.sheet.open')].pop();if(open){closeSheet(open.id.replace('sheet-',''));return}if(document.body.classList.contains('search-open'))toggleMobSearch(false);if(S.q)clearSearch();return}
+  if(typing)return;
+  if(e.key==='/'){e.preventDefault();g('q').focus();return}
+  if(e.key>='1'&&e.key<='5'){clearSearch(true);go(WS[+e.key-1].id);return}
+  if(e.key==='c'){openSheet('marks');return}
+  if(e.key==='z'){setView(S.view==='list'?'paper':'list');return}
+  if(e.key===','){openSheet('settings');return}
+  if(S.reader&&g('sheet-reader').classList.contains('open')){
+    if(e.key==='ArrowDown'){e.preventDefault();readerNav(1)}else if(e.key==='ArrowUp'){e.preventDefault();readerNav(-1)}
+    else if(e.key==='m')toggleMark(S.reader);else if(e.key==='Enter'){const a=g('reader-ft').querySelector('a');a&&a.click()}
+  }
+});
+window.addEventListener('hashchange',fromHash);
+updateMarks();fromHash();
+</script>
+</body>
+</html>
