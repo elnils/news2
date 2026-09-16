@@ -39,9 +39,9 @@ jobs:
       # personen je Meldung sowie die Feeds von BVerwG, BAG, BSG, BFH und EuG.
       # Keine neue Abhängigkeit, kein neues Secret.
       - name: Feeds holen (News, EU, Bundestag, Bundesländer, USA, Dokumente)
-        timeout-minutes: 14          # Reserve über dem Budget des Skripts
+        timeout-minutes: 16          # Reserve über dem Budget des Skripts
         env:
-          NEWS_BUDGET_MIN: '9'       # Skript beendet sich selbst nach 9 Minuten
+          NEWS_BUDGET_MIN: '8'       # Skript beendet sich selbst nach 8 Minuten
           FEED_WORKERS: '8'          # parallele Abrufe
           FEED_TIMEOUT: '10'         # Sekunden je Feed
           FEED_FALLBACK: '1'         # gescheiterte Feeds über Nachrichtensuche nachholen
@@ -51,6 +51,19 @@ jobs:
           NEWS_ARTICLE_SHARE: '0.75' # Anteil des Budgets für Nachrichten;
                                      # Dokumente bekommen nur die Restzeit
         run: python fetch_news.py
+
+      # NEU (v10): Anreicherung nachtragen – verteilt über mehrere Läufe.
+      # Der Abruf oben reichert nur die frischen Meldungen an. Ältere
+      # Bestände und die Monatsdateien unter archive/ arbeitet dieses Skript
+      # portionsweise ab: eigenes Zeitbudget, fertige Monate werden mit
+      # "angereichert": "v10" markiert und künftig übersprungen.
+      - name: Anreicherung nachtragen (Bestand und Archiv)
+        continue-on-error: true
+        timeout-minutes: 4
+        env:
+          NACHTRAG_BUDGET_MIN: '2.5'
+          NACHTRAG_DATEIEN: '3'
+        run: python nachtragen.py
 
       # NEU (v10): Zusammenfassungen der wichtigsten Meldungen.
       # OpenRouter zuerst, Groq als Rückfall – dieselben Secrets wie beim
