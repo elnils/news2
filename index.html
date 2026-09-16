@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v18</title>
+<title>Presseschau – Entwurf v19</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -602,7 +602,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')">Presse<em>schau</em></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v18</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v19</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1197,9 +1197,9 @@ const topScore=a=>a.rel*2-a.ago/6;
 /* Dubletten: dieselbe Meldung aus mehreren Quellen einmal zeigen. Schlüssel ist
    die Themenlage, sonst die normalisierte Schlagzeile. */
 function dubKey(a){
-  const st=STORIES.find(s=>s.arts.includes(a.id));
+  const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||null;
   if(st)return 'st:'+st.id;
-  const k=typeof normTitel==='function'?normTitel(a.title):'';
+  const k=a._nt||(typeof normTitel==='function'?(a._nt=normTitel(a.title)):'');
   return k.length>=20?'t:'+k:'id:'+a.id;
 }
 function entdoppeln(arr){
@@ -1212,12 +1212,12 @@ function entdoppeln(arr){
    sonst zeitnahe Meldungen anderer Quellen mit gleichem Ressort. */
 function clusterArts(a){
   if(a._cl)return a._cl;
-  const st=STORIES.find(s=>s.arts.includes(a.id));
+  const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
   let arr=st?st.arts.filter(id=>id!==a.id).map(id=>ITEMS[id]).filter(Boolean):[];
-  if(!arr.length){
-    /* Keine Themenlage: Meldungen anderer Quellen mit fast gleicher Schlagzeile */
-    const k=typeof normTitel==='function'?normTitel(a.title):'';
-    arr=ARTICLES.filter(x=>x.id!==a.id&&x.src!==a.src&&k&&k.length>=20&&normTitel(x.title)===k);
+  if(!arr.length&&typeof IDX!=='undefined'){
+    /* Keine Themenlage: Meldungen anderer Quellen mit fast gleicher Schlagzeile – aus dem Index, nicht per Suche. */
+    const k=a._nt||(a._nt=normTitel(a.title));
+    arr=(k.length>=20?(IDX.nt[k]||[]):[]).filter(x=>x.id!==a.id&&x.src!==a.src);
   }
   const grenze=Math.max(0,(a.clusterZiel||a.cluster||1)-1);
   return arr.sort((x,y)=>y.date-x.date).slice(0,Math.max(grenze,arr.length&&st?arr.length:grenze));
@@ -1365,10 +1365,10 @@ function trendRows(mode,von,bis){
   const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),ids:[]};m[k].n++;m[k].s.add(a.src);m[k].ids.push(a.id)};
   teil.forEach(a=>{
     if(mode==='topics')a.topics.forEach(t=>add(t,TOPICS[t]||t,a));
-    else if(mode==='issues'){const txt=norm(a.title+' '+a.desc);ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}
-    else{const txt=a.title+' '+a.desc;
-      PEOPLE.forEach(p=>{if((p.aliases||[]).some(al=>txt.includes(al)))add('p:'+p.id,p.name,a)});
-      ORTE.forEach(o=>{if(new RegExp('\\b'+o,'i').test(txt))add('o:'+o,o,a)})}
+    else if(mode==='issues'){const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}
+    else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));
+      (a.personen||[]).forEach(pid=>{const p=ITEMS[pid];if(p)add('p:'+p.id,p.name,a)});
+      ORTE.forEach(o=>{if(txt.includes(norm(o)))add('o:'+o,o,a)})}
   });
   return m;
 }
@@ -1435,7 +1435,14 @@ function renderArchive(){
   return h+body('ar',b);
 }
 /* ── Monitor ── */
-function monitorHits(m){return ARTICLES.filter(a=>a.ago<=48&&m.kw.some(k=>norm(a.title+' '+a.desc).includes(norm(k)))).sort((a,b)=>b.date-a.date)}
+const _monCache={key:'',hits:{}};
+function monitorHits(m){
+  const key=ARTICLES.length+'|'+m.kw.join(',');
+  if(_monCache.key!==ARTICLES.length){_monCache.key=ARTICLES.length;_monCache.hits={}}
+  if(_monCache.hits[key])return _monCache.hits[key];
+  const kws=m.kw.map(norm);
+  return _monCache.hits[key]=ARTICLES.filter(a=>a.ago<=48&&kws.some(k=>(a._txt||(a._txt=norm(a.title+' '+a.desc))).includes(k))).sort((a,b)=>b.date-a.date);
+}
 function monitorNew(){return MONITORS.reduce((n,m)=>n+monitorHits(m).filter(a=>a.ago<24).length,0)}
 function renderMonitor(){
   const neu=monitorNew();
@@ -1449,7 +1456,7 @@ function renderMonitor(){
       <button class="btn sm" aria-expanded="${auf}" onclick="S.monOpen.has('${m.id}')?S.monOpen.delete('${m.id}'):S.monOpen.add('${m.id}');render()">${hits.length} Treffer ${auf?'▴':'▾'}</button>
       <button class="icon-btn" aria-label="Begriffe ändern" title="Begriffe ändern" onclick="editMonitor('${m.id}')"><svg class="i" style="width:16px;height:16px"><use href="#i-policy"/></svg></button>
       <button class="icon-btn" aria-label="Monitor löschen" title="Löschen" onclick="deleteMonitor('${m.id}')"><svg class="i"><use href="#i-x"/></svg></button></div>
-    <div class="hits">${hits.length?hits.map(a=>`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}',${J(hits.map(x=>x.id))})" onkeydown="rowKey(event,'${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span>${starHTML(a.id)}<span class="ttl">${esc(a.title)}</span></div>`).join(''):'<div class="note" style="padding:6px 0">Keine Treffer in den letzten 48 Stunden.</div>'}</div></div>`}).join('')||'<div class="empty"><b>Noch kein Monitor</b>Lege einen Suchbegriff an – neue Treffer erscheinen dann links in der Leiste und hier.</div>'}</div>`;
+    <div class="hits">${hits.length?(window['MON_'+m.id]=hits.map(x=>x.id),hits.slice(0,80).map(a=>`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}',window.MON_${m.id})" onkeydown="rowKey(event,'${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span>${starHTML(a.id)}<span class="ttl">${esc(a.title)}</span></div>`).join('')+(hits.length>80?`<div class="note" style="padding:8px 0">${hits.length-80} weitere – Begriffe enger fassen oder über die Suche eingrenzen.</div>`:'')):'<div class="note" style="padding:6px 0">Keine Treffer in den letzten 48 Stunden.</div>'}</div></div>`}).join('')||'<div class="empty"><b>Noch kein Monitor</b>Lege einen Suchbegriff an – neue Treffer erscheinen dann links in der Leiste und hier.</div>'}</div>`;
   h+=`<p class="note" style="margin-top:12px">Ein Monitor sucht in Titel und Teaser aller Meldungen der letzten 48 Stunden.${S.user?' Mit Konto kommt zusätzlich eine tägliche Mail.':' Mit Konto gilt er auf allen Geräten und kann täglich per Mail kommen.'}</p>`;
   return h;
 }
@@ -1522,13 +1529,13 @@ function renderElections(){
 
 /* ── Stakeholder ── */
 function personHTML(p,listName){return `<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}',window.${listName})" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}${p.party?` <span class="pill grey">${esc(p.party)}</span>`:''}</div><div class="role">${esc(p.role||p.type)}${p.org?' · '+esc(p.org):p.city?' · '+esc(p.city):''}</div></div>${starHTML(p.id)}</div>`}
-function mentionsOf(p){return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&norm(a.title+' '+a.desc).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
-function bySrc(x){return ARTICLES.filter(a=>(x.srcs||[]).includes(a.src)).sort((a,b)=>b.date-a.date)}
+function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return (IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date);return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
+function bySrc(x){const idx=typeof IDX!=='undefined'?IDX.src:null;const arr=idx?(x.srcs||[]).flatMap(s=>idx[s]||[]):ARTICLES.filter(a=>(x.srcs||[]).includes(a.src));return arr.slice().sort((a,b)=>b.date-a.date)}
 function renderStakeholder(tab){
   const cfg={people:['Personen',PEOPLE,'Personen durchsuchen – Name, Rolle, Gremium …','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen …','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen …','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen – Gerichte, EZB, Länder …','Keine Institution']}[tab];
   const list=cfg[1].filter(x=>inRegion(x)&&matchLQ('sh',x));const lname='SHLIST';window.SHLIST=list.map(x=>x.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>${cfg[0]}</h2><span class="cnt">${list.length}</span><div class="tools">${lsearch('sh',cfg[2])}${copyBtn(SHLIST,cfg[0])}</div></div>`;
-  h+=`<div class="box">${list.map(x=>{const extra=tab==='committees'?` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`:tab==='institutions'||tab==='orgs'?(bySrc(x).length?` · ${bySrc(x).length} ${bySrc(x).length===1?'Meldung':'Meldungen'}`:''):(mentionsOf(x).length?` · ${mentionsOf(x).length}× erwähnt`:'');
+  h+=`<div class="box">${list.slice(0,400).map(x=>{let extra='';if(tab==='committees')extra=` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`;else if(tab==='institutions'||tab==='orgs'){const n=bySrc(x).length;extra=n?` · ${n} ${n===1?'Meldung':'Meldungen'}`:''}else{const n=mentionsOf(x).length;extra=n?` · ${n}× erwähnt`:''}
     return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||x.city,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${PEOPLE.length?'Andere Region oder Suchbegriff kürzen.':'Das Verzeichnis kommt aus <code>people.json</code> (fetch_directory.py).'}</div>`}</div>`;
   return h;
 }
@@ -1844,7 +1851,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v18 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v19 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -1918,20 +1925,29 @@ function normTitel(t){return String(t||'').toLowerCase().replace(/[^a-zäöüß0
 function baueStories(arts){
   const kandidaten=arts.filter(a=>a.ago<=96).sort((a,b)=>b.date-a.date);
   /* Zwei Wege, dieselbe Meldung zu erkennen – erst die exakte Schlagzeile
-     (so zählt auch fetch_news.py die Quellen), dann ähnliche Formulierungen. */
-  const gruppen=[];const nachTitel={};
+     (so zählt auch fetch_news.py die Quellen), dann ähnliche Formulierungen.
+     Für Letzteres ein invertierter Index (Wort → Gruppen): verglichen wird
+     nur mit Gruppen, die mindestens ein Wort teilen – nicht mit allen. */
+  const gruppen=[];const nachTitel={};const wortIdx={};
   for(const a of kandidaten){
-    const k=normTitel(a.title);
-    if(k.length>=20&&nachTitel[k]){nachTitel[k].arts.push(a);sigWorte(a.title).forEach(w=>nachTitel[k].worte.add(w));continue}
+    const k=a._nt||(a._nt=normTitel(a.title));
+    if(k.length>=20&&nachTitel[k]){const gr=nachTitel[k];gr.arts.push(a);continue}
     const w=new Set(sigWorte(a.title));
     let ziel=null;
-    if(w.size>=2)for(const gr of gruppen){
-      const gemeinsam=[...w].filter(x=>gr.worte.has(x)).length;
-      const union=new Set([...w,...gr.worte]).size;
-      if(union&&gemeinsam>=2&&gemeinsam/union>=0.4){ziel=gr;break}
+    if(w.size>=2){
+      const zaehl=new Map();
+      for(const x of w){const l=wortIdx[x];if(l)for(const gi of l)zaehl.set(gi,(zaehl.get(gi)||0)+1)}
+      let best=null,bestQ=0;
+      for(const [gi,gemeinsam] of zaehl){
+        if(gemeinsam<2)continue;
+        const gr=gruppen[gi];const union=w.size+gr.worte.size-gemeinsam;
+        const q=gemeinsam/union;
+        if(q>=0.4&&q>bestQ){best=gr;bestQ=q}
+      }
+      ziel=best;
     }
-    if(ziel){ziel.arts.push(a);w.forEach(x=>ziel.worte.add(x))}
-    else{const gr={arts:[a],worte:w};gruppen.push(gr);if(k.length>=20)nachTitel[k]=gr}
+    if(ziel){ziel.arts.push(a);for(const x of w){if(!ziel.worte.has(x)){ziel.worte.add(x);(wortIdx[x]=wortIdx[x]||[]).push(ziel.i)}}}
+    else{const gr={i:gruppen.length,arts:[a],worte:w};gruppen.push(gr);for(const x of w)(wortIdx[x]=wortIdx[x]||[]).push(gr.i);if(k.length>=20)nachTitel[k]=gr}
   }
   return gruppen
     .filter(gr=>new Set(gr.arts.map(a=>a.src)).size>=2)
@@ -1945,7 +1961,7 @@ function baueStories(arts){
         arts:arts.map(a=>a.id)};
     })
     .sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date)
-    .slice(0,40);
+    .slice(0,60);
 }
 
 /* ── Termine aus Tagesordnungen und Sitzungsdokumenten ────────────── */
@@ -2066,10 +2082,34 @@ function leeren(){
   [ARTICLES,STORIES,DOCS,EVENTS,PEOPLE,ORGS,COMMITTEES,INSTITUTIONS,NEWSLETTERS,PROCS,ELECTIONS,MARKET_CATALOG,QUOTES].forEach(a=>{a.length=0});
   [ITEMS,AI,MARKET_BY_SYM].forEach(o=>Object.keys(o).forEach(k=>delete o[k]));
 }
+/* Nachschlagewerke, damit keine Ansicht mehr "für jede Meldung alle Meldungen"
+   durchgehen muss. Werden einmal nach dem Laden gebaut. */
+const IDX={nt:{},story:{},src:{},mentions:{},personNach:{},ready:false};
 function indexieren(){
   [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS].forEach(x=>{ITEMS[x.id]=x});
   MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
+  IDX.nt={};IDX.story={};IDX.src={};IDX.mentions={};IDX.personNach={};
+  STORIES.forEach(s=>s.arts.forEach(id=>{IDX.story[id]=s}));
+  ARTICLES.forEach(a=>{
+    a._nt=a._nt||normTitel(a.title);
+    a._txt=a._txt||norm(a.title+' '+(a.desc||''));
+    if(a._nt.length>=20)(IDX.nt[a._nt]=IDX.nt[a._nt]||[]).push(a);
+    (IDX.src[a.src]=IDX.src[a.src]||[]).push(a);
+  });
+  /* Erwähnungen: bevorzugt das Feld "personen" aus fetch_news.py; sonst
+     Nachnamen-Index wie im Backend (voller Name oder Nachname + Partei). */
+  PEOPLE.forEach(p=>{const n=norm((p.aliases||[])[1]||p.name.split(' ').pop());if(n.length>3)(IDX.personNach[n]=IDX.personNach[n]||[]).push(p)});
+  const hatFeld=ARTICLES.some(a=>a.personen&&a.personen.length);
+  ARTICLES.forEach(a=>{
+    if(hatFeld){(a.personen||[]).forEach(pid=>(IDX.mentions[pid]=IDX.mentions[pid]||[]).push(a));return}
+    const woerter=a._txt.match(/[a-zäöüß][a-zäöüß-]{2,}/g)||[];
+    const gesehen=new Set();
+    for(const w of woerter){const ps=IDX.personNach[w];if(!ps)continue;
+      for(const p of ps){if(gesehen.has(p.id))continue;
+        if(a._txt.includes(norm(p.name))||(p.party&&a._txt.includes(norm(p.party)))){gesehen.add(p.id);(IDX.mentions[p.id]=IDX.mentions[p.id]||[]).push(a)}}}
+  });
   ARTICLES.forEach(a=>{delete a._cl;a.clusterZiel=a.cluster;const l=clusterArts(a);a._cl=l;a.cluster=l.length+1});
+  IDX.ready=true;
 }
 function mapArtikel(j,set){
   return (j&&j.articles||[]).map(a=>{
@@ -2099,17 +2139,24 @@ async function laden(){
   const FEHLER=[];
   const sicher=(label,fn)=>{try{fn()}catch(e){console.error('laden: '+label,e);FEHLER.push(label+': '+(e&&e.message||e))}};
 
+  const luft=()=>new Promise(r=>setTimeout(r,0));
   sicher('Nachrichten',()=>{
     ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
                   ...mapArtikel(la,'laender'),...mapArtikel(us,'us'));
     ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
   });
+  /* Erstes Bild so früh wie möglich: Nachrichten sind da, der Rest folgt. */
+  sicher('Verzeichnis (vorläufig)',indexieren);
+  zeigeLadebalken(`${ARTICLES.length} Meldungen geladen – Termine, Personen und Kurse folgen …`);
+  render();
+  await luft();
   sicher('Dokumente',()=>{
     DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,date:new Date(d.date).getTime(),
       regions:d.origin==='eurlex'||/europ|EP |EU-/i.test(d.source||'')?['eu']:['de']})).filter(d=>!isNaN(d.date))));
   });
   sicher('Termine',()=>{EVENTS.push(...baueTermine(dc&&dc.documents||[]))});
   sicher('Themenlagen',()=>{STORIES.push(...baueStories(ARTICLES))});
+  await luft();
   sicher('Personen',()=>{PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)))});
   sicher('Gremien',()=>{
     COMMITTEES.push(...((pp&&pp.committees||[]).map((c,i)=>({id:c.id||('k'+i),kind:'committee',name:c.name,org:c.parliament_label||c.parliament||'',
@@ -2151,7 +2198,7 @@ function zeigeLadebalken(text){
       <button class="btn sm quiet" onclick="this.parentNode.hidden=true">Ausblenden</button>`;
     return;
   }
-  el.className='lb ok';el.hidden=true;
+  el.className='lb ok';el.textContent='';el.hidden=true;
 }
 
 /* ── Archiv: Monatsdateien erst auf Zuruf laden ────────────────────
