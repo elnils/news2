@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau: Nachrichten, Zahlen, Daten, Fakten auf einen Blick</title>
+<title>Presseschau – Entwurf v18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -602,7 +602,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')">Presse<em>schau</em></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v16</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v18</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1422,13 +1422,18 @@ function renderMarkets(){
   return h+body('mkr',b);
 }
 function renderArchive(){
-  const list=entdoppeln(ARTICLES.filter(a=>a.ago>48&&a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date));window.ARCHLIST=list.map(a=>a.id);
-  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Archiv</h2><span class="cnt">${list.length} · älter als 48 Std.</span><div class="tools"><div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.archRange===7}" onclick="S.archRange=7;render()">7 Tage</button><button aria-pressed="${S.archRange===30}" onclick="S.archRange=30;render()">30 Tage</button><button aria-pressed="${S.archRange===365}" onclick="S.archRange=365;render()">Alles</button></div>${copyBtn(ARCHLIST,'Archiv')}</div></div>`;
-  h+=`<div class="filters"><div class="bar">${lsearch('ar','Archiv durchsuchen – Titel, Quelle, Begriff …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select></div></div>`;
-  h+=list.length?`<div class="box list">${list.map(a=>rowHTML(a,'ARCHLIST')).join('')}</div>`:'<div class="box"><div class="empty"><b>Nichts im Archiv</b>Suchbegriff oder Zeitraum ändern.</div></div>';
-  return h;
+  if(typeof archivLaden==='function')archivLaden();
+  const pool=typeof archivPool==='function'?archivPool():ARTICLES.filter(a=>a.ago>48);
+  const list=entdoppeln(pool.filter(a=>a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date));
+  window.ARCHLIST=list.map(a=>a.id);
+  const stand=typeof ARCH!=='undefined'&&ARCH.monate?`${ARCH.geladen.size} von ${ARCH.monate.length} Monaten geladen`:'';
+  let h=secHd('ar','Archiv',list.length+' · älter als 48 Std.'+(stand?' · '+stand:''),
+    `<div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.archRange===7}" onclick="S.archRange=7;render()">7 Tage</button><button aria-pressed="${S.archRange===30}" onclick="S.archRange=30;render()">30 Tage</button><button aria-pressed="${S.archRange===365}" onclick="S.archRange=365;render()">1 Jahr</button></div>${copyBtn(ARCHLIST,'Archiv')}`);
+  let b=`<div class="filters"><div class="bar">${lsearch('ar','Archiv durchsuchen – Titel, Quelle, Begriff …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select>${typeof ARCH!=='undefined'&&ARCH.laeuft?'<span class="note">Archiv wird geladen …</span>':''}</div></div>`;
+  b+=list.length?`<div class="scrollbox main box" style="padding:0"><div class="box list">${list.slice(0,300).map(a=>rowHTML(a,'ARCHLIST')).join('')}</div>${list.length>300?`<div class="more"><span class="note">300 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`
+    :`<div class="box"><div class="empty"><b>Nichts im Archiv</b>${typeof ARCH!=='undefined'&&ARCH.monate&&!ARCH.monate.length?'Das Archiv wird erst aufgebaut; <code>fetch_news.py</code> legt es unter <code>archive/</code> an.':'Anderer Zeitraum oder kürzerer Suchbegriff.'}</div></div>`;
+  return h+body('ar',b);
 }
-
 /* ── Monitor ── */
 function monitorHits(m){return ARTICLES.filter(a=>a.ago<=48&&m.kw.some(k=>norm(a.title+' '+a.desc).includes(norm(k)))).sort((a,b)=>b.date-a.date)}
 function monitorNew(){return MONITORS.reduce((n,m)=>n+monitorHits(m).filter(a=>a.ago<24).length,0)}
@@ -1839,7 +1844,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v16 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v18 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2086,29 +2091,44 @@ async function laden(){
   const [la,us,dc,pp,nl,dip,el,mk,ki]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
     hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki)]);
 
-  ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
-                ...mapArtikel(la,'laender'),...mapArtikel(us,'us'));
-  /* Themen-Beschriftungen für alles, was das Backend liefert */
-  ARTICLES.forEach(a=>a.topics.forEach(t=>{if(!TOPICS[t])TOPICS[t]=t.replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
+  /* Jeder Abschnitt einzeln abgesichert: scheitert einer (unerwartetes Feld
+     in genau einer Meldung, einem Termin, einer Person …), fallen die
+     anderen nicht mit um. Vorher konnte ein einziger Fehler irgendwo den
+     kompletten Ladevorgang abbrechen – auch die Nachrichten, obwohl die
+     längst fertig verarbeitet waren. Fehler landen sichtbar im Ladebalken. */
+  const FEHLER=[];
+  const sicher=(label,fn)=>{try{fn()}catch(e){console.error('laden: '+label,e);FEHLER.push(label+': '+(e&&e.message||e))}};
 
-  DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,date:new Date(d.date).getTime(),
-    regions:d.origin==='eurlex'||/europ|EP |EU-/i.test(d.source||'')?['eu']:['de']})).filter(d=>!isNaN(d.date))));
-  EVENTS.push(...baueTermine(dc&&dc.documents||[]));
-  STORIES.push(...baueStories(ARTICLES));
-  PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)));
-  COMMITTEES.push(...((pp&&pp.committees||[]).map((c,i)=>({id:c.id||('k'+i),kind:'committee',name:c.name,org:c.parliament_label||c.parliament||'',
-    regions:[PARL_REGION[c.parliament]||'de'],members:PEOPLE.filter(p=>(p.committees||[]).includes(c.id)).map(p=>p.id),
-    color:farbeFuer(c.name),src:c.parliament_label||'',title:c.name,link:'#'}))));
-  INSTITUTIONS.push(...baueInstitutionen(ARTICLES));
-  ORGS.push(...baueOrgs(ARTICLES));
-  NEWSLETTERS.push(...((nl&&nl.items||[]).map(x=>({...x,kind:'doc',type:'Newsletter',src:x.source||'Newsletter',
-    date:new Date(x.date).getTime(),regions:['de']})).filter(x=>!isNaN(x.date))));
-  if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,60).map(mapVerfahren));
-  if(el)ELECTIONS.push(...mapWahlen(el));
-  if(mk)MARKET_CATALOG.push(...mapMaerkte(mk));
-  if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v});
+  sicher('Nachrichten',()=>{
+    ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
+                  ...mapArtikel(la,'laender'),...mapArtikel(us,'us'));
+    ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
+  });
+  sicher('Dokumente',()=>{
+    DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,date:new Date(d.date).getTime(),
+      regions:d.origin==='eurlex'||/europ|EP |EU-/i.test(d.source||'')?['eu']:['de']})).filter(d=>!isNaN(d.date))));
+  });
+  sicher('Termine',()=>{EVENTS.push(...baueTermine(dc&&dc.documents||[]))});
+  sicher('Themenlagen',()=>{STORIES.push(...baueStories(ARTICLES))});
+  sicher('Personen',()=>{PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)))});
+  sicher('Gremien',()=>{
+    COMMITTEES.push(...((pp&&pp.committees||[]).map((c,i)=>({id:c.id||('k'+i),kind:'committee',name:c.name,org:c.parliament_label||c.parliament||'',
+      regions:[PARL_REGION[c.parliament]||'de'],members:PEOPLE.filter(p=>(p.committees||[]).includes(c.id)).map(p=>p.id),
+      color:farbeFuer(c.name),src:c.parliament_label||'',title:c.name,link:'#'}))));
+  });
+  sicher('Institutionen',()=>{INSTITUTIONS.push(...baueInstitutionen(ARTICLES))});
+  sicher('Organisationen',()=>{ORGS.push(...baueOrgs(ARTICLES))});
+  sicher('Newsletter',()=>{
+    NEWSLETTERS.push(...((nl&&nl.items||[]).map(x=>({...x,kind:'doc',type:'Newsletter',src:x.source||'Newsletter',
+      date:new Date(x.date).getTime(),regions:['de']})).filter(x=>!isNaN(x.date))));
+  });
+  sicher('Verfahren',()=>{if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,60).map(mapVerfahren))});
+  sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
+  sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
+  sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
+  sicher('Verzeichnis (Index)',indexieren);
 
-  indexieren();
+  FEHLER.forEach(f=>LOADLOG.push({f:'⚠ '+f,ok:false,why:'Fehler beim Verarbeiten – siehe Konsole'}));
   zeigeLadebalken();
   render();
 }
@@ -2132,6 +2152,52 @@ function zeigeLadebalken(text){
     return;
   }
   el.className='lb ok';el.hidden=true;
+}
+
+/* ── Archiv: Monatsdateien erst auf Zuruf laden ────────────────────
+   archive/index.json listet die Monate; geladen wird nur, was der gewählte
+   Zeitraum abdeckt. So bleibt der Start schnell, auch wenn im Archiv
+   Zehntausende Meldungen liegen. */
+const ARCH={monate:null,geladen:new Set(),arts:[],laeuft:false};
+function monatSchluessel(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+async function archivLaden(){
+  if(DEMO||ARCH.laeuft)return;
+  /* Erst prüfen, ob überhaupt etwas fehlt – sonst würde jedes render() einen
+     neuen Lauf starten und der Aufruf sich selbst im Kreis drehen. */
+  if(ARCH.monate){
+    if(!archivFehlend().length)return;
+  }
+  ARCH.laeuft=true;
+  let neu=0;
+  try{
+    if(!ARCH.monate){
+      const idx=await hole('archive/index.json');
+      ARCH.monate=(idx&&idx.months||[]).map(m=>({monat:m.month,datei:m.file||('archive/'+m.month+'.json'),n:m.count||0}));
+    }
+    for(const m of archivFehlend()){
+      const d=await hole(m.datei);
+      ARCH.geladen.add(m.monat);
+      if(!d)continue;
+      const arts=mapArtikel(d,'archiv').filter(a=>!ITEMS[a.id]);
+      arts.forEach(a=>{ITEMS[a.id]=a});
+      ARCH.arts.push(...arts);neu+=arts.length;
+    }
+  }finally{
+    ARCH.laeuft=false;
+    if(neu||ARCH.monate)render();
+  }
+}
+function archivFehlend(){
+  if(!ARCH.monate)return [];
+  const grenze=NOW-S.archRange*D;
+  return ARCH.monate.filter(m=>{
+    if(ARCH.geladen.has(m.monat))return false;
+    const [y,mo]=m.monat.split('-').map(Number);
+    return new Date(y,mo,0,23,59).getTime()>=grenze;
+  }).slice(0,S.archRange>90?24:3);
+}
+function archivPool(){
+  return [...ARTICLES.filter(a=>a.ago>48),...ARCH.arts];
 }
 
 /* Start: fromHash() hat schon gezeichnet, laden() ersetzt die Inhalte. */
