@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Nachrichten aktuell</title>
+<title>Presseschau – Entwurf v32</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -643,7 +643,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v31</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v32</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1283,6 +1283,11 @@ const EVENT_RE=/^\s*[\[(]?\s*(virtual event|webinar|web ?seminar|online event|li
 const SENDUNG_RE=/^(logo!?|heute[- ]journal|heute in|tagesschau|tagesthemen|mittagsmagazin|morgenmagazin|nachtmagazin|sendung vom)\b|(mittagsmagazin|morgenmagazin|heute[- ]journal|tagesschau|tagesthemen|logo!)\s+vom\b|\bvom\s+(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/i;
 const EIGENWERBUNG_RE=/(promoted content|sponsored content|heise-angebot|ix-webinar|webinar:|\[anzeige\]|advertorial|partner content|im angebot|angebot:|entdecken sie|werfen sie einen blick|jetzt im stream|in der mediathek|aktuelle pressemitteilungen|pressemitteilungen des|unser neues|in eigener sache|wir suchen|jetzt bewerben|gewinnspiel|abonnieren sie|newsletter bestellen|folgen sie uns)/i;
 const SERVICE_RE=/^(das wetter|wetter in|wettervorhersage|börsentag|börse am|dax aktuell|marktbericht|lottozahlen|die lottozahlen|verkehrslage|staumeldung|horoskop|sportschau|bundesliga-?ticker|ergebnisse vom|zahl des tages|bild des tages|zitat des tages)\b|\b(lohnen sich (aktuell )?die aktien|kaufen oder verkaufen|die besten (aktien|fonds|angebote)|was heute wichtig wird)\b/i;
+/* Produkttests, Kaufberatung und Deals sind Kaufhilfen, keine Nachrichten:
+   "Huawei D3 im Test", "Die besten Powerbanks", "Jetzt 40 Prozent guenstiger". */
+const TEST_RE=/\b(im test|im praxistest|im dauertest|im alltagstest|im vergleichstest|im labortest|testbericht|vergleichstest|dauertest|kurztest|praxistest|hands[- ]?on|ausprobiert|angetestet|erster eindruck|kaufberatung|kaufratgeber|bestenliste|testsieger|preisvergleich|produkttest)\b|^\s*(test|review|hands[- ]?on)\s*[:|–-]|\b(test|review)\s*:\s/i;
+const DEAL_RE=/\b(schnäppchen|rabattaktion|gutschein(code)?|angebot des tages|prime day|black friday|cyber monday|tiefstpreis|bestpreis|spartipp|prozent günstiger|% günstiger|jetzt sichern|nur heute|deal des tages|zum deal)\b/i;
+const RATGEBER_RE=/\b(so geht'?s|so gehts|anleitung|tipps und tricks|schritt für schritt|ratgeber|how ?to|das müssen sie wissen|was sie wissen müssen|die wichtigsten fragen|checkliste|die besten \d)\b/i;
 const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für redaktionen|sperrfrist)/i;
 const DRUCKSACHE_RE=/^\s*\d{1,5}\/\d{2,4}\s*[|–-]|\b(drucksache|bundesratsdrucksache|bt-drs|br-drs)\b/i;
 const PR_RE=/^(press remarks|remarks by|statement by|speech by|doorstep|pressestatement|pressemitteilung|mitteilung|erklärung von|rede von|grußwort|readout)\b|\b(after his meeting|after her meeting|im anschluss an)\b/i;
@@ -1294,7 +1299,7 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||a.sendung===true;
+  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
@@ -1305,6 +1310,7 @@ function topTauglich(a){
   if(a.isPodcast)return false;
   if(a.sendung===true||SENDUNG_RE.test(t))return false;
   if(WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||ORGA_RE.test(t)||DRUCKSACHE_RE.test(t))return false;
+  if(TEST_RE.test(t)||DEAL_RE.test(t)||RATGEBER_RE.test(t))return false; /* Produkttests, Deals, Ratgeber */
   if(/^(anzeige|sponsored)$/i.test((a.author||'').trim()))return false;
   if(AMT_CATS.has(a.cat)&&(a.cluster||1)<3)return false;
   return true;
@@ -1323,6 +1329,10 @@ function topScore(a){
 function dubKey(a){
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||null;
   if(st)return 'st:'+st.id;
+  /* Auch Buendel, die keine Themenlage ergeben haben (zwei Eilmeldungen
+     desselben Hauses zur selben Sache), zaehlen als Dublette. */
+  const gr=(window._DUB||{})[a.id];
+  if(gr)return 'gr:'+gr;
   const k=a._nt||(typeof normTitel==='function'?(a._nt=normTitel(a.title)):'');
   return k.length>=20?'t:'+k:'id:'+a.id;
 }
@@ -1330,6 +1340,48 @@ function entdoppeln(arr){
   if(!PREF.dedupe)return arr;
   const gesehen=new Set();
   return arr.filter(a=>{const k=dubKey(a);if(gesehen.has(k))return false;gesehen.add(k);return true});
+}
+/* Zweite Sicherung, nur fuer kurze Listen (Top-Meldungen, Briefing): was die
+   Themenlagen nicht gebuendelt haben, wird hier Paar fuer Paar verglichen.
+   Behalten wird immer die staerkere Meldung, weil die Liste nach Rang
+   durchlaufen wird. */
+function dubNah(a,b){
+  if(Math.abs(a.date-b.date)>36*H)return false;
+  const A=a._tw||(a._tw=titelWorte(a.title)),B=b._tw||(b._tw=titelWorte(b.title));
+  const {q,n}=titelAehnlich(A,B);
+  if(n<2)return false;
+  const sa=a._hart||(a._hart=hartSignale(a)),sb=b._hart||(b._hart=hartSignale(b));
+  const na=[...sa].filter(x=>x[0]==='e'),nb=[...sb].filter(x=>x[0]==='e');
+  const namenGem=hartGemeinsam(new Set(na),sb);
+  /* Gegenprobe wie bei den Themenlagen: Tragen beide Schlagzeilen Eigennamen
+     und teilen keinen davon, sind es zwei Meldungen – "Harker zur
+     Zinserhöhung" und "Trump reagiert auf die Zinserhöhung" teilen fast
+     jedes Wort und sind trotzdem nicht dasselbe. */
+  if(na.length&&nb.length&&namenGem/Math.max(1,na.length+nb.length-namenGem)<0.5&&q<0.85)return false;
+  /* "vor der Landtagswahl" und "nach der Landtagswahl" sind zwei Meldungen,
+     auch wenn sich die Schlagzeilen sonst weitgehend decken. */
+  const zb=t=>({vor:/\b(vor|bis zur?)\s+(der|dem|den|die|das)\b/i.test(t),nach:/\bnach\s+(der|dem|den)\b/i.test(t)});
+  const za=zb(a.title||''),zc=zb(b.title||'');
+  if((za.vor&&zc.nach)||(za.nach&&zc.vor))return false;
+  const gem=hartGemeinsam(sa,sb);
+  /* Ein gemeinsames langes Wort ("Ministerpräsidenten", "Kriegsverbrechen")
+     wiegt schwerer als zwei kurze. */
+  let starke=0;for(const w of A)if(B.has(w)&&w.length>=7)starke++;
+  const gleichesHaus=(a._qb||(a._qb=hausVon(a.src)))===(b._qb||(b._qb=hausVon(b.src)));
+  if(q>=0.5&&n>=2&&(starke>=1||gem>=1))return true;                 /* weitgehend gleiche Schlagzeile */
+  if(gem>=2&&q>=0.34)return true;                                   /* zwei harte Belege plus Überschneidung */
+  if(gleichesHaus&&n>=3&&Math.abs(a.date-b.date)<=24*H)return true; /* Nachzieher desselben Hauses */
+  return false;
+}
+function topEntdoppeln(arr,max){
+  if(typeof IDX==='undefined'||!IDX||!IDX.ready)return arr.slice(0,max);
+  const out=[];
+  for(const a of arr){
+    if(out.some(b=>dubNah(a,b)))continue;
+    out.push(a);
+    if(out.length>=max)break;
+  }
+  return out;
 }
 /* Welche anderen Meldungen berichten dasselbe? Im Betrieb liefert das der
    Cluster aus fetch_news.py; hier die übrigen Meldungen derselben Themenlage,
@@ -1381,7 +1433,7 @@ const inHauptRegion=a=>S.region==='all'||(a.region1||(a.regions||[])[0])===S.reg
 function renderTop(){
   const base=newsBase();
   const win=S.topWin||24;
-  const top=entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
+  const top=topEntdoppeln(entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a))),8);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
   all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
@@ -1900,7 +1952,7 @@ function dokHaus(d){
 function curBrief(){return BRIEFS.find(b=>b.id===S.brief)||BRIEFS[0]}
 function briefData(b){
   const inR=x=>b.region==='all'||(x.regions||[]).includes(b.region);const inT=x=>!b.topics.length||(x.topics||[]).some(t=>b.topics.includes(t));
-  return {top:entdoppeln(ARTICLES.filter(a=>a.ago<=24&&topTauglich(a)&&inR(a)&&inT(a)).sort((a,c)=>topScore(c)-topScore(a))).slice(0,b.n),
+  return {top:topEntdoppeln(entdoppeln(ARTICLES.filter(a=>a.ago<=24&&topTauglich(a)&&inR(a)&&inT(a)).sort((a,c)=>topScore(c)-topScore(a))),b.n),
     stories:STORIES.filter(s=>inR(s)&&inT(s)).slice(0,3),
     events:EVENTS.filter(e=>(sameDay(e.date,NOW)||sameDay(e.date,NOW+D))&&inR(e)).sort((a,c)=>a.date-c.date),
     docs:DOCS.filter(d=>d.date>NOW-24*H&&inR(d)).sort((a,c)=>c.date-a.date).slice(0,4),
@@ -1967,15 +2019,16 @@ function briefPlain(b){const d=briefData(b),dt=new Date(NOW);let t=`${b.name} �
   return t}
 async function aiBrief(){const box=g('ai-brief');if(!box)return;box.hidden=false;const out=box.querySelector('.txt');
   await kiLauf(out,'Schreibe aus diesen Stichpunkten ein knappes deutsches Morgenbriefing (Stil: politischer Morning-Newsletter, 120–180 Wörter, keine Überschriften, keine Links, keine Erfindungen über die Stichpunkte hinaus):\n\n'+briefPlain(curBrief()));}
+const tlWeb=()=>(typeof TL!=='undefined'&&TL.web)||'newsletter/';
 function renderTageslage(){
   if(typeof tageslageLaden==='function')tageslageLaden();
   const liste=(typeof TL!=='undefined'&&TL.liste)||[];
   const q=norm(S.lq.tl||'');
   const gefiltert=q?liste.filter(x=>norm(x.suchtext+' '+x.desc+' '+x.title).includes(q)):liste;
   window.TLLIST=gefiltert.map(x=>x.id);
-  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Tageslage</h2><span class="cnt">${liste.length?gefiltert.length+' von '+liste.length+' Ausgaben':'die eigene tägliche Presseschau'}</span><div class="tools">${lsearch('tl','In allen Ausgaben suchen …')}<a class="btn sm quiet" href="newsletter/" target="_blank" rel="noopener">Archiv öffnen</a></div></div>`;
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Tageslage</h2><span class="cnt">${liste.length?gefiltert.length+' von '+liste.length+' Ausgaben':'die eigene tägliche Presseschau'}</span><div class="tools">${lsearch('tl','In allen Ausgaben suchen …')}<a class="btn sm quiet" href="${esc(tlWeb())}" target="_blank" rel="noopener">Archiv öffnen</a></div></div>`;
   if(!liste.length){
-    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':'<b>Noch keine Ausgaben</b>Das Archiv erscheint hier nach dem nächsten Lauf. <a href="newsletter/" target="_blank" rel="noopener">Archiv direkt öffnen</a>'}</div></div>`;
+    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':`<b>${typeof TL!=='undefined'&&TL.fehler?'Archiv nicht erreichbar':'Noch keine Ausgaben'}</b>Gesucht wurde neben <code>tageslage.json</code> auch unter <code>newsletter/data/index.json</code>. <a href="${esc(tlWeb())}" target="_blank" rel="noopener">Archiv direkt öffnen</a>`}</div></div>`;
     return h;
   }
   const heute=gefiltert[0];
@@ -2307,7 +2360,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v31 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v32 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2336,45 +2389,64 @@ async function hole(datei){
   }
 }
 
-/* ── Regionen: gleiche Regel wie im Backend-Frontend v9 ───────────── */
-const REGION_KW={
-  china:/\b(china|chinas|chinesisch\w*|peking|beijing|taiwan|hongkong|xi jinping|volksrepublik|huawei|tsmc|alibaba)\b/i,
-  us:/\b(usa|u\.s\.|amerika\w*|washington|weiß(es)? haus|white house|trump|kongress|senat|repräsentantenhaus|pentagon|wall street|fed\b)\b/i,
-  eu:/\b(eu-\w+|\beu\b|europäische union|europäisch(e|en|er) (kommission|parlament|rat|union|zentralbank)|europaparlament|brüssel|straßburg|ezb|eurogruppe|binnenmarkt)\b/i,
-  welt:/\b(ukraine|russland|moskau|nahost|gaza|israel|iran|indien|afrika|nato|un\b|vereinte nationen|klimakonferenz|g7|g20|welthandel)\b/i,
+/* ── Regionen ────────────────────────────────────────
+   Jede Meldung bekommt eine HAUPTregion – danach entscheiden die Reiter
+   DE / EU / USA / China / Welt – und zusätzlich jede Region, die deutlich
+   vorkommt; danach filtert "Alle Meldungen".
+
+   Gezählt werden VERSCHIEDENE Treffer, nicht Wiederholungen: Eine Meldung,
+   die zehnmal "Trump" sagt, ist deshalb keine zehnfache USA-Meldung. Die
+   Schlagzeile zählt dreifach, Eigennamen doppelt, der Vorspann einfach.
+
+   Wichtig gegenüber der alten Fassung:
+     – "US-Notenbank", "US-Präsident", "US-Zoll" werden erkannt (us-...),
+       vorher landete "US-Notenbank erhöht Leitzins" unter Deutschland;
+     – Deutschland wird positiv erkannt (Bundestag, Kanzler, Parteien,
+       Bundesländer) statt nur als Restübrig;
+     – die Welt ist ausbuchstabiert (Kosovo, Kanada, Ukraine, Türkei …),
+       sonst steht ein Prozess in Den Haag unter "Deutschland";
+     – EU-Mitgliedstaaten zählen zur EU, nicht zur Welt. */
+const REGION_RE={
+  de:/\b(deutschland|deutsche[rsnm]?|germany|german[sy]?|bundesregierung|bundeskanzler\w*|chancellor merz|kanzler(in|amt)?|bundestag|bundesrat|bundesministe\w*|bundeswehr|bundesbank|bundesverfassungsgericht|bundesgerichtshof|bundesverwaltungsgericht|karlsruhe|merz|klingbeil|spd|cdu|csu|afd|grünen|fdp|linkspartei|koalition\w*|ampel|dax|berlin|münchen|hamburg|köln|frankfurt|stuttgart|düsseldorf|dresden|leipzig|nordrhein-westfalen|bayern|bavaria|baden-württemberg|niedersachsen|hessen|sachsen(-anhalt)?|saxony|thüringen|brandenburg|rheinland-pfalz|schleswig-holstein|mecklenburg-vorpommern|saarland|bremen|landtag\w*|ministerpräsident\w*|bundesländer|inland)\b/i,
+  eu:/\b(eu|eu-\w+|europäische[nrs]? union|european union|europäische kommission|european commission|eu-kommission|europaparlament|europäische[sn]? parlament|european parliament|eu-parlament|eu-rat|ministerrat|von der leyen|brüssel|brussels|straßburg|strasbourg|ezb|europäische zentralbank|european central bank|lagarde|eurozone|euro-zone|binnenmarkt|single market|schengen|eu-gipfel|eugh|frankreich|france|french|macron|italien|italy|italian|meloni|spanien|spain|spanish|polen|poland|polish|niederlande|netherlands|dutch|belgien|belgium|österreich|austria|austrian|schweden|sweden|finnland|finland|dänemark|denmark|irland|ireland|portugal|griechenland|greece|greek|tschechien|czech|ungarn|hungary|orban|slowakei|slovakia|rumänien|romania|bulgarien|bulgaria|kroatien|croatia|slowenien|slovenia|litauen|lithuania|lettland|latvia|estland|estonia|luxemburg|luxembourg)\b/i,
+  us:/\b(usa|u\.s\.a?\.?|us-\w+|vereinigte staaten|united states|amerikanisch\w*|american[s]?|amerika|washington|weißes haus|white house|trump|vance|rubio|congress|senate|repräsentantenhaus|house of representatives|supreme court|pentagon|wall street|fed|federal reserve|powell|new york|kalifornien|california|texas|florida|fbi|cia|nasa|nyse|nasdaq|capitol hill|republicans?|democrats?|gop|treasury|state department)\b/i,
+  china:/\b(china|chinas|chinesisch\w*|chinese|peking|beijing|xi jinping|volksrepublik|taiwan|taiwanese|hongkong|hong kong|huawei|tsmc|alibaba|tencent|byd|shenzhen|shanghai|yuan|renminbi)\b/i,
+  welt:/\b(ukraine|ukrainisch\w*|ukrainian|kiew|kyiv|selenskyj|zelensky[y]?|russland|russisch\w*|russia|russian|moskau|moscow|putin|kreml|kremlin|israel|israeli|gaza|hamas|netanjahu|netanyahu|iran|iranian|teheran|tehran|syrien|syria|libanon|lebanon|jemen|yemen|saudi-arabien|saudi arabia|katar|qatar|emirate|türkei|turkey|turkish|erdogan|indien|india|indian|modi|pakistan|japan|tokio|tokyo|südkorea|south korea|nordkorea|north korea|australien|australia|neuseeland|new zealand|kanada|canada|canadian|carney|ottawa|brasilien|brazil|mexiko|mexico|argentinien|argentina|venezuela|kolumbien|colombia|afrika|africa\w*|nigeria|südafrika|south africa|ägypten|egypt|sudan|äthiopien|ethiopia|kenia|kenya|marokko|morocco|großbritannien|britain|british|vereinigtes königreich|united kingdom|london|starmer|schweiz|switzerland|swiss|norwegen|norway|isländisch|iceland|serbien|serbia|kosovo|bosnien|bosnia|albanien|albania|nordmazedonien|montenegro|armenien|armenia|aserbaidschan|azerbaijan|kasachstan|kazakhstan|belarus|moldau|moldova|nato|vereinte nationen|united nations|uno|unicef|who|iwf|\bimf\b|weltbank|world bank|welthandelsorganisation|\bwto\b|opec|g7|g20|klimakonferenz|cop\d+|den haag|the hague|internationaler strafgerichtshof|international criminal court|weltklimarat)\b/i,
 };
-function regionsOf(a){
-  const r=new Set();
-  if(a._set==='eu')r.add('eu');
-  if(a._set==='us')r.add('us');
-  if(a._set==='news'||a._set==='bt'||a._set==='laender')r.add('de');
-  const titel=a.title||'';
-  const text=titel+' '+String(a.desc||'').slice(0,240)+' '+((a.ents||[]).join(' '));
-  for(const k of ['china','us','eu','welt']){
-    if(r.has(k))continue;
-    const treffer=new Set((text.match(new RegExp(REGION_KW[k].source,'gi'))||[]).map(x=>x.toLowerCase()));
-    /* Eine einzelne Erwähnung genügt nur in der Schlagzeile selbst. */
-    if(treffer.size>=2||(treffer.size===1&&REGION_KW[k].test(titel)))r.add(k);
-  }
-  if(!r.size)r.add('de');
-  return [...r];
+/* Ohne jedes Regionssignal entscheidet die Sprache der Schlagzeile: deutsch
+   ist Inland, englisch gehört in die Welt. */
+const DEUTSCH_RE=/[äöüß]|\b(der|die|das|und|nicht|für|mit|von|über|nach|beim|wird|werden|gegen|mehr|aber|sich|dass|auch|keine?|ist|sind|will|soll|beim|zum|zur|im|bei)\b/i;
+const REGION_LISTE=['de','eu','us','china','welt'];
+/* Die Suchmuster werden EINMAL gebaut, nicht je Meldung: bei zehntausend
+   Meldungen waeren das sonst 150.000 neue Regulaere Ausdruecke nur fuer die
+   Regionen. String.match mit /g setzt den Zeiger selbst zurueck, das
+   Wiederverwenden ist also gefahrlos. */
+const REGION_G=Object.fromEntries(REGION_LISTE.map(k=>[k,new RegExp(REGION_RE[k].source,'gi')]));
+function regionPunkte(a){
+  const titel=a.title||'',vor=String(a.desc||'').slice(0,300),ents=(a.ents||[]).join(' ');
+  const zaehl=(txt,k)=>{const m=String(txt).match(REGION_G[k]);if(!m)return 0;const s=new Set();for(const x of m)s.add(x.toLowerCase());return s.size};
+  const p={};
+  for(const k of REGION_LISTE)p[k]=zaehl(titel,k)*3+zaehl(ents,k)*2+zaehl(vor,k);
+  /* Der Feed selbst ist ein starkes Signal, aber kein Freibrief: zwei
+     Treffer in der Schlagzeile wiegen schwerer als die Herkunft des Feeds. */
+  if(a._set==='eu')p.eu+=5;
+  if(a._set==='us')p.us+=5;
+  if(a._set==='bt'||a._set==='laender')p.de+=6;
+  if(a.herkunft==='eu-inst')p.eu+=3;
+  if(a.herkunft==='laender')p.de+=4;
+  return p;
 }
-/* HAUPTregion: Eine Meldung der Tagesschau über den US-Kongress ist eine
-   USA-Meldung, kein deutsches Thema. Die Zuordnung zählt Treffer im Titel
-   doppelt; der Feed selbst (EU-Quelle, US-Quelle) hat Vorrang. */
-function hauptRegion(a){
-  if(a._set==='eu')return 'eu';
-  if(a._set==='us')return 'us';
-  const titel=a.title||'',text=String(a.desc||'').slice(0,240);
-  let best='de',bestN=0;
-  for(const k of ['china','us','eu','welt']){
-    const re=new RegExp(REGION_KW[k].source,'gi');
-    const n=(titel.match(re)||[]).length*2+(text.match(re)||[]).length;
-    if(n>bestN){best=k;bestN=n}
-  }
-  /* Inland bleibt Inland, wenn die Region nur beiläufig vorkommt. */
-  return bestN>=2?best:'de';
+function regionZuordnung(a){
+  const p=regionPunkte(a);
+  let best='',bestN=0;
+  for(const k of REGION_LISTE)if(p[k]>bestN){best=k;bestN=p[k]}
+  const region1=bestN>=3?best:(DEUTSCH_RE.test(a.title||'')?'de':'welt');
+  const regions=REGION_LISTE.filter(k=>p[k]>=3);
+  if(!regions.includes(region1))regions.unshift(region1);
+  return {region1,regions};
 }
+function regionsOf(a){return regionZuordnung(a).regions}
+function hauptRegion(a){return regionZuordnung(a).region1}
 
 /* ── Herkunft: nutzt das Feld aus fetch_news.py, sonst hilfsweise cat ── */
 const HERK_VON_CAT={cjeu:'gericht',bverfg:'gericht',bgh:'gericht',bverwg:'gericht',bag:'gericht',bsg:'gericht',bfh:'gericht',eug:'gericht','us-scotus':'gericht',
@@ -2446,10 +2518,20 @@ function zahlen(t){return [...new Set((String(t).match(/\d+[.,]?\d*/g)||[]).map(
 /* Zu allgemeine Begriffe taugen nicht als Beleg – sie stehen in jeder zweiten
    Meldung derselben Quelle. */
 const TERM_STOP=new Set(['landtag','landesportal','bundestag','bundesrat','sitzung','drucksache','dokument','pressemitteilung','landtags','ausschuss','plenum','antwort','anfrage','bericht','mitteilung']);
+/* Eigennamen wiederholen sich über tausende Meldungen ("Trump", "EZB").
+   Die Normalisierung wird deshalb gemerkt, statt sie jedes Mal neu zu
+   rechnen – das hält die Bündelung so schnell wie vorher. */
+const _sigC=new Map();
+function sigNorm(roh){
+  const k=String(roh);
+  let v=_sigC.get(k);
+  if(v===undefined){v=kanonSatz(glatt(k).trim());if(_sigC.size<40000)_sigC.set(k,v)}
+  return v;
+}
 function hartSignale(a){
   const s=new Set();
-  (a.ents||[]).forEach(e=>{const v=glatt(e).trim();if(v.length>=4&&!TERM_STOP.has(v))s.add('e:'+v)});
-  (a.terms||[]).forEach(t=>{const v=glatt(t).trim();if(v.length>=5&&!TERM_STOP.has(v))s.add('t:'+v)});
+  (a.ents||[]).forEach(e=>{const v=sigNorm(e);if(v.length>=4&&!TERM_STOP.has(v))s.add('e:'+v)});
+  (a.terms||[]).forEach(t=>{const v=sigNorm(t);if(v.length>=5&&!TERM_STOP.has(v))s.add('t:'+v)});
   zahlen(a.title).forEach(z=>s.add('z:'+z));
   return s;
 }
@@ -2488,9 +2570,16 @@ function signalHaeufigkeit(arts){
        Relevanzsignal – genau wie in v9. */
 /* "Thaçi" und "Thaci", "Kosovo's" und "Kosovo" müssen dasselbe Wort sein –
    sonst finden ein englischer und ein deutscher Bericht nie zusammen. */
-function glatt(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['’]s\b/g,'').replace(/[’']/g,'')}
+function glatt(s){const t=String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['’]s\b/g,'').replace(/[’']/g,'');
+  return t.indexOf('ß')<0?t:t.replace(/ß/g,'ss')}
+/* Sprachbruecke: die Feeds mischen deutsche und englische Schlagzeilen.
+   "Canada" und "Kanada", "convicted" und "verurteilt" muessen dasselbe Wort
+   sein, sonst finden zwei Berichte ueber dieselbe Sache nie zusammen. */
+const UEBER={canada:'kanada',canadian:'kanada',russia:'russland',russian:'russland',moscow:'moskau',germany:'deutschland',german:'deutsch',berlin:'berlin',france:'frankreich',french:'frankreich',italy:'italien',spain:'spanien',poland:'polen',turkey:'turkei',ukraine:'ukraine',ukrainian:'ukraine',china:'china',chinese:'china',japan:'japan',india:'indien',brazil:'brasilien',mexico:'mexiko',egypt:'agypten',greece:'griechenland',sweden:'schweden',norway:'norwegen',denmark:'danemark',finland:'finnland',austria:'osterreich',switzerland:'schweiz',netherlands:'niederlande',belgium:'belgien',britain:'grossbritannien',british:'grossbritannien',israel:'israel',iran:'iran',syria:'syrien',lebanon:'libanon',serbia:'serbien',commission:'kommission',parliament:'parlament',council:'rat',court:'gericht',judges:'gericht',chancellor:'kanzler',president:'prasident',minister:'minister',government:'regierung',coalition:'koalition',election:'wahl',elections:'wahl',voters:'wahler',sanctions:'sanktionen',tariffs:'zolle',tariff:'zolle',trade:'handel',inflation:'inflation',interest:'zins',rates:'zinsen',crimes:'verbrechen',convicted:'verurteilt',sentenced:'verurteilt',verdict:'urteil',jailed:'haft',prison:'haft',years:'jahre',former:'ehemalig',talks:'gesprache',summit:'gipfel',defence:'verteidigung',defense:'verteidigung',military:'militar',migration:'migration',budget:'haushalt',energy:'energie',climate:'klima',health:'gesundheit',security:'sicherheit',congress:'kongress',senate:'senat',bill:'gesetz'};
+const kanon=w=>UEBER[w]||w;
+const kanonSatz=s=>String(s).split(/\s+/).map(kanon).join(' ');
 function titelWorte(t){
-  return new Set((glatt(t).match(/[a-z]{4,}/g)||[]).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
+  return new Set((glatt(t).match(/[a-z]{4,}/g)||[]).map(kanon).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
 }
 function titelAehnlich(A,B){
   if(!A.size||!B.size)return {q:0,n:0};
@@ -2596,7 +2685,7 @@ function baueStories(arts){
       }
     }
   }
-  return gruppen
+  const gebuendelt=gruppen
     .filter(gr=>gr.arts.length)
     .map(gr=>{
       /* Je Haus nur den ersten Beitrag – sonst stehen WELT und Welt doppelt da.
@@ -2606,7 +2695,15 @@ function baueStories(arts){
       const sortiert=gr.arts.sort((a,b)=>b.date-a.date);
       sortiert.forEach(a=>{if(!proHaus.has(a._qb))proHaus.set(a._qb,a)});
       return {...gr,arts:[...proHaus.values()],alle:sortiert};
-    })
+    });
+  /* Dubletten-Verzeichnis über ALLE Bündel – auch über die, die nur ein Haus
+     umfassen. Genau da lag der Fehler: Zwei Eilmeldungen der Tagesschau zum
+     Thaci-Urteil ergeben keine Themenlage (dafür braucht es zwei Häuser), und
+     ohne Themenlage standen beide einzeln in den Top-Meldungen. */
+  const dub={};
+  gebuendelt.forEach((gr,i)=>{const alle=gr.alle||gr.arts;if(alle.length>=2)alle.forEach(a=>{dub[a.id]='g'+i})});
+  window._DUB=dub;
+  return gebuendelt
     .filter(gr=>gr.arts.length>=2)
     .map((gr,i)=>{
       const arts=gr.arts.sort((a,b)=>b.date-a.date);
@@ -2750,7 +2847,9 @@ function leeren(){
 }
 /* Nachschlagewerke, damit keine Ansicht mehr "für jede Meldung alle Meldungen"
    durchgehen muss. Werden einmal nach dem Laden gebaut. */
-const IDX={nt:{},story:{},src:{},mentions:{},personNach:{},ready:false};
+/* var statt const: Das erste Bild wird gezeichnet, bevor diese Zeile läuft.
+   Bei const scheitert dort schon die Abfrage typeof IDX. */
+var IDX={nt:{},story:{},src:{},mentions:{},personNach:{},ready:false};
 function indexieren(){
   [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS,...PROCS,...ELECTIONS].forEach(x=>{if(x.id)ITEMS[x.id]=x});
   MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
@@ -2793,8 +2892,7 @@ function mapArtikel(j,set){
     o.isPodcast=PODCAST_RE.test(o.title)||PODCAST_RE.test(String(a.desc||'').slice(0,160));
     o.herkunft=herkunftOf(o);
     o.think=o.herkunft==='think';
-    o.regions=regionsOf(o);
-    o.region1=hauptRegion(o);
+    const rz=regionZuordnung(o);o.regions=rz.regions;o.region1=rz.region1;
     o.rel=(o.cluster-1)*2+(a.boost||0)+(o.think?1:0)+(a.priority==='eil'?3:0);
     return o;
   }).filter(a=>a.date&&!isNaN(a.date));
@@ -2969,7 +3067,19 @@ function zeigeLadebalken(text){
    alle_artikel{Kategorie:[{quelle,titel,url}]}.
    Die Quellenangaben stecken als ‹‹SRC|Name|URL›› mitten im Text – sie
    werden hier herausgelöst und als anklickbare Fußnoten angehängt. */
-const TL={basis:'newsletter/',liste:null,ausgaben:{},laeuft:false};
+var TL={daten:'newsletter/data/',web:'newsletter/',liste:null,ausgaben:{},laeuft:false,fehler:''};
+/* Wo das Archiv liegt, hängt davon ab, wo diese Seite liegt. Deshalb werden
+   mehrere Wege der Reihe nach probiert; der erste, der eine Liste liefert,
+   wird gemerkt. Die gespiegelte Datei tageslage.json ist nur noch der
+   bequemste Fall, nicht mehr der einzige – genau daran lag es, dass der
+   Reiter leer blieb: Der Lauf legt sie gar nicht an. */
+const TL_QUELLEN=[
+  {daten:'newsletter/data/',        web:'newsletter/'},
+  {daten:'../newsletter/data/',     web:'../newsletter/'},
+  {daten:'/newsletter/data/',       web:'/newsletter/'},
+  {daten:'https://elnils.github.io/newsletter/data/', web:'https://elnils.github.io/newsletter/'},
+  {daten:'https://raw.githubusercontent.com/elnils/newsletter/main/data/', web:'https://elnils.github.io/newsletter/'},
+];
 const SRC_MARKE=/‹‹SRC\|([^|]+)\|([^›]+)››/g;
 function tlText(s){return String(s||'').replace(SRC_MARKE,'').replace(/\s+([.,;:])/g,'$1').replace(/\s{2,}/g,' ').trim()}
 function tlQuellen(s){const out=[];let m;const re=new RegExp(SRC_MARKE.source,'g');
@@ -2977,23 +3087,47 @@ function tlQuellen(s){const out=[];let m;const re=new RegExp(SRC_MARKE.source,'g
 function tlNorm(e,i){
   const t=Date.parse(e.datum+'T'+(e.zeit==='abend'?'18:00':'06:00'))||Date.parse(e.datum)||NOW-i*D;
   const zeit=e.zeit==='abend'?'Abendausgabe':'Morgenausgabe';
+  const base=String(e.datei||'').replace(/\.json$/,'');
   return {id:'tl-'+(e.datei||e.datum+'-'+e.zeit),kind:'tageslage',datei:e.datei,
     title:'Tageslage · '+zeit,datum:e.datum,zeit,date:t,
     desc:tlText(e.intro),quellen:tlQuellen(e.intro),suchtext:e.suchtext||'',
-    link:'newsletter/#'+(e.datei||'').replace(/\.json$/,''),src:'Tageslage'};
+    link:(TL.web||'newsletter/')+'?a='+base,src:'Tageslage'};
+}
+async function tlHolen(url){
+  try{
+    const r=await fetch(url,{cache:'no-store'});
+    if(!r.ok)return null;
+    const d=await r.json();
+    const arr=Array.isArray(d)?d:(d&&(d.ausgaben||d.issues));
+    return (arr&&arr.length)?arr:null;
+  }catch(e){return null}
 }
 async function tageslageLaden(){
   if(TL.liste||TL.laeuft)return;TL.laeuft=true;
-  /* Eine Datei, gleiche Herkunft: tageslage.json wird im Lauf von
-     fetch_tageslage.py gespiegelt. Klappt der Abruf dort nicht, steht der
-     Grund im Actions-Log – hier bleibt der Reiter dann einfach leer. */
+  let roh=null;
   try{
+    /* 1) gespiegelte Datei neben index.html, falls der Lauf sie anlegt */
     const j=await hole('tageslage.json');
-    const roh=j&&(j.ausgaben||j.issues||(Array.isArray(j)?j:[]));
-    if(Array.isArray(roh)&&roh.length){
-      TL.basis=(j&&j.basis)||'newsletter/';
+    roh=j&&(j.ausgaben||j.issues||(Array.isArray(j)?j:null));
+    if(roh&&roh.length){
+      const b=(j&&j.basis)||'newsletter/';
+      TL.web=b;TL.daten=b+'data/';
+    }else{
+      roh=null;
+      /* 2) das Archiv selbst – gleiche Herkunft, sonst über GitHub */
+      for(const q of TL_QUELLEN){
+        const arr=await tlHolen(q.daten+'index.json');
+        if(arr){roh=arr;TL.daten=q.daten;TL.web=q.web;break}
+      }
+    }
+    if(roh&&roh.length){
+      TL.fehler='';
       TL.liste=roh.map(tlNorm).sort((a,b)=>b.date-a.date);
       TL.liste.forEach(x=>{ITEMS[x.id]=x});
+      LOADLOG.push({f:'Tageslage',ok:true,n:TL.liste.length});
+    }else{
+      TL.fehler='Archiv nicht erreichbar';
+      LOADLOG.push({f:'Tageslage',ok:false,why:'Archiv nicht erreichbar – weder tageslage.json noch newsletter/data/index.json'});
     }
   }finally{TL.laeuft=false;render()}
 }
@@ -3001,7 +3135,7 @@ async function tageslageLaden(){
 async function tageslageAusgabe(id){
   const x=ITEMS[id];if(!x||TL.ausgaben[id])return TL.ausgaben[id];
   try{
-    const r=await fetch((TL.basis||'newsletter/')+'data/'+x.datei,{cache:'no-store'});
+    const r=await fetch((TL.daten||'newsletter/data/')+x.datei,{cache:'no-store'});
     if(!r.ok)return null;
     const d=await r.json();
     TL.ausgaben[id]=d;
