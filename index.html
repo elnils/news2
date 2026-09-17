@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v23</title>
+<title>Presseschau – Entwurf v25</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -639,7 +639,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v23</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v25</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1169,28 +1169,26 @@ const matchQ=x=>hasQ(x,S.q);
 const matchLQ=(k,x)=>hasQ(x,S.lq[k]);
 const srcHTML=a=>`<span class="src ${SRC_KIND[a.src]||''}">${esc(a.src)}</span>`;
 /* ZUGANG: frei oder hinter der Bezahlschranke?
-   Drei Wege, in dieser Reihenfolge:
-     1. Amtliche Quellen, Gerichte, EU-Institutionen, Länder und Denkfabriken
-        veröffentlichen ohne Schranke – das folgt aus ihrem Auftrag.
-     2. Das access-Feld aus dem Lauf, wo es gesetzt ist.
-     3. Eine Liste der Häuser, deren Modell bekannt ist.
-   Was danach übrig bleibt, bekommt KEINE Marke – lieber nichts sagen als
-   raten. Und wenn insgesamt zu viele Meldungen unklar bleiben, verschwinden
-   die Marken ganz: eine Kennzeichnung, die bei jeder dritten Meldung fehlt,
-   verwirrt mehr, als sie hilft. */
+   Die Einstufung gehört pro ARTIKEL, nicht pro Haus – FT, NYT, Zeit, SZ und
+   Spiegel veröffentlichen täglich beides. Jede Liste "diese Quelle ist Abo"
+   produziert deshalb zwangsläufig falsche Marken.
+   fetch_news.py entscheidet das bereits sauber je Meldung: Kennzeichnung im
+   Titel (S+, Abo), Abo-Muster in der Adresse, abgeschnittener Teaser mit
+   "Weiterlesen", und – besonders nützlich – für Häuser, die ihre Abo-Stücke
+   zuverlässig markieren, gilt der Rest als frei. Das Ergebnis steht im Feld
+   access als paid | free | unknown.
+   Hier wird genau das übernommen. Ergänzt wird nur eine Regel, die nicht
+   geraten ist: Parlamente, Gerichte, EU-Institutionen, Länder und
+   Denkfabriken veröffentlichen ihren Auftrag gemäß ohne Schranke.
+   Alles andere bleibt ohne Marke. */
 const FREI_HERK=new Set(['parlament','eu-inst','laender','gericht','think']);
-const SRC_ABO=/^(handelsblatt|faz|frankfurter allgemeine|welt|die welt|süddeutsche|sz\b|zeit|die zeit|spiegel|manager magazin|wirtschaftswoche|wiwo|bild|tagesspiegel|table\.?media|table briefings|politico pro|bloomberg|wall street journal|wsj|new york times|nyt|financial times|ft\b|economist|washington post|le monde|el país|corriere|nzz|börsen-zeitung|capital|stern)/i;
-const SRC_FREI=/^(tagesschau|ard|zdf|heute|deutschlandfunk|dlf|br24|mdr|ndr|wdr|swr|hr|rbb|sr\b|dw|deutsche welle|n-tv|ntv|t-online|web\.de|gmx|golem|heise|netzpolitik|reuters|ap news|associated press|afp|dpa|euronews|politico eu|politico us|euractiv|the guardian|bbc|scmp|al jazeera|cnn|axios|nbc|cbs|abc news|npr|the hill|dark reading)/i;
 function zugang(a){
   if(a.kind!=='article')return '';
   if(FREI_HERK.has(a.herkunft))return 'frei';
   if(a.access==='paid')return 'abo';
   if(a.access==='free')return 'frei';
   if(a.paid)return 'abo';
-  const s=(a.src||'').trim();
-  if(SRC_ABO.test(s))return 'abo';
-  if(SRC_FREI.test(s))return 'frei';
-  return '';
+  return '';                      /* unknown: lieber nichts sagen als raten */
 }
 /* Anteil der einordenbaren Meldungen – einmal je Datenstand berechnet. */
 let _zugangQuote=null;
@@ -1200,6 +1198,9 @@ function zugangZeigen(){
     const klar=probe.filter(a=>zugang(a)).length;
     _zugangQuote={n:ARTICLES.length,q:probe.length?klar/probe.length:0};
   }
+  /* Unter 90 % Abdeckung gar keine Marken: eine Kennzeichnung, die bei jeder
+     zehnten Meldung fehlt, wird als Aussage gelesen ("also frei") und ist dann
+     falsch. Die Quote steht in den Einstellungen unter Daten. */
   return _zugangQuote.q>=0.9;
 }
 const zugangPill=a=>{if(!zugangZeigen())return '';const z=zugang(a);
@@ -1287,7 +1288,8 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
 function topTauglich(a){
   const t=a.title||'';
   if(a.herkunft==='think')return false;
-  if(a.isDoc)return false;   /* PDF-Auswürfe aus Dokumentenportalen sind keine Meldungen */
+  if(a.isDoc)return false;   /* PDF-Auswürfe und Gesetzestexte aus Dokumentenportalen */
+  if(a.isTicker)return false; /* Liveticker und Newsblogs sind Sammelseiten */
   if(a.sendung===true||SENDUNG_RE.test(t))return false;
   if(WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||ORGA_RE.test(t)||DRUCKSACHE_RE.test(t))return false;
   if(/^(anzeige|sponsored)$/i.test((a.author||'').trim()))return false;
@@ -2120,7 +2122,8 @@ function renderSettings(){
       +row('Briefing per Mail','Werktags um 7 Uhr, das zuletzt geöffnete Briefing',swHTML('mailBrief',PREF.mailBrief))
       +row('Eilmeldungen sofort','Push auf dieses Gerät',swHTML('pushEil',PREF.pushEil));
   } else {
-    h+=`<div class="set-sec">Sichern</div>`
+    h+=row('Zugang (frei/Abo)',`${Math.round((zugangZeigen(),_zugangQuote?_zugangQuote.q*100:0))} % der Meldungen lassen sich sicher einordnen – Marken erscheinen ab 90 %`,`<span class="pill ${zugangZeigen()?'green':'grey'}">${zugangZeigen()?'sichtbar':'ausgeblendet'}</span>`)
+      +`<div class="set-sec">Sichern</div>`
       +row('Alles als Datei speichern','Gemerktes, Monitore, Briefings, Watchlist, Einstellungen',`<button class="btn sm" onclick="exportPrefs()">Speichern</button>`)
       +row('Aus Datei laden','Ersetzt die hiesigen Daten',`<label class="btn sm">Laden<input type="file" accept="application/json" hidden onchange="importPrefs(this.files[0])"></label>`)
       +`<div class="set-sec">Zurücksetzen</div>`
@@ -2177,7 +2180,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v23 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v25 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2247,7 +2250,29 @@ function herkunftOf(a){
    Dokumente, nicht in die Meldungen. */
 const DATEI_RE=/\.(pdf|docx?|xlsx?|pptx?)\b|^\s*[a-z]?\d{3,}[a-z]{0,4}\.pdf|dokumentationsdatenbank|landesportal|drucksachenportal|parlamentsdokumentation/i;
 const NUMMER_RE=/^\s*\d{1,5}\/\d{2,4}\s*[|–-]/;
-function istDateiauswurf(a){const t=a.title||'';return DATEI_RE.test(t)||NUMMER_RE.test(t)||/^[a-z0-9_.-]{6,}\.(pdf|html?)$/i.test(t.trim())}
+/* Feeds liefern &nbsp;, &amp; und Ähnliches im Klartext – das muss raus,
+   bevor irgendetwas damit gerechnet oder angezeigt wird. */
+const ENTITAETEN={'&nbsp;':' ','&amp;':'&','&quot;':'"','&#39;':"'",'&apos;':"'",'&lt;':'<','&gt;':'>','&ndash;':'–','&mdash;':'—','&bdquo;':'„','&ldquo;':'“','&rdquo;':'”','&sbquo;':'‚','&euro;':'€','&hellip;':'…','&szlig;':'ß','&auml;':'ä','&ouml;':'ö','&uuml;':'ü','&Auml;':'Ä','&Ouml;':'Ö','&Uuml;':'Ü'};
+function entziffern(s){
+  return String(s||'').replace(/&[a-zA-Z#0-9]+;/g,m=>ENTITAETEN[m]||(m.startsWith('&#')?String.fromCharCode(+m.slice(2,-1)||32):m)).replace(/\s+/g,' ').trim();
+}
+/* "… – n-tv.de", "… | tagesschau.de", "… - WELT" : der Quellenname am Ende
+   gehört nicht in die Schlagzeile, er steht schon in der Zeile darunter. */
+const QUELL_SUFFIX=/\s*[–|-]\s*(n-?tv\.de|tagesschau\.de|welt|die welt|faz\.net|faz|spiegel|spiegel online|zeit online|zeit|sueddeutsche\.de|süddeutsche|handelsblatt|heise online|heise|golem\.de|golem|t-online|tagesspiegel|stern\.de|focus online|ntv|zdfheute|br24|mdr|ndr|wdr|dlf|deutschlandfunk|euractiv|politico|reuters|ap news)\s*$/i;
+function titelPutzen(t){
+  let s=entziffern(t);
+  for(let i=0;i<2;i++)s=s.replace(QUELL_SUFFIX,'');
+  return s.trim();
+}
+/* Liveticker und Newsblogs sind Sammelseiten, keine einzelne Meldung: Sie
+   ändern sich ständig, enthalten ein Dutzend Themen und verdrängen oben die
+   eigentliche Nachricht. */
+const TICKER_RE=/\+\+\+|\bnewsblog\b|\bliveticker\b|\bticker\b|\bliveblog\b|\bnews ?blog\b|\balle entwicklungen\b|\bim livestream\b|\bder tag im überblick\b|\blive:|\bblog:/i;
+/* Gesetzestexte und Amtsblätter aus Dokumentenportalen – Nachricht ist das nicht. */
+const GESETZDOK_RE=/^\s*(s\.|h\.\s?r\.|h\.\s?res\.|s\.\s?res\.|s\.\s?con\.\s?res\.)\s*\d|^\s*(bill|public law|federal register)\b|\((is|rs|enr|eh|es|ih|rh)\)\s*[-–]/i;
+const DOKQUELLE_RE=/govinfo|federal register|eur-?lex|congress\.gov|drucksachen|dokumentationsdatenbank|parlamentsdokumentation/i;
+
+function istDateiauswurf(a){const t=a.title||'';return DATEI_RE.test(t)||NUMMER_RE.test(t)||GESETZDOK_RE.test(t)||DOKQUELLE_RE.test(a.source||a.src||'')||/^[a-z0-9_.-]{6,}\.(pdf|html?)$/i.test(t.trim())}
 
 /* ── Themenlagen: Meldungen bündeln, die dasselbe berichten ─────────
    Nicht über beliebige gemeinsame Wörter – daran lag der Fehler, dass 29
@@ -2280,46 +2305,50 @@ function hartGemeinsam(A,B){
   return n;
 }
 function normTitel(t){return String(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60)}
+/* Wie oft kommt ein Signal insgesamt vor? Was in jeder zwanzigsten Meldung
+   steht ("Bundestag", "Trump", "USA"), taugt nicht als Beleg dafür, dass zwei
+   Meldungen DIESELBE Sache berichten. Nur seltene Signale zählen. */
+function signalHaeufigkeit(arts){
+  const df={};
+  arts.forEach(a=>{const s=a._hart||(a._hart=hartSignale(a));s.forEach(x=>{df[x]=(df[x]||0)+1})});
+  return df;
+}
 function baueStories(arts){
-  const kandidaten=arts.filter(a=>a.ago<=96&&!a.isDoc).sort((a,b)=>b.date-a.date);
-  const gruppen=[];const nachTitel={};const sigIdx={};
+  const kandidaten=arts.filter(a=>a.ago<=96&&!a.isDoc&&!a.isTicker).sort((a,b)=>b.date-a.date);
+  const df=signalHaeufigkeit(kandidaten);
+  /* Seltener als ein Prozent des Bestands – bei kleinen Beständen mit einer
+     Untergrenze, sonst bliebe dort gar kein Signal übrig. */
+  const grenze=Math.max(6,Math.round(kandidaten.length*0.01));
+  const selten=a=>{const s=new Set();(a._hart||hartSignale(a)).forEach(x=>{if((df[x]||0)<=grenze)s.add(x)});return s};
+  const gruppen=[];const nachTitel={};const idx={};
   for(const a of kandidaten){
     const k=a._nt||(a._nt=normTitel(a.title));
     if(k.length>=20&&nachTitel[k]){nachTitel[k].arts.push(a);continue}
-    const hart=a._hart||(a._hart=hartSignale(a));
+    const s=a._selten||(a._selten=selten(a));
     const worte=new Set(sigWorte(a.title));
-    let ziel=null,bestN=0;
-    if(hart.size>=2){
-      /* Nur Gruppen prüfen, die mindestens ein hartes Signal teilen. */
+    let ziel=null,best=0;
+    if(s.size){
       const zaehl=new Map();
-      for(const x of hart){const l=sigIdx[x];if(l)for(const gi of l)zaehl.set(gi,(zaehl.get(gi)||0)+1)}
-      for(const [gi,roh] of zaehl){
-        if(roh<2)continue;
-        const gr=gruppen[gi];
-        const n=hartGemeinsam(hart,gr.hart);
-        /* Zwei harte Signale, und die Schlagzeilen dürfen sich nicht völlig
-           fremd sein – ein gemeinsames Stichwort muss es schon geben. */
-        const wortGem=[...worte].filter(w=>gr.worte.has(w)).length;
-        if(n>=2&&(wortGem>=1||n>=3)&&n>bestN){ziel=gr;bestN=n}
+      for(const x of s){const l=idx[x];if(l)for(const gi of l)zaehl.set(gi,(zaehl.get(gi)||0)+1)}
+      for(const [gi] of zaehl){
+        const gr=gruppen[gi];const leit=gr.arts[0];
+        /* Immer gegen den Leitartikel prüfen, nicht gegen die Summe der Gruppe –
+           sonst wächst eine Gruppe über Kettenreaktionen ins Unendliche. */
+        if(Math.abs(leit.date-a.date)>36*H)continue;
+        const gem=hartGemeinsam(s,leit._selten||(leit._selten=selten(leit)));
+        const wortGem=[...worte].filter(w=>(leit._worte||(leit._worte=new Set(sigWorte(leit.title)))).has(w)).length;
+        /* Zwei seltene Belege und ein gemeinsames Stichwort – oder drei Belege. */
+        const passt=(gem>=2&&wortGem>=1)||gem>=3;
+        if(passt&&gem>best){ziel=gr;best=gem}
       }
     }
-    if(!ziel&&hart.size<2&&worte.size>=4){
-      /* Ohne Begriffe aus dem Lauf (ältere Daten): strenger über Wörter. */
-      for(const gr of gruppen){
-        if(gr.hart.size>=2)continue;
-        const gem=[...worte].filter(w=>gr.worte.has(w)).length;
-        if(gem>=3&&gem/new Set([...worte,...gr.worte]).size>=0.5){ziel=gr;break}
-      }
-    }
-    if(ziel){ziel.arts.push(a);hart.forEach(x=>{if(!ziel.hart.has(x)){ziel.hart.add(x);(sigIdx[x]=sigIdx[x]||[]).push(ziel.i)}});worte.forEach(w=>ziel.worte.add(w))}
-    else{const gr={i:gruppen.length,arts:[a],hart:new Set(hart),worte};gruppen.push(gr);hart.forEach(x=>(sigIdx[x]=sigIdx[x]||[]).push(gr.i));if(k.length>=20)nachTitel[k]=gr}
+    if(ziel&&ziel.arts.length<20){ziel.arts.push(a);for(const x of s)if(!ziel.sig.has(x)){ziel.sig.add(x);(idx[x]=idx[x]||[]).push(ziel.i)}}
+    else{const gr={i:gruppen.length,arts:[a],sig:new Set(s)};gruppen.push(gr);for(const x of s)(idx[x]=idx[x]||[]).push(gr.i);if(k.length>=20)nachTitel[k]=gr}
   }
   return gruppen
     .filter(gr=>new Set(gr.arts.map(a=>a.src)).size>=2)
     .map((gr,i)=>{
-      /* Eine Meldung wird selten von mehr als zwei Dutzend Häusern gebracht –
-         alles darüber ist fast immer ein Gruppierungsfehler. */
-      const arts=gr.arts.sort((a,b)=>b.date-a.date).slice(0,25);
+      const arts=gr.arts.sort((a,b)=>b.date-a.date);
       const leit=arts.slice().sort((a,b)=>(b.cluster||1)-(a.cluster||1)||b.rel-a.rel)[0];
       return {id:'st'+i,kind:'story',title:leit.title,sum:(leit.desc||'').slice(0,240),
         src:arts.length+' Quellen',link:leit.link,date:arts[0].date,
@@ -2492,9 +2521,11 @@ function mapArtikel(j,set){
   return (j&&j.articles||[]).map(a=>{
     const o={...a,kind:'article',_set:set,src:a.source,ago:(NOW-new Date(a.date).getTime())/H,
       date:new Date(a.date).getTime(),paid:a.access==='paid',cluster:a.cluster||1,
-      topics:a.topics||[],desc:a.desc||'',terms:a.terms||[],ents:a.ents||[],image:a.image||'',
+      topics:a.topics||[],desc:entziffern(a.desc||''),terms:a.terms||[],ents:a.ents||[],image:a.image||'',
       access:a.access||''};
+    o.title=titelPutzen(a.title);
     o.isDoc=istDateiauswurf(o);
+    o.isTicker=TICKER_RE.test(o.title)||TICKER_RE.test(String(a.desc||'').slice(0,120));
     o.herkunft=herkunftOf(o);
     o.think=o.herkunft==='think';
     o.regions=regionsOf(o);
@@ -2531,7 +2562,7 @@ async function laden(){
   render();
   await luft();
   sicher('Dokumente',()=>{
-    DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,date:new Date(d.date).getTime(),
+    DOCS.push(...((dc&&dc.documents||[]).map(d=>({...d,kind:'doc',src:d.source,title:entziffern(d.title),desc:entziffern(d.desc||''),date:new Date(d.date).getTime(),
       regions:d.origin==='eurlex'||/europ|EP |EU-/i.test(d.source||'')?['eu']:['de']})).filter(d=>!isNaN(d.date))));
   });
   sicher('Termine',()=>{EVENTS.push(...baueTermine(dc&&dc.documents||[]))});
