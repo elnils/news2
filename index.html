@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v33</title>
+<title>Presseschau – Entwurf v34</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -29,10 +29,18 @@
 <style>
 /* ───────────────────────────── Tokens ───────────────────────────── */
 /* Logo-Kachel im Kopf; auf dem Startbildschirm liefert iOS das PNG. */
+/* Kachel links, daneben eine Spalte aus Schriftzug und Stand-Zeile.
+   Ohne die eigene Spalte rutscht "Stand … Uhr" neben den Schriftzug und
+   schiebt auf dem Telefon die halbe Kopfzeile aus dem Bild. */
+#topbar .logo{display:flex;align-items:center;gap:9px;flex-direction:row;min-width:0}
 #topbar .logo .mark{width:26px;height:26px;border-radius:7px;flex:0 0 auto;display:block}
-#topbar .logo{display:flex;align-items:center;gap:9px}
-#topbar .logo .wm{display:block}
-@media (max-width:520px){#topbar .logo .mark{width:24px;height:24px}}
+#topbar .logo .txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;min-width:0}
+#topbar .logo .wm{display:block;white-space:nowrap}
+@media (max-width:520px){
+  #topbar .logo .mark{width:24px;height:24px}
+  #topbar .logo{gap:7px;margin-right:2px}
+  #topbar .logo .wm{font-size:16px}
+}
 /* Im Standalone-Modus (vom Startbildschirm) den Bereich unter der
    iPhone-Statusleiste freihalten. */
 @media (display-mode:standalone){
@@ -344,6 +352,7 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .sitz:last-child{border-bottom:0}
 .sitz .kopf{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .sitz .kopf b{font-size:var(--fs-md)}
+.sitz .hemi{display:block;width:100%;max-width:330px;margin:2px auto 6px;height:auto;color:var(--text)}
 .sitz .balken{position:relative;display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--surface2)}
 .sitz .balken i{display:block;height:100%;min-width:2px}
 .sitz .mitte{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
@@ -691,8 +700,8 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
-      <span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v33</span>
+      <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
+    <span class="demo-pill" id="ver-pill">Entwurf v34</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1122,6 +1131,7 @@ const MARKET_RANGES=[['1t','1 Tag',24],['1w','7 Tage',7],['1m','1 Monat',30],['1
 const DEFAULT_WATCH=['^GDAXI','^STOXX50E','^GSPC','BZ=F','TTF=F','DEBASE27','DE10Y','EURUSD=X'];
 /* Sachfragen: benannte Vorgänge, die quer zu den Ressorts laufen.
    Im Betrieb kommen sie aus den Themenregeln von fetch_news.py. */
+const VOTES=[];
 const ISSUES=[
   {id:'digitalgesetz',name:'Digitalgesetz',kw:['digitalgesetz','digitale verwaltung','verwaltungsdigitalisierung','bürgeramt']},
   {id:'nis2',name:'Netzsicherheit / NIS-2',kw:['nis-2','netzsicherheit','cyber']},
@@ -1143,7 +1153,8 @@ const ORTE=['Berlin','Brüssel','Straßburg','Karlsruhe','Luxemburg','Washington
    Bundesregierung, nur die Schlagzeile, und ohne "Zollstock". Deshalb:
    ODER-Begriffe, Pflichtbegriffe, Ausschlüsse, Region, Ressort, Herkunft,
    Quelle, Zeitfenster und Suchfeld. */
-const MON_FELDER={kw:[],pflicht:[],nicht:[],region:'all',topic:'all',herkunft:'all',src:'all',fenster:48,feld:'alles',nurTop:false};
+const MON_FELDER={kw:[],pflicht:[],nicht:[],region:'all',topic:'all',herkunft:'all',src:'all',fenster:48,feld:'alles',nurTop:false,color:'#2563eb'};
+const MON_FARBEN=[['#2563eb','Blau'],['#7c3aed','Violett'],['#dc2626','Rot'],['#0f766e','Petrol'],['#d97706','Bernstein'],['#15803d','Gr\u00fcn'],['#be185d','Magenta'],['#1f2937','Anthrazit']];
 const MON_FENSTER=[[6,'6 Std.'],[24,'24 Std.'],[48,'48 Std.']];
 const monNorm=m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]});
 const DEFAULT_MONITORS=[
@@ -1199,14 +1210,14 @@ function setPref(k,v){PREF[k]=v;store.set('pref',PREF);applyPrefs();if(g('sheet-
 const WS=[
   {id:'news',label:'Nachrichten',icon:'i-news',tabs:[['top','Übersicht','i-news'],['desk','Ressorts','i-grid'],['stories','Themenlagen','i-layers'],['trends','Trends','i-trend'],['studies','Studien','i-book'],['markets','Märkte','i-chart']],versteckt:['archive']},
   {id:'monitor',label:'Beobachten',icon:'i-eye',tabs:[]},
-  {id:'policy',label:'Verfahren & Recht',kurz:'Verfahren',icon:'i-policy',tabs:[['procs','Verfahren','i-policy'],['docs','Dokumente','i-doc'],['events','Termine','i-cal'],['rulings','Urteile','i-scale'],['elections','Wahlen','i-vote']]},
+  {id:'policy',label:'Verfahren & Recht',kurz:'Verfahren',icon:'i-policy',tabs:[['procs','Verfahren','i-policy'],['votes','Abstimmungen','i-vote'],['docs','Dokumente','i-doc'],['events','Termine','i-cal'],['rulings','Urteile','i-scale'],['elections','Wahlen','i-vote']]},
   {id:'stakeholder',label:'Akteure',icon:'i-people',tabs:[['people','Personen','i-user'],['orgs','Organisationen','i-building'],['committees','Gremien','i-people'],['institutions','Institutionen','i-bank']]},
   {id:'reporting',label:'Briefings',icon:'i-report',tabs:[['brief','Briefings','i-report'],['tageslage','Tageslage','i-book'],['newsletter','Newsletter','i-mail']]},
 ];
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',voteErg:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
 let MONITORS=store.get('monitors',DEFAULT_MONITORS).map(m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]}));
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
@@ -1318,7 +1329,7 @@ function render(){
     if(w.id==='news'){
       if(tab==='top')h+=renderTop();else if(tab==='desk')h+=renderDesk();else if(tab==='stories')h+=renderStories();else if(tab==='trends')h+=renderTrends();else if(tab==='studies')h+=renderStudies();else if(tab==='markets')h+=renderMarkets();else h+=renderArchive();
     } else if(w.id==='monitor')h+=renderMonitor();
-    else if(w.id==='policy'){if(tab==='procs')h+=renderProcs();else if(tab==='docs')h+=renderDocs();else if(tab==='events')h+=renderEvents();else if(tab==='rulings')h+=renderRulings();else h+=renderElections()}
+    else if(w.id==='policy'){if(tab==='procs')h+=renderProcs();else if(tab==='votes')h+=renderVotes();else if(tab==='docs')h+=renderDocs();else if(tab==='events')h+=renderEvents();else if(tab==='rulings')h+=renderRulings();else h+=renderElections()}
     else if(w.id==='stakeholder')h+=renderStakeholder(tab);
     else{if(tab==='brief')h+=renderBrief();else if(tab==='tageslage')h+=renderTageslage();else h+=renderNewsletter()}
   }
@@ -1862,6 +1873,10 @@ function renderMonitor(){
   return h;
 }
 function monForm(id){S.monForm=S.monForm===id?null:id;render();const el=g('mon-name');el&&el.focus()}
+function monFarbe(c){
+  const f=g('mon-color');if(!f)return;f.value=c;
+  [...g('mon-farben').children].forEach(b=>b.setAttribute('aria-pressed',String(b.title&&b.getAttribute('onclick').includes(c))));
+}
 function monFormHTML(m){
   m=monNorm(m||{name:'',color:['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'][MONITORS.length%6]});
   const srcs=[...new Set(ARTICLES.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
@@ -1884,6 +1899,7 @@ function monFormHTML(m){
       <div>${sel('Zeitfenster','mon-fenster',MON_FENSTER.map(([v,l])=>[v,l]),m.fenster)}</div>
       <div>${sel('Wo suchen','mon-feld',[['alles','Schlagzeile und Teaser'],['titel','Nur Schlagzeile']],m.feld)}</div>
     </div>
+    <div class="field"><label>Farbe</label><div class="chips" id="mon-farben" role="group" aria-label="Farbe">${MON_FARBEN.map(([c,l])=>`<button class="chip" type="button" aria-pressed="${(m.color||'').toLowerCase()===c}" title="${l}" onclick="monFarbe('${c}')"><i style="width:12px;height:12px;border-radius:4px;background:${c};display:inline-block"></i> ${l}</button>`).join('')}</div><input type="hidden" id="mon-color" value="${esc(m.color||MON_FARBEN[0][0])}"></div>
     <div class="field"><label class="chk"><input type="checkbox" id="mon-nurtop" ${m.nurTop?'checked':''}>Ticker, Dokumente, Werbung und Sendungshinweise überspringen</label></div>
     <div class="bar" style="margin-bottom:12px"><button class="btn primary" onclick="saveMonitor()">${m.id?'Änderungen speichern':'Monitor anlegen'}</button><button class="btn quiet" onclick="S.monForm=null;render()">Abbrechen</button><span class="note">Leere Begriffsliste bedeutet: alles, was die Filter übrig lassen.</span></div>
   </div>`;
@@ -1897,14 +1913,15 @@ function saveMonitor(){
   if(!name){toast('Ein Name fehlt');return}
   const daten={name,kw:liste('mon-kw'),pflicht:liste('mon-pflicht'),nicht:liste('mon-nicht'),
     region:g('mon-region').value,topic:g('mon-topic').value,herkunft:g('mon-herkunft').value,src:g('mon-src').value,
-    fenster:+g('mon-fenster').value||48,feld:g('mon-feld').value,nurTop:g('mon-nurtop').checked};
+    fenster:+g('mon-fenster').value||48,feld:g('mon-feld').value,nurTop:g('mon-nurtop').checked,
+    color:(g('mon-color')&&g('mon-color').value)||'#2563eb'};
   if(!daten.kw.length&&!daten.pflicht.length&&daten.region==='all'&&daten.topic==='all'&&daten.herkunft==='all'&&daten.src==='all'){
     toast('Mindestens ein Begriff oder ein Filter nötig');return}
   const id=g('mon-id').value;
   const alt=id&&MONITORS.find(m=>m.id===id);
   if(alt){Object.assign(alt,daten);toast('Monitor geändert')}
-  else{const colors=['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'];
-    MONITORS.push({...MON_FELDER,...daten,id:'m'+Date.now(),color:colors[MONITORS.length%colors.length]});toast('Monitor angelegt')}
+  else MONITORS.push({...MON_FELDER,...daten,id:'m'+Date.now()});
+  if(!alt)toast('Monitor angelegt');
   store.set('monitors',MONITORS);S.monForm=null;render();
 }
 function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('monitors',MONITORS);toast('Monitor gelöscht');render()}
@@ -1947,6 +1964,21 @@ function renderProcs(){
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Verfahren</h2><span class="cnt">${list.length}${PROCS.length!==list.length?' von '+PROCS.length:''} Gesetzgebungsvorgänge</span><div class="tools">${copyBtn(VFLIST,'Verfahren')}</div></div>`;
   h+=`<div class="filters"><div class="bar">${lsearch('vf','Verfahren durchsuchen – Titel, Schlagwort …')}${typen.length>1?`<select class="sel" aria-label="Art" onchange="S.procType=this.value;render()"><option value="all">Alle Arten</option>${typen.map(t=>`<option ${S.procType===t?'selected':''}>${esc(t)}</option>`).join('')}</select>`:''}${stufen.length>1?`<select class="sel" aria-label="Stand" onchange="S.procStage=this.value;render()"><option value="all">Jeder Stand</option>${stufen.map(t=>`<option ${S.procStage===t?'selected':''}>${esc(t)}</option>`).join('')}</select>`:''}</div></div>`;
   h+=`<div class="box">${list.length?list.slice(0,150).map(p=>`<div class="proc" role="button" tabindex="0" style="cursor:pointer" onclick="openReader('${p.id}',VFLIST)" onkeydown="rowKey(event,'${p.id}')"><div class="bar"><b>${esc(p.title)}</b><span class="pill ${p.src==='EU'?'eu':'grey'}">${esc(p.type||p.src)}</span>${p.date?`<span class="note">${fmtAgo(new Date(p.date).getTime())}</span>`:''}</div><div class="steps">${p.steps.map((s,i)=>`<span class="step ${i<p.now?'done':i===p.now?'now':''}">${s}</span>`).join('')}</div></div>`).join(''):'<div class="empty"><b>Keine Verfahren</b>Gesetzgebungsvorgänge erscheinen hier, sobald der nächste Lauf sie geholt hat.</div>'}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`;
+  return h;
+}
+/* Die Abstimmungsliste: Ergebnis auf einen Blick, Fraktionen im Balken. */
+function renderVotes(){
+  const list=VOTES.filter(v=>matchLQ('ab',v)&&(S.voteErg==='all'||!S.voteErg||v.ergebnis===S.voteErg));
+  window.ABLIST=list.map(v=>v.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Namentliche Abstimmungen</h2><span class="cnt">${list.length}${VOTES.length!==list.length?' von '+VOTES.length:''}</span><div class="tools">${lsearch('ab','Abstimmungen durchsuchen …')}${copyBtn(ABLIST,'Abstimmungen')}</div></div>`;
+  h+=`<div class="filters"><div class="chips" role="group" aria-label="Ergebnis">${[['all','Alle'],['angenommen','Angenommen'],['abgelehnt','Abgelehnt']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteErg||'all')===k}" onclick="S.voteErg='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>v.ergebnis===k).length}</span>`}</button>`).join('')}</div></div>`;
+  h+=`<div class="box">${list.length?list.slice(0,150).map(v=>{
+    const z=v.abstimmung,ab=z.ja+z.nein+z.enthalten||1;
+    return `<div class="proc" role="button" tabindex="0" style="cursor:pointer" onclick="openReader('${v.id}',ABLIST)" onkeydown="rowKey(event,'${v.id}')">
+      <div class="bar"><b>${esc(v.title)}</b><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span>${v.thema?`<span class="pill grey">${esc(v.thema)}</span>`:''}<span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
+      <div class="sitz" style="padding:6px 0 0;border:0"><div class="balken" style="height:12px">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/ab*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte"></span></div></div>
+      <div class="meta" style="margin-top:6px"><span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
+  h+=`<p class="note" style="margin-top:10px">Quelle: abgeordnetenwatch.de. Nicht-namentliche Abstimmungen stehen nur im Plenarprotokoll und fehlen deshalb.</p>`;
   return h;
 }
 function renderDocs(){
@@ -2133,29 +2165,96 @@ function fraktionsFarbe(name){
   if(/green|gr\u00fcn/.test(t))return '#15803d';
   return farbeFuer(n);
 }
+/* Amtliche Sitzzahlen als eingebaute Rückfallebene. Vorrang hat immer,
+   was der Lauf liefert (people.json → seats), denn das ist die
+   Mandatsliste des Parlaments selbst. Diese Tabelle springt nur ein,
+   solange das Verzeichnis noch nicht vollständig ist – gezählte Köpfe
+   aus einer halb geladenen Liste sind keine Sitzverteilung. */
+const SITZE_AMTLICH={
+  bt:{label:'Deutscher Bundestag',gesamt:630,stand:'21. Wahlperiode',quelle:'bundestag.de',
+      fraktionen:[['CDU/CSU',208],['AfD',152],['SPD',120],['Grüne',85],['Linke',64],['SSW',1]]},
+  ep:{label:'Europäisches Parlament',gesamt:720,stand:'10. Wahlperiode',quelle:'europarl.europa.eu',
+      fraktionen:[['EVP',188],['S&D',136],['PfE',84],['EKR',78],['Renew',77],['Grüne/EFA',53],['Die Linke',46],['ESN',25],['Fraktionslos',33]]},
+  'us-senate':{label:'US-Senat',gesamt:100,stand:'119. Kongress',quelle:'senate.gov',
+      fraktionen:[['Republicans',53],['Democrats',45],['Independents',2]]},
+  'us-house':{label:'US-Repräsentantenhaus',gesamt:435,stand:'119. Kongress',quelle:'house.gov',
+      fraktionen:[['Republicans',220],['Democrats',215]]},
+};
+/* Sitzordnung von links nach rechts – ein Plenum ist keine Hitliste. */
+const SPEKTRUM=[/linke|the left|gue\/ngl/i,/ssw|piraten/i,/gr(ü|ue)n|green|efa/i,/spd|sozialdem|s&d/i,
+  /democrat/i,/bsw/i,/fdp|renew|liberal/i,/freie wähler|\bfw\b/i,/cdu|csu|union|evp|epp|volkspartei/i,
+  /ekr|ecr|konservativ/i,/pfe|patriot/i,/afd|esn|identit/i,/republican/i,/fraktionslos|parteilos|\bni\b|sonstige/i];
+function spektrumRang(name){
+  const i=SPEKTRUM.findIndex(re=>re.test(String(name||'')));
+  return i<0?SPEKTRUM.length-1:i;
+}
+/* Der Halbkreis: Reihen nach außen wachsend, Sätze von links nach rechts
+   vergeben – so sitzt jede Fraktion als Block, wie im Plenarsaal. */
+function halbkreisHTML(reihen,gesamt){
+  const N=gesamt||reihen.reduce((n,r)=>n+r[1],0);
+  if(!N)return '';
+  const R=Math.max(3,Math.min(12,Math.round(Math.sqrt(N/5))));
+  const innen=.42,aussen=1;
+  const radien=[];for(let i=0;i<R;i++)radien.push(innen+(aussen-innen)*(R===1?1:i/(R-1)));
+  const summe=radien.reduce((a,b)=>a+b,0);
+  const proReihe=radien.map(r=>Math.max(1,Math.round(N*r/summe)));
+  let diff=N-proReihe.reduce((a,b)=>a+b,0);
+  for(let i=R-1;diff!==0;i=(i-1+R)%R){
+    if(diff>0){proReihe[i]++;diff--}else if(proReihe[i]>1){proReihe[i]--;diff++}
+  }
+  const plaetze=[];
+  radien.forEach((r,i)=>{const n=proReihe[i];
+    for(let k=0;k<n;k++){const t=n===1?.5:k/(n-1);plaetze.push({w:Math.PI*(1-t),r})}});
+  plaetze.sort((a,b)=>b.w-a.w||a.r-b.r);
+  const folge=[];reihen.forEach(([f,n])=>{for(let i=0;i<n;i++)folge.push(f)});
+  const W=200,H=112,cx=100,cy=106,RA=94;
+  const abstand=RA*(aussen-innen)/Math.max(1,R-1);
+  const pr=Math.max(.9,Math.min(3.4,abstand*.36));
+  const punkte=plaetze.map((p,i)=>{
+    const x=cx+Math.cos(p.w)*p.r*RA,y=cy-Math.sin(p.w)*p.r*RA;
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pr.toFixed(2)}" fill="${fraktionsFarbe(folge[i]||'')}"><title>${esc(folge[i]||'')}</title></circle>`;
+  }).join('');
+  return `<svg class="hemi" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sitzverteilung">
+    <line x1="${cx}" y1="${cy-RA-5}" x2="${cx}" y2="${(cy-RA*innen+4).toFixed(1)}" stroke="currentColor" stroke-width=".7" opacity=".3" stroke-dasharray="2 2"/>
+    ${punkte}</svg>`;
+}
 function sitzverteilung(personen){
-  /* Schlüssel ist das konkrete Parlament, nicht die Gruppe: Bayern und
-     NRW sind zwei Landtage, nicht einer. */
+  /* Schlüssel ist die konkrete Kammer, nicht die Gruppe: Bayern und NRW
+     sind zwei Landtage, Senat und Repräsentantenhaus zwei Kammern. */
   const nach={};
   personen.forEach(p=>{
-    const k=p.parl||parlGruppe(p);
+    const k=p.chamber||p.parl||parlGruppe(p);
     if(!k)return;
-    (nach[k]=nach[k]||{label:p.org||PARL_LABEL[parlGruppe(p)]||k,parl:k,leute:[],fr:{}});
+    (nach[k]=nach[k]||{key:k,label:p.org||PARL_LABEL[parlGruppe(p)]||k,leute:[],fr:{}});
     nach[k].leute.push(p);
     const f=(p.party||p.fraktion||'Fraktionslos').trim()||'Fraktionslos';
     nach[k].fr[f]=(nach[k].fr[f]||0)+1;
   });
-  return Object.values(nach)
-    .map(g=>({...g,n:g.leute.length,reihen:Object.entries(g.fr).sort((a,b)=>b[1]-a[1])}))
-    .filter(g=>g.n>=8)
-    .sort((a,b)=>b.n-a.n);
+  return Object.values(nach).map(g=>{
+    const amtlich=(window.SEATS&&SEATS[g.key])||SITZE_AMTLICH[g.key];
+    const gezaehlt=Object.entries(g.fr).sort((a,b)=>b[1]-a[1]);
+    const reihen=(amtlich?amtlich.fraktionen:gezaehlt).slice();
+    return {key:g.key,
+      label:(amtlich&&amtlich.label)||g.label,
+      n:(amtlich&&amtlich.gesamt)||g.leute.length,
+      reihen:reihen.sort((a,b)=>spektrumRang(a[0])-spektrumRang(b[0])),
+      groesse:reihen.slice().sort((a,b)=>b[1]-a[1]),
+      amtlich:!!amtlich,
+      stand:(amtlich&&amtlich.stand)||'',
+      quelle:(amtlich&&amtlich.quelle)||'',
+      imVerzeichnis:g.leute.length};
+  }).filter(g=>g.n>=8).sort((a,b)=>b.n-a.n);
 }
 function sitzHTML(g){
-  const gesamt=g.n,mehrheit=Math.floor(gesamt/2)+1;
+  const mehrheit=Math.floor(g.n/2)+1;
+  const herkunft=g.amtlich
+    ? `amtliche Sitze${g.stand?', '+esc(g.stand):''}${g.quelle?' \u00b7 '+esc(g.quelle):''}${g.imVerzeichnis&&g.imVerzeichnis<g.n?` \u00b7 ${g.imVerzeichnis} Personen im Verzeichnis`:''}`
+    : `${g.n} Personen im Verzeichnis \u2013 keine amtliche Sitzliste`;
   return `<div class="sitz">
-    <div class="kopf"><b>${esc(g.label)}</b><span class="note">${gesamt} Sitze im Verzeichnis · Mehrheit ab ${mehrheit}</span></div>
-    <div class="balken">${g.reihen.map(([f,n])=>`<i style="width:${(n/gesamt*100).toFixed(2)}%;background:${fraktionsFarbe(f)}" title="${esc(f)}: ${n}"></i>`).join('')}<span class="mitte" title="Mehrheit"></span></div>
-    <div class="fr">${g.reihen.map(([f,n])=>`<span><i style="background:${fraktionsFarbe(f)}"></i><b>${esc(f)}</b> ${n} · ${(n/gesamt*100).toFixed(1).replace('.',',')} %</span>`).join('')}</div>
+    <div class="kopf"><b>${esc(g.label)}</b><span class="note">${g.n} Sitze \u00b7 Mehrheit ab ${mehrheit}</span></div>
+    ${halbkreisHTML(g.reihen,g.n)}
+    <div class="fr">${g.groesse.map(([f,n])=>`<span><i style="background:${fraktionsFarbe(f)}"></i><b>${esc(f)}</b> ${n} \u00b7 ${(n/g.n*100).toFixed(1).replace('.',',')} %</span>`).join('')}</div>
+    <div class="note" style="margin-top:6px">${herkunft}</div>
   </div>`;
 }
 function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return nurEinmal((IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date));return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
@@ -2182,7 +2281,7 @@ function renderStakeholder(tab){
     if(sitze.length)h+=`<div class="box" style="margin-bottom:12px">
       <div class="desk-hd" style="padding:10px 14px 0"><h3>Sitzverteilung</h3><span class="cnt">${sitze.length===1?'1 Parlament':sitze.length+' Parlamente'}</span></div>
       ${sitze.map(sitzHTML).join('')}
-      <div class="note" style="padding:0 14px 12px">Gezählt aus dem Personenverzeichnis – nicht aus einer amtlichen Sitzliste. Abweichungen sind möglich, solange der Lauf nicht alle Mitglieder liefert.</div></div>`;
+      </div>`;
   }
   h+=`<div class="box">${list.slice(0,400).map(x=>{let extra='';if(tab==='committees')extra=` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`;else if(tab==='institutions'||tab==='orgs'){const n=bySrc(x).length;extra=n?` · ${n} ${n===1?'Meldung':'Meldungen'}`:''}else{const n=mentionsOf(x).length;extra=n?` · ${n}× erwähnt`:''}
     const ort=x.city||(tab==='orgs'||tab==='institutions'?EBENE_NAME[ebeneVon(x)]||'':'');
@@ -2398,7 +2497,7 @@ function openReader(id,list){
     return;
   }S.reader=id;if(Array.isArray(list))S.readerList=list;else if(!S.readerList.includes(id))S.readerList=[id];
   const story=x.kind==='article'?STORIES.find(s=>s.arts.includes(id)):null;let b='';
-  g('reader-h').textContent=x.gericht?'Urteil':{article:'Meldung',story:'Themenlage',doc:'Dokument',event:'Termin',person:'Person',org:'Organisation',committee:'Gremium',institution:'Institution',proc:'Verfahren',election:'Wahl',tageslage:'Tageslage'}[x.kind]||'';
+  g('reader-h').textContent=x.gericht?'Urteil':{article:'Meldung',story:'Themenlage',doc:'Dokument',event:'Termin',person:'Person',org:'Organisation',committee:'Gremium',institution:'Institution',proc:'Verfahren',vote:'Abstimmung',election:'Wahl',tageslage:'Tageslage'}[x.kind]||'';
   const tags=`<div class="reader-tags">${(x.topics||[]).map(t=>`<button class="chip" onclick="closeSheet('reader');clearSearch(true);go('news','top');setTopic('${t}')">${TOPICS[t]||t}</button>`).join('')}${(x.regions||[]).map(r=>`<span class="pill ${r==='eu'?'eu':'grey'}">${REGION_NAME[r]}</span>`).join('')}</div>`;
   const aiBox=`<div id="ai-box" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Zusammenfassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div>`;
   if(x.kind==='article'||x.kind==='doc'){
@@ -2454,6 +2553,13 @@ function openReader(id,list){
       ${(x.desk||[]).length?`<div class="reader-tags">${x.desk.slice(0,10).map(d=>`<span class="pill grey">${esc(d)}</span>`).join('')}</div>`:''}
       ${abstimmungHTML(x.abstimmung)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu diesem Vorgang gefunden.</p>'}`;
+  } else if(x.kind==='vote'){
+    const rel=bezugMeldungen(x);window.READERSUB=rel.map(a=>a.id);
+    b=`<div class="meta"><span class="pill grey">Namentliche Abstimmung</span><span>${esc(x.abstimmung.datum||'')}</span>${x.thema?`<span class="pill blue">${esc(x.thema)}</span>`:''}</div>
+      <h3 class="reader-title">${esc(x.title)}</h3>
+      ${x.desc?`<div class="reader-text">${esc(x.desc)}</div>`:''}
+      ${abstimmungHTML(x.abstimmung)}
+      <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu dieser Abstimmung gefunden.</p>'}`;
   } else if(x.kind==='election'){
     const rel=bezugMeldungen(x);window.READERSUB=rel.map(a=>a.id);const days=Math.round((x.date-NOW)/D);
     b=`<div class="meta"><span class="pill blue">in ${days} Tagen</span><span>${fmtDay(x.date)}</span></div><h3 class="reader-title">${esc(x.title)}</h3>
@@ -2653,13 +2759,14 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v33 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v34 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
   laender:'laender_articles.json', us:'us_articles.json',
   docs:'documents.json', people:'people.json', newsletters:'newsletters.json',
   dip:'dip.json', elections:'elections.json', markets:'markets.json', ki:'ki_meldungen.json',
+  votes:'votes.json',
 };
 const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
 
@@ -3173,6 +3280,34 @@ function mapVerfahren(p,i){
     abstimmung:p.abstimmung||p.vote||p.vote_result||null,regions:[p.art==='eu'?'eu':'de']};
 }
 
+/* ── Namentliche Abstimmungen aus votes.json ───────────────────
+   Geliefert von fetch_directory.py aus abgeordnetenwatch. Nicht-namentliche
+   Abstimmungen gibt es dort nicht – sie stehen nur im Plenarprotokoll. */
+function mapAbstimmungen(j){
+  const roh=(j&&(j.abstimmungen||j.votes||j.polls))||[];
+  return roh.map((v,i)=>{
+    const t=Date.parse(v.datum||v.date||'')||NOW-i*D;
+    return {id:String(v.id||('ab'+i)),kind:'vote',title:v.titel||v.title||'Abstimmung',
+      date:t,ago:(NOW-t)/H,src:'Bundestag',link:v.url||'#',regions:['de'],topics:[],
+      thema:v.thema||'',desc:v.intro||'',ergebnis:v.ergebnis||((+v.ja||0)>(+v.nein||0)?'angenommen':'abgelehnt'),
+      abstimmung:{datum:v.datum||'',namentlich:v.namentlich!==false,
+        ja:+v.ja||0,nein:+v.nein||0,enthalten:+v.enthalten||0,abwesend:+v.abwesend||0,
+        fraktionen:v.fraktionen||{},beschluss:v.beschluss||''}};
+  }).sort((a,b)=>b.date-a.date);
+}
+/* Zu welchem Verfahren gehört eine Abstimmung? Der Titel ist bei beiden
+   derselbe Gesetzentwurf – deshalb dieselbe Prüfung wie bei den
+   Themenlagen, nur strenger. */
+function abstimmungenZuordnen(){
+  if(!VOTES.length||!PROCS.length)return;
+  const kandidaten=VOTES.map(v=>({v,w:titelWorte(v.title)}));
+  PROCS.forEach(p=>{
+    const pw=titelWorte(p.title);if(pw.size<3)return;
+    let best=null,bq=0;
+    kandidaten.forEach(({v,w})=>{const {q,n}=titelAehnlich(pw,w);if(q>bq&&q>=0.6&&n>=3){bq=q;best=v}});
+    if(best)p.abstimmung=p.abstimmung||best.abstimmung;
+  });
+}
 /* ── Wahlen aus elections.json ────────────────────────────────────── */
 const PARTEI_FARBE={'CDU':'#1f2937','CSU':'#1f2937','CDU/CSU':'#1f2937','SPD':'#c81e1e','GRÜNE':'#15803d','Grüne':'#15803d','B90/Grüne':'#15803d',
   'FDP':'#ca8a04','AfD':'#0ea5e9','LINKE':'#a21caf','Die Linke':'#a21caf','BSW':'#7c3aed','FW':'#0891b2','SSW':'#0891b2','Sonstige':'#94a3b8'};
@@ -3200,7 +3335,7 @@ function mapMaerkte(mk){
 
 /* ── Alles zusammensetzen ─────────────────────────────────────────── */
 function leeren(){
-  [ARTICLES,STORIES,DOCS,EVENTS,PEOPLE,ORGS,COMMITTEES,INSTITUTIONS,NEWSLETTERS,PROCS,ELECTIONS,MARKET_CATALOG,QUOTES].forEach(a=>{a.length=0});
+  [ARTICLES,STORIES,DOCS,EVENTS,PEOPLE,ORGS,COMMITTEES,INSTITUTIONS,NEWSLETTERS,PROCS,ELECTIONS,VOTES,MARKET_CATALOG,QUOTES].forEach(a=>{a.length=0});
   [ITEMS,AI,MARKET_BY_SYM].forEach(o=>Object.keys(o).forEach(k=>delete o[k]));
 }
 /* Nachschlagewerke, damit keine Ansicht mehr "für jede Meldung alle Meldungen"
@@ -3209,7 +3344,7 @@ function leeren(){
    Bei const scheitert dort schon die Abfrage typeof IDX. */
 var IDX={nt:{},story:{},src:{},mentions:{},personNach:{},ready:false};
 function indexieren(){
-  [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS,...PROCS,...ELECTIONS].forEach(x=>{if(x.id)ITEMS[x.id]=x});
+  [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS,...PROCS,...ELECTIONS,...VOTES].forEach(x=>{if(x.id)ITEMS[x.id]=x});
   MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
   IDX.nt={};IDX.story={};IDX.src={};IDX.mentions={};IDX.personNach={};
   STORIES.forEach(s=>(s.alle||s.arts).forEach(id=>{IDX.story[id]=s}));
@@ -3260,8 +3395,8 @@ async function laden(){
   leeren();render();
   zeigeLadebalken('Lade Daten …');
   const [n,e,b]=await Promise.all([hole(DATEIEN.news),hole(DATEIEN.eu),hole(DATEIEN.bt)]);
-  const [la,us,dc,pp,nl,dip,el,mk,ki]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
-    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki)]);
+  const [la,us,dc,pp,nl,dip,el,mk,ki,vo]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
+    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki),hole(DATEIEN.votes)]);
 
   /* Jeder Abschnitt einzeln abgesichert: scheitert einer (unerwartetes Feld
      in genau einer Meldung, einem Termin, einer Person …), fallen die
@@ -3389,6 +3524,9 @@ async function laden(){
       date:new Date(x.date).getTime(),regions:['de'],terms:x.terms||[],ents:x.ents||[]})).filter(x=>!isNaN(x.date))));
   });
   sicher('Verfahren',()=>{if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,400).map(mapVerfahren))});
+  /* Amtliche Sitzverteilung aus dem Lauf – schlägt die eingebaute Tabelle. */
+  sicher('Sitzverteilung',()=>{window.SEATS=(pp&&pp.seats)||null});
+  sicher('Abstimmungen',()=>{VOTES.push(...mapAbstimmungen(vo));abstimmungenZuordnen()});
   sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
   sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
   sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});

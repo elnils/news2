@@ -3,6 +3,9 @@
 Presseschau – Verzeichnis-Fetch (Ergänzung zu fetch_news.py)
 
 Erzeugt (additiv, bestehende Dateien bleiben unberührt):
+  votes.json        Namentliche Abstimmungen des Bundestags (Ergebnis je
+                    Fraktion); das Stimmverhalten steckt zusätzlich in
+                    people.json unter people[].votes
   people.json       Personen + Ausschüsse (Bundestag, Bundesrat, 16 Landtage,
                     Europäisches Parlament, US-Kongress)
                     inkl. Kontakt, Ausschuss-Mitgliedschaften, letzte Reden
@@ -1463,6 +1466,199 @@ def fehlerbericht():
                 print(f"      … und {len(urls)-5} weitere")
     print("========================================\n")
 
+
+# ─────────────────────────────────────────────────────────────
+# NAMENTLICHE ABSTIMMUNGEN  →  votes.json  +  people[].votes
+#
+# Quelle: abgeordnetenwatch.de (CC BY 4.0). Zwei Endpunkte reichen:
+#   /polls?field_legislature=<id>   die Abstimmungen der Wahlperiode
+#   /votes?poll=<id>                jede einzelne Stimme (Mandat → ja/nein/…)
+# Nicht-namentliche Abstimmungen stehen dort nicht – die gibt es nur als
+# Text im Plenarprotokoll; sie bleiben deshalb außen vor.
+#
+# Je Lauf werden nur POLLS_PER_RUN neue Abstimmungen geholt (rund 630
+# Stimmen je Abstimmung). Alles Geholte liegt in votes_cache.json, die
+# Ausgabe wird daraus jedes Mal neu gerechnet – so wächst der Bestand
+# über die Läufe, ohne je ein Zeitbudget zu sprengen.
+# ─────────────────────────────────────────────────────────────
+VOTES_CACHE      = "votes_cache.json"
+POLLS_PER_RUN    = int(os.environ.get("POLLS_PER_RUN", "12"))
+POLLS_MAX        = int(os.environ.get("POLLS_MAX", "80"))
+VOTES_PER_PERSON = int(os.environ.get("VOTES_PER_PERSON", "40"))
+AW_STIMME = {"yes": "ja", "no": "nein", "abstain": "enthalten", "no_show": "abwesend"}
+_LEER = {"ja": 0, "nein": 0, "enthalten": 0, "abwesend": 0}
+
+
+def _entities(t):
+    """&uuml; und Co. kommen aus dem Feld field_intro als Klartext zurueck."""
+    from html import unescape
+    return re.sub(r"\s+", " ", unescape(t or "")).strip()
+
+
+def _aw_bundestag_periode():
+    parls = aw_all("parliaments")
+    bt = next((p for p in parls if "Bundestag" in p.get("label", "")), None)
+    if not bt:
+        return None
+    periods = aw_all("parliament-periods", parliament=bt["id"], type="legislature",
+                     sort_by="id", sort_direction="desc")
+    return periods[0] if periods else None
+
+
+def _poll_stimmen(poll_id):
+    """Die Einzelstimmen einer Abstimmung. Erst der /votes-Endpunkt mit
+    Filter, sonst /polls/<id>?related_data=votes – derselbe Inhalt, anderer
+    Weg. Einer von beiden antwortet erfahrungsgemäß immer."""
+    roh = aw_all("votes", poll=poll_id, page_size=500)
+    if not roh:
+        d = get_json(f"{ENDPOINTS['aw']}/polls/{poll_id}", {"related_data": "votes"})
+        daten = (d or {}).get("data") or {}
+        roh = (daten.get("related_data") or {}).get("votes") or []
+    return roh
+
+
+def fetch_abstimmungen(people):
+    print("── Namentliche Abstimmungen (abgeordnetenwatch) ──")
+    cache = {}
+    try:
+        cache = json.load(open(VOTES_CACHE, encoding="utf-8"))
+    except Exception:
+        pass
+    cache.setdefault("polls", {})
+
+    periode = _aw_bundestag_periode()
+    if not periode:
+        note_problem("Abstimmungen", "Wahlperiode nicht gefunden",
+                     ENDPOINTS["aw"] + "/parliament-periods")
+        return None
+    pid_periode = str(periode["id"])
+
+    polls = aw_all("polls", field_legislature=periode["id"],
+                   sort_by="field_poll_date", sort_direction="desc")
+    if not polls:
+        note_problem("Abstimmungen", "keine Abstimmungen geliefert",
+                     ENDPOINTS["aw"] + "/polls")
+        print("  keine Abstimmungen geliefert")
+        polls = []
+    polls.sort(key=lambda p: (p.get("field_poll_date") or ""), reverse=True)
+    polls = polls[:POLLS_MAX]
+    print(f"  {len(polls)} Abstimmungen in {periode.get('label')}")
+
+    # Mandat → Person: liefert Fraktion und das persönliche Stimmverhalten.
+    mandat2person = {str(p.get("_mandate_id")): p for p in people if p.get("_mandate_id")}
+
+    neu = 0
+    for poll in polls:
+        pid = str(poll.get("id"))
+        if pid in cache["polls"]:
+            continue
+        if neu >= POLLS_PER_RUN or out_of_time():
+            budget_note("Abstimmungen")
+            break
+        stimmen = _poll_stimmen(pid)
+        if not stimmen:
+            continue
+        eintrag = {
+            "id": pid,
+            "periode": pid_periode,
+            "titel": (poll.get("label") or "").strip(),
+            "datum": (poll.get("field_poll_date") or "")[:10],
+            "thema": ", ".join(t.get("label", "") for t in (poll.get("field_topics") or [])[:2]),
+            "url": poll.get("abgeordnetenwatch_url")
+                   or f"https://www.abgeordnetenwatch.de/bundestag/abstimmungen/{pid}",
+            "intro": _entities(strip_tags(poll.get("field_intro") or ""))[:600],
+            "stimmen": {str((v.get("mandate") or {}).get("id")): AW_STIMME.get(v.get("vote"), "abwesend")
+                        for v in stimmen if (v.get("mandate") or {}).get("id")},
+        }
+        cache["polls"][pid] = eintrag
+        neu += 1
+        print(f"  + {eintrag['datum']} {eintrag['titel'][:70]} ({len(eintrag['stimmen'])} Stimmen)")
+        time.sleep(0.3)
+
+    print(f"  {neu} neu geholt, {len(cache['polls'])} im Zwischenspeicher")
+    _atomic_dump(cache, VOTES_CACHE)
+
+    # ── Auswerten: Gesamtergebnis, Fraktionen, persönliches Verhalten ──
+    out = []
+    for pid, c in cache["polls"].items():
+        if c.get("periode") and c["periode"] != pid_periode:
+            continue                      # alte Wahlperiode: Mandate passen nicht mehr
+        z = dict(_LEER)
+        frak = {}
+        for mid, art in (c.get("stimmen") or {}).items():
+            if art not in z:
+                art = "abwesend"
+            z[art] += 1
+            person = mandat2person.get(mid)
+            f = ((person or {}).get("party") or "").strip() or "Fraktionslos"
+            frak.setdefault(f, dict(_LEER))[art] += 1
+            if person is not None:
+                person.setdefault("votes", []).append({
+                    "poll": pid, "titel": c["titel"], "datum": c["datum"],
+                    "thema": c.get("thema", ""), "url": c.get("url", ""), "entscheidung": art})
+        out.append({"id": "ab-" + pid, "titel": c["titel"], "datum": c["datum"],
+                    "thema": c.get("thema", ""), "url": c.get("url", ""),
+                    "intro": c.get("intro", ""), "namentlich": True,
+                    "ja": z["ja"], "nein": z["nein"], "enthalten": z["enthalten"], "abwesend": z["abwesend"],
+                    "ergebnis": "angenommen" if z["ja"] > z["nein"] else "abgelehnt",
+                    "fraktionen": dict(sorted(frak.items(), key=lambda kv: -sum(kv[1].values())))})
+    out.sort(key=lambda a: a["datum"], reverse=True)
+
+    for p in people:
+        if p.get("votes"):
+            p["votes"].sort(key=lambda v: v["datum"], reverse=True)
+            del p["votes"][VOTES_PER_PERSON:]
+
+    _atomic_dump({"updated": datetime.now(timezone.utc).isoformat(),
+                  "quelle": "abgeordnetenwatch.de (CC BY 4.0)",
+                  "periode": periode.get("label", ""),
+                  "hinweis": "Nur namentliche Abstimmungen. Nicht-namentliche stehen "
+                             "ausschließlich im Plenarprotokoll und fehlen hier.",
+                  "abstimmungen": out}, "votes.json")
+    print(f"→ votes.json: {len(out)} namentliche Abstimmungen, "
+          f"{sum(1 for p in people if p.get('votes'))} Personen mit Stimmverhalten")
+    return out
+
+
+# ─────────────────────────────────────────────────────────────
+# SITZVERTEILUNG  →  people.json["seats"]
+# Gezählt wird nicht irgendwas, sondern die Mandatsliste des jeweiligen
+# Parlaments – also die amtliche Zusammensetzung. Das Frontend zeichnet
+# daraus den Plenar-Halbkreis; fehlt ein Parlament hier, nimmt es seine
+# eingebaute Tabelle.
+# ─────────────────────────────────────────────────────────────
+KAMMER_LABEL = {"bt": "Deutscher Bundestag", "ep": "Europäisches Parlament",
+                "us-senate": "US-Senat", "us-house": "US-Repräsentantenhaus",
+                "br": "Bundesrat"}
+
+
+def build_seats(people):
+    nach = {}
+    for p in people:
+        k = p.get("chamber") or p.get("parliament") or ""
+        if not k or k == "br":
+            continue                      # Bundesrat hat Stimmen, keine Sitze
+        f = (p.get("party") or "").strip() or "Fraktionslos"
+        nach.setdefault(k, {})
+        nach[k][f] = nach[k].get(f, 0) + 1
+    heute = datetime.now(TZ).strftime("%d.%m.%Y")
+    out = {}
+    for k, frak in nach.items():
+        if k.startswith("lt-"):
+            label = "Landtag " + LANDTAG_LABELS.get(k[3:], k[3:].upper())
+        else:
+            label = KAMMER_LABEL.get(k, k)
+        gesamt = sum(frak.values())
+        if gesamt < 8:
+            continue
+        out[k] = {"label": label, "gesamt": gesamt,
+                  "fraktionen": sorted(frak.items(), key=lambda kv: -kv[1]),
+                  "stand": heute,
+                  "quelle": "abgeordnetenwatch.de" if k.startswith(("bt", "lt-")) else
+                            ("EP Open Data" if k == "ep" else "congress-legislators")}
+    print("→ Sitzverteilung: " + ", ".join(f"{v['label']} {v['gesamt']}" for v in out.values()))
+    return out
+
 def main():
     t0 = time.monotonic()
     print(f"[{datetime.now().isoformat()}] Presseschau Verzeichnis-Fetch "
@@ -1481,6 +1677,9 @@ def main():
     safe("Profil-Anreicherung",
          lambda: enrich_people([p for p in people if p["parliament"] in ("bt", "br", "ep")], base_of), None)
     safe("Wikipedia", lambda: enrich_wikipedia(people), None)
+    # Abstimmungen brauchen _mandate_id, laufen also vor dem Aufräumen.
+    safe("Namentliche Abstimmungen", lambda: fetch_abstimmungen(people), None)
+    seats = safe("Sitzverteilung", lambda: build_seats(people), {})
     for p in people:
         p.pop("_mandate_id", None); p.pop("_norm", None); p.pop("land", None)
     changes = safe("Änderungsvergleich", lambda: diff_people(people),
@@ -1492,6 +1691,7 @@ def main():
                            {"id": "lt", "label": "Landtage", "count": len(lt_people)},
                            {"id": "ep", "label": "Europäisches Parlament", "count": len(ep_people)},
                            {"id": "us", "label": "US-Kongress", "count": len(us_people)}],
+           "seats": seats,
            "committees": bt_comm + br_comm + lt_comm + ep_comm + us_comm, "people": people,
            "note": "E-Mail-Adressen ohne email_verified=true folgen dem Adressmuster des Parlaments und sind unverifiziert."}
     # Bestehende people.json nie durch eine leere ersetzen
