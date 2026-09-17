@@ -85,9 +85,10 @@ jobs:
       # Lässt bei Fehlschlag die alte markets.json stehen.
       - name: Märkte (Indizes, Energie, Zinsen, Devisen)
         continue-on-error: true
-        timeout-minutes: 3
+        timeout-minutes: 8
         env:
           MARKET_TIMEOUT: '12'
+          MARKET_PAUSE: '0.25'   # 113 Werte × 2 Abrufe ≈ 2 Minuten
         run: python fetch_markets.py
 
       # Verzeichnis, DIP, Kalender, Newsletter.
