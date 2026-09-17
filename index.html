@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau: Nachrichten & Co.</title>
+<title>Presseschau – Entwurf v27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -127,7 +127,10 @@ svg.i{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-
 .desk-hd .cnt{font-size:var(--fs-xs);color:var(--muted);font-weight:700;flex:1}
 .desk-list{max-height:var(--boxh,420px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 body.no-inner .desk-list{max-height:none}
-.desk-row{padding:8px 12px 8px 14px;border-top:1px solid var(--border);cursor:pointer}
+.desk-row{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:4px;align-items:start;padding:8px 8px 8px 14px;border-top:1px solid var(--border);cursor:pointer}
+.desk-row .dr-in{min-width:0}
+.desk-row .star{width:32px;height:32px}
+.desk-row .srclist,.desk-row .inline-read{grid-column:1/-1}
 .desk-row:first-child{border-top:0}
 .desk-row:hover{background:var(--surface2)}
 .desk-row .ttl{font-size:var(--fs-sm);font-weight:600;line-height:1.35}
@@ -639,7 +642,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v25</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v27</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1125,7 +1128,7 @@ INSTITUTIONS.forEach(i=>{i.src=i.type;i.title=i.name;i.link='https://demo.presse
 <script>
 /* ───────────────────────────── Speicher & Zustand ───────────────────────────── */
 const store={get(k,d){try{const v=localStorage.getItem('ps11_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('ps11_'+k,JSON.stringify(v))}catch(e){}}};
-const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,dedupe:true,inline:false,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
+const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,dedupe:true,inline:false,rauschen:false,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
 function applyPrefs(){
   const de=document.documentElement;
   if(PREF.theme==='system')delete de.dataset.theme;else de.dataset.theme=PREF.theme;
@@ -1285,6 +1288,14 @@ const PR_RE=/^(press remarks|remarks by|statement by|speech by|doorstep|pressest
 const WEICH_RE=/\b(schauspieler|sängerin|sänger|musiker|popstar|rapper|band|album|tournee|filmpreis|oscar|grammy|gestorben|ist tot|nachruf|trauer um|hochzeit|scheidung|baby)\b/i;
 const WEICH_TOPICS=new Set(['kultur','sport','panorama','vermischtes','promi','leute','unterhaltung']);
 const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb','bverfg','bgh','bundesbank','us-whitehouse','us-house','us-senate']);
+/* Was in den Top-Meldungen nichts verloren hat, stört in den Listen genauso:
+   Veranstaltungswerbung, Eigenwerbung, Serviceformate, Ticker, Dateiauswürfe.
+   Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
+function istRauschen(a){
+  const t=a.title||'';
+  return a.isDoc||a.isTicker||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||a.sendung===true;
+}
+const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
   const t=a.title||'';
   if(a.herkunft==='think')return false;
@@ -1321,10 +1332,16 @@ function entdoppeln(arr){
 /* Welche anderen Meldungen berichten dasselbe? Im Betrieb liefert das der
    Cluster aus fetch_news.py; hier die übrigen Meldungen derselben Themenlage,
    sonst zeitnahe Meldungen anderer Quellen mit gleichem Ressort. */
+/* Hausname ohne Feed-Zusatz ("Tagesschau Eil" → "tagesschau"). Die
+   ausführliche Fassung steht im Datenteil; hier eine Notversion, weil das
+   erste Bild gezeichnet wird, bevor dieser geladen ist. */
+function hausVon(x){return typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim()}
 function clusterArts(a){
   if(a._cl)return a._cl;
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
-  let arr=st?st.arts.filter(id=>id!==a.id).map(id=>ITEMS[id]).filter(Boolean):[];
+  /* Gezählt werden HÄUSER, nicht Beiträge: der eigene Beitrag und weitere
+     Beiträge desselben Hauses fallen heraus, sonst zählt Tagesschau doppelt. */
+  let arr=st?st.arts.map(id=>ITEMS[id]).filter(x=>x&&x.id!==a.id&&(x._qb||hausVon(x.src))!==(a._qb||(a._qb=hausVon(a.src)))):[];
   if(!arr.length&&typeof IDX!=='undefined'){
     /* Keine Themenlage: Meldungen anderer Quellen mit fast gleicher Schlagzeile – aus dem Index, nicht per Suche. */
     const k=a._nt||(a._nt=normTitel(a.title));
@@ -1335,7 +1352,7 @@ function clusterArts(a){
 }
 /* Angezeigte Quellenzahl und aufklappbare Liste müssen dieselbe sein –
    gesetzt in indexieren(), nachdem die Daten geladen sind. */
-function newsBase(){return ARTICLES.filter(a=>a.ago<=48&&inRegion(a))}
+function newsBase(){return ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&inRegion(a)))}
 function renderTop(){
   const base=newsBase();
   const top=entdoppeln(base.filter(a=>a.ago<=24&&topTauglich(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
@@ -1491,8 +1508,9 @@ function inlineHTML(a){
 function openSheetReader(id){const alt=PREF.inline;PREF.inline=false;S.inlineId=null;openReader(id);PREF.inline=alt}
 function quellenListe(a){
   if(S.openSrc!==a.id)return '';
-  const cl=clusterArts(a);
-  return `<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`;
+  const cl=clusterArts(a);const alle=[a,...cl];const ids=alle.map(y=>y.id);
+  const zeigen=alle.slice(0,40);
+  return `<div class="srclist">${zeigen.map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J(ids)})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}${alle.length>40?`<div class="note" style="padding:6px 0">und ${alle.length-40} weitere</div>`:''}</div>`;
 }
 function rowHTML(a,listName,small){
   return `<div class="row ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">
@@ -1514,7 +1532,7 @@ const DESK_ALIAS={economy:'wirtschaft',energy:'energie',health:'gesundheit',immi
 function deskLabel(t){return DESK_LABEL[t]||TOPICS[t]||String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}
 function renderDesk(){
   const win=S.deskWin||24;
-  const base=entdoppeln(ARTICLES.filter(a=>a.ago<=win&&inRegion(a)&&a.herkunft!=='think'&&matchLQ('dk',a)).sort((a,b)=>b.date-a.date));
+  const base=entdoppeln(ohneRauschen(ARTICLES.filter(a=>a.ago<=win&&inRegion(a)&&a.herkunft!=='think'&&matchLQ('dk',a))).sort((a,b)=>b.date-a.date));
   /* Jede Meldung in genau einem Ressort – dem ersten, das der Lauf vergeben hat. */
   const nach={};
   base.forEach(a=>{let t=(a.topics||[])[0]||'sonstiges';t=DESK_ALIAS[t]||t;(nach[t]=nach[t]||[]).push(a)});
@@ -1524,10 +1542,10 @@ function renderDesk(){
   let b=`<div class="filters"><div class="bar">${lsearch('dk','In allen Ressorts suchen …')}</div>
     <div class="chips" role="navigation" aria-label="Zum Ressort springen">${keys.map(k=>`<a class="chip" href="#desk-${k}" onclick="event.preventDefault();const el=g('desk-${k}');el&&el.scrollIntoView({behavior:'smooth',block:'start'})">${deskLabel(k)} <span class="n">${nach[k].length}</span></a>`).join('')}</div></div>`;
   window.DESKLIST={};
-  b+=`<div class="desk">${keys.map(k=>{const arts=nach[k];const auf=S.deskOpen&&S.deskOpen[k];const zeigen=arts.slice(0,auf?60:8);window.DESKLIST[k]=arts.map(a=>a.id);
-    return `<section class="box desk-sec" id="desk-${k}"><div class="desk-hd"><h3>${deskLabel(k)}</h3><span class="cnt">${arts.length}</span><button class="btn sm quiet" onclick="go('news','top');setTopic('${k}')">Alle</button></div>
-      <div class="desk-list">${zeigen.map(a=>`<div class="desk-row" role="button" tabindex="0" onclick="openReader('${a.id}',DESKLIST['${k}'])" onkeydown="rowKey(event,'${a.id}')"><div class="ttl">${esc(a.title)}</div><div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${AI[a.id]?'<span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>':''}</div>${quellenListe(a)}</div>`).join('')}</div>
-      ${arts.length>8?`<div class="desk-more"><button class="btn sm quiet" onclick="S.deskOpen=S.deskOpen||{};S.deskOpen['${k}']=!S.deskOpen['${k}'];render()">${auf?'Weniger zeigen':`${Math.min(arts.length,60)-8} weitere zeigen`}</button></div>`:''}</section>`}).join('')||'<div class="box"><div class="empty"><b>Keine Meldungen</b>Anderer Zeitraum, andere Region oder kürzerer Suchbegriff.</div></div>'}</div>`;
+  b+=`<div class="desk">${keys.map(k=>{const arts=nach[k];const suche=!!(S.lq.dk||'').trim();const auf=suche||(S.deskOpen&&S.deskOpen[k]);const zeigen=arts.slice(0,auf?200:8);window.DESKLIST[k]=arts.map(a=>a.id);
+    return `<section class="box desk-sec" id="desk-${k}"><div class="desk-hd"><h3>${deskLabel(k)}</h3><span class="cnt">${arts.length}${suche?' Treffer':''}</span><button class="btn sm quiet" onclick="go('news','top');setTopic('${k}')">Alle</button></div>
+      <div class="desk-list">${zeigen.map(a=>`<div class="desk-row" role="button" tabindex="0" onclick="openReader('${a.id}',DESKLIST['${k}'])" onkeydown="rowKey(event,'${a.id}')"><div class="dr-in"><div class="ttl">${esc(a.title)}</div><div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${AI[a.id]?'<span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>':''}</div></div>${starHTML(a.id)}${quellenListe(a)}${inlineHTML(a)}</div>`).join('')}</div>
+      ${arts.length>8&&!suche?`<div class="desk-more"><button class="btn sm quiet" onclick="S.deskOpen=S.deskOpen||{};S.deskOpen['${k}']=!S.deskOpen['${k}'];render()">${auf?'Weniger zeigen':`${Math.min(arts.length,60)-8} weitere zeigen`}</button></div>`:''}</section>`}).join('')||'<div class="box"><div class="empty"><b>Keine Meldungen</b>Anderer Zeitraum, andere Region oder kürzerer Suchbegriff.</div></div>'}</div>`;
   return h+body('desk',b);
 }
 
@@ -1539,6 +1557,25 @@ function renderStories(){
   return h;
 }
 const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte']];
+/* Quellennamen gehören nicht in die Trends: "Tagesschau", "Reuters" oder
+   "Handelsblatt" sagen nichts über das Thema. Ebenso wenig Wörter wie
+   "Unternehmen" oder Ländernamen, die in jeder zweiten Meldung stehen. */
+let _quellSet=null;
+function quellNamen(){
+  if(_quellSet&&_quellSet.n===ARTICLES.length)return _quellSet.s;
+  const s=new Set();
+  ARTICLES.forEach(a=>{const q=norm(a.src);if(!q)return;s.add(q);s.add(quellBasis(a.src));q.split(/[\s.]+/).forEach(w=>{if(w.length>=4)s.add(w)})});
+  ['tagesschau','ard','zdf','reuters','dpa','afp','spiegel','welt','faz','zeit','handelsblatt','politico','euractiv','heise','golem','bloomberg','guardian','washington','new york','financial times'].forEach(x=>s.add(x));
+  _quellSet={n:ARTICLES.length,s};return s;
+}
+const TREND_STOP=new Set(['unternehmen','menschen','regierung','behörde','behörden','land','länder','stadt','städte','jahr','jahre','woche','montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonntag','prozent','million','milliarde','milliarden','experten','studie','bericht','meldung','artikel','video','foto','interview','kommentar','analyse','übersicht','news','update']);
+function trendTauglich(t){
+  const v=norm(t);
+  if(v.length<4)return false;
+  if(TREND_STOP.has(v))return false;
+  if(quellNamen().has(v))return false;
+  return true;
+}
 function trendRows(mode,von,bis){
   const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a));
   const m={};
@@ -1548,11 +1585,11 @@ function trendRows(mode,von,bis){
     else if(mode==='issues'){
       /* Sachbegriffe aus dem Lauf (Nominalphrasen je Meldung). Ohne dieses
          Feld – nur in den Beispieldaten – die fest hinterlegten Sachfragen. */
-      if(a.terms&&a.terms.length){[...new Set(a.terms.map(t=>String(t).toLowerCase()))].filter(t=>t.length>=5).forEach(t=>add('t:'+t,t.replace(/^\w/,c=>c.toUpperCase()),a))}
+      if(a.terms&&a.terms.length){[...new Set(a.terms.map(t=>String(t).toLowerCase()))].filter(t=>t.length>=5&&trendTauglich(t)).forEach(t=>add('t:'+t,t.replace(/^\w/,c=>c.toUpperCase()),a))}
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}}
     else{
       /* Eigennamen aus der Entitätenerkennung des Laufs (spaCy). */
-      if(a.ents&&a.ents.length){[...new Set(a.ents.map(e=>String(e).trim()))].filter(e=>e.length>=4).forEach(e=>add('e:'+e.toLowerCase(),e,a))}
+      if(a.ents&&a.ents.length){[...new Set(a.ents.map(e=>String(e).trim()))].filter(e=>e.length>=4&&trendTauglich(e)).forEach(e=>add('e:'+e.toLowerCase(),e,a))}
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));(a.personen||[]).forEach(pid=>{const p=ITEMS[pid];if(p)add('p:'+p.id,p.name,a)});ORTE.forEach(o=>{if(txt.includes(norm(o)))add('o:'+o,o,a)})}}
   });
   return m;
@@ -1609,7 +1646,7 @@ function renderMarkets(){
 function renderArchive(){
   if(typeof archivLaden==='function')archivLaden();
   const pool=typeof archivPool==='function'?archivPool():ARTICLES.filter(a=>a.ago>48);
-  const list=entdoppeln(pool.filter(a=>a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft)).sort((a,b)=>b.date-a.date));
+  const list=entdoppeln(ohneRauschen(pool.filter(a=>a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft))).sort((a,b)=>b.date-a.date));
   window.ARCHLIST=list.map(a=>a.id);
   const stand=typeof ARCH!=='undefined'&&ARCH.monate?`${ARCH.geladen.size} von ${ARCH.monate.length} Monaten geladen`:'';
   let h=`<div class="bar" style="margin-bottom:10px"><button class="btn sm quiet" onclick="go('news','top')">← Zurück zu den Nachrichten</button></div>`;
@@ -1655,6 +1692,15 @@ function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('mon
 
 /* ── Policy ── */
 function bezugMeldungen(x,limit=12){
+  if(x.kind==='election'){
+    /* Nur Meldungen, die die Region UND die Wahl selbst nennen – sonst landet
+       jede Meldung aus dem Bundesland unter der Wahl. */
+    const reg=norm(x.region||'');
+    if(!reg)return [];
+    return ARTICLES.filter(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));
+      return t.includes(reg)&&/wahl|wähler|stimmzettel|koalition|umfrage|wahlkampf|spitzenkandidat/.test(t)})
+      .sort((a,b)=>b.date-a.date).slice(0,limit);
+  }
   /* Meldungen zu einem Verfahren oder einer Wahl: über die Schlagwörter des
      Vorgangs (Deskriptoren) und die Kernwörter des Titels. */
   const worte=new Set([...(x.desk||[]).map(norm),...sigWorte(x.title||'').filter(w=>w.length>=6),...(x.region?[norm(x.region)]:[])]);
@@ -1878,20 +1924,23 @@ async function aiBrief(){const box=g('ai-brief');if(!box)return;box.hidden=false
   await kiLauf(out,'Schreibe aus diesen Stichpunkten ein knappes deutsches Morgenbriefing (Stil: politischer Morning-Newsletter, 120–180 Wörter, keine Überschriften, keine Links, keine Erfindungen über die Stichpunkte hinaus):\n\n'+briefPlain(curBrief()));}
 function renderTageslage(){
   if(typeof tageslageLaden==='function')tageslageLaden();
-  const liste=(typeof TL!=='undefined'&&TL.ausgaben)||[];
-  const gefiltert=liste.filter(x=>matchLQ('tl',x));
+  const liste=(typeof TL!=='undefined'&&TL.liste)||[];
+  const q=norm(S.lq.tl||'');
+  const gefiltert=q?liste.filter(x=>norm(x.suchtext+' '+x.desc+' '+x.title).includes(q)):liste;
   window.TLLIST=gefiltert.map(x=>x.id);
-  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Tageslage</h2><span class="cnt">${liste.length?gefiltert.length+' Ausgaben':'die eigene tägliche Presseschau'}</span><div class="tools">${lsearch('tl','Ausgaben durchsuchen …')}<a class="btn sm quiet" href="newsletter/" target="_blank" rel="noopener">Archiv öffnen</a></div></div>`;
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Tageslage</h2><span class="cnt">${liste.length?gefiltert.length+' von '+liste.length+' Ausgaben':'die eigene tägliche Presseschau'}</span><div class="tools">${lsearch('tl','In allen Ausgaben suchen …')}<a class="btn sm quiet" href="newsletter/" target="_blank" rel="noopener">Archiv öffnen</a></div></div>`;
   if(!liste.length){
-    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':`<b>Ausgaben noch nicht eingebunden</b>Das Archiv liegt unter <a href="newsletter/" target="_blank" rel="noopener">/newsletter/</a>. Sobald der Pfad zur Ausgabenliste in <code>config.js</code> steht, erscheinen die Ausgaben hier.`}</div></div>`;
+    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':`<b>Ausgaben nicht erreichbar</b>Das Archiv liegt unter <a href="newsletter/" target="_blank" rel="noopener">/newsletter/</a>. Erwartet wird <code>newsletter/data/index.json</code>.`}</div></div>`;
     return h;
   }
   const heute=gefiltert[0];
-  h+=`<div class="box" style="padding:16px 18px;margin-bottom:12px"><div class="meta"><span class="pill blue">Neueste Ausgabe</span><span>${fmtAgo(heute.date)}</span></div>
-    <h3 style="font-size:var(--fs-lg);font-weight:800;margin:6px 0">${esc(heute.title)}</h3>
-    ${heute.desc?`<div class="note" style="font-size:var(--fs-sm);line-height:1.6">${esc(heute.desc)}</div>`:''}
-    <div class="bar" style="margin-top:10px"><a class="btn primary sm" href="${esc(heute.link)}" target="_blank" rel="noopener">Ausgabe lesen</a><button class="btn sm" onclick="openReader('${heute.id}',TLLIST)">Themen nachschlagen</button></div></div>`;
-  h+=`<div class="box list">${gefiltert.slice(1,80).map(x=>`<div class="row" role="button" tabindex="0" onclick="openReader('${x.id}',TLLIST)" onkeydown="rowKey(event,'${x.id}')"><div class="meta"><span class="src">Tageslage</span><span>${fmtAgo(x.date)}</span>${(x.themen||[]).length?`<span class="pill grey">${x.themen.length} Themen</span>`:''}</div><div class="ttl">${esc(x.title)}</div>${x.desc?`<div class="teaser" style="display:block">${esc(x.desc.slice(0,180))}</div>`:''}${starHTML(x.id)}</div>`).join('')}</div>`;
+  if(heute){
+    h+=`<div class="box" style="padding:16px 18px;margin-bottom:12px"><div class="meta"><span class="pill blue">Neueste Ausgabe</span><span>${esc(heute.zeit)}</span><span>${fmtAgo(heute.date)}</span></div>
+      <h3 style="font-size:var(--fs-lg);font-weight:800;margin:6px 0">${esc(heute.title)}</h3>
+      ${heute.desc?`<div class="note" style="font-size:var(--fs-sm);line-height:1.6">${esc(heute.desc)}</div>`:''}
+      <div class="bar" style="margin-top:10px"><button class="btn primary sm" onclick="openReader('${heute.id}',TLLIST)">Ausgabe öffnen</button><a class="btn sm quiet" href="${esc(heute.link)}" target="_blank" rel="noopener">Im Archiv</a></div></div>`;
+  }
+  h+=`<div class="scrollbox main box" style="padding:0"><div class="box list">${gefiltert.slice(1,120).map(x=>`<div class="row" role="button" tabindex="0" onclick="openReader('${x.id}',TLLIST)" onkeydown="rowKey(event,'${x.id}')"><div class="meta"><span class="src">Tageslage</span><span>${esc(x.zeit)}</span><span>${fmtAgo(x.date)}</span></div><div class="ttl">${esc(x.datum)}</div>${x.desc?`<div class="teaser" style="display:block">${esc(x.desc.slice(0,200))}</div>`:''}${starHTML(x.id)}</div>`).join('')}</div></div>`;
   return h;
 }
 function renderNewsletter(){
@@ -1965,7 +2014,7 @@ function openReader(id,list){
   const aiBox=`<div id="ai-box" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Zusammenfassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div>`;
   if(x.kind==='article'||x.kind==='doc'){
     b=`<div class="meta">${srcHTML(x)}${x.kind==='doc'?`<span class="pill blue">${esc(x._art||dokArt(x))}</span>${(x._haus||dokHaus(x))&&(x._haus||dokHaus(x))!==x.src?`<span class="pill grey">${esc(x._haus||dokHaus(x))}</span>`:''}`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${tags}${aiBox}
-      ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Auch berichtet von</h2><span class="cnt">${clusterArts(x).length}</span></div><div class="box list">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
+      ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Auch berichtet von</h2><span class="cnt">${clusterArts(x).length} ${clusterArts(x).length===1?'Haus':'Häuser'}</span></div><div class="box list scrollbox">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
       ${story?`<div class="box" style="margin-top:18px;padding:12px 14px"><div class="meta" style="margin-bottom:4px"><span class="pill blue">${story.arts.length} Quellen</span><span>Teil einer Story</span></div><b>${esc(story.title)}</b><div class="note" style="margin-top:4px">${esc(story.sum)}</div><button class="btn sm" style="margin-top:8px" onclick="openReader('${story.id}')">Story öffnen</button></div>`:''}
       ${x.kind==='doc'&&QUOTES.some(q=>q.doc===x.id&&ITEMS[q.pid])?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert daraus</h2></div>${QUOTES.filter(q=>q.doc===x.id&&ITEMS[q.pid]).map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.pid}')">${esc(ITEMS[q.pid].name)}</a></span></div>`).join('')}`:''}`;
   } else if(x.kind==='story'){
@@ -1984,10 +2033,21 @@ function openReader(id,list){
     b=`<div class="bar" style="align-items:center;gap:12px"><span class="tile" style="width:56px;height:56px;border-radius:50%;font-size:18px;background:${x.color}">${bild}</span><div><h3 class="reader-title" style="margin:0">${esc(x.name)}</h3><div class="meta">${x.party?`<span class="pill grey">${esc(x.party)}</span>`:''}<span class="src">${esc(x.org)}</span></div></div></div>
       <div class="reader-text" style="margin-top:8px">${esc(x.role)}</div>
       ${kontakt?`<div class="box" style="padding:10px 14px;margin-top:10px">${kontakt}</div>`:''}
+      ${(x.social||[]).length?`<div class="reader-tags" style="margin-top:10px">${x.social.map(s=>`<a class="chip" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join('')}</div>`:''}
       ${x.wiki?`<p class="note" style="margin-top:10px">${esc(x.wiki)}${x.wikiUrl?` <a href="${esc(x.wikiUrl)}" target="_blank" rel="noopener">Wikipedia</a>`:''}</p>`:''}
       ${aus.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Ausschüsse</h2></div><div class="reader-tags">${aus.map(k=>`<button class="chip" ${ITEMS[k.id]?`onclick="openReader('${k.id}')"`:''}>${esc(k.name.split(' – ')[0])}${k.role?` <span class="n">${esc(k.role)}</span>`:''}</button>`).join('')}</div>`:''}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.slice(0,20).map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
-      ${(x.speeches||[]).length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Wortmeldungen im Plenum</h2><span class="cnt">${x.speeches.length}</span></div><div class="box">${x.speeches.slice(0,8).map(s=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(s.title||'')}</div><div class="meta">${s.date?`<span>${fmtAgo(new Date(s.date).getTime())}</span>`:''}${s.protocol?`<span>${esc(s.protocol)}</span>`:''}${s.bezug?`<span class="pill grey">${esc(s.bezug)}</span>`:''}${s.link?`<a href="${esc(s.link)}" target="_blank" rel="noopener">Protokoll</a>`:''}</div></div><span></span></div>`).join('')}</div>`:''}
+      ${(()=>{
+        /* Ein Eintrag ist nur dann eine Wortmeldung, wenn er aus einem Protokoll
+           stammt. Alles andere – Kleine Anfrage, Antrag, Gesetzentwurf – ist
+           eine Beteiligung an einem Vorgang und heißt hier auch so. */
+        const sp=x.speeches||[];if(!sp.length)return '';
+        const art=s=>dokArt({type:s.type||s.art||'',title:(s.title||'')+' '+(s.bezug||'')});
+        const reden=sp.filter(s=>s.protocol||/protokoll/i.test(art(s)));
+        const vorgaenge=sp.filter(s=>!reden.includes(s));
+        const block=(titel,liste)=>liste.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">${titel}</h2><span class="cnt">${liste.length}</span></div><div class="box">${liste.slice(0,10).map(s=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(s.title||'')}</div><div class="meta"><span class="pill blue">${esc(art(s))}</span>${s.date?`<span>${fmtAgo(new Date(s.date).getTime())}</span>`:''}${s.protocol?`<span>${esc(s.protocol)}</span>`:''}${s.rolle||s.role?`<span class="pill grey">${esc(s.rolle||s.role)}</span>`:''}${s.link?`<a href="${esc(s.link)}" target="_blank" rel="noopener">Öffnen</a>`:''}</div></div><span></span></div>`).join('')}</div>`:'';
+        return block('Wortmeldungen im Plenum',reden)+block('Beteiligt an Vorgängen',vorgaenge);
+      })()}
       ${qs.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert in Protokollen</h2><span class="cnt">${qs.length}</span></div>${qs.map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.doc}')">${esc(ITEMS[q.doc].title)}</a> · ${esc(ITEMS[q.doc].src)}</span></div>`).join('')}`:''}
       ${rel.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Aktuelles aus dem Themenfeld</h2></div><div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:''}`;
   } else if(x.kind==='org'||x.kind==='institution'){
@@ -2008,11 +2068,26 @@ function openReader(id,list){
       ${x.polls?`<div class="meta" style="margin:8px 0 4px"><span>Umfrage</span>${x.quelle?`<span>${esc(x.quelle)}</span>`:''}${x.stand?`<span>Stand ${esc(x.stand)}</span>`:''}</div>${x.polls.map(([n,v,c])=>`<div class="poll"><span class="tag">${esc(n)}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i></div><span class="v">${v} %</span></div>`).join('')}`:'<p class="note">Keine Umfrage zu dieser Wahl.</p>'}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu dieser Wahl gefunden.</p>'}`;
   } else if(x.kind==='tageslage'){
-    const begriffe=[...new Set([...(x.themen||[]),...sigWorte(x.title+' '+(x.desc||'')).filter(w=>w.length>=6)])].slice(0,14);
-    b=`<div class="meta"><span class="src">Tageslage</span><span>${fmtAgo(x.date)}</span></div><h3 class="reader-title">${esc(x.title)}</h3>
-      ${x.desc?`<div class="reader-text">${esc(x.desc)}</div>`:''}
-      <div class="bar" style="margin:10px 0"><a class="btn primary sm" href="${esc(x.link)}" target="_blank" rel="noopener">Ausgabe lesen</a></div>
-      ${begriffe.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Themen im eigenen Bestand nachschlagen</h2></div><div class="reader-tags">${begriffe.map(t=>`<button class="chip" onclick="closeSheet('reader');onSearch('${esc(String(t).replace(/'/g,''))}')">${esc(t)}</button>`).join('')}</div>`:''}`;
+    const d=(typeof TL!=='undefined'&&TL.ausgaben[x.id])||null;
+    if(!d&&typeof tageslageAusgabe==='function')tageslageAusgabe(x.id);
+    const linkOrNot=(q)=>`<a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.name)}</a>`;
+    b=`<div class="meta"><span class="src">Tageslage</span><span>${esc(x.zeit)}</span><span>${fmtAgo(x.date)}</span>${d&&d.erstellt?`<span>erstellt ${esc(d.erstellt)}</span>`:''}</div>
+      <h3 class="reader-title">${esc(x.datum)} · ${esc(x.zeit)}</h3>
+      ${x.desc?`<div class="reader-text">${esc(x.desc)}</div>${x.quellen.length?`<div class="meta" style="margin-top:-4px">Quellen: ${x.quellen.map(linkOrNot).join(' · ')}</div>`:''}`:''}`;
+    if(!d){b+=`<p class="note" style="margin-top:14px">Ausgabe wird geladen …</p>`}
+    else{
+      (d.kategorien||[]).forEach(k=>{
+        b+=`<div class="sec-hd" style="margin:18px 0 4px"><h2 style="font-size:var(--fs-md)">${esc(k.name)}</h2></div>`;
+        b+=`<ul style="margin:0 0 4px">${(k.punkte||[]).map(p=>{const txt=tlText(p).replace(/^[•\s]+/,'');const qs=tlQuellen(p);
+          return `<li style="margin:6px 0 6px 18px;font-size:var(--fs-sm);line-height:1.55">${esc(txt)}${qs.length?` <span class="note">(${qs.map(linkOrNot).join(', ')})</span>`:''}</li>`}).join('')}</ul>`;
+        const arts=(d.alle_artikel||{})[k.name]||[];
+        if(arts.length)b+=`<details style="margin:4px 0 0 18px"><summary class="note" style="cursor:pointer">${arts.length} Artikel dieser Rubrik</summary><div class="box list" style="margin-top:6px">${arts.slice(0,40).map(a=>`<div class="row" onclick="window.open('${esc(a.url)}','_blank')"><div class="meta"><span class="src">${esc(a.quelle||'')}</span></div><div class="ttl" style="font-size:var(--fs-sm)">${esc(a.titel||'')}</div></div>`).join('')}</div></details>`;
+      });
+      if(d.wikipedia&&d.wikipedia.text)b+=`<div class="box" style="padding:12px 14px;margin-top:16px"><div class="meta"><span class="pill grey">Kalenderblatt</span></div><div class="note" style="margin-top:4px">${esc(d.wikipedia.text)}${d.wikipedia.url?` <a href="${esc(d.wikipedia.url)}" target="_blank" rel="noopener">Wikipedia</a>`:''}</div></div>`;
+      if(d.destatis&&d.destatis.text)b+=`<div class="box" style="padding:12px 14px;margin-top:10px"><div class="meta"><span class="pill grey">Zahl des Tages</span></div><div class="note" style="margin-top:4px">${esc(d.destatis.text)}${d.destatis.url?` <a href="${esc(d.destatis.url)}" target="_blank" rel="noopener">Destatis</a>`:''}</div></div>`;
+      const begriffe=[...new Set(sigWorte((d.kategorien||[]).map(k=>(k.punkte||[]).join(' ')).join(' ')).filter(w=>w.length>=7))].slice(0,14);
+      if(begriffe.length)b+=`<div class="sec-hd" style="margin:18px 0 4px"><h2 style="font-size:var(--fs-md)">Themen im eigenen Bestand nachschlagen</h2></div><div class="reader-tags">${begriffe.map(t=>`<button class="chip" onclick="closeSheet('reader');onSearch('${esc(t)}')">${esc(t)}</button>`).join('')}</div>`;
+    }
   } else if(x.kind==='doc'&&x.type==='Newsletter'){
     /* Kommerzielle Briefings berichten – der Nutzen entsteht, wenn man ihre
        Themen sofort im eigenen Bestand nachschlagen kann. */
@@ -2103,6 +2178,7 @@ function renderSettings(){
       +row('Bewegung','Animationen beim Öffnen von Fenstern',segHTML('motion',[['system','System'],['reduced','Reduziert']]))
       +`<div class="set-sec">Listen</div>`
       +row('Dubletten zusammenfassen','Gleiche Meldung aus mehreren Quellen nur einmal zeigen',swHTML('dedupe',PREF.dedupe))
+      +row('Werbung und Ticker zeigen','Veranstaltungshinweise, Eigenwerbung, Liveticker, Sendungsfolgen',swHTML('rauschen',PREF.rauschen))
       +row('Kästen scrollen intern','Lange Listen bleiben im Kasten',swHTML('inner',PREF.inner))
       +row('Teaser in Listen zeigen','',swHTML('teasers',PREF.teasers))
       +row('Meldungen im Text öffnen','Aufklappen in der Liste statt Fenster',swHTML('inline',PREF.inline))
@@ -2180,7 +2256,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v25 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v27 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2259,6 +2335,15 @@ function entziffern(s){
 /* "… – n-tv.de", "… | tagesschau.de", "… - WELT" : der Quellenname am Ende
    gehört nicht in die Schlagzeile, er steht schon in der Zeile darunter. */
 const QUELL_SUFFIX=/\s*[–|-]\s*(n-?tv\.de|tagesschau\.de|welt|die welt|faz\.net|faz|spiegel|spiegel online|zeit online|zeit|sueddeutsche\.de|süddeutsche|handelsblatt|heise online|heise|golem\.de|golem|t-online|tagesspiegel|stern\.de|focus online|ntv|zdfheute|br24|mdr|ndr|wdr|dlf|deutschlandfunk|euractiv|politico|reuters|ap news)\s*$/i;
+/* "Tagesschau" und "Tagesschau Eil" sind dasselbe Haus; "WELT" und "Welt"
+   erst recht. Für die Frage "wie viele Quellen berichten das?" zählt das Haus,
+   nicht der einzelne Feed. */
+const FEED_ZUSATZ=/\s+(eil|eilmeldung|breaking|pressemitt\.?|pressemitteilungen|politik|wirtschaft|inland|ausland|news|aktuell|digital|netz|sport|kultur|top ?news|schlagzeilen|rss|feed|world|business|markets|finance|us|eu)\s*$/i;
+function quellBasis(s){
+  let q=String(s||'').trim();
+  for(let i=0;i<3;i++)q=q.replace(FEED_ZUSATZ,'').trim();
+  return q.toLowerCase().replace(/[.\-–]+$/,'').trim();
+}
 function titelPutzen(t){
   let s=entziffern(t);
   for(let i=0;i<2;i++)s=s.replace(QUELL_SUFFIX,'');
@@ -2313,48 +2398,80 @@ function signalHaeufigkeit(arts){
   arts.forEach(a=>{const s=a._hart||(a._hart=hartSignale(a));s.forEach(x=>{df[x]=(df[x]||0)+1})});
   return df;
 }
+/* Bündelung nach dem, was eine Meldung ausmacht: WAS wird berichtet und WANN.
+   Leitregeln (nach den Fehlern aus der Praxis):
+     – Das Datum ist zentral: mehr als 18 Stunden auseinander ist nicht
+       dieselbe Meldung, sondern ein Folgebericht.
+     – Entscheidend ist die Übereinstimmung der Schlagzeilen, nicht ein
+       gemeinsamer Name. "TV-Duell vor der Landtagswahl" und "Nach der
+       Landtagswahl fürchtet ein Unternehmer …" teilen ein Stichwort und sind
+       trotzdem zwei Sachen.
+     – Je Haus zählt nur ein Beitrag; Tagesschau und Tagesschau Eil sind eine
+       Quelle, nicht zwei.
+     – Keine Obergrenze: Wenn vierzig Häuser dasselbe berichten, IST das die
+       Nachricht des Tages. Die Zahl der Häuser ist das wichtigste
+       Relevanzsignal – genau wie in v9. */
+function titelWorte(t){
+  return new Set((String(t).toLowerCase().match(/[a-zäöüß]{4,}/g)||[]).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
+}
+function titelAehnlich(A,B){
+  if(!A.size||!B.size)return {q:0,n:0};
+  let gem=0;for(const w of A)if(B.has(w))gem++;
+  /* Anteil am kürzeren Titel UND absolute Zahl – ein einziges gemeinsames
+     Wort kann bei kurzen Schlagzeilen sonst 50 % ergeben. */
+  return {q:gem/Math.min(A.size,B.size),n:gem};
+}
 function baueStories(arts){
-  const kandidaten=arts.filter(a=>a.ago<=96&&!a.isDoc&&!a.isTicker).sort((a,b)=>b.date-a.date);
+  const kandidaten=arts.filter(a=>a.ago<=72&&!a.isDoc&&!a.isTicker).sort((a,b)=>b.date-a.date);
+  kandidaten.forEach(a=>{a._tw=a._tw||titelWorte(a.title);a._qb=a._qb||quellBasis(a.src)});
   const df=signalHaeufigkeit(kandidaten);
-  /* Seltener als ein Prozent des Bestands – bei kleinen Beständen mit einer
-     Untergrenze, sonst bliebe dort gar kein Signal übrig. */
-  const grenze=Math.max(6,Math.round(kandidaten.length*0.01));
+  const grenze=Math.max(6,Math.round(kandidaten.length*0.005));
   const selten=a=>{const s=new Set();(a._hart||hartSignale(a)).forEach(x=>{if((df[x]||0)<=grenze)s.add(x)});return s};
-  const gruppen=[];const nachTitel={};const idx={};
+  const gruppen=[];const wortIdx={};
   for(const a of kandidaten){
-    const k=a._nt||(a._nt=normTitel(a.title));
-    if(k.length>=20&&nachTitel[k]){nachTitel[k].arts.push(a);continue}
+    const tw=a._tw;if(tw.size<2){gruppen.push({arts:[a],leit:a});continue}
     const s=a._selten||(a._selten=selten(a));
-    const worte=new Set(sigWorte(a.title));
     let ziel=null,best=0;
-    if(s.size){
-      const zaehl=new Map();
-      for(const x of s){const l=idx[x];if(l)for(const gi of l)zaehl.set(gi,(zaehl.get(gi)||0)+1)}
-      for(const [gi] of zaehl){
-        const gr=gruppen[gi];const leit=gr.arts[0];
-        /* Immer gegen den Leitartikel prüfen, nicht gegen die Summe der Gruppe –
-           sonst wächst eine Gruppe über Kettenreaktionen ins Unendliche. */
-        if(Math.abs(leit.date-a.date)>36*H)continue;
-        const gem=hartGemeinsam(s,leit._selten||(leit._selten=selten(leit)));
-        const wortGem=[...worte].filter(w=>(leit._worte||(leit._worte=new Set(sigWorte(leit.title)))).has(w)).length;
-        /* Zwei seltene Belege und ein gemeinsames Stichwort – oder drei Belege. */
-        const passt=(gem>=2&&wortGem>=1)||gem>=3;
-        if(passt&&gem>best){ziel=gr;best=gem}
-      }
+    /* Nur Gruppen prüfen, deren Leitartikel ein Titelwort teilt. */
+    const kand=new Set();
+    for(const w of tw){const l=wortIdx[w];if(l)for(const gi of l)kand.add(gi)}
+    for(const gi of kand){
+      const gr=gruppen[gi],leit=gr.leit;
+      if(Math.abs(leit.date-a.date)>18*H)continue;          /* Datum zentral */
+      const {q:sim,n:gemWorte}=titelAehnlich(tw,leit._tw);
+      const gleicherTitel=a._nt&&a._nt===leit._nt&&a._nt.length>=20;
+      const belege=hartGemeinsam(s,leit._selten||(leit._selten=selten(leit)));
+      /* Drei Wege, dieselbe Meldung zu erkennen – vom Strengsten zum Weitesten:
+         gleiche Schlagzeile; weitgehend gleiche Schlagzeile; oder zwei seltene
+         Belege (etwa "Schwesig" und "TV-Duell") bei erkennbarer Überschneidung.
+         Der dritte Weg fängt unterschiedlich formulierte Schlagzeilen zum
+         selben Ereignis, ohne bloße Themenverwandtschaft zu bündeln. */
+      const passt=gleicherTitel||(sim>=0.62&&gemWorte>=3)||(sim>=0.45&&gemWorte>=2&&belege>=1)||(gemWorte>=1&&belege>=2);
+      const score=sim+(belege*0.1);
+      if(passt&&score>best){ziel=gr;best=score}
     }
-    if(ziel&&ziel.arts.length<20){ziel.arts.push(a);for(const x of s)if(!ziel.sig.has(x)){ziel.sig.add(x);(idx[x]=idx[x]||[]).push(ziel.i)}}
-    else{const gr={i:gruppen.length,arts:[a],sig:new Set(s)};gruppen.push(gr);for(const x of s)(idx[x]=idx[x]||[]).push(gr.i);if(k.length>=20)nachTitel[k]=gr}
+    if(ziel)ziel.arts.push(a);
+    else{const gr={i:gruppen.length,arts:[a],leit:a};gruppen.push(gr);for(const w of tw)(wortIdx[w]=wortIdx[w]||[]).push(gr.i)}
   }
   return gruppen
-    .filter(gr=>new Set(gr.arts.map(a=>a.src)).size>=2)
+    .map(gr=>{
+      /* Je Haus nur den ersten Beitrag – sonst stehen WELT und Welt doppelt da.
+         Die übrigen bleiben als "alle" erhalten: Sie gehören zur selben
+         Meldung und dürfen deshalb nicht einzeln wieder auftauchen. */
+      const proHaus=new Map();
+      const sortiert=gr.arts.sort((a,b)=>b.date-a.date);
+      sortiert.forEach(a=>{if(!proHaus.has(a._qb))proHaus.set(a._qb,a)});
+      return {...gr,arts:[...proHaus.values()],alle:sortiert};
+    })
+    .filter(gr=>gr.arts.length>=2)
     .map((gr,i)=>{
       const arts=gr.arts.sort((a,b)=>b.date-a.date);
-      const leit=arts.slice().sort((a,b)=>(b.cluster||1)-(a.cluster||1)||b.rel-a.rel)[0];
+      const leit=arts.slice().sort((a,b)=>b.rel-a.rel||b.date-a.date)[0];
       return {id:'st'+i,kind:'story',title:leit.title,sum:(leit.desc||'').slice(0,240),
         src:arts.length+' Quellen',link:leit.link,date:arts[0].date,
         topics:[...new Set(arts.flatMap(a=>a.topics))].slice(0,4),
         regions:[...new Set(arts.flatMap(a=>a.regions))],
-        arts:arts.map(a=>a.id)};
+        arts:arts.map(a=>a.id),alle:(gr.alle||arts).map(a=>a.id)};
     })
     .sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date)
     .slice(0,80);
@@ -2407,6 +2524,8 @@ function mapPerson(p,i){
     topics:[],color:farbeFuer(p.party||name),committees:(p.committees||[]).map(c=>c.id),
     committeeInfo:(p.committees||[]).map(c=>({id:c.id,name:c.name,role:c.role||''})),
     photo:p.photo||p.image||'',email:p.email||'',emailOk:!!p.email_verified,phone:p.phone||'',address:p.address||'',
+    social:[['Website',p.website||p.homepage],['X',p.twitter||p.x],['Bluesky',p.bluesky],['Mastodon',p.mastodon],['Instagram',p.instagram],['Facebook',p.facebook],['LinkedIn',p.linkedin],['YouTube',p.youtube]]
+      .filter(([,v])=>v).map(([name,v])=>({name,url:/^https?:/.test(v)?v:(name==='X'?'https://x.com/':name==='Bluesky'?'https://bsky.app/profile/':name==='Instagram'?'https://instagram.com/':'')+String(v).replace(/^@/,'')})),
     constituency:p.constituency||p.wahlkreis||'',wiki:p.wiki_extract||'',wikiUrl:p.wiki_url||'',speeches:p.speeches||[],
     src:p.parliament_label||parl||'',title:name,link:p.url||p.link||'#'};
 }
@@ -2492,7 +2611,7 @@ function indexieren(){
   [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS,...PROCS,...ELECTIONS].forEach(x=>{if(x.id)ITEMS[x.id]=x});
   MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
   IDX.nt={};IDX.story={};IDX.src={};IDX.mentions={};IDX.personNach={};
-  STORIES.forEach(s=>s.arts.forEach(id=>{IDX.story[id]=s}));
+  STORIES.forEach(s=>(s.alle||s.arts).forEach(id=>{IDX.story[id]=s}));
   ARTICLES.forEach(a=>{
     a._nt=a._nt||normTitel(a.title);
     a._txt=a._txt||norm(a.title+' '+(a.desc||''));
@@ -2570,9 +2689,20 @@ async function laden(){
     /* Gerichte liefern Pressemitteilungen, Terminankündigungen und Dateiauswürfe
        im selben Feed. Als Urteil zählt nur, was auch eines ist – erkennbar am
        Aktenzeichen oder an einer Entscheidungsformulierung im Titel. */
-    const AZ=[/\b(C-\d{1,4}\/\d{2})\b/,/\b(T-\d{1,4}\/\d{2})\b/,/\b(\d\s?Bv[A-Z]\s?\d{1,5}\/\d{2})\b/,
-      /\b(\d{1,2}\s?[A-Z]{1,2}\s?\d{1,3}\.\d{2})\b/,/\b([IVX]{1,4}\s?[A-Z]{1,3}\s?\d{1,4}\/\d{2})\b/,
-      /\b(\d{1,2}\s?AZR\s?\d{1,4}\/\d{2})\b/,/\bNo\.\s?(\d{2}-\d{2,5})\b/];
+    /* Aktenzeichen der deutschen Bundesgerichte sind eigenwillig:
+       "VIa ZR 100/22" (BGH, römisch mit Kleinbuchstabe), "2 StR 12/25",
+       "4 C 3.25" (BVerwG, mit Punkt), "2 BvR 1188/26" (BVerfG),
+       "B 5 R 12/24 R" (BSG), "C-412/24" (EuGH). */
+    const AZ=[/\b(C-\d{1,4}\/\d{2})\b/,/\b(T-\d{1,4}\/\d{2})\b/,
+      /\b(\d\s?Bv[A-Z]\s?\d{1,5}\/\d{2})\b/,
+      /\b([IVXLC]{1,5}[a-z]?\s?(?:ZR|ZB|ZA|StR|StB|KZR|KVR|AnwZ|EnZR|VIII ZR)\s?\d{1,4}\/\d{2})\b/,
+      /\b(\d{1,2}\s?(?:StR|ZR|ZB)\s?\d{1,4}\/\d{2})\b/,
+      /\b(\d{1,2}\s?[A-Z]{1,3}\s?\d{1,3}\.\d{2})\b/,
+      /\b(\d{1,2}\s?AZR\s?\d{1,4}\/\d{2})\b/,
+      /\b(B\s?\d{1,2}\s?[A-Z]{1,3}\s?\d{1,3}\/\d{2}\s?[A-Z]?)\b/,
+      /\b([IVX]{1,4}\s?R\s?\d{1,3}\/\d{2})\b/,
+      /\bNo\.\s?(\d{2}-\d{2,5})\b/,
+      /\bAz\.?:?\s*([A-Za-z0-9\s./-]{5,20}?)(?:\s|$|\)|,)/];
     const ENTSCHEID=/\b(urteil|beschluss|entscheidung|verkündet|entschieden|abgewiesen|stattgegeben|verurteilt|für (verfassungswidrig|nichtig|unzulässig|rechtswidrig)|revision|eilantrag|verfassungsbeschwerde|judgment|ruling)\b/i;
     const TERMIN=/\b(verhandlungstermin|mündliche verhandlung|termin(vorschau|hinweis)|sitzungsplan|jahresbericht|pressekonferenz)\b/i;
     ARTICLES.forEach(a=>{
@@ -2580,10 +2710,18 @@ async function laden(){
       const t=a.title||'';
       if(a.isDoc||TERMIN.test(t)){a.keinUrteil=true;return}
       if(!a.az){for(const re of AZ){const m=(t+' '+(a.desc||'')).match(re);if(m){a.az=m[1].replace(/\s+/g,' ').trim();break}}}
+      /* Pressestellen schreiben das Aktenzeichen oft nur in den Text. */
+      if(!a.az){const m=(a.desc||'').match(/\b(?:Az\.?|Aktenzeichen)\s*:?\s*([A-Za-z0-9\s./-]{5,22})/);if(m)a.az=m[1].trim().replace(/\s+/g,' ')}
       if(!a.az&&!ENTSCHEID.test(t)){a.keinUrteil=true;return}
       if(!a.gericht)a.gericht=a.src;
       /* Das Aktenzeichen steht oft im Titel – im Kopf der Zeile reicht es einmal. */
-      a.titelKurz=t.replace(/\s*[-–(]\s*(Az\.?|Aktenzeichen)?\s*$/,'').trim();
+      /* "Bundesgerichtshof entscheidet über … – Urteil vom 15.09.2026 – I ZR 77/25"
+         → der Kopf reicht; Gericht, Datum und Aktenzeichen stehen schon daneben. */
+      a.titelKurz=t.replace(/\s*[-–|]\s*(Urteil|Beschluss|Entscheidung)\s+vom\s+[\d.\s]+(Uhr)?\s*/i,' ')
+                   .replace(/\s*[-–|]\s*Az\.?:?\s*[A-Za-z0-9\s./-]{5,22}\s*$/i,'')
+                   .replace(/\s*[-–|]\s*(Mitteilung der Pressestelle|Pressemitteilung(en)?( Nr\.?\s*\d+\/\d+)?)\s*$/i,'')
+                   .replace(/^\s*(Mitteilung der Pressestelle|Pressemitteilung(en)?)\s*[-–|:]\s*/i,'')
+                   .replace(/\s{2,}/g,' ').trim();
       if(!a.ls){const s=(a.desc||'').split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/)[0];if(s&&s.length>40)a.ls=s.slice(0,320)}
     });
   });
@@ -2634,41 +2772,52 @@ function zeigeLadebalken(text){
 }
 
 /* ── Tageslage: das eigene Newsletter-Archiv ───────────────────────
-   Liegt in einem zweiten Repo unter /newsletter/ und bleibt bewusst vom
-   Nachrichtenarchiv getrennt. Den genauen Pfad der Datenquelle kenne ich
-   nicht, deshalb probiert der Lader die üblichen Namen der Reihe nach.
-   Eine Zeile in config.js macht ihn eindeutig:
-       window.PS_TAGESLAGE = "newsletter/data/ausgaben.json";
-   Erkannt werden {issues|items|ausgaben|entries:[…]} oder ein Array; je
-   Eintrag genügen Datum und Titel, alles Weitere ist optional. */
-const TL={basis:'newsletter/',kandidaten:['data/index.json','data/issues.json','data/ausgaben.json','data/newsletter.json','data/archive.json','index.json','issues.json','ausgaben.json','archive.json'],
-  ausgaben:null,laeuft:false,fehler:''};
+   Format wie im Repo elnils/newsletter: newsletter/data/index.json ist eine
+   Liste aus {datei, datum, zeit, intro, suchtext}; jede Ausgabe liegt als
+   eigene Datei daneben und enthält kategorien[] mit Punkten sowie
+   alle_artikel{Kategorie:[{quelle,titel,url}]}.
+   Die Quellenangaben stecken als ‹‹SRC|Name|URL›› mitten im Text – sie
+   werden hier herausgelöst und als anklickbare Fußnoten angehängt. */
+const TL={basis:'newsletter/',liste:null,ausgaben:{},laeuft:false,fehler:''};
+const SRC_MARKE=/‹‹SRC\|([^|]+)\|([^›]+)››/g;
+function tlText(s){return String(s||'').replace(SRC_MARKE,'').replace(/\s+([.,;:])/g,'$1').replace(/\s{2,}/g,' ').trim()}
+function tlQuellen(s){const out=[];let m;const re=new RegExp(SRC_MARKE.source,'g');
+  while((m=re.exec(String(s||'')))){const base=m[2].split('?')[0];if(!out.some(q=>q.url.split('?')[0]===base))out.push({name:m[1],url:m[2]})}return out}
 function tlNorm(e,i){
-  const datum=e.date||e.datum||e.day||e.published||e.id||'';
-  const t=Date.parse(datum)||Date.parse(String(datum).slice(0,10))||0;
-  return {id:'tl-'+(e.id||datum||i),kind:'tageslage',
-    title:e.title||e.titel||e.subject||('Tageslage vom '+String(datum).slice(0,10)),
-    datum:String(datum).slice(0,10),date:t||NOW-i*D,
-    desc:e.summary||e.preheader||e.teaser||e.description||'',
-    link:e.url||e.link||e.html||(e.file?TL.basis+e.file:TL.basis),
-    themen:e.topics||e.categories||e.kategorien||[],
-    artikel:e.articles||e.items||[],src:'Tageslage'};
+  const t=Date.parse(e.datum+'T'+(e.zeit==='abend'?'18:00':'06:00'))||Date.parse(e.datum)||NOW-i*D;
+  const zeit=e.zeit==='abend'?'Abendausgabe':'Morgenausgabe';
+  return {id:'tl-'+(e.datei||e.datum+'-'+e.zeit),kind:'tageslage',datei:e.datei,
+    title:'Tageslage · '+zeit,datum:e.datum,zeit,date:t,
+    desc:tlText(e.intro),quellen:tlQuellen(e.intro),suchtext:e.suchtext||'',
+    link:TL.basis+'#'+(e.datei||'').replace(/\.json$/,''),src:'Tageslage'};
 }
 async function tageslageLaden(){
-  if(TL.ausgaben||TL.laeuft)return;TL.laeuft=true;
-  const pfade=window.PS_TAGESLAGE?[window.PS_TAGESLAGE]:TL.kandidaten.map(p=>TL.basis+p);
+  if(TL.liste||TL.laeuft)return;TL.laeuft=true;
+  const pfade=window.PS_TAGESLAGE?[window.PS_TAGESLAGE]:[TL.basis+'data/index.json'];
   try{
     for(const p of pfade){
       let j=null;
       try{const r=await fetch(p+'?t='+Date.now());if(!r.ok)continue;j=await r.json()}catch(e){continue}
-      const roh=Array.isArray(j)?j:(j.issues||j.items||j.ausgaben||j.entries||j.newsletters||j.days||[]);
+      const roh=Array.isArray(j)?j:(j.issues||j.items||j.ausgaben||j.entries||[]);
       if(!Array.isArray(roh)||!roh.length)continue;
-      TL.ausgaben=roh.map(tlNorm).filter(x=>x.date).sort((a,b)=>b.date-a.date);
-      TL.ausgaben.forEach(x=>{ITEMS[x.id]=x});
+      TL.liste=roh.map(tlNorm).sort((a,b)=>b.date-a.date);
+      TL.liste.forEach(x=>{ITEMS[x.id]=x});
       TL.quelle=p;break;
     }
-    if(!TL.ausgaben)TL.fehler='keine Datenliste gefunden';
+    if(!TL.liste)TL.fehler='Ausgabenliste nicht gefunden';
   }finally{TL.laeuft=false;render()}
+}
+/* Eine einzelne Ausgabe mit allen Rubriken und Artikeln nachladen. */
+async function tageslageAusgabe(id){
+  const x=ITEMS[id];if(!x||TL.ausgaben[id])return TL.ausgaben[id];
+  try{
+    const r=await fetch(TL.basis+'data/'+x.datei+'?t='+Date.now());
+    if(!r.ok)return null;
+    const d=await r.json();
+    TL.ausgaben[id]=d;
+    if(S.reader===id)openReader(id);
+    return d;
+  }catch(e){return null}
 }
 
 /* ── Archiv: Monatsdateien erst auf Zuruf laden ────────────────────
