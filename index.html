@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v27</title>
+<title>Presseschau – Entwurf v29</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -642,7 +642,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v27</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v29</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1148,7 +1148,7 @@ const WS=[
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
 let MONITORS=store.get('monitors',DEFAULT_MONITORS);
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
@@ -1355,12 +1355,14 @@ function clusterArts(a){
 function newsBase(){return ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&inRegion(a)))}
 function renderTop(){
   const base=newsBase();
-  const top=entdoppeln(base.filter(a=>a.ago<=24&&topTauglich(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
+  const win=S.topWin||24;
+  const top=entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
   all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
   let h=`<div class="ov ${S.view==='paper'?'wide':''}"><div class="ov-main">`;
-  h+=secHd('top','Top-Meldungen','letzte 24 Std.'+(S.region!=='all'?' · '+REGION_NAME[S.region]:''),copyBtn(TOPLIST,'Top-Meldungen'));
+  h+=secHd('top','Top-Meldungen',(S.region!=='all'?REGION_NAME[S.region]:''),
+    `<div class="seg" role="group" aria-label="Zeitraum">${[[6,'6 Std.'],[12,'12 Std.'],[24,'24 Std.'],[48,'48 Std.']].map(([v,l])=>`<button aria-pressed="${win===v}" onclick="S.topWin=${v};store.set('topwin',${v});render()">${l}</button>`).join('')}</div>${copyBtn(TOPLIST,'Top-Meldungen')}`);
   h+=body('top',`<div class="box top">${top.length?top.map((a,i)=>{const cl=clusterArts(a),auf=S.openSrc===a.id;
     return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl">${esc(a.title)}</div>
       <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${zugangPill(a)}</div>${starHTML(a.id)}
@@ -1460,7 +1462,7 @@ function openMarket(sym){
   const d=mkData(m,S.mkRange),up=d.c>=0,drin=watchlist().includes(sym);
   const s=d.s,min=Math.min(...s),max=Math.max(...s);
   const rel=ARTICLES.filter(a=>a.ago<=72&&norm(a.title+' '+a.desc).match(new RegExp(norm(m.n.split(' ')[0]),'i'))).slice(0,3);
-  const alle=ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))).slice(0,4);
+  const alle=nurEinmal(ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))))).slice(0,4);
   const news=rel.length?rel:alle;window.MKDLIST=news.map(a=>a.id);
   g('mkd-h').textContent=m.n;
   g('mkd-body').innerHTML=`<div class="meta"><span class="src">${esc(m.grp)}</span><span>${esc(m.sym)}</span>${m.unit?`<span>${esc(m.unit)}</span>`:''}</div>
@@ -1638,7 +1640,7 @@ function renderMarkets(){
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
   b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
     :(MARKET_CATALOG.length?'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>':'<div class="box"><div class="empty"><b>Keine Kursdaten</b>Kurse erscheinen hier, sobald der nächste Lauf sie geholt hat.</div></div>');
-  const rel=ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))).sort((a,b)=>b.date-a.date).slice(0,6);window.MKLIST=rel.map(a=>a.id);
+  const rel=nurEinmal(ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))))).sort((a,b)=>b.date-a.date).slice(0,6);window.MKLIST=rel.map(a=>a.id);
   b+=`<div class="sec-hd" style="margin-top:20px"><h2 style="font-size:var(--fs-md)">Meldungen mit Marktbezug</h2><span class="cnt">Energie, Finanzen, Handel</span></div><div class="box list">${rel.map(a=>rowHTML(a,'MKLIST',true)).join('')}</div>`;
   b+=`<p class="note" style="margin-top:12px">${typeof DEMO!=='undefined'&&DEMO?'Kurse sind hier erzeugte Beispielwerte. ':'Tagesschlusskurse, verzögert – zur Einordnung, nicht zum Handel.'}</p>`;
   return h+body('mkr',b);
@@ -1691,22 +1693,34 @@ function saveMonitor(){const name=g('mon-name').value.trim(),kw=g('mon-kw').valu
 function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('monitors',MONITORS);toast('Monitor gelöscht');render()}
 
 /* ── Policy ── */
+/* Je Haus und je Themenlage nur einmal – sonst stehen WELT und Welt
+   nebeneinander und dieselbe Meldung dreimal. */
+function nurEinmal(arr){
+  const haus=new Set(),lagen=new Set();
+  return arr.filter(a=>{
+    const st=typeof IDX!=='undefined'?IDX.story[a.id]:null;
+    if(st){if(lagen.has(st.id))return false;lagen.add(st.id)}
+    const h=a._qb||(a._qb=hausVon(a.src));
+    if(haus.has(h))return false;haus.add(h);return true;
+  });
+}
 function bezugMeldungen(x,limit=12){
   if(x.kind==='election'){
     /* Nur Meldungen, die die Region UND die Wahl selbst nennen – sonst landet
        jede Meldung aus dem Bundesland unter der Wahl. */
     const reg=norm(x.region||'');
     if(!reg)return [];
-    return ARTICLES.filter(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));
-      return t.includes(reg)&&/wahl|wähler|stimmzettel|koalition|umfrage|wahlkampf|spitzenkandidat/.test(t)})
-      .sort((a,b)=>b.date-a.date).slice(0,limit);
+    return nurEinmal(ohneRauschen(ARTICLES.filter(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));
+      return t.includes(reg)&&/wahl|wähler|stimmzettel|koalition|umfrage|wahlkampf|spitzenkandidat/.test(t)}))
+      .sort((a,b)=>b.date-a.date)).slice(0,limit);
   }
   /* Meldungen zu einem Verfahren oder einer Wahl: über die Schlagwörter des
      Vorgangs (Deskriptoren) und die Kernwörter des Titels. */
   const worte=new Set([...(x.desk||[]).map(norm),...sigWorte(x.title||'').filter(w=>w.length>=6),...(x.region?[norm(x.region)]:[])]);
   if(!worte.size)return [];
-  return ARTICLES.map(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));let n=0;for(const w of worte)if(t.includes(w))n++;return n?{a,n}:null}).filter(Boolean)
-    .sort((p,q)=>q.n-p.n||q.a.date-p.a.date).slice(0,limit).map(p=>p.a);
+  const treffer=ARTICLES.map(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));let n=0;for(const w of worte)if(t.includes(w))n++;return n>=2?{a,n}:null}).filter(Boolean)
+    .sort((p,q)=>q.n-p.n||q.a.date-p.a.date).map(p=>p.a);
+  return nurEinmal(ohneRauschen(treffer)).slice(0,limit);
 }
 function renderProcs(){
   const typen=[...new Set(PROCS.map(p=>p.type).filter(Boolean))].sort();
@@ -1762,11 +1776,12 @@ function icsText(ids){const ev=ids.map(id=>ITEMS[id]).filter(e=>e&&e.kind==='eve
 async function exportICS(ids,name){const text=icsText(ids);if(!ids.length){toast('Keine Termine');return}const dl=await cap('downloads');if(dl){try{await dl.save({filename:name,data:text});toast('Kalenderdatei gespeichert')}catch(e){if(e&&e.code==='declined')return;copyText(text,'Speichern hier nicht möglich – .ics-Inhalt kopiert')}}else copyText(text,'Speichern hier nicht möglich – .ics-Inhalt kopiert')}
 const gcalUrl=e=>`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&dates=${icsDate(e.date)}/${icsDate(e.date+H)}&details=${encodeURIComponent(e.src+' · '+e.link)}`;
 function renderRulings(){
-  const list=ARTICLES.filter(a=>a.herkunft==='gericht'&&!a.keinUrteil&&matchLQ('ru',a)&&(S.gericht==='all'||!S.gericht||a.gericht===S.gericht)).sort((a,b)=>b.date-a.date);window.RULIST=list.map(a=>a.id);
+  const list=ARTICLES.filter(a=>a.herkunft==='gericht'&&!a.keinUrteil&&matchLQ('ru',a)&&(S.gericht==='all'||!S.gericht||a.gericht===S.gericht)).sort((a,b)=>b.date-a.date);
+  window.RULIST=list.map(a=>a.id);
   const courts=[...new Set(ARTICLES.filter(a=>a.herkunft==='gericht'&&!a.keinUrteil).map(a=>a.gericht).filter(Boolean))].sort();
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Urteile</h2><span class="cnt">${list.length} · EuGH, BVerfG, BGH, BVerwG, Supreme Court</span><div class="tools">${copyBtn(RULIST,'Urteile')}</div></div>`;
   h+=`<div class="filters"><div class="bar">${lsearch('ru','Urteile durchsuchen – Aktenzeichen, Thema …')}<select class="sel" aria-label="Gericht" onchange="S.gericht=this.value;render()"><option value="all">Alle Gerichte</option>${courts.map(c=>`<option ${S.gericht===c?'selected':''}>${c}</option>`).join('')}</select></div></div>`;
-  h+=`<div class="box">${list.map(a=>`<div class="rul" role="button" tabindex="0" onclick="openReader('${a.id}',RULIST)" onkeydown="rowKey(event,'${a.id}')"><div><div class="meta">${srcHTML(a)}<span class="pill grey">${esc(a.az)}</span><span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}</div><div class="ttl">${esc(a.titelKurz||a.title)}</div>${a.ls?`<div class="ls">${esc(a.ls)}</div>`:''}</div>${starHTML(a.id)}</div>`).join('')||'<div class="empty"><b>Kein Urteil</b>Entscheidungen von EuGH, BVerfG, BGH und BVerwG erscheinen hier, sobald die Gerichte etwas veröffentlichen.</div>'}</div>`;
+  h+=`<div class="box">${list.map(a=>`<div class="rul" role="button" tabindex="0" onclick="openReader('${a.id}',RULIST)" onkeydown="rowKey(event,'${a.id}')"><div><div class="meta">${srcHTML(a)}${a.az?`<span class="pill grey">${esc(a.az)}</span>`:''}${a.art&&a.art!=='Entscheidung'?`<span class="pill blue">${esc(a.art)}</span>`:''}${a.entschiedenAm?`<span>vom ${esc(a.entschiedenAm)}</span>`:`<span>${fmtAgo(a.date)}</span>`}${quellenPill(a)}</div><div class="ttl">${esc(a.titelKurz||a.title)}</div>${a.ls?`<div class="ls">${esc(a.ls)}</div>`:''}</div>${starHTML(a.id)}</div>`).join('')||'<div class="empty"><b>Kein Urteil</b>Entscheidungen von EuGH, BVerfG, BGH und BVerwG erscheinen hier, sobald die Gerichte etwas veröffentlichen.</div>'}</div>`;
   h+=`<p class="note" style="margin-top:12px">Leitsätze stammen aus den Pressemitteilungen der Gerichte; Verhandlungstermine erscheinen unter Termine.</p>`;
   return h;
 }
@@ -1786,7 +1801,7 @@ function parlGruppe(x){const p=String(x.parl||'').toLowerCase();const o=norm(x.o
   if(p==='bt'||/bundestag/.test(o))return 'bt';if(p==='br'||/bundesrat/.test(o))return 'br';if(p==='ep'||/europ/.test(o))return 'ep';
   if(p.startsWith('lt-')||/landtag|bürgerschaft|abgeordnetenhaus/.test(o))return 'lt';if(p.startsWith('us')||/senat|repräsentanten|congress/.test(o))return 'us';return 'sonst'}
 const PARL_LABEL={bt:'Bundestag',br:'Bundesrat',ep:'Europaparlament',lt:'Landtage',us:'US-Kongress',sonst:'Weitere'};
-function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return (IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date);return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
+function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return nurEinmal((IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date));return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
 function bySrc(x){const idx=typeof IDX!=='undefined'?IDX.src:null;const arr=idx?(x.srcs||[]).flatMap(s=>idx[s]||[]):ARTICLES.filter(a=>(x.srcs||[]).includes(a.src));return arr.slice().sort((a,b)=>b.date-a.date)}
 function renderStakeholder(tab){
   const cfg={people:['Personen',PEOPLE,'Personen durchsuchen – Name, Rolle, Gremium, Wahlkreis …','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen …','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen …','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen – Gerichte, EZB, Länder …','Keine Institution']}[tab];
@@ -1930,7 +1945,7 @@ function renderTageslage(){
   window.TLLIST=gefiltert.map(x=>x.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Tageslage</h2><span class="cnt">${liste.length?gefiltert.length+' von '+liste.length+' Ausgaben':'die eigene tägliche Presseschau'}</span><div class="tools">${lsearch('tl','In allen Ausgaben suchen …')}<a class="btn sm quiet" href="newsletter/" target="_blank" rel="noopener">Archiv öffnen</a></div></div>`;
   if(!liste.length){
-    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':`<b>Ausgaben nicht erreichbar</b>Das Archiv liegt unter <a href="newsletter/" target="_blank" rel="noopener">/newsletter/</a>. Erwartet wird <code>newsletter/data/index.json</code>.`}</div></div>`;
+    h+=`<div class="box"><div class="empty">${typeof TL!=='undefined'&&TL.laeuft?'<b>Ausgaben werden geladen …</b>':'<b>Noch keine Ausgaben</b>Das Archiv erscheint hier nach dem nächsten Lauf. <a href="newsletter/" target="_blank" rel="noopener">Archiv direkt öffnen</a>'}</div></div>`;
     return h;
   }
   const heute=gefiltert[0];
@@ -2256,7 +2271,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v27 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v29 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2355,6 +2370,9 @@ function titelPutzen(t){
 const TICKER_RE=/\+\+\+|\bnewsblog\b|\bliveticker\b|\bticker\b|\bliveblog\b|\bnews ?blog\b|\balle entwicklungen\b|\bim livestream\b|\bder tag im überblick\b|\blive:|\bblog:/i;
 /* Gesetzestexte und Amtsblätter aus Dokumentenportalen – Nachricht ist das nicht. */
 const GESETZDOK_RE=/^\s*(s\.|h\.\s?r\.|h\.\s?res\.|s\.\s?res\.|s\.\s?con\.\s?res\.)\s*\d|^\s*(bill|public law|federal register)\b|\((is|rs|enr|eh|es|ih|rh)\)\s*[-–]/i;
+/* Manche Gerichtsfeeds liefern für jede Entscheidung denselben Formulartitel.
+   Ohne Betreff ist das keine Meldung, sondern ein Datenbankeintrag. */
+const FORMULAR_RE=/^(entscheidung(s)?\s*detail|detail|dokument|entscheidung)\s*([–\-|:]\s*(bundesfinanzhof|bundesgerichtshof|bundesverwaltungsgericht|bundesarbeitsgericht|bundessozialgericht|bverfg|bgh|bfh))?\s*$/i;
 const DOKQUELLE_RE=/govinfo|federal register|eur-?lex|congress\.gov|drucksachen|dokumentationsdatenbank|parlamentsdokumentation/i;
 
 function istDateiauswurf(a){const t=a.title||'';return DATEI_RE.test(t)||NUMMER_RE.test(t)||GESETZDOK_RE.test(t)||DOKQUELLE_RE.test(a.source||a.src||'')||/^[a-z0-9_.-]{6,}\.(pdf|html?)$/i.test(t.trim())}
@@ -2453,7 +2471,34 @@ function baueStories(arts){
     if(ziel)ziel.arts.push(a);
     else{const gr={i:gruppen.length,arts:[a],leit:a};gruppen.push(gr);for(const w of tw)(wortIdx[w]=wortIdx[w]||[]).push(gr.i)}
   }
+  /* Zweiter Durchgang: Gruppen zusammenführen.
+     Im ersten Durchgang wird jede Meldung der ähnlichsten Gruppe zugeordnet –
+     deshalb sammeln sich deutschsprachige Berichte in der einen und
+     englischsprachige in der anderen Gruppe ("Hague court convicts Thaci" vs.
+     "Thaci wegen Kriegsverbrechen schuldig gesprochen"). Sie finden nie
+     zusammen, weil nur Meldung-zu-Gruppe verglichen wird, nie Gruppe zu
+     Gruppe. Genau das passiert jetzt hier. */
+  for(let i=0;i<gruppen.length;i++){
+    const A=gruppen[i];if(!A.arts.length)continue;
+    const la=A.leit;const sa=la._selten||(la._selten=selten(la));
+    for(let j=i+1;j<gruppen.length;j++){
+      const B=gruppen[j];if(!B.arts.length)continue;
+      const lb=B.leit;
+      if(Math.abs(la.date-lb.date)>18*H)continue;
+      const belege=hartGemeinsam(sa,lb._selten||(lb._selten=selten(lb)));
+      const {q:sim,n:gem}=titelAehnlich(la._tw,lb._tw);
+      /* Für den Zusammenschluss zweier Gruppen gilt derselbe Maßstab wie für
+         die einzelne Meldung – nur mit einem Beleg mehr, weil hier gleich
+         ein ganzes Bündel mitwandert. */
+      if((sim>=0.5&&gem>=2)||belege>=3||(belege>=2&&gem>=1)){
+        A.arts.push(...B.arts);B.arts=[];
+        for(const x of (lb._selten||new Set()))sa.add(x);
+        lb._tw.forEach(w=>la._tw.add(w));
+      }
+    }
+  }
   return gruppen
+    .filter(gr=>gr.arts.length)
     .map(gr=>{
       /* Je Haus nur den ersten Beitrag – sonst stehen WELT und Welt doppelt da.
          Die übrigen bleiben als "alle" erhalten: Sie gehören zur selben
@@ -2644,6 +2689,7 @@ function mapArtikel(j,set){
       access:a.access||''};
     o.title=titelPutzen(a.title);
     o.isDoc=istDateiauswurf(o);
+    o.formular=FORMULAR_RE.test(o.title);
     o.isTicker=TICKER_RE.test(o.title)||TICKER_RE.test(String(a.desc||'').slice(0,120));
     o.herkunft=herkunftOf(o);
     o.think=o.herkunft==='think';
@@ -2686,43 +2732,79 @@ async function laden(){
   });
   sicher('Termine',()=>{EVENTS.push(...baueTermine(dc&&dc.documents||[]))});
   sicher('Urteile',()=>{
-    /* Gerichte liefern Pressemitteilungen, Terminankündigungen und Dateiauswürfe
-       im selben Feed. Als Urteil zählt nur, was auch eines ist – erkennbar am
-       Aktenzeichen oder an einer Entscheidungsformulierung im Titel. */
-    /* Aktenzeichen der deutschen Bundesgerichte sind eigenwillig:
-       "VIa ZR 100/22" (BGH, römisch mit Kleinbuchstabe), "2 StR 12/25",
-       "4 C 3.25" (BVerwG, mit Punkt), "2 BvR 1188/26" (BVerfG),
-       "B 5 R 12/24 R" (BSG), "C-412/24" (EuGH). */
-    const AZ=[/\b(C-\d{1,4}\/\d{2})\b/,/\b(T-\d{1,4}\/\d{2})\b/,
+    /* Gerichtsfeeds sind sehr unterschiedlich gebaut:
+         BGH-Entscheidungen: "IV ZR 259/25, Entscheidung vom 09.09.2026",
+                             Betreff steht nur im Leitsatz oder gar nicht;
+         BFH:                jede Entscheidung heißt "Entscheidung Detail",
+                             das Aktenzeichen steckt in der Adresse;
+         BVerfG/BGH-Presse:  ausformulierter Titel plus Az am Ende.
+       Deshalb wird aus Titel, Vorschautext UND Adresse zusammengesucht, was
+       da ist: Gericht, Aktenzeichen, Datum, Art der Entscheidung und Betreff.
+       Zusammengefasst wird nichts – jede Entscheidung bleibt eine Zeile. */
+    const AZ_RE=[
+      /\b(C-\d{1,4}\/\d{2})\b/, /\b(T-\d{1,4}\/\d{2})\b/,
       /\b(\d\s?Bv[A-Z]\s?\d{1,5}\/\d{2})\b/,
-      /\b([IVXLC]{1,5}[a-z]?\s?(?:ZR|ZB|ZA|StR|StB|KZR|KVR|AnwZ|EnZR|VIII ZR)\s?\d{1,4}\/\d{2})\b/,
-      /\b(\d{1,2}\s?(?:StR|ZR|ZB)\s?\d{1,4}\/\d{2})\b/,
+      /\b([IVXLC]{1,5}[a-z]?\s?(?:ZR|ZB|ZA|StR|StB|KZR|KVR|AnwZ|EnZR|ARZ|AR)\s?\d{1,4}\/\d{2})\b/,
+      /\b(\d{1,2}\s?(?:StR|ZR|ZB|AZR|AZB)\s?\d{1,4}\/\d{2})\b/,
       /\b(\d{1,2}\s?[A-Z]{1,3}\s?\d{1,3}\.\d{2})\b/,
-      /\b(\d{1,2}\s?AZR\s?\d{1,4}\/\d{2})\b/,
       /\b(B\s?\d{1,2}\s?[A-Z]{1,3}\s?\d{1,3}\/\d{2}\s?[A-Z]?)\b/,
-      /\b([IVX]{1,4}\s?R\s?\d{1,3}\/\d{2})\b/,
+      /\b([IVX]{1,4}\s?[A-Z]?\s?R\s?\d{1,3}\/\d{2})\b/,
       /\bNo\.\s?(\d{2}-\d{2,5})\b/,
-      /\bAz\.?:?\s*([A-Za-z0-9\s./-]{5,20}?)(?:\s|$|\)|,)/];
-    const ENTSCHEID=/\b(urteil|beschluss|entscheidung|verkündet|entschieden|abgewiesen|stattgegeben|verurteilt|für (verfassungswidrig|nichtig|unzulässig|rechtswidrig)|revision|eilantrag|verfassungsbeschwerde|judgment|ruling)\b/i;
-    const TERMIN=/\b(verhandlungstermin|mündliche verhandlung|termin(vorschau|hinweis)|sitzungsplan|jahresbericht|pressekonferenz)\b/i;
+    ];
+    /* In Adressen steht das Aktenzeichen kleingeschrieben und mit Strichen:
+       ".../entscheidung/vi-r-1-24" → "VI R 1/24" */
+    const AZ_LINK=/\/((?:[ivxlc]{1,5}[a-z]?|\d{1,2})[-_](?:zr|zb|str|stb|azr|azb|r|c|b|bvr|bvl|bve|bvq|kzr|kvr)[-_]\d{1,4}[-_]\d{2})(?:[-_/?#]|$)/i;
+    const ART_RE=/\b(Urteil|Beschluss|Gerichtsbescheid|Versäumnisurteil|Teilurteil|Zwischenurteil|Leitsatzentscheidung|Hinweisbeschluss|Vorlagebeschluss|Eilbeschluss|Judgment|Order)\b/i;
+    const DATUM_RE=/\b(\d{1,2}\.\s?\d{1,2}\.\s?\d{4})\b/;
+    const TERMIN=/\b(verhandlungstermin|mündliche verhandlung|termin(vorschau|hinweis)|sitzungsplan|jahresbericht|pressekonferenz|jahrespressegespräch)\b/i;
+    const ENTSCHEID=/\b(urteil|beschluss|entscheidung|verkündet|entschieden|abgewiesen|stattgegeben|verurteilt|revision|eilantrag|verfassungsbeschwerde|judgment|ruling|leitsatz)\b/i;
+    const azFinden=(txt,link)=>{
+      for(const re of AZ_RE){const m=txt.match(re);if(m)return m[1].replace(/\s+/g,' ').trim()}
+      const m=(link||'').match(AZ_LINK);
+      if(m){const t=m[1].replace(/[-_]/g,' ').trim().split(' ');
+        /* "vi r 1 24" → "VI R 1/24" */
+        if(t.length>=4){const nr=t.pop(),az=t.pop();
+          return t.map(x=>/^[ivxlc]+[a-z]?$/i.test(x)?x.toUpperCase():x.toUpperCase()).join(' ')+' '+az+'/'+nr}}
+      const m2=txt.match(/\b(?:Az\.?|Aktenzeichen)\s*:?\s*([A-Za-z0-9\s./-]{4,22})/);
+      return m2?m2[1].trim().replace(/\s+/g,' '):'';
+    };
     ARTICLES.forEach(a=>{
       if(a.herkunft!=='gericht')return;
-      const t=a.title||'';
+      const t=a.title||'',d=a.desc||'',txt=t+' '+d;
       if(a.isDoc||TERMIN.test(t)){a.keinUrteil=true;return}
-      if(!a.az){for(const re of AZ){const m=(t+' '+(a.desc||'')).match(re);if(m){a.az=m[1].replace(/\s+/g,' ').trim();break}}}
-      /* Pressestellen schreiben das Aktenzeichen oft nur in den Text. */
-      if(!a.az){const m=(a.desc||'').match(/\b(?:Az\.?|Aktenzeichen)\s*:?\s*([A-Za-z0-9\s./-]{5,22})/);if(m)a.az=m[1].trim().replace(/\s+/g,' ')}
-      if(!a.az&&!ENTSCHEID.test(t)){a.keinUrteil=true;return}
-      if(!a.gericht)a.gericht=a.src;
-      /* Das Aktenzeichen steht oft im Titel – im Kopf der Zeile reicht es einmal. */
-      /* "Bundesgerichtshof entscheidet über … – Urteil vom 15.09.2026 – I ZR 77/25"
-         → der Kopf reicht; Gericht, Datum und Aktenzeichen stehen schon daneben. */
-      a.titelKurz=t.replace(/\s*[-–|]\s*(Urteil|Beschluss|Entscheidung)\s+vom\s+[\d.\s]+(Uhr)?\s*/i,' ')
-                   .replace(/\s*[-–|]\s*Az\.?:?\s*[A-Za-z0-9\s./-]{5,22}\s*$/i,'')
-                   .replace(/\s*[-–|]\s*(Mitteilung der Pressestelle|Pressemitteilung(en)?( Nr\.?\s*\d+\/\d+)?)\s*$/i,'')
-                   .replace(/^\s*(Mitteilung der Pressestelle|Pressemitteilung(en)?)\s*[-–|:]\s*/i,'')
-                   .replace(/\s{2,}/g,' ').trim();
-      if(!a.ls){const s=(a.desc||'').split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/)[0];if(s&&s.length>40)a.ls=s.slice(0,320)}
+      a.az=a.az||azFinden(txt,a.link);
+      if(!a.az&&!ENTSCHEID.test(txt)){a.keinUrteil=true;return}
+      if(!a.gericht)a.gericht=a.src.replace(/\s*(Entscheidungen|Pressemitteilungen|Presse)\s*$/i,'').trim();
+      const mArt=txt.match(ART_RE);a.art=mArt?mArt[1].replace(/^judgment$/i,'Urteil').replace(/^order$/i,'Beschluss'):'Entscheidung';
+      const mDat=txt.match(DATUM_RE);if(mDat)a.entschiedenAm=mDat[1].replace(/\s+/g,'');
+      /* Betreff: der Titel ohne Aktenzeichen, Art und Datum. Bleibt nichts
+         übrig (BGH-Listen, BFH-Formulartitel), dann der erste sinnvolle Satz
+         des Vorschautexts, sonst die sprechenden Teile der Adresse. */
+      let betreff=t
+        .replace(a.az?new RegExp(a.az.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'):/$^/,'')
+        .replace(ART_RE,'').replace(/\bvom\b/gi,'').replace(DATUM_RE,'')
+        .replace(/^(Mitteilung der Pressestelle|Pressemitteilung(en)?( Nr\.?\s*\d+\/\d+)?)\s*[-–|:]?\s*/i,'')
+        .replace(/\s*[-–|,]\s*(Bundesfinanzhof|Bundesgerichtshof|Bundesverwaltungsgericht|Bundesarbeitsgericht|Bundessozialgericht)\s*$/i,'')
+        .replace(/^(Entscheidung(s)?\s*Detail|Detail|Dokument)\s*[-–|:]?\s*/i,'')
+        .replace(/^[\s,;:–-]+|[\s,;:–-]+$/g,'').replace(/\s{2,}/g,' ').trim();
+      /* Übrig gebliebene Hülsen sind kein Betreff. */
+      if(/^(entscheidung(en)?|beschluss|urteil|leitsatzentscheidung|dokument)$/i.test(betreff))betreff='';
+      if(betreff.length<12){
+        /* Der Vorschautext trägt den Betreff, sofern er mehr ist als die
+           Wiederholung der Entscheidungsart ("Leitsatzentscheidung"). */
+        const satz=(d||'').split(/(?<=[.!?])\s+/)[0]||'';
+        if(satz.length>=20&&!FORMULAR_RE.test(satz)&&!ART_RE.test(satz.trim())||satz.length>=40)betreff=satz.slice(0,200);
+        if(/^(entscheidung(en)?|beschluss|urteil|leitsatzentscheidung)$/i.test(betreff.trim()))betreff='';
+      }
+      if(betreff.length<12&&a.link){
+        const slug=(a.link.split(/[?#]/)[0].split('/').filter(Boolean).pop()||'').replace(/\.(html?|pdf)$/i,'');
+        const woerter=slug.split(/[-_]/).filter(w=>w.length>3&&!/^\d+$/.test(w));
+        if(woerter.length>=2)betreff=woerter.map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+      }
+      a.betreff=betreff;
+      a.titelKurz=betreff||(a.az?a.art+' '+a.az:t);
+      if(a.ls&&norm(a.ls)===norm(betreff))a.ls='';
+      if(!a.ls){const s=(d||'').split(/(?<=[.!?])\s+/)[0];if(s&&s.length>40&&norm(s)!==norm(betreff))a.ls=s.slice(0,320)}
     });
   });
   sicher('Themenlagen',()=>{STORIES.push(...baueStories(ARTICLES))});
@@ -2778,7 +2860,7 @@ function zeigeLadebalken(text){
    alle_artikel{Kategorie:[{quelle,titel,url}]}.
    Die Quellenangaben stecken als ‹‹SRC|Name|URL›› mitten im Text – sie
    werden hier herausgelöst und als anklickbare Fußnoten angehängt. */
-const TL={basis:'newsletter/',liste:null,ausgaben:{},laeuft:false,fehler:''};
+const TL={basis:'newsletter/',liste:null,ausgaben:{},laeuft:false};
 const SRC_MARKE=/‹‹SRC\|([^|]+)\|([^›]+)››/g;
 function tlText(s){return String(s||'').replace(SRC_MARKE,'').replace(/\s+([.,;:])/g,'$1').replace(/\s{2,}/g,' ').trim()}
 function tlQuellen(s){const out=[];let m;const re=new RegExp(SRC_MARKE.source,'g');
@@ -2789,29 +2871,28 @@ function tlNorm(e,i){
   return {id:'tl-'+(e.datei||e.datum+'-'+e.zeit),kind:'tageslage',datei:e.datei,
     title:'Tageslage · '+zeit,datum:e.datum,zeit,date:t,
     desc:tlText(e.intro),quellen:tlQuellen(e.intro),suchtext:e.suchtext||'',
-    link:TL.basis+'#'+(e.datei||'').replace(/\.json$/,''),src:'Tageslage'};
+    link:'newsletter/#'+(e.datei||'').replace(/\.json$/,''),src:'Tageslage'};
 }
 async function tageslageLaden(){
   if(TL.liste||TL.laeuft)return;TL.laeuft=true;
-  const pfade=window.PS_TAGESLAGE?[window.PS_TAGESLAGE]:[TL.basis+'data/index.json'];
+  /* Eine Datei, gleiche Herkunft: tageslage.json wird im Lauf von
+     fetch_tageslage.py gespiegelt. Klappt der Abruf dort nicht, steht der
+     Grund im Actions-Log – hier bleibt der Reiter dann einfach leer. */
   try{
-    for(const p of pfade){
-      let j=null;
-      try{const r=await fetch(p+'?t='+Date.now());if(!r.ok)continue;j=await r.json()}catch(e){continue}
-      const roh=Array.isArray(j)?j:(j.issues||j.items||j.ausgaben||j.entries||[]);
-      if(!Array.isArray(roh)||!roh.length)continue;
+    const j=await hole('tageslage.json');
+    const roh=j&&(j.ausgaben||j.issues||(Array.isArray(j)?j:[]));
+    if(Array.isArray(roh)&&roh.length){
+      TL.basis=(j&&j.basis)||'newsletter/';
       TL.liste=roh.map(tlNorm).sort((a,b)=>b.date-a.date);
       TL.liste.forEach(x=>{ITEMS[x.id]=x});
-      TL.quelle=p;break;
     }
-    if(!TL.liste)TL.fehler='Ausgabenliste nicht gefunden';
   }finally{TL.laeuft=false;render()}
 }
 /* Eine einzelne Ausgabe mit allen Rubriken und Artikeln nachladen. */
 async function tageslageAusgabe(id){
   const x=ITEMS[id];if(!x||TL.ausgaben[id])return TL.ausgaben[id];
   try{
-    const r=await fetch(TL.basis+'data/'+x.datei+'?t='+Date.now());
+    const r=await fetch((TL.basis||'newsletter/')+'data/'+x.datei,{cache:'no-store'});
     if(!r.ok)return null;
     const d=await r.json();
     TL.ausgaben[id]=d;
