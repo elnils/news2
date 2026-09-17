@@ -4,12 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Nachrichten & Co.</title>
+<title>Presseschau – Entwurf v33</title>
+<meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
+<!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
+     apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#f6f7fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1420" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Presseschau">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="Presseschau">
+<meta property="og:description" content="Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ───────────────────────────── Tokens ───────────────────────────── */
+/* Logo-Kachel im Kopf; auf dem Startbildschirm liefert iOS das PNG. */
+#topbar .logo .mark{width:26px;height:26px;border-radius:7px;flex:0 0 auto;display:block}
+#topbar .logo{display:flex;align-items:center;gap:9px}
+#topbar .logo .wm{display:block}
+@media (max-width:520px){#topbar .logo .mark{width:24px;height:24px}}
+/* Im Standalone-Modus (vom Startbildschirm) den Bereich unter der
+   iPhone-Statusleiste freihalten. */
+@media (display-mode:standalone){
+  #topbar{padding-top:env(safe-area-inset-top)}
+  #tabbar{padding-bottom:max(env(safe-area-inset-bottom),6px)}
+}
 :root{
   --bg:#eef0f5;--surface:#ffffff;--surface2:#f6f7fa;--border:#e2e6f0;--border2:#c9d0de;
   --text:#0d1220;--text2:#4a5168;--muted:#737b91;
@@ -310,6 +339,24 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .ev:first-child{border-top:0}
 .ev .time{font-weight:800;font-size:var(--fs-sm);color:var(--text2);padding-top:1px}
 .ev .ttl{font-weight:600;font-size:var(--fs)}
+/* Sitzverteilung: ein Balken je Parlament, Fraktionen nebeneinander. */
+.sitz{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sitz:last-child{border-bottom:0}
+.sitz .kopf{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.sitz .kopf b{font-size:var(--fs-md)}
+.sitz .balken{position:relative;display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--surface2)}
+.sitz .balken i{display:block;height:100%;min-width:2px}
+.sitz .mitte{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
+.sitz .fr{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.sitz .fr span{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text2)}
+.sitz .fr i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.sitz .fr b{color:var(--text)}
+/* Abstimmungsergebnis (Fraktionsweise) */
+.abst{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:10px;align-items:center;padding:5px 0;font-size:var(--fs-sm)}
+.abst .sp{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface2)}
+.abst .sp i{display:block;height:100%}
+.abst .wert{font-variant-numeric:tabular-nums;color:var(--text2);font-size:var(--fs-xs)}
+.stimme{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto}
 .poll{display:grid;grid-template-columns:90px minmax(0,1fr) 46px;gap:10px;align-items:center;padding:6px 0}
 .poll .barw{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden}
 .poll .barw i{display:block;height:100%;border-radius:6px}
@@ -642,8 +689,10 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 
 <div id="app">
   <header id="topbar">
-    <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v32</span>
+    <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
+      <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
+      <span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
+    <span class="demo-pill" id="ver-pill">Entwurf v33</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1089,11 +1138,19 @@ const ISSUES=[
 /* Orte für die Ansicht "Personen & Orte"; Personen kommen aus PEOPLE. */
 const ORTE=['Berlin','Brüssel','Straßburg','Karlsruhe','Luxemburg','Washington','Peking','München','Düsseldorf','Dresden','Frankfurt','Ukraine','Nato','China','Bayern','Nordrhein-Westfalen','Sachsen'];
 
+/* Ein Monitor ist mehr als eine Wortliste: Wer "Zoll" beobachtet, will
+   nicht jede Zollmeldung aus den USA, sondern vielleicht nur Bundestag und
+   Bundesregierung, nur die Schlagzeile, und ohne "Zollstock". Deshalb:
+   ODER-Begriffe, Pflichtbegriffe, Ausschlüsse, Region, Ressort, Herkunft,
+   Quelle, Zeitfenster und Suchfeld. */
+const MON_FELDER={kw:[],pflicht:[],nicht:[],region:'all',topic:'all',herkunft:'all',src:'all',fenster:48,feld:'alles',nurTop:false};
+const MON_FENSTER=[[6,'6 Std.'],[24,'24 Std.'],[48,'48 Std.']];
+const monNorm=m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]});
 const DEFAULT_MONITORS=[
   {id:'m1',name:'Digitalgesetz',kw:['digitalgesetz','digitale verwaltung','verwaltungsdigitalisierung'],color:'#2563eb'},
   {id:'m2',name:'Netzsicherheit / NIS-2',kw:['nis-2','netzsicherheit'],color:'#7c3aed'},
-  {id:'m3',name:'Zölle China',kw:['zölle','zoll','peking'],color:'#dc2626'},
-];
+  {id:'m3',name:'Zölle China',kw:['zölle','zoll','peking'],color:'#dc2626',region:'china',nicht:['zollstock']},
+].map(m=>({...MON_FELDER,...m}));
 const BLOCKS=[['top','Top-Meldungen'],['stories','Stories'],['events','Termine heute & morgen'],['docs','Neue Dokumente'],['rulings','Urteile'],['studies','Studien & Analysen'],['markets','Märkte']];
 /* Vorauswahl: fertige Briefings, die beim ersten Start schon da sind. */
 const DEFAULT_BRIEFS=[
@@ -1149,9 +1206,9 @@ const WS=[
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
-let MONITORS=store.get('monitors',DEFAULT_MONITORS);
+let MONITORS=store.get('monitors',DEFAULT_MONITORS).map(m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]}));
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
 applyPrefs();
 
@@ -1293,6 +1350,11 @@ const DRUCKSACHE_RE=/^\s*\d{1,5}\/\d{2,4}\s*[|–-]|\b(drucksache|bundesratsdruc
 const PR_RE=/^(press remarks|remarks by|statement by|speech by|doorstep|pressestatement|pressemitteilung|mitteilung|erklärung von|rede von|grußwort|readout)\b|\b(after his meeting|after her meeting|im anschluss an)\b/i;
 const WEICH_RE=/\b(schauspieler|sängerin|sänger|musiker|popstar|rapper|band|album|tournee|filmpreis|oscar|grammy|gestorben|ist tot|nachruf|trauer um|hochzeit|scheidung|baby)\b/i;
 const WEICH_TOPICS=new Set(['kultur','sport','panorama','vermischtes','promi','leute','unterhaltung']);
+/* Manche Feeds liefern "anzeige", "sponsored" oder "shopping" als Ressort
+   mit. Das ist keine Rubrik, sondern eine Vermarktungskategorie – sie
+   gehört weder in die Ressortleiste noch ins Briefing. */
+const RESSORT_STOP=/^(anzeige|anzeigen|werbung|sponsored|sponsored ?content|advertorial|promotion|promoted|partner|partnerinhalt|partnerangebot|eigenwerbung|in eigener sache|marktplatz|shopping|deal|deals|angebot|angebote|gewinnspiel|prospekte|kleinanzeigen|jobs|stellenmarkt|immobilienmarkt|trauer|horoskop|lotto)$/i;
+const ressortTauglich=t=>!RESSORT_STOP.test(String(t||'').trim());
 const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb','bverfg','bgh','bundesbank','us-whitehouse','us-house','us-senate']);
 /* Was in den Top-Meldungen nichts verloren hat, stört in den Listen genauso:
    Veranstaltungswerbung, Eigenwerbung, Serviceformate, Ticker, Dateiauswürfe.
@@ -1444,7 +1506,7 @@ function renderTop(){
     return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl">${esc(a.title)}</div>
       <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${zugangPill(a)}</div>${starHTML(a.id)}
       ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
-  const topics=[...new Set(base.flatMap(a=>a.topics))].map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
+  const topics=[...new Set(base.flatMap(a=>a.topics))].filter(ressortTauglich).map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
   const srcs=[...new Set(base.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
   h+=secHd('alle','Alle Meldungen',all.length+' · letzte 48 Std.',`
     <div class="vmode" role="group" aria-label="Darstellung"><button class="icon-btn" aria-pressed="${S.view==='list'}" aria-label="Liste" title="Liste" onclick="setView('list')"><svg class="i"><use href="#i-list"/></svg></button><button class="icon-btn" aria-pressed="${S.view==='paper'}" aria-label="Zeitung" title="Zeitung" onclick="setView('paper')"><svg class="i"><use href="#i-grid"/></svg></button></div>
@@ -1614,7 +1676,7 @@ function renderDesk(){
   const base=entdoppeln(ohneRauschen(ARTICLES.filter(a=>a.ago<=win&&inHauptRegion(a)&&a.herkunft!=='think'&&matchLQ('dk',a))).sort((a,b)=>b.date-a.date));
   /* Jede Meldung in genau einem Ressort – dem ersten, das der Lauf vergeben hat. */
   const nach={};
-  base.forEach(a=>{let t=(a.topics||[])[0]||'sonstiges';t=DESK_ALIAS[t]||t;(nach[t]=nach[t]||[]).push(a)});
+  base.forEach(a=>{let t=(a.topics||[]).filter(ressortTauglich)[0]||'sonstiges';t=DESK_ALIAS[t]||t;(nach[t]=nach[t]||[]).push(a)});
   const keys=Object.keys(nach).sort((a,b)=>{const ia=DESK_ORDER.indexOf(a),ib=DESK_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||nach[b].length-nach[a].length});
   let h=secHd('desk','Ressorts',`${base.length} Meldungen · ${keys.length} Ressorts`,
     `<div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${win===24}" onclick="S.deskWin=24;render()">24 Std.</button><button aria-pressed="${win===48}" onclick="S.deskWin=48;render()">48 Std.</button></div>${copyBtn(base.map(a=>a.id),'Ressorts')}`);
@@ -1744,34 +1806,107 @@ function renderArchive(){
 /* ── Monitor ── */
 const _monCache={key:'',hits:{}};
 function monitorHits(m){
-  const key=ARTICLES.length+'|'+m.kw.join(',');
+  m=monNorm(m);
+  const key=JSON.stringify([m.kw,m.pflicht,m.nicht,m.region,m.topic,m.herkunft,m.src,m.fenster,m.feld,m.nurTop,PREF.rauschen,PREF.dedupe]);
   if(_monCache.key!==ARTICLES.length){_monCache.key=ARTICLES.length;_monCache.hits={}}
   if(_monCache.hits[key])return _monCache.hits[key];
-  const kws=m.kw.map(norm);
-  return _monCache.hits[key]=ARTICLES.filter(a=>a.ago<=48&&kws.some(k=>(a._txt||(a._txt=norm(a.title+' '+a.desc))).includes(k))).sort((a,b)=>b.date-a.date);
+  const oder=m.kw.map(norm).filter(Boolean),pflicht=m.pflicht.map(norm).filter(Boolean),nicht=m.nicht.map(norm).filter(Boolean);
+  const feld=a=>m.feld==='titel'?norm(a.title):(a._txt||(a._txt=norm(a.title+' '+(a.desc||''))));
+  const treffer=ARTICLES.filter(a=>{
+    if(a.ago>(m.fenster||48))return false;
+    if(!PREF.rauschen&&istRauschen(a))return false;
+    if(m.region!=='all'&&!(a.regions||[]).includes(m.region))return false;
+    if(m.topic!=='all'&&!(a.topics||[]).includes(m.topic))return false;
+    if(m.herkunft!=='all'&&a.herkunft!==m.herkunft)return false;
+    if(m.src!=='all'&&a.src!==m.src)return false;
+    if(m.nurTop&&!topTauglich(a))return false;
+    const t=feld(a);
+    if(oder.length&&!oder.some(k=>t.includes(k)))return false;
+    if(pflicht.length&&!pflicht.every(k=>t.includes(k)))return false;
+    if(nicht.length&&nicht.some(k=>t.includes(k)))return false;
+    return true;
+  }).sort((a,b)=>b.date-a.date);
+  return _monCache.hits[key]=entdoppeln(treffer);
+}
+/* Was ein Monitor tut, in einem Satz – steht über der Trefferliste. */
+function monBeschreibung(m){
+  m=monNorm(m);
+  const teile=[];
+  if(m.kw.length)teile.push('eines von: '+m.kw.join(', '));
+  if(m.pflicht.length)teile.push('immer: '+m.pflicht.join(' + '));
+  if(m.nicht.length)teile.push('nie: '+m.nicht.join(', '));
+  if(m.region!=='all')teile.push(REGION_NAME[m.region]);
+  if(m.topic!=='all')teile.push(TOPICS[m.topic]||m.topic);
+  if(m.herkunft!=='all')teile.push(HERKUNFT_NAME[m.herkunft]);
+  if(m.src!=='all')teile.push('Quelle '+m.src);
+  if(m.feld==='titel')teile.push('nur Schlagzeile');
+  if(m.nurTop)teile.push('ohne Ticker und Dokumente');
+  teile.push('letzte '+(m.fenster||48)+' Std.');
+  return teile.join(' · ');
 }
 function monitorNew(){return MONITORS.reduce((n,m)=>n+monitorHits(m).filter(a=>a.ago<24).length,0)}
 function renderMonitor(){
   const neu=monitorNew();
-  let h=`<div class="bar" style="margin:0 0 10px"><span class="note grow">${MONITORS.length} ${MONITORS.length===1?'Begriff':'Begriffe'} in Beobachtung${neu?` · ${neu} neue Treffer in 24 Std.`:''}</span>
-    <button class="btn sm" onclick="g('mon-form').hidden=!g('mon-form').hidden;g('mon-name').focus()"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg>Neuer Monitor</button></div>`;
-  h+=`<div class="box" id="mon-form" hidden style="padding:14px 16px 4px;margin-bottom:12px"><div class="field"><label for="mon-name">Name</label><input id="mon-name" placeholder="z. B. Glasfaser Bayern"></div><div class="field"><label for="mon-kw">Begriffe, mit Komma getrennt</label><input id="mon-kw" placeholder="glasfaser, ftth, breitband" onkeydown="if(event.key==='Enter')saveMonitor()"></div><div class="bar" style="margin-bottom:12px"><button class="btn primary" onclick="saveMonitor()">Monitor anlegen</button><span class="note">Zählt Meldungen der letzten 48 Stunden, in denen einer der Begriffe vorkommt.</span></div></div>`;
+  const offen=S.monForm;
+  let h=`<div class="bar" style="margin:0 0 10px"><span class="note grow">${MONITORS.length} ${MONITORS.length===1?'Monitor':'Monitore'}${neu?` · ${neu} neue Treffer in 24 Std.`:''}</span>
+    <button class="btn sm" onclick="monForm('neu')"><svg class="i" style="width:15px;height:15px"><use href="#i-plus"/></svg>Neuer Monitor</button></div>`;
+  if(offen)h+=monFormHTML(offen==='neu'?null:MONITORS.find(m=>m.id===offen));
   h+=`<div class="box">${MONITORS.map(m=>{const hits=monitorHits(m),nw=hits.filter(a=>a.ago<24).length,auf=S.monOpen.has(m.id);
     return `<div class="mon ${auf?'open':''}">
       <div class="mon-top"><span class="dot" style="background:${m.color}"></span><b class="grow">${esc(m.name)}</b>${nw?`<span class="pill red">${nw} neu</span>`:''}<span class="pill grey">${hits.length} Treffer</span></div>
-      <div class="mon-kw">${m.kw.map(k=>`<span class="chip" style="min-height:24px;padding:1px 9px;font-size:var(--fs-xs)">${esc(k)}</span>`).join('')}</div>
-      <div class="mon-acts"><button class="btn sm" aria-expanded="${auf}" onclick="S.monOpen.has('${m.id}')?S.monOpen.delete('${m.id}'):S.monOpen.add('${m.id}');render()">${auf?'Treffer ausblenden':'Treffer anzeigen'}</button><button class="btn sm quiet" onclick="editMonitor('${m.id}')">Begriffe ändern</button><button class="btn sm quiet" onclick="deleteMonitor('${m.id}')">Löschen</button></div>
-    <div class="hits">${hits.length?(window['MON_'+m.id]=hits.map(x=>x.id),hits.slice(0,80).map(a=>`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}',window.MON_${m.id})" onkeydown="rowKey(event,'${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span>${starHTML(a.id)}<span class="ttl">${esc(a.title)}</span></div>`).join('')+(hits.length>80?`<div class="note" style="padding:8px 0">${hits.length-80} weitere – Begriffe enger fassen oder über die Suche eingrenzen.</div>`:'')):'<div class="note" style="padding:6px 0">Keine Treffer in den letzten 48 Stunden.</div>'}</div></div>`}).join('')||'<div class="empty"><b>Noch kein Monitor</b>Lege einen Suchbegriff an – neue Treffer erscheinen dann links in der Leiste und hier.</div>'}</div>`;
-  h+=`<p class="note" style="margin-top:12px">Ein Monitor sucht in Titel und Teaser aller Meldungen der letzten 48 Stunden.${S.user?' Mit Konto kommt zusätzlich eine tägliche Mail.':' Mit Konto gilt er auf allen Geräten und kann täglich per Mail kommen.'}</p>`;
+      <div class="mon-kw">${(m.kw||[]).map(k=>`<span class="chip" style="min-height:24px;padding:1px 9px;font-size:var(--fs-xs)">${esc(k)}</span>`).join('')}${(m.pflicht||[]).map(k=>`<span class="chip" style="min-height:24px;padding:1px 9px;font-size:var(--fs-xs)">+ ${esc(k)}</span>`).join('')}${(m.nicht||[]).map(k=>`<span class="chip" style="min-height:24px;padding:1px 9px;font-size:var(--fs-xs);opacity:.7">− ${esc(k)}</span>`).join('')}</div>
+      <div class="note" style="margin:2px 0 6px">${esc(monBeschreibung(m))}</div>
+      <div class="mon-acts"><button class="btn sm" aria-expanded="${auf}" onclick="S.monOpen.has('${m.id}')?S.monOpen.delete('${m.id}'):S.monOpen.add('${m.id}');render()">${auf?'Treffer ausblenden':'Treffer anzeigen'}</button><button class="btn sm quiet" onclick="monForm('${m.id}')">Bearbeiten</button><button class="btn sm quiet" onclick="duplicateMonitor('${m.id}')">Kopieren</button><button class="btn sm quiet" onclick="deleteMonitor('${m.id}')">Löschen</button></div>
+    <div class="hits">${hits.length?(window['MON_'+m.id]=hits.map(x=>x.id),hits.slice(0,80).map(a=>`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}',window.MON_${m.id})" onkeydown="rowKey(event,'${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span>${starHTML(a.id)}<span class="ttl">${esc(a.title)}</span></div>`).join('')+(hits.length>80?`<div class="note" style="padding:8px 0">${hits.length-80} weitere – Begriffe enger fassen oder über die Filter eingrenzen.</div>`:'')):'<div class="note" style="padding:6px 0">Keine Treffer im gewählten Zeitfenster.</div>'}</div></div>`}).join('')||'<div class="empty"><b>Noch kein Monitor</b>Lege einen an – neue Treffer erscheinen dann links in der Leiste und hier.</div>'}</div>`;
+  h+=`<p class="note" style="margin-top:12px">Ein Monitor durchsucht die Meldungen im gewählten Zeitfenster.${S.user?' Mit Konto kommt zusätzlich eine tägliche Mail.':' Mit Konto gilt er auf allen Geräten und kann täglich per Mail kommen.'}</p>`;
   return h;
 }
-function editMonitor(id){const m=MONITORS.find(x=>x.id===id);if(!m)return;
-  const kw=prompt('Begriffe für „'+m.name+'", mit Komma getrennt:',m.kw.join(', '));
-  if(kw===null)return;const liste=kw.split(',').map(s=>s.trim()).filter(Boolean);
-  if(!liste.length){toast('Mindestens ein Begriff nötig');return}
-  m.kw=liste;store.set('monitors',MONITORS);toast('Begriffe geändert');render()}
-function saveMonitor(){const name=g('mon-name').value.trim(),kw=g('mon-kw').value.split(',').map(s=>s.trim()).filter(Boolean);if(!name||!kw.length){toast('Name und mindestens ein Begriff nötig');return}
-  const colors=['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'];MONITORS.push({id:'m'+Date.now(),name,kw,color:colors[MONITORS.length%colors.length]});store.set('monitors',MONITORS);toast('Monitor angelegt');render()}
+function monForm(id){S.monForm=S.monForm===id?null:id;render();const el=g('mon-name');el&&el.focus()}
+function monFormHTML(m){
+  m=monNorm(m||{name:'',color:['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'][MONITORS.length%6]});
+  const srcs=[...new Set(ARTICLES.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
+  const topics=[...new Set(ARTICLES.flatMap(a=>a.topics||[]))].filter(ressortTauglich).sort();
+  const feld=(lab,id,wert,ph)=>`<div class="field"><label for="${id}">${lab}</label><input id="${id}" value="${esc(wert)}" placeholder="${ph}" onkeydown="if(event.key==='Enter')saveMonitor()"></div>`;
+  const sel=(lab,id,opts,wert)=>`<div class="field"><label for="${id}">${lab}</label><select class="sel" id="${id}">${opts.map(([k,l])=>`<option value="${esc(k)}" ${String(wert)===String(k)?'selected':''}>${esc(l)}</option>`).join('')}</select></div>`;
+  return `<div class="box cfg" id="mon-form" style="padding:14px 16px 4px;margin-bottom:12px">
+    <input type="hidden" id="mon-id" value="${esc(m.id||'')}">
+    <div class="two">
+      <div>${feld('Name','mon-name',m.name,'z. B. Glasfaser Bayern')}
+        ${feld('Begriffe – einer genügt (Komma)','mon-kw',(m.kw||[]).join(', '),'glasfaser, ftth, breitband')}
+        ${feld('Pflichtbegriffe – alle müssen vorkommen','mon-pflicht',(m.pflicht||[]).join(', '),'bayern')}
+        ${feld('Ausschlüsse – keiner darf vorkommen','mon-nicht',(m.nicht||[]).join(', '),'werbung, gewinnspiel')}</div>
+      <div>${sel('Region','mon-region',REGIONS,m.region)}
+        ${sel('Ressort','mon-topic',[['all','Alle Ressorts'],...topics.map(t=>[t,TOPICS[t]||t])],m.topic)}
+        ${sel('Herkunft','mon-herkunft',HERKUENFTE,m.herkunft)}
+        ${sel('Quelle','mon-src',[['all','Alle Quellen'],...srcs.map(q=>[q,q])],m.src)}</div>
+    </div>
+    <div class="two">
+      <div>${sel('Zeitfenster','mon-fenster',MON_FENSTER.map(([v,l])=>[v,l]),m.fenster)}</div>
+      <div>${sel('Wo suchen','mon-feld',[['alles','Schlagzeile und Teaser'],['titel','Nur Schlagzeile']],m.feld)}</div>
+    </div>
+    <div class="field"><label class="chk"><input type="checkbox" id="mon-nurtop" ${m.nurTop?'checked':''}>Ticker, Dokumente, Werbung und Sendungshinweise überspringen</label></div>
+    <div class="bar" style="margin-bottom:12px"><button class="btn primary" onclick="saveMonitor()">${m.id?'Änderungen speichern':'Monitor anlegen'}</button><button class="btn quiet" onclick="S.monForm=null;render()">Abbrechen</button><span class="note">Leere Begriffsliste bedeutet: alles, was die Filter übrig lassen.</span></div>
+  </div>`;
+}
+function editMonitor(id){monForm(id)}
+function duplicateMonitor(id){const m=MONITORS.find(x=>x.id===id);if(!m)return;
+  MONITORS.push({...monNorm(m),id:'m'+Date.now(),name:m.name+' (Kopie)'});store.set('monitors',MONITORS);toast('Kopie angelegt');render()}
+function saveMonitor(){
+  const liste=id=>(g(id)?g(id).value:'').split(',').map(x=>x.trim()).filter(Boolean);
+  const name=(g('mon-name').value||'').trim();
+  if(!name){toast('Ein Name fehlt');return}
+  const daten={name,kw:liste('mon-kw'),pflicht:liste('mon-pflicht'),nicht:liste('mon-nicht'),
+    region:g('mon-region').value,topic:g('mon-topic').value,herkunft:g('mon-herkunft').value,src:g('mon-src').value,
+    fenster:+g('mon-fenster').value||48,feld:g('mon-feld').value,nurTop:g('mon-nurtop').checked};
+  if(!daten.kw.length&&!daten.pflicht.length&&daten.region==='all'&&daten.topic==='all'&&daten.herkunft==='all'&&daten.src==='all'){
+    toast('Mindestens ein Begriff oder ein Filter nötig');return}
+  const id=g('mon-id').value;
+  const alt=id&&MONITORS.find(m=>m.id===id);
+  if(alt){Object.assign(alt,daten);toast('Monitor geändert')}
+  else{const colors=['#2563eb','#7c3aed','#dc2626','#0f766e','#d97706','#1f2937'];
+    MONITORS.push({...MON_FELDER,...daten,id:'m'+Date.now(),color:colors[MONITORS.length%colors.length]});toast('Monitor angelegt')}
+  store.set('monitors',MONITORS);S.monForm=null;render();
+}
 function deleteMonitor(id){MONITORS=MONITORS.filter(m=>m.id!==id);store.set('monitors',MONITORS);toast('Monitor gelöscht');render()}
 
 /* ── Policy ── */
@@ -1879,23 +2014,179 @@ function personHTML(p,listName){
   const bild=p.photo?`<img src="${esc(p.photo)}" alt="" loading="lazy" onerror="this.remove()">`:initials(p.name);
   return `<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}',window.${listName})" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${bild}</span><div><div class="nm">${esc(p.name)}${p.party?` <span class="pill grey">${esc(p.party)}</span>`:''}</div><div class="role">${esc(p.role||p.type)}${p.org?' · '+esc(p.org):p.city?' · '+esc(p.city):''}</div></div>${starHTML(p.id)}</div>`}
 /* Parlamente als Filter: Bundestag, Bundesrat, Europaparlament, Landtage, US-Kongress */
+/* ── Abstimmungen ──────────────────────────────────────────
+   Vorbild ist die Democracy-App: Wie hat das Parlament entschieden, wie
+   die einzelnen Fraktionen, und wie die einzelne Person? Die Zahlen muss
+   der Lauf liefern, gerechnet wird hier nichts:
+
+     dip.json    procedures[].abstimmung = {datum, namentlich:true|false,
+                 ja, nein, enthalten, abwesend, beschluss:"…",
+                 fraktionen:{"Union":{ja:208,nein:0,enthalten:0,abwesend:4}, …}}
+     people.json people[].votes = [{titel, datum, entscheidung:"ja|nein|
+                 enthalten|abwesend", vorgang, thema, url}]
+
+   Fehlen die Felder, bleiben die Abschnitte weg – es wird nichts erfunden. */
+const STIMM_FARBE={ja:'#65a30d',nein:'#be185d',enthalten:'#38bdf8',abwesend:'#94a3b8'};
+const STIMM_LABEL={ja:'Zustimmung',nein:'Ablehnung',enthalten:'Enthaltung',abwesend:'Nicht abgegeben'};
+function stimmArt(v){
+  const t=norm(v);
+  if(/^(ja|zustimm|daf|yes|for|pro)/.test(t))return 'ja';
+  if(/^(nein|ablehn|no|against|contra|gegen)/.test(t))return 'nein';
+  if(/^(enthal|abstain)/.test(t))return 'enthalten';
+  return 'abwesend';
+}
+const stimmPunkt=a=>`<span class="stimme" style="background:${STIMM_FARBE[a]}" title="${STIMM_LABEL[a]}"></span>`;
+function stimmBalken(z,gesamt){
+  return `<div class="sp">${['ja','enthalten','nein','abwesend'].map(k=>z[k]?`<i style="width:${(z[k]/gesamt*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}</div>`;
+}
+/* Das Ergebnis einer Abstimmung: Gesamtbild, dann Fraktion für Fraktion. */
+function abstimmungHTML(ab){
+  if(!ab)return '';
+  const z={ja:+ab.ja||0,nein:+ab.nein||0,enthalten:+ab.enthalten||0,abwesend:+ab.abwesend||0};
+  const abgegeben=z.ja+z.nein+z.enthalten;
+  if(!abgegeben&&!z.abwesend)return '';
+  const angenommen=z.ja>z.nein;
+  const fr=Object.entries(ab.fraktionen||{});
+  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Abstimmung</h2>
+      <span class="cnt">${ab.namentlich?'namentlich':'nicht namentlich'}</span>${ab.datum?`<span class="note">${esc(ab.datum)}</span>`:''}</div>
+    <div class="box" style="padding:12px 14px">
+      <div class="bar" style="margin-bottom:8px"><span class="pill ${angenommen?'green':'red'}">${angenommen?'Angenommen':'Abgelehnt'}</span><span class="note">${abgegeben} abgegebene Stimmen${z.abwesend?` · ${z.abwesend} nicht abgegeben`:''}</span></div>
+      <div class="sitz" style="padding:0;border:0">
+        <div class="balken">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/abgegeben*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte" title="Mehrheit"></span></div>
+        <div class="fr">${['ja','enthalten','nein','abwesend'].filter(k=>z[k]).map(k=>`<span><i style="background:${STIMM_FARBE[k]}"></i><b>${z[k]}</b> ${STIMM_LABEL[k]}</span>`).join('')}</div>
+      </div>
+      ${fr.length?`<div style="margin-top:12px">${fr.map(([name,w])=>{
+        const y={ja:+w.ja||0,nein:+w.nein||0,enthalten:+w.enthalten||0,abwesend:+w.abwesend||0};
+        const g2=y.ja+y.nein+y.enthalten+y.abwesend||1;
+        const mehrheit=y.ja>=y.nein&&y.ja>=y.enthalten?'ja':y.nein>=y.enthalten?'nein':'enthalten';
+        return `<div class="abst"><span style="display:flex;align-items:center;gap:6px"><i class="stimme" style="background:${fraktionsFarbe(name)}"></i>${esc(name)}</span>${stimmBalken(y,g2)}<span class="wert">${stimmPunkt(mehrheit)} ${y.ja}/${y.enthalten}/${y.nein}</span></div>`}).join('')}
+        <div class="note" style="margin-top:6px">Je Fraktion: Zustimmungen / Enthaltungen / Ablehnungen.</div></div>`:''}
+      ${ab.beschluss?`<div class="note" style="margin-top:10px"><b>Beschlusstext</b><br>${esc(ab.beschluss)}</div>`:''}
+    </div>`;
+}
+/* Das Abstimmungsverhalten einer Person – Quote, Bilanz, Liste. */
+function stimmverhaltenHTML(x){
+  const v=(x.votes||[]).filter(e=>e&&(e.titel||e.title));
+  if(!v.length)return '';
+  const z={ja:0,nein:0,enthalten:0,abwesend:0};
+  v.forEach(e=>{z[stimmArt(e.entscheidung||e.vote||e.stimme)]++});
+  const teilgenommen=z.ja+z.nein+z.enthalten;
+  const quote=Math.round(teilgenommen/v.length*100);
+  const U=2*Math.PI*26;
+  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Abstimmungsverhalten</h2><span class="cnt">${v.length} namentliche Abstimmungen</span></div>
+    <div class="box" style="padding:12px 14px">
+      <div class="bar" style="gap:14px;align-items:center">
+        <svg viewBox="0 0 64 64" style="width:64px;height:64px;flex:0 0 auto" aria-hidden="true">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface2)" stroke-width="7"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke="var(--blue)" stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="${(U*quote/100).toFixed(1)} ${U.toFixed(1)}" transform="rotate(-90 32 32)"/>
+          <text x="32" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">${quote}%</text>
+        </svg>
+        <div class="grow"><b style="font-size:var(--fs-md)">${teilgenommen} von ${v.length}</b><div class="note">Stimme abgegeben</div>
+          <div class="fr" style="margin-top:6px">${['ja','enthalten','nein','abwesend'].filter(k=>z[k]).map(k=>`<span><i style="background:${STIMM_FARBE[k]};width:9px;height:9px;border-radius:3px;display:inline-block"></i> <b>${z[k]}</b> ${STIMM_LABEL[k]}</span>`).join(' ')}</div></div>
+      </div>
+      <div class="box list" style="margin-top:10px">${v.slice(0,15).map(e=>{const a=stimmArt(e.entscheidung||e.vote||e.stimme);
+        return `<div class="rul" style="cursor:default"><div><div class="ttl">${esc(e.titel||e.title)}</div>
+          <div class="meta">${stimmPunkt(a)}<span>${STIMM_LABEL[a]}</span>${e.thema?`<span class="pill grey">${esc(e.thema)}</span>`:''}${e.datum?`<span>${esc(e.datum)}</span>`:''}${e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener">Öffnen</a>`:''}</div></div><span></span></div>`}).join('')}</div>
+      ${v.length>15?`<div class="note" style="margin-top:6px">${v.length-15} weitere Abstimmungen im Bestand.</div>`:''}
+    </div>`;
+}
 function parlGruppe(x){const p=String(x.parl||'').toLowerCase();const o=norm(x.org||'');
   if(p==='bt'||/bundestag/.test(o))return 'bt';if(p==='br'||/bundesrat/.test(o))return 'br';if(p==='ep'||/europ/.test(o))return 'ep';
   if(p.startsWith('lt-')||/landtag|bürgerschaft|abgeordnetenhaus/.test(o))return 'lt';if(p.startsWith('us')||/senat|repräsentanten|congress/.test(o))return 'us';return 'sonst'}
 const PARL_LABEL={bt:'Bundestag',br:'Bundesrat',ep:'Europaparlament',lt:'Landtage',us:'US-Kongress',sonst:'Weitere'};
+/* ── Ebenen ─────────────────────────────────────────────────
+   Bundestag und Landtag sind zwei Paar Schuhe, Kongress und Kommission
+   erst recht. Jede Person, jedes Gremium, jede Institution und jede
+   Organisation bekommt deshalb eine Ebene; danach lässt sich das
+   Verzeichnis sortieren, ohne die Regionen dafür zu missbrauchen. */
+const EBENEN=[['all','Alle Ebenen'],['bund','Bund'],['land','Bundesländer'],['eu','EU'],['us','USA'],['welt','International']];
+const EBENE_NAME=Object.fromEntries(EBENEN);
+function ebeneVon(x){
+  if(x.ebene)return x.ebene;
+  const p=String(x.parl||'').toLowerCase();
+  const code=String(x.id||'').replace(/^(inst|org)-/,'').toLowerCase();
+  const o=norm(x.org||'')+' '+norm(x.name||x.title||'')+' '+norm(x.type||'');
+  if(p.startsWith('lt-')||p.startsWith('lreg')||/^(landtag|lreg)-/.test(code)||/landtag|landesregierung|b\u00fcrgerschaft|abgeordnetenhaus|landesparlament/.test(o))return 'land';
+  if(p==='bt'||p==='br'||/bundestag|bundesrat|bundesregierung|bundesverfassungsgericht|bundesgerichtshof|bundesverwaltungsgericht|bundesbank|bundesministerium/.test(o))return 'bund';
+  if(p==='ep'||/europ|eu-|ezb|eugh|br\u00fcssel|stra\u00dfburg/.test(o))return 'eu';
+  if(p.startsWith('us')||/congress|senate|house of representatives|white house|supreme court|washington/.test(o))return 'us';
+  const r=(x.regions||[])[0];
+  return {de:'bund',eu:'eu',us:'us',china:'welt',welt:'welt'}[r]||'welt';
+}
+/* ── Sitzverteilung ───────────────────────────────────────────
+   Gezählt wird, was im Verzeichnis steht: jede Person mit Fraktion und
+   Parlament. Liefert der Lauf eine amtliche Sitzzahl mit (Feld sitze je
+   Fraktion), hätte die Vorrang – bis dahin ist die Mitgliederliste die
+   beste verfügbare Quelle, und das steht auch dran. */
+function fraktionsFarbe(name){
+  const n=String(name||'').trim();
+  if(PARTEI_FARBE[n])return PARTEI_FARBE[n];
+  const k=Object.keys(PARTEI_FARBE).find(p=>norm(n).includes(norm(p)));
+  if(k)return PARTEI_FARBE[k];
+  const t=norm(n);
+  if(/republican/.test(t))return '#c81e1e';
+  if(/democrat/.test(t))return '#1d4ed8';
+  if(/epp|volkspartei/.test(t))return '#2563eb';
+  if(/s&d|sozialdem/.test(t))return '#c81e1e';
+  if(/renew|liberal/.test(t))return '#ca8a04';
+  if(/green|gr\u00fcn/.test(t))return '#15803d';
+  return farbeFuer(n);
+}
+function sitzverteilung(personen){
+  /* Schlüssel ist das konkrete Parlament, nicht die Gruppe: Bayern und
+     NRW sind zwei Landtage, nicht einer. */
+  const nach={};
+  personen.forEach(p=>{
+    const k=p.parl||parlGruppe(p);
+    if(!k)return;
+    (nach[k]=nach[k]||{label:p.org||PARL_LABEL[parlGruppe(p)]||k,parl:k,leute:[],fr:{}});
+    nach[k].leute.push(p);
+    const f=(p.party||p.fraktion||'Fraktionslos').trim()||'Fraktionslos';
+    nach[k].fr[f]=(nach[k].fr[f]||0)+1;
+  });
+  return Object.values(nach)
+    .map(g=>({...g,n:g.leute.length,reihen:Object.entries(g.fr).sort((a,b)=>b[1]-a[1])}))
+    .filter(g=>g.n>=8)
+    .sort((a,b)=>b.n-a.n);
+}
+function sitzHTML(g){
+  const gesamt=g.n,mehrheit=Math.floor(gesamt/2)+1;
+  return `<div class="sitz">
+    <div class="kopf"><b>${esc(g.label)}</b><span class="note">${gesamt} Sitze im Verzeichnis · Mehrheit ab ${mehrheit}</span></div>
+    <div class="balken">${g.reihen.map(([f,n])=>`<i style="width:${(n/gesamt*100).toFixed(2)}%;background:${fraktionsFarbe(f)}" title="${esc(f)}: ${n}"></i>`).join('')}<span class="mitte" title="Mehrheit"></span></div>
+    <div class="fr">${g.reihen.map(([f,n])=>`<span><i style="background:${fraktionsFarbe(f)}"></i><b>${esc(f)}</b> ${n} · ${(n/gesamt*100).toFixed(1).replace('.',',')} %</span>`).join('')}</div>
+  </div>`;
+}
 function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return nurEinmal((IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date));return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
 function bySrc(x){const idx=typeof IDX!=='undefined'?IDX.src:null;const arr=idx?(x.srcs||[]).flatMap(s=>idx[s]||[]):ARTICLES.filter(a=>(x.srcs||[]).includes(a.src));return arr.slice().sort((a,b)=>b.date-a.date)}
+function setEbene(e){S.ebene=e;store.set('ebene',e);S.parl='all';render()}
 function renderStakeholder(tab){
   const cfg={people:['Personen',PEOPLE,'Personen durchsuchen – Name, Rolle, Gremium, Wahlkreis …','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen …','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen …','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen – Gerichte, EZB, Länder …','Keine Institution']}[tab];
   const mitParl=tab==='people'||tab==='committees';
+  /* Erst die Region (Berichtsgebiet), dann die Ebene (wo jemand sitzt). */
   const vorher=cfg[1].filter(x=>(inRegion(x)||!(x.regions||[]).length)&&matchLQ('sh',x));
-  const gruppen=mitParl?[...new Set(vorher.map(parlGruppe))]:[];
-  const list=vorher.filter(x=>!mitParl||S.parl==='all'||!S.parl||parlGruppe(x)===S.parl);
+  const ebenen=[...new Set(vorher.map(ebeneVon))];
+  const nachEbene=vorher.filter(x=>S.ebene==='all'||ebeneVon(x)===S.ebene);
+  const gruppen=mitParl?[...new Set(nachEbene.map(parlGruppe))]:[];
+  const list=nachEbene.filter(x=>!mitParl||S.parl==='all'||!S.parl||parlGruppe(x)===S.parl);
   const lname='SHLIST';window.SHLIST=list.map(x=>x.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>${cfg[0]}</h2><span class="cnt">${list.length}</span><div class="tools">${lsearch('sh',cfg[2])}${copyBtn(SHLIST,cfg[0])}</div></div>`;
-  if(mitParl&&gruppen.length>1)h+=`<div class="chips" style="margin-bottom:10px"><button class="chip" aria-pressed="${!S.parl||S.parl==='all'}" onclick="S.parl='all';render()">Alle</button>${['bt','br','ep','lt','us','sonst'].filter(g=>gruppen.includes(g)).map(g=>`<button class="chip" aria-pressed="${S.parl===g}" onclick="S.parl='${g}';render()">${PARL_LABEL[g]} <span class="n">${vorher.filter(x=>parlGruppe(x)===g).length}</span></button>`).join('')}</div>`;
+  /* Ebenenwahl: Bund, Bundesländer, EU, USA, International. Angeboten wird
+     nur, was tatsächlich im Bestand liegt. */
+  if(ebenen.length>1)h+=`<div class="chips" style="margin-bottom:8px" role="group" aria-label="Ebene">${EBENEN.filter(([k])=>k==='all'||ebenen.includes(k)).map(([k,l])=>`<button class="chip" aria-pressed="${S.ebene===k}" onclick="setEbene('${k}')">${l}${k==='all'?'':` <span class="n">${vorher.filter(x=>ebeneVon(x)===k).length}</span>`}</button>`).join('')}</div>`;
+  if(mitParl&&gruppen.length>1)h+=`<div class="chips" style="margin-bottom:10px" role="group" aria-label="Parlament"><button class="chip" aria-pressed="${!S.parl||S.parl==='all'}" onclick="S.parl='all';render()">Alle Parlamente</button>${['bt','br','ep','lt','us','sonst'].filter(g=>gruppen.includes(g)).map(g=>`<button class="chip" aria-pressed="${S.parl===g}" onclick="S.parl='${g}';render()">${PARL_LABEL[g]} <span class="n">${nachEbene.filter(x=>parlGruppe(x)===g).length}</span></button>`).join('')}</div>`;
+  /* Sitzverteilung – je Parlament ein Balken, gezählt aus dem Verzeichnis. */
+  if(tab==='people'){
+    const sitze=sitzverteilung(list).slice(0,S.parl&&S.parl!=='all'?4:3);
+    if(sitze.length)h+=`<div class="box" style="margin-bottom:12px">
+      <div class="desk-hd" style="padding:10px 14px 0"><h3>Sitzverteilung</h3><span class="cnt">${sitze.length===1?'1 Parlament':sitze.length+' Parlamente'}</span></div>
+      ${sitze.map(sitzHTML).join('')}
+      <div class="note" style="padding:0 14px 12px">Gezählt aus dem Personenverzeichnis – nicht aus einer amtlichen Sitzliste. Abweichungen sind möglich, solange der Lauf nicht alle Mitglieder liefert.</div></div>`;
+  }
   h+=`<div class="box">${list.slice(0,400).map(x=>{let extra='';if(tab==='committees')extra=` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`;else if(tab==='institutions'||tab==='orgs'){const n=bySrc(x).length;extra=n?` · ${n} ${n===1?'Meldung':'Meldungen'}`:''}else{const n=mentionsOf(x).length;extra=n?` · ${n}× erwähnt`:''}
-    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||x.city,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${cfg[1].length?'Andere Region, anderes Parlament oder Suchbegriff kürzen.':'Das Verzeichnis ist noch leer – es füllt sich mit dem nächsten Lauf.'}</div>`}${list.length>400?`<div class="more"><span class="note">400 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`;
+    const ort=x.city||(tab==='orgs'||tab==='institutions'?EBENE_NAME[ebeneVon(x)]||'':'');
+    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||ort,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${cfg[1].length?'Andere Ebene, andere Region oder Suchbegriff kürzen.':'Das Verzeichnis ist noch leer – es füllt sich mit dem nächsten Lauf.'}</div>`}${list.length>400?`<div class="more"><span class="note">400 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`;
   return h;
 }
 /* ── Dokumentarten ───────────────────────────────────────────────────
@@ -1965,7 +2256,7 @@ function renderBrief(){
   let h=`<div class="brief-pick">${BRIEFS.map(x=>`<button class="chip" aria-pressed="${x.id===b.id}" onclick="S.brief='${x.id}';store.set('brief','${x.id}');S.briefCfg=false;render()">${esc(x.name)}</button>`).join('')}<button class="chip" onclick="openNewBrief()"><svg class="i" style="width:14px;height:14px"><use href="#i-plus"/></svg>Neues Briefing</button></div>`;
   h+=`<div class="sec-hd" style="margin-top:0"><h2>${esc(b.name)}</h2><span class="cnt">${WD[dt.getDay()]}, ${dt.getDate()}.${dt.getMonth()+1}.${dt.getFullYear()}${b.region!=='all'?' · '+REGION_NAME[b.region]:''}</span><div class="tools"><button class="btn sm" aria-pressed="${S.briefCfg}" onclick="S.briefCfg=!S.briefCfg;render()">Anpassen</button><button class="btn sm" onclick="aiBrief()"><svg class="i" style="width:15px;height:15px"><use href="#i-spark"/></svg>KI-Fassung</button><a class="btn sm" href="mailto:?subject=${encodeURIComponent(b.name+' '+dt.getDate()+'.'+(dt.getMonth()+1)+'.')}&body=${encodeURIComponent(briefPlain(b))}">Per Mail</a><button class="btn sm cp" onclick="copyText(briefPlain(curBrief()),'Briefing kopiert')"><svg class="i" style="width:15px;height:15px"><use href="#i-copy"/></svg><span class="t">Kopieren</span></button></div></div>`;
   if(S.briefCfg){
-    const topics=Object.keys(TOPICS);
+    const topics=Object.keys(TOPICS).filter(ressortTauglich);
     h+=`<div class="box cfg"><div class="two"><div><div class="field"><label for="bf-name">Name</label><input id="bf-name" value="${esc(b.name)}" onchange="b_set('name',this.value)"></div>
       <div class="field"><label>Region</label><select class="sel" onchange="b_set('region',this.value)">${REGIONS.map(([k,l])=>`<option value="${k}" ${b.region===k?'selected':''}>${l}</option>`).join('')}</select></div>
       <div class="field"><label>Umfang Top-Meldungen</label><div class="seg">${[3,5,8].map(n=>`<button aria-pressed="${b.n===n}" onclick="b_set('n',${n})">${n}</button>`).join('')}</div></div></div>
@@ -2135,6 +2426,7 @@ function openReader(id,list){
       ${(x.social||[]).length?`<div class="reader-tags" style="margin-top:10px">${x.social.map(s=>`<a class="chip" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join('')}</div>`:''}
       ${x.wiki?`<p class="note" style="margin-top:10px">${esc(x.wiki)}${x.wikiUrl?` <a href="${esc(x.wikiUrl)}" target="_blank" rel="noopener">Wikipedia</a>`:''}</p>`:''}
       ${aus.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Ausschüsse</h2></div><div class="reader-tags">${aus.map(k=>`<button class="chip" ${ITEMS[k.id]?`onclick="openReader('${k.id}')"`:''}>${esc(k.name.split(' – ')[0])}${k.role?` <span class="n">${esc(k.role)}</span>`:''}</button>`).join('')}</div>`:''}
+      ${stimmverhaltenHTML(x)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.slice(0,20).map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
       ${(()=>{
         /* Ein Eintrag ist nur dann eine Wortmeldung, wenn er aus einem Protokoll
@@ -2160,6 +2452,7 @@ function openReader(id,list){
       <div class="steps" style="margin:6px 0 12px">${x.steps.map((s,i)=>`<span class="step ${i<x.now?'done':i===x.now?'now':''}">${s}</span>`).join('')}</div>
       ${x.abstract?`<div class="reader-text">${esc(x.abstract)}</div>`:''}${x.ki?`<div class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>Kurzfassung</div><div class="txt">${esc(x.ki)}</div></div>`:''}
       ${(x.desk||[]).length?`<div class="reader-tags">${x.desk.slice(0,10).map(d=>`<span class="pill grey">${esc(d)}</span>`).join('')}</div>`:''}
+      ${abstimmungHTML(x.abstimmung)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu diesem Vorgang gefunden.</p>'}`;
   } else if(x.kind==='election'){
     const rel=bezugMeldungen(x);window.READERSUB=rel.map(a=>a.id);const days=Math.round((x.date-NOW)/D);
@@ -2360,7 +2653,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v32 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v33 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2760,7 +3053,8 @@ function mapPerson(p,i){
   const region=PARL_REGION[parl]||(parl.startsWith('lt-')?'de':parl.startsWith('us')?'us':'de');
   const name=p.name||[p.first_name,p.last_name].filter(Boolean).join(' ');
   const rolle=p.role||p.function||(p.committees||[]).map(c=>c.name).slice(0,2).join(', ')||'Abgeordnete/r';
-  return {id:p.id||('p'+i),kind:'person',name,aliases:[name,p.last_name].filter(Boolean),
+  const ebene=parl==='bt'||parl==='br'||parl==='breg'?'bund':parl.startsWith('lt-')||parl.startsWith('lreg')?'land':parl==='ep'?'eu':parl.startsWith('us')?'us':(region==='de'?'bund':region);
+  return {id:p.id||('p'+i),kind:'person',ebene,votes:p.votes||p.abstimmungen||[],name,aliases:[name,p.last_name].filter(Boolean),
     party:p.party||'',role:rolle,org:p.parliament_label||parl||'',parl,regions:[region],
     topics:[],color:farbeFuer(p.party||name),committees:(p.committees||[]).map(c=>c.id),
     committeeInfo:(p.committees||[]).map(c=>({id:c.id,name:c.name,role:c.role||''})),
@@ -2793,16 +3087,79 @@ function baueInstitutionen(arts){
     else if(/^landtag-(\w\w)$/.test(code)){const k=code.slice(8);name='Landtag '+(LAND_NAME[k]||k.toUpperCase());typ='Landesparlament';ort=LAND_NAME[k]||'';region='de'}
     else if(/^lreg-(\w\w)$/.test(code)){const k=code.slice(5);name='Landesregierung '+(LAND_NAME[k]||k.toUpperCase());typ='Landesregierung';ort=LAND_NAME[k]||'';region='de'}
     else {name=liste[0].src;typ='Institution';ort='';region=liste[0].regions[0]||'de'}
-    return {id:'inst-'+code,kind:'institution',name,type:typ,city:ort,regions:[region],
+    const ebene=/^(landtag|lreg)-/.test(code)?'land':region==='de'?'bund':region;
+    return {id:'inst-'+code,kind:'institution',name,type:typ,city:ort,regions:[region],ebene,
       srcs:[...new Set(liste.map(a=>a.src))],color:farbeFuer(name),src:typ,title:name,link:'#'};
   }).sort((a,b)=>a.name.localeCompare(b.name,'de'));
 }
+/* Ein Institut gehört dorthin, wo es sitzt – nicht dorthin, worüber es
+   gerade schreibt. Vorher stand Bruegel unter "Deutschland", sobald es
+   über deutsche Haushaltspolitik veröffentlichte. Bekannte Häuser stehen
+   hier mit Sitz, Ebene und Art; alles Unbekannte bleibt "International",
+   bis es ergänzt wird. */
+const ORG_HAUS={
+  'swp':['Stiftung Wissenschaft und Politik','Berlin','bund','Think Tank'],
+  'bruegel':['Bruegel','Brüssel','eu','Think Tank'],
+  'ecfr':['European Council on Foreign Relations','Berlin/Brüssel','eu','Think Tank'],
+  'ceps':['CEPS','Brüssel','eu','Think Tank'],
+  'cer':['Centre for European Reform','London','welt','Think Tank'],
+  'jacques delors':['Jacques Delors Centre','Berlin','eu','Think Tank'],
+  'bertelsmann':['Bertelsmann Stiftung','Gütersloh','bund','Stiftung'],
+  'diw':['DIW Berlin','Berlin','bund','Wirtschaftsforschung'],
+  'ifo':['ifo Institut','München','bund','Wirtschaftsforschung'],
+  'ifw':['IfW Kiel','Kiel','bund','Wirtschaftsforschung'],
+  'iw köln':['Institut der deutschen Wirtschaft','Köln','bund','Wirtschaftsforschung'],
+  'zew':['ZEW','Mannheim','bund','Wirtschaftsforschung'],
+  'sachverständigenrat':['Sachverständigenrat','Wiesbaden','bund','Beratungsgremium'],
+  'wissenschaftliche dienste':['Wissenschaftliche Dienste','Berlin','bund','Parlamentsdienst'],
+  'brookings':['Brookings Institution','Washington','us','Think Tank'],
+  'csis':['CSIS','Washington','us','Think Tank'],
+  'carnegie':['Carnegie Endowment','Washington','us','Think Tank'],
+  'rand':['RAND Corporation','Santa Monica','us','Think Tank'],
+  'peterson':['Peterson Institute (PIIE)','Washington','us','Wirtschaftsforschung'],
+  'cato':['Cato Institute','Washington','us','Think Tank'],
+  'heritage':['Heritage Foundation','Washington','us','Think Tank'],
+  'atlantic council':['Atlantic Council','Washington','us','Think Tank'],
+  'chatham house':['Chatham House','London','welt','Think Tank'],
+  'iiss':['IISS','London','welt','Think Tank'],
+  'sipri':['SIPRI','Stockholm','welt','Friedensforschung'],
+  'oecd':['OECD','Paris','welt','Internationale Organisation'],
+  'iea':['Internationale Energieagentur','Paris','welt','Internationale Organisation'],
+  'iwf':['Internationaler Währungsfonds','Washington','welt','Internationale Organisation'],
+  'imf':['Internationaler Währungsfonds','Washington','welt','Internationale Organisation'],
+  'weltbank':['Weltbank','Washington','welt','Internationale Organisation'],
+  'world bank':['Weltbank','Washington','welt','Internationale Organisation'],
+  'who':['Weltgesundheitsorganisation','Genf','welt','Internationale Organisation'],
+  'wto':['Welthandelsorganisation','Genf','welt','Internationale Organisation'],
+  'nato':['NATO','Brüssel','welt','Bündnis'],
+  'mercator':['MERICS','Berlin','bund','China-Forschung'],
+  'merics':['MERICS','Berlin','bund','China-Forschung'],
+};
+/* Je Quellenname einmal nachschlagen, nicht je Meldung – sonst kostet die
+   Liste bei zehntausend Meldungen eine Zehntelsekunde. */
+const _orgC=new Map();
+function orgHaus(q){
+  const k=String(q||'');
+  if(_orgC.has(k))return _orgC.get(k);
+  const n=norm(k);
+  const treffer=Object.keys(ORG_HAUS).find(x=>n.includes(x));
+  const v=treffer?ORG_HAUS[treffer]:null;
+  _orgC.set(k,v);
+  return v;
+}
 function baueOrgs(arts){
-  const think=arts.filter(a=>a.herkunft==='think');
-  const nach={};think.forEach(a=>(nach[a.src]=nach[a.src]||[]).push(a));
-  return Object.entries(nach).map(([q,liste])=>({id:'org-'+q.replace(/\W+/g,''),kind:'org',name:q,type:'Think Tank',city:'',
-    regions:[...new Set(liste.flatMap(a=>a.regions))],srcs:[q],color:farbeFuer(q),src:'Think Tank',title:q,link:'#'}))
-    .sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  /* Think Tanks kommen über die Herkunft; Häuser aus der Liste oben werden
+     auch dann erkannt, wenn der Lauf sie als normale Medienquelle führt. */
+  const kandidaten=arts.filter(a=>a.herkunft==='think'||orgHaus(a.src));
+  const nach={};kandidaten.forEach(a=>(nach[a.src]=nach[a.src]||[]).push(a));
+  return Object.entries(nach).map(([q,liste])=>{
+    const haus=orgHaus(q);
+    const [name,ort,ebene,typ]=haus||[q,'','welt','Think Tank'];
+    const region={bund:'de',land:'de',eu:'eu',us:'us',welt:'welt'}[ebene]||'welt';
+    return {id:'org-'+q.replace(/\W+/g,''),kind:'org',name,type:typ,city:ort,ebene,
+      regions:[region,...new Set(liste.flatMap(a=>a.regions))].filter((v,i,a)=>a.indexOf(v)===i),
+      srcs:[q],color:farbeFuer(name),src:typ,title:name,link:'#'};
+  }).sort((a,b)=>a.name.localeCompare(b.name,'de'));
 }
 
 /* ── Verfahren aus dip.json ───────────────────────────────────────── */
@@ -2812,7 +3169,8 @@ function mapVerfahren(p,i){
   const idx=Math.max(0,STAGES.indexOf(p.stage));
   return {id:'vf-'+(p.id||i),kind:'proc',title:p.title||'Vorgang ohne Titel',src:p.art==='eu'||/EU|Richtlinie/.test(p.type||'')?'EU':'Bundestag',
     steps:STAGES.map(s=>STAGE_L[s]),now:idx,stage:STAGE_L[p.stage]||p.stage||'',type:p.type||p.art||'Vorgang',date:p.updated||p.date||null,
-    link:p.link||p.url||'#',ki:p.ki_summary||'',desk:p.deskriptoren||[],abstract:p.abstract||'',regions:[p.art==='eu'?'eu':'de']};
+    link:p.link||p.url||'#',ki:p.ki_summary||'',desk:p.deskriptoren||[],abstract:p.abstract||'',
+    abstimmung:p.abstimmung||p.vote||p.vote_result||null,regions:[p.art==='eu'?'eu':'de']};
 }
 
 /* ── Wahlen aus elections.json ────────────────────────────────────── */
@@ -2921,7 +3279,9 @@ async function laden(){
   sicher('Nachrichten',()=>{
     ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
                   ...mapArtikel(la,'laender'),...mapArtikel(us,'us'));
-    ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
+    /* Abkürzungen bleiben Abkürzungen: "eu" ist nicht "Eu". */
+    const KURZ={eu:'EU',us:'USA',usa:'USA',ki:'KI',it:'IT',nato:'NATO',un:'UN',uk:'UK',oecd:'OECD',bund:'Bund'};
+    ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=KURZ[String(t).toLowerCase()]||String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
   });
   /* Erstes Bild so früh wie möglich: Nachrichten sind da, der Rest folgt. */
   sicher('Verzeichnis (vorläufig)',indexieren);
@@ -3018,6 +3378,7 @@ async function laden(){
   sicher('Personen',()=>{PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)))});
   sicher('Gremien',()=>{
     COMMITTEES.push(...((pp&&pp.committees||[]).map((c,i)=>({id:c.id||('k'+i),kind:'committee',name:c.name,org:c.parliament_label||c.parliament||'',parl:c.parliament||'',
+      ebene:(c.parliament==='bt'||c.parliament==='br')?'bund':String(c.parliament||'').startsWith('lt-')?'land':c.parliament==='ep'?'eu':String(c.parliament||'').startsWith('us')?'us':'bund',
       regions:[PARL_REGION[c.parliament]||'de'],members:PEOPLE.filter(p=>(p.committees||[]).includes(c.id)).map(p=>p.id),
       color:farbeFuer(c.name),src:c.parliament_label||'',title:c.name,link:'#'}))));
   });
