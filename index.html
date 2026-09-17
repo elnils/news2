@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Nachrichten & Co.</title>
+<title>Presseschau – Entwurf v30</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -353,7 +353,8 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .tile{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--fs-sm);color:#fff;letter-spacing:.02em}
 .person .nm{font-weight:700;font-size:var(--fs)}
 .tile img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-.kv{display:grid;grid-template-columns:84px minmax(0,1fr);gap:4px 10px;padding:4px 0;font-size:var(--fs-sm)}
+.kv{display:grid;grid-template-columns:minmax(72px,34%) minmax(0,1fr);gap:4px 10px;padding:4px 0;font-size:var(--fs-sm);align-items:baseline}
+.kv b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kv b{color:var(--muted);font-weight:600}
 .kv span{word-break:break-word}
 .person .role{font-size:var(--fs-xs);color:var(--muted);margin-top:1px}
@@ -642,7 +643,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v29</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v30</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -681,7 +682,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
       </div>
     </main>
   </div>
-  <footer><span>Presseschau</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
+  <footer><span>Presseschau · Entwurf v10</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
 </div>
 
 <nav id="tabbar" aria-label="Bereiche"></nav>
@@ -748,7 +749,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <div class="hd"><h2 id="login-h">Anmelden</h2><button class="icon-btn" onclick="closeSheet('login')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
     <div class="body">
       <p class="note" id="login-reason" style="margin-bottom:14px"></p>
-      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@mail.de" autocomplete="username"></div>
+      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@redaktion.de" autocomplete="username"></div>
       <div class="field"><label for="login-pw">Passwort</label><input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <p class="note">Mit Konto: KI-Zusammenfassungen, eigene Briefings, Archiv über 48 Stunden und Monitore auf allen Geräten. Im Entwurf genügt eine beliebige Eingabe.</p>
     </div>
@@ -2213,7 +2214,12 @@ function renderSettings(){
       +row('Briefing per Mail','Werktags um 7 Uhr, das zuletzt geöffnete Briefing',swHTML('mailBrief',PREF.mailBrief))
       +row('Eilmeldungen sofort','Push auf dieses Gerät',swHTML('pushEil',PREF.pushEil));
   } else {
-    h+=row('Zugang (frei/Abo)',`${Math.round((zugangZeigen(),_zugangQuote?_zugangQuote.q*100:0))} % der Meldungen lassen sich sicher einordnen – Marken erscheinen ab 90 %`,`<span class="pill ${zugangZeigen()?'green':'grey'}">${zugangZeigen()?'sichtbar':'ausgeblendet'}</span>`)
+    h+=`<div class="set-sec">Laden</div>`
+      +`<div class="note" style="padding:6px 0">${((typeof LOADLOG!=='undefined'?LOADLOG:[]).filter(x=>x.ok).map(x=>`<div class="kv"><b>${esc(x.f.replace('.json',''))}</b><span>${x.n||0} Einträge · ${x.kb||0} kB · ${x.ms||0} ms</span></div>`).join(''))||'—'}
+        ${(typeof LOADLOG!=='undefined'?LOADLOG:[]).filter(x=>!x.ok).map(x=>`<div class="kv"><b style="color:var(--red)">${esc(x.f)}</b><span>${esc(x.why||'')}</span></div>`).join('')}
+        ${typeof LADEZEIT!=='undefined'?`<div class="kv" style="margin-top:6px"><b>Verarbeitung</b><span>${Object.entries(LADEZEIT).filter(([k,v])=>v>=20).map(([k,v])=>esc(k)+' '+v+' ms').join(' · ')||'unter 20 ms'}</span></div>`:''}
+        <div class="kv"><b>Gesamt</b><span>${typeof LADEZEIT!=='undefined'&&LADEZEIT._gesamt?LADEZEIT._gesamt+' ms bis alles stand':'—'}</span></div></div>`
+      +row('Zugang (frei/Abo)',`${Math.round((zugangZeigen(),_zugangQuote?_zugangQuote.q*100:0))} % der Meldungen lassen sich sicher einordnen – Marken erscheinen ab 90 %`,`<span class="pill ${zugangZeigen()?'green':'grey'}">${zugangZeigen()?'sichtbar':'ausgeblendet'}</span>`)
       +`<div class="set-sec">Sichern</div>`
       +row('Alles als Datei speichern','Gemerktes, Monitore, Briefings, Watchlist, Einstellungen',`<button class="btn sm" onclick="exportPrefs()">Speichern</button>`)
       +row('Aus Datei laden','Ersetzt die hiesigen Daten',`<label class="btn sm">Laden<input type="file" accept="application/json" hidden onchange="importPrefs(this.files[0])"></label>`)
@@ -2271,7 +2277,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v29 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v30 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2282,15 +2288,17 @@ const DATEIEN = {
 const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
 
 async function hole(datei){
+  const t0=performance.now();
   try{
     const r = await fetch(datei+'?t='+Date.now());
     if(!r.ok){LOADLOG.push({f:datei,ok:false,why:'HTTP '+r.status});return null}
     const txt = await r.text();
+    const ms=Math.round(performance.now()-t0), kb=Math.round(txt.length/1024);
     if(txt.trimStart().startsWith('<<<<<<<')||(txt.includes('\n=======\n')&&txt.includes('>>>>>>>'))){
       LOADLOG.push({f:datei,ok:false,why:'Git-Konfliktmarker in der Datei'});return null}
     if(txt.trimStart().startsWith('<')){LOADLOG.push({f:datei,ok:false,why:'HTML statt JSON – liegt die Datei neben index.html?'});return null}
     const j = JSON.parse(txt);
-    LOADLOG.push({f:datei,ok:true,n:(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||j.groups||[]).length});
+    LOADLOG.push({f:datei,ok:true,n:(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||j.groups||j.ausgaben||[]).length,ms,kb});
     return j;
   }catch(e){
     LOADLOG.push({f:datei,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':'nicht erreichbar'});
@@ -2476,23 +2484,35 @@ function baueStories(arts){
      deshalb sammeln sich deutschsprachige Berichte in der einen und
      englischsprachige in der anderen Gruppe ("Hague court convicts Thaci" vs.
      "Thaci wegen Kriegsverbrechen schuldig gesprochen"). Sie finden nie
-     zusammen, weil nur Meldung-zu-Gruppe verglichen wird, nie Gruppe zu
-     Gruppe. Genau das passiert jetzt hier. */
+     zusammen, weil nur Meldung-zu-Gruppe verglichen wird, nie Gruppe zu Gruppe.
+
+     WICHTIG: nicht jede Gruppe mit jeder vergleichen. Bei mehreren tausend
+     Gruppen sind das Millionen Vergleiche, und die Seite steht. Verglichen
+     wird nur mit Gruppen, die mindestens ein seltenes Signal teilen – dafür
+     gibt es einen Index, der nebenbei mitgeführt wird. */
+  const sigIdx={};
+  gruppen.forEach((gr,i)=>{
+    const s=gr.leit._selten||(gr.leit._selten=selten(gr.leit));
+    for(const x of s)(sigIdx[x]=sigIdx[x]||[]).push(i);
+  });
+  const ziel=new Array(gruppen.length);      /* wohin eine Gruppe gewandert ist */
+  const wurzel=i=>{while(ziel[i]!=null)i=ziel[i];return i};
   for(let i=0;i<gruppen.length;i++){
-    const A=gruppen[i];if(!A.arts.length)continue;
-    const la=A.leit;const sa=la._selten||(la._selten=selten(la));
-    for(let j=i+1;j<gruppen.length;j++){
-      const B=gruppen[j];if(!B.arts.length)continue;
-      const lb=B.leit;
+    if(ziel[i]!=null)continue;
+    const A=gruppen[i],la=A.leit,sa=la._selten;
+    if(!sa||!sa.size)continue;
+    /* Kandidaten: Gruppen, die mindestens zwei seltene Signale mit A teilen. */
+    const zaehl=new Map();
+    for(const x of sa){const l=sigIdx[x];if(!l||l.length>40)continue;   /* zu häufige Signale überspringen */
+      for(const j of l){if(j<=i)continue;const r=wurzel(j);if(r!==j||r===i)continue;zaehl.set(j,(zaehl.get(j)||0)+1)}}
+    for(const [j,n] of zaehl){
+      if(n<2)continue;
+      const B=gruppen[j],lb=B.leit;
       if(Math.abs(la.date-lb.date)>18*H)continue;
       const belege=hartGemeinsam(sa,lb._selten||(lb._selten=selten(lb)));
       const {q:sim,n:gem}=titelAehnlich(la._tw,lb._tw);
-      /* Für den Zusammenschluss zweier Gruppen gilt derselbe Maßstab wie für
-         die einzelne Meldung – nur mit einem Beleg mehr, weil hier gleich
-         ein ganzes Bündel mitwandert. */
       if((sim>=0.5&&gem>=2)||belege>=3||(belege>=2&&gem>=1)){
-        A.arts.push(...B.arts);B.arts=[];
-        for(const x of (lb._selten||new Set()))sa.add(x);
+        A.arts.push(...B.arts);B.arts=[];ziel[j]=i;
         lb._tw.forEach(w=>la._tw.add(w));
       }
     }
@@ -2712,9 +2732,12 @@ async function laden(){
      kompletten Ladevorgang abbrechen – auch die Nachrichten, obwohl die
      längst fertig verarbeitet waren. Fehler landen sichtbar im Ladebalken. */
   const FEHLER=[];
-  const sicher=(label,fn)=>{try{fn()}catch(e){console.error('laden: '+label,e);FEHLER.push(label+': '+(e&&e.message||e))}};
+  const ZEITEN={};
+  const sicher=(label,fn)=>{const t0=performance.now();try{fn()}catch(e){console.error('laden: '+label,e);FEHLER.push(label+': '+(e&&e.message||e))}finally{ZEITEN[label]=Math.round(performance.now()-t0)}};
+  window.LADEZEIT=ZEITEN;
 
   const luft=()=>new Promise(r=>setTimeout(r,0));
+  window.LADESTART=window.LADESTART||performance.now();
   sicher('Stand',()=>{const st=[n,e,b,la,us].filter(Boolean).map(j=>new Date(j.updated).getTime()).filter(t=>!isNaN(t));window.META_STAND=st.length?Math.max(...st):null});
   sicher('Nachrichten',()=>{
     ARTICLES.push(...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
@@ -2807,6 +2830,10 @@ async function laden(){
       if(!a.ls){const s=(d||'').split(/(?<=[.!?])\s+/)[0];if(s&&s.length>40&&norm(s)!==norm(betreff))a.ls=s.slice(0,320)}
     });
   });
+  await luft();
+  /* Themenlagen sind der teuerste Schritt (bei 10.000 Meldungen rund eine
+     Sekunde). Sie werden erst gerechnet, nachdem die Nachrichten stehen –
+     bis dahin sieht man bereits Meldungen statt eines leeren Bildschirms. */
   sicher('Themenlagen',()=>{STORIES.push(...baueStories(ARTICLES))});
   await luft();
   sicher('Personen',()=>{PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)))});
@@ -2827,6 +2854,7 @@ async function laden(){
   sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
   sicher('Verzeichnis (Index)',indexieren);
 
+  ZEITEN['_gesamt']=Math.round(performance.now()-(window.LADESTART||0));
   FEHLER.forEach(f=>LOADLOG.push({f:'⚠ '+f,ok:false,why:'Fehler beim Verarbeiten – siehe Konsole'}));
   zeigeLadebalken();
   render();
