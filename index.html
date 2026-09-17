@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v30</title>
+<title>Presseschau – Entwurf v31</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -643,7 +643,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <div id="app">
   <header id="topbar">
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v30</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v31</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1294,7 +1294,7 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||a.sendung===true;
+  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
@@ -1302,6 +1302,7 @@ function topTauglich(a){
   if(a.herkunft==='think')return false;
   if(a.isDoc)return false;   /* PDF-Auswürfe und Gesetzestexte aus Dokumentenportalen */
   if(a.isTicker)return false; /* Liveticker und Newsblogs sind Sammelseiten */
+  if(a.isPodcast)return false;
   if(a.sendung===true||SENDUNG_RE.test(t))return false;
   if(WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||ORGA_RE.test(t)||DRUCKSACHE_RE.test(t))return false;
   if(/^(anzeige|sponsored)$/i.test((a.author||'').trim()))return false;
@@ -1351,13 +1352,36 @@ function clusterArts(a){
   const grenze=Math.max(0,(a.clusterZiel||a.cluster||1)-1);
   return arr.sort((x,y)=>y.date-x.date).slice(0,Math.max(grenze,arr.length&&st?arr.length:grenze));
 }
+/* VERWANDT ist nicht DASSELBE: Meldungen, die dieselben seltenen Namen oder
+   Begriffe tragen, aber eine andere Sache berichten – Reaktionen, Analysen,
+   Folgen. Sie gehören ins Lesefenster unter "Zum Thema", nicht in die
+   Quellenzahl. */
+function verwandt(a,limit=8){
+  if(a.kind!=='article'||!window._STORY_DF)return [];
+  const {df,grenze}=window._STORY_DF;
+  const selten=x=>{const s=new Set();(x._hart||(x._hart=hartSignale(x))).forEach(k=>{if((df[k]||0)<=grenze)s.add(k)});return s};
+  const sa=a._selten||(a._selten=selten(a));if(sa.size<1)return [];
+  const eigene=(typeof IDX!=='undefined'&&IDX.story[a.id])||null;
+  const eigeneIds=new Set(eigene?(eigene.alle||eigene.arts):[a.id]);
+  const treffer=[];
+  for(const b of ARTICLES){
+    if(eigeneIds.has(b.id)||b.isDoc||b.isTicker||b.isPodcast||Math.abs(b.date-a.date)>36*H)continue;
+    const sb=b._selten||(b._selten=selten(b));if(!sb.size)continue;
+    const n=hartGemeinsam(sa,sb);
+    if(n>=2)treffer.push({b,n});
+  }
+  return nurEinmal(treffer.sort((p,q)=>q.n-p.n||q.b.date-p.b.date).map(p=>p.b)).slice(0,limit);
+}
 /* Angezeigte Quellenzahl und aufklappbare Liste müssen dieselbe sein –
    gesetzt in indexieren(), nachdem die Daten geladen sind. */
 function newsBase(){return ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&inRegion(a)))}
+/* Für die Top-Meldungen zählt die HAUPTregion: Unter "Deutschland" steht
+   dann nicht der US-Kongress, nur weil eine deutsche Quelle berichtet. */
+const inHauptRegion=a=>S.region==='all'||(a.region1||(a.regions||[])[0])===S.region;
 function renderTop(){
   const base=newsBase();
   const win=S.topWin||24;
-  const top=entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
+  const top=entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a))).slice(0,8);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
   all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
@@ -1535,7 +1559,7 @@ const DESK_ALIAS={economy:'wirtschaft',energy:'energie',health:'gesundheit',immi
 function deskLabel(t){return DESK_LABEL[t]||TOPICS[t]||String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}
 function renderDesk(){
   const win=S.deskWin||24;
-  const base=entdoppeln(ohneRauschen(ARTICLES.filter(a=>a.ago<=win&&inRegion(a)&&a.herkunft!=='think'&&matchLQ('dk',a))).sort((a,b)=>b.date-a.date));
+  const base=entdoppeln(ohneRauschen(ARTICLES.filter(a=>a.ago<=win&&inHauptRegion(a)&&a.herkunft!=='think'&&matchLQ('dk',a))).sort((a,b)=>b.date-a.date));
   /* Jede Meldung in genau einem Ressort – dem ersten, das der Lauf vergeben hat. */
   const nach={};
   base.forEach(a=>{let t=(a.topics||[])[0]||'sonstiges';t=DESK_ALIAS[t]||t;(nach[t]=nach[t]||[]).push(a)});
@@ -1572,11 +1596,16 @@ function quellNamen(){
   _quellSet={n:ARTICLES.length,s};return s;
 }
 const TREND_STOP=new Set(['unternehmen','menschen','regierung','behörde','behörden','land','länder','stadt','städte','jahr','jahre','woche','montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonntag','prozent','million','milliarde','milliarden','experten','studie','bericht','meldung','artikel','video','foto','interview','kommentar','analyse','übersicht','news','update']);
+const TREND_ALLGEMEIN=/^(deutschland|europa|eu|usa|amerika|welt|bund|land|berlin|brüssel|washington|china|russland|regierung|bundesregierung|koalition|opposition|politik|wirtschaft|markets?|business|news|heute|gestern|morgen|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember|prozent|euro|dollar|milliarden?|millionen?|jahr|jahre|woche|tag|zeit|uhr)$/i;
 function trendTauglich(t){
   const v=norm(t);
   if(v.length<4)return false;
-  if(TREND_STOP.has(v))return false;
-  if(quellNamen().has(v))return false;
+  if(TREND_STOP.has(v)||TREND_ALLGEMEIN.test(v))return false;
+  if(/^\d+$/.test(v))return false;
+  const q=quellNamen();
+  if(q.has(v))return false;
+  /* "Bloomberg Markets", "Reuters Top": Quellenname als Teil */
+  for(const w of v.split(/\s+/))if(w.length>=5&&q.has(w))return false;
   return true;
 }
 function trendRows(mode,von,bis){
@@ -2030,7 +2059,8 @@ function openReader(id,list){
   const aiBox=`<div id="ai-box" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Zusammenfassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div>`;
   if(x.kind==='article'||x.kind==='doc'){
     b=`<div class="meta">${srcHTML(x)}${x.kind==='doc'?`<span class="pill blue">${esc(x._art||dokArt(x))}</span>${(x._haus||dokHaus(x))&&(x._haus||dokHaus(x))!==x.src?`<span class="pill grey">${esc(x._haus||dokHaus(x))}</span>`:''}`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${tags}${aiBox}
-      ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Auch berichtet von</h2><span class="cnt">${clusterArts(x).length} ${clusterArts(x).length===1?'Haus':'Häuser'}</span></div><div class="box list scrollbox">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
+      ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Dieselbe Meldung bei</h2><span class="cnt">${clusterArts(x).length} ${clusterArts(x).length===1?'Haus':'Häusern'}</span></div><div class="box list scrollbox">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
+      ${(x.kind==='article'&&verwandt(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zum Thema</h2><span class="cnt">andere Meldungen, gleiche Sache</span></div><div class="box list scrollbox">${verwandt(x).map(y=>rowHTML(y,'READERREL',true)).join('')}</div>`:''}
       ${story?`<div class="box" style="margin-top:18px;padding:12px 14px"><div class="meta" style="margin-bottom:4px"><span class="pill blue">${story.arts.length} Quellen</span><span>Teil einer Story</span></div><b>${esc(story.title)}</b><div class="note" style="margin-top:4px">${esc(story.sum)}</div><button class="btn sm" style="margin-top:8px" onclick="openReader('${story.id}')">Story öffnen</button></div>`:''}
       ${x.kind==='doc'&&QUOTES.some(q=>q.doc===x.id&&ITEMS[q.pid])?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert daraus</h2></div>${QUOTES.filter(q=>q.doc===x.id&&ITEMS[q.pid]).map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.pid}')">${esc(ITEMS[q.pid].name)}</a></span></div>`).join('')}`:''}`;
   } else if(x.kind==='story'){
@@ -2114,7 +2144,7 @@ function openReader(id,list){
   } else if(x.kind==='committee'){
     b=`<div class="meta"><span class="src">${esc(x.org)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Mitglieder im Verzeichnis</h2><span class="cnt">${x.members.filter(id=>ITEMS[id]).length}</span></div><div class="box">${x.members.map(id=>ITEMS[id]).filter(Boolean).map(p=>`<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}')" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div><span></span></div>`).join('')}</div>`;
   }
-  if(x.kind==='article')window.READERSRC=clusterArts(x).map(y=>y.id);
+  if(x.kind==='article'){window.READERSRC=clusterArts(x).map(y=>y.id);window.READERREL=verwandt(x).map(y=>y.id)}
   g('reader-body').innerHTML=b;g('reader-body').scrollTop=0;renderReaderFooter();
   const i=S.readerList.indexOf(id);g('reader-prev').disabled=i<=0;g('reader-next').disabled=i<0||i>=S.readerList.length-1;
   document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'));document.querySelectorAll(`#page [data-id="${id}"]`).forEach(r=>r.classList.add('active'));
@@ -2277,7 +2307,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v30 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v31 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -2329,6 +2359,22 @@ function regionsOf(a){
   if(!r.size)r.add('de');
   return [...r];
 }
+/* HAUPTregion: Eine Meldung der Tagesschau über den US-Kongress ist eine
+   USA-Meldung, kein deutsches Thema. Die Zuordnung zählt Treffer im Titel
+   doppelt; der Feed selbst (EU-Quelle, US-Quelle) hat Vorrang. */
+function hauptRegion(a){
+  if(a._set==='eu')return 'eu';
+  if(a._set==='us')return 'us';
+  const titel=a.title||'',text=String(a.desc||'').slice(0,240);
+  let best='de',bestN=0;
+  for(const k of ['china','us','eu','welt']){
+    const re=new RegExp(REGION_KW[k].source,'gi');
+    const n=(titel.match(re)||[]).length*2+(text.match(re)||[]).length;
+    if(n>bestN){best=k;bestN=n}
+  }
+  /* Inland bleibt Inland, wenn die Region nur beiläufig vorkommt. */
+  return bestN>=2?best:'de';
+}
 
 /* ── Herkunft: nutzt das Feld aus fetch_news.py, sonst hilfsweise cat ── */
 const HERK_VON_CAT={cjeu:'gericht',bverfg:'gericht',bgh:'gericht',bverwg:'gericht',bag:'gericht',bsg:'gericht',bfh:'gericht',eug:'gericht','us-scotus':'gericht',
@@ -2375,6 +2421,7 @@ function titelPutzen(t){
 /* Liveticker und Newsblogs sind Sammelseiten, keine einzelne Meldung: Sie
    ändern sich ständig, enthalten ein Dutzend Themen und verdrängen oben die
    eigentliche Nachricht. */
+const PODCAST_RE=/\bpodcast\b|\bepisode\b|\bfolge\s*\d+\b|\bjetzt (an)?hören\b|\blisten on\b|\bspotify\b|\bapple podcasts?\b|\bhörspiel\b|\baudio:|\bzum (nach)?hören\b/i;
 const TICKER_RE=/\+\+\+|\bnewsblog\b|\bliveticker\b|\bticker\b|\bliveblog\b|\bnews ?blog\b|\balle entwicklungen\b|\bim livestream\b|\bder tag im überblick\b|\blive:|\bblog:/i;
 /* Gesetzestexte und Amtsblätter aus Dokumentenportalen – Nachricht ist das nicht. */
 const GESETZDOK_RE=/^\s*(s\.|h\.\s?r\.|h\.\s?res\.|s\.\s?res\.|s\.\s?con\.\s?res\.)\s*\d|^\s*(bill|public law|federal register)\b|\((is|rs|enr|eh|es|ih|rh)\)\s*[-–]/i;
@@ -2401,8 +2448,8 @@ function zahlen(t){return [...new Set((String(t).match(/\d+[.,]?\d*/g)||[]).map(
 const TERM_STOP=new Set(['landtag','landesportal','bundestag','bundesrat','sitzung','drucksache','dokument','pressemitteilung','landtags','ausschuss','plenum','antwort','anfrage','bericht','mitteilung']);
 function hartSignale(a){
   const s=new Set();
-  (a.ents||[]).forEach(e=>{const v=String(e).toLowerCase().trim();if(v.length>=4&&!TERM_STOP.has(v))s.add('e:'+v)});
-  (a.terms||[]).forEach(t=>{const v=String(t).toLowerCase().trim();if(v.length>=5&&!TERM_STOP.has(v))s.add('t:'+v)});
+  (a.ents||[]).forEach(e=>{const v=glatt(e).trim();if(v.length>=4&&!TERM_STOP.has(v))s.add('e:'+v)});
+  (a.terms||[]).forEach(t=>{const v=glatt(t).trim();if(v.length>=5&&!TERM_STOP.has(v))s.add('t:'+v)});
   zahlen(a.title).forEach(z=>s.add('z:'+z));
   return s;
 }
@@ -2411,11 +2458,13 @@ function hartGemeinsam(A,B){
   for(const x of A){
     if(B.has(x)){n++;continue}
     /* "hohe Spritpreise" und "Spritpreise" meinen dieselbe Sache */
-    if(x.startsWith('t:')){const v=x.slice(2);for(const y of B)if(y.startsWith('t:')){const w=y.slice(2);if(v.endsWith(' '+w)||w.endsWith(' '+v)||v.startsWith(w+' ')||w.startsWith(v+' ')){n++;break}}}
+    const v=x.slice(2),art=x[0];
+    for(const y of B){if(y[0]!==art)continue;const w=y.slice(2);
+      if(v.endsWith(' '+w)||w.endsWith(' '+v)||v.startsWith(w+' ')||w.startsWith(v+' ')){n++;break}}
   }
   return n;
 }
-function normTitel(t){return String(t||'').toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60)}
+function normTitel(t){return glatt(t).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,60)}
 /* Wie oft kommt ein Signal insgesamt vor? Was in jeder zwanzigsten Meldung
    steht ("Bundestag", "Trump", "USA"), taugt nicht als Beleg dafür, dass zwei
    Meldungen DIESELBE Sache berichten. Nur seltene Signale zählen. */
@@ -2437,8 +2486,11 @@ function signalHaeufigkeit(arts){
      – Keine Obergrenze: Wenn vierzig Häuser dasselbe berichten, IST das die
        Nachricht des Tages. Die Zahl der Häuser ist das wichtigste
        Relevanzsignal – genau wie in v9. */
+/* "Thaçi" und "Thaci", "Kosovo's" und "Kosovo" müssen dasselbe Wort sein –
+   sonst finden ein englischer und ein deutscher Bericht nie zusammen. */
+function glatt(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['’]s\b/g,'').replace(/[’']/g,'')}
 function titelWorte(t){
-  return new Set((String(t).toLowerCase().match(/[a-zäöüß]{4,}/g)||[]).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
+  return new Set((glatt(t).match(/[a-z]{4,}/g)||[]).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
 }
 function titelAehnlich(A,B){
   if(!A.size||!B.size)return {q:0,n:0};
@@ -2448,10 +2500,12 @@ function titelAehnlich(A,B){
   return {q:gem/Math.min(A.size,B.size),n:gem};
 }
 function baueStories(arts){
-  const kandidaten=arts.filter(a=>a.ago<=72&&!a.isDoc&&!a.isTicker).sort((a,b)=>b.date-a.date);
+  const kandidaten=arts.filter(a=>a.ago<=72&&!a.isDoc&&!a.isTicker&&!a.isPodcast).sort((a,b)=>b.date-a.date);
   kandidaten.forEach(a=>{a._tw=a._tw||titelWorte(a.title);a._qb=a._qb||quellBasis(a.src)});
+  window._STORY_DF=null;
   const df=signalHaeufigkeit(kandidaten);
   const grenze=Math.max(6,Math.round(kandidaten.length*0.005));
+  window._STORY_DF={df,grenze};
   const selten=a=>{const s=new Set();(a._hart||hartSignale(a)).forEach(x=>{if((df[x]||0)<=grenze)s.add(x)});return s};
   const gruppen=[];const wortIdx={};
   for(const a of kandidaten){
@@ -2472,7 +2526,25 @@ function baueStories(arts){
          Belege (etwa "Schwesig" und "TV-Duell") bei erkennbarer Überschneidung.
          Der dritte Weg fängt unterschiedlich formulierte Schlagzeilen zum
          selben Ereignis, ohne bloße Themenverwandtschaft zu bündeln. */
-      const passt=gleicherTitel||(sim>=0.62&&gemWorte>=3)||(sim>=0.45&&gemWorte>=2&&belege>=1)||(gemWorte>=1&&belege>=2);
+      /* DIESELBE Meldung – nicht dasselbe Thema. "Harker zur Zinserhöhung"
+         und "Trump reagiert auf die Zinserhöhung" sind zwei Meldungen.
+         Deshalb: entweder die Schlagzeilen decken sich weitgehend, oder es
+         gibt mindestens zwei seltene EIGENNAMEN (keine Sachbegriffe) und ein
+         gemeinsames Stichwort – das ist der Fall Thaci/Kosovo über
+         Sprachgrenzen hinweg. */
+      const eigennamen=[...s].filter(x=>x.startsWith('e:'));
+      const namenGem=hartGemeinsam(new Set(eigennamen),leit._selten||(leit._selten=selten(leit)));
+      /* Gegenprobe über die Personen: "Harker zur Zinserhöhung" und "Trump
+         reagiert auf die Zinserhöhung" teilen fast jedes Wort – aber keinen
+         einzigen Namen. Tragen beide Seiten seltene Eigennamen und haben
+         keinen davon gemeinsam, sind es zwei Meldungen. */
+      const namenLeit=[...(leit._selten||new Set())].filter(x=>x.startsWith('e:')).length;
+      /* Anteil gemeinsamer Namen an allen Namen beider Seiten: Harker/Fed und
+         Trump/Fed teilen einen von drei (0,33) – zwei Meldungen. AP/Thaci/
+         Kosovo/Hague und Tagesschau/Thaci/Kosovo teilen zwei von drei (0,67). */
+      const namenQuote=namenGem/Math.max(1,eigennamen.length+namenLeit-namenGem);
+      const verschiedeneLeute=eigennamen.length>=1&&namenLeit>=1&&namenQuote<0.5&&!gleicherTitel&&sim<0.9;
+      const passt=!verschiedeneLeute&&(gleicherTitel||(sim>=0.62&&gemWorte>=3)||(sim>=0.5&&gemWorte>=2&&belege>=2)||(gemWorte>=1&&namenGem>=2&&Math.abs(leit.date-a.date)<=12*H));
       const score=sim+(belege*0.1);
       if(passt&&score>best){ziel=gr;best=score}
     }
@@ -2511,9 +2583,16 @@ function baueStories(arts){
       if(Math.abs(la.date-lb.date)>18*H)continue;
       const belege=hartGemeinsam(sa,lb._selten||(lb._selten=selten(lb)));
       const {q:sim,n:gem}=titelAehnlich(la._tw,lb._tw);
-      if((sim>=0.5&&gem>=2)||belege>=3||(belege>=2&&gem>=1)){
+      const namenGem=hartGemeinsam(new Set([...sa].filter(x=>x.startsWith('e:'))),lb._selten);
+      /* Für den Zusammenschluss zweier Gruppen gilt derselbe Maßstab. Und:
+         die Wörter der aufgenommenen Gruppe werden NICHT dem Leitartikel
+         zugeschlagen – sonst wächst er zum Staubsauger, der Stunden später
+         alles einsammelt, was ein Wort mit irgendeinem Mitglied teilt. */
+      const nA=[...sa].filter(x=>x.startsWith('e:')).length,nB=[...lb._selten].filter(x=>x.startsWith('e:')).length;
+      const namenQuote=namenGem/Math.max(1,nA+nB-namenGem);
+      const verschiedeneLeute=nA>=1&&nB>=1&&namenQuote<0.5&&sim<0.9;
+      if(!verschiedeneLeute&&((sim>=0.62&&gem>=3)||(sim>=0.5&&gem>=2&&belege>=2)||(gem>=1&&namenGem>=2&&Math.abs(la.date-lb.date)<=12*H))){
         A.arts.push(...B.arts);B.arts=[];ziel[j]=i;
-        lb._tw.forEach(w=>la._tw.add(w));
       }
     }
   }
@@ -2711,9 +2790,11 @@ function mapArtikel(j,set){
     o.isDoc=istDateiauswurf(o);
     o.formular=FORMULAR_RE.test(o.title);
     o.isTicker=TICKER_RE.test(o.title)||TICKER_RE.test(String(a.desc||'').slice(0,120));
+    o.isPodcast=PODCAST_RE.test(o.title)||PODCAST_RE.test(String(a.desc||'').slice(0,160));
     o.herkunft=herkunftOf(o);
     o.think=o.herkunft==='think';
     o.regions=regionsOf(o);
+    o.region1=hauptRegion(o);
     o.rel=(o.cluster-1)*2+(a.boost||0)+(o.think?1:0)+(a.priority==='eil'?3:0);
     return o;
   }).filter(a=>a.date&&!isNaN(a.date));
