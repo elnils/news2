@@ -70,15 +70,25 @@ jobs:
       # Verzeichnis. Schreibt ki_meldungen.json (ai.json gehört weiter dem
       # Verzeichnis-Skript). Überspringt, was schon zusammengefasst ist;
       # KI_MAX begrenzt die Zahl neuer Anfragen je Lauf.
-      - name: KI-Zusammenfassungen (Meldungen)
+      # NEU (v11): Das Skript wechselt das Modell selbst, wenn OpenRouter es
+      # aus dem kostenlosen Kontingent nimmt ("unavailable for free") - erst
+      # auf den in der Fehlermeldung genannten Nachfolger, dann auf ein
+      # anderes freies Modell, zuletzt auf Groq. OR_MODEL ist nur der
+      # Startwert. Zusaetzlich schreibt es je Region die zehn wichtigsten
+      # Meldungen als Schlagzeile mit einem Satz - alle sechs Stunden, je
+      # Lauf hoechstens zwei Regionen.
+      - name: KI-Zusammenfassungen und Schlagzeilen (Meldungen)
         continue-on-error: true
-        timeout-minutes: 4
+        timeout-minutes: 6
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
-          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           KI_MAX: '15'
           KI_KEEP_DAYS: '7'
+          KI_SCHLAG_N: '10'          # Meldungen je Region
+          KI_SCHLAG_MIN: '360'       # alle sechs Stunden neu schreiben
+          KI_SCHLAG_REGIONEN: '2'    # Regionen je Lauf (6 Regionen = 3 Laeufe)
         run: python ki_zusammenfassungen.py
 
       # NEU (v10): Kurse für die Ansicht "Märkte". Kein Schlüssel nötig.
