@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Nachrichten & Co</title>
+<title>Presseschau – Entwurf v35</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -360,12 +360,19 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .sitz .fr span{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text2)}
 .sitz .fr i{width:9px;height:9px;border-radius:3px;display:inline-block}
 .sitz .fr b{color:var(--text)}
+.sitz .fr .frbtn{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text2);background:none;border:1px solid transparent;border-radius:999px;padding:2px 8px;cursor:pointer;font-family:inherit}
+.sitz .fr .frbtn:hover{border-color:var(--border)}
+.sitz .fr .frbtn[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-lt)}
 /* Abstimmungsergebnis (Fraktionsweise) */
 .abst{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:10px;align-items:center;padding:5px 0;font-size:var(--fs-sm)}
 .abst .sp{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface2)}
 .abst .sp i{display:block;height:100%}
 .abst .wert{font-variant-numeric:tabular-nums;color:var(--text2);font-size:var(--fs-xs)}
 .stimme{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.poll .barw{position:relative}
+.poll .barw .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55;border-radius:1px}
+.poll .v small.up{color:var(--green,#15803d)}
+.poll .v small.dn{color:var(--red,#be123c)}
 .poll{display:grid;grid-template-columns:90px minmax(0,1fr) 46px;gap:10px;align-items:center;padding:6px 0}
 .poll .barw{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden}
 .poll .barw i{display:block;height:100%;border-radius:6px}
@@ -701,7 +708,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v34</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v35</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1217,7 +1224,7 @@ const WS=[
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',voteErg:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',kammer:'all',fraktion:'all',voteErg:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
 let MONITORS=store.get('monitors',DEFAULT_MONITORS).map(m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]}));
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
@@ -1716,11 +1723,19 @@ let _quellSet=null;
 function quellNamen(){
   if(_quellSet&&_quellSet.n===ARTICLES.length)return _quellSet.s;
   const s=new Set();
-  ARTICLES.forEach(a=>{const q=norm(a.src);if(!q)return;s.add(q);s.add(quellBasis(a.src));q.split(/[\s.]+/).forEach(w=>{if(w.length>=4)s.add(w)})});
+  ARTICLES.forEach(a=>{const q=norm(a.src);if(!q)return;
+    s.add(q);s.add(quellBasis(a.src));
+    /* Auch "tagesschau.de", "n-tv" und "manager magazin online" zerlegen. */
+    q.split(/[\s.,\/|–-]+/).forEach(w=>{if(w.length>=3)s.add(w)});
+    s.add(q.replace(/[^a-z0-9]/g,''));});
   ['tagesschau','ard','zdf','reuters','dpa','afp','spiegel','welt','faz','zeit','handelsblatt','politico','euractiv','heise','golem','bloomberg','guardian','washington','new york','financial times'].forEach(x=>s.add(x));
   _quellSet={n:ARTICLES.length,s};return s;
 }
-const TREND_STOP=new Set(['unternehmen','menschen','regierung','behörde','behörden','land','länder','stadt','städte','jahr','jahre','woche','montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonntag','prozent','million','milliarde','milliarden','experten','studie','bericht','meldung','artikel','video','foto','interview','kommentar','analyse','übersicht','news','update']);
+const TREND_STOP=new Set(['unternehmen','menschen','regierung','behörde','behörden','land','länder','stadt','städte','jahr','jahre','woche','montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonntag','prozent','million','milliarde','milliarden','experten','studie','bericht','meldung','artikel','video','foto','interview','kommentar','analyse','übersicht','news','update',
+  /* Allerweltsbegriffe: Sie stehen in jeder zweiten Meldung und sagen
+     nichts über das Thema. Dazu "none" – der Platzhalter, den manche
+     Feeds statt eines leeren Feldes liefern. */
+  'none','null','undefined','entwicklung','entwicklungen','situation','lage','zukunft','problem','probleme','frage','fragen','thema','themen','debatte','diskussion','kritik','reaktion','reaktionen','folgen','auswirkungen','maßnahmen','plan','pläne','projekt','system','bereich','rahmen','zusammenhang','hinblick','mitteilung','pressemitteilung','erklärung','stellungnahme','gespräch','treffen','sitzung','anlass','beitrag','folge','teil','seite','ende','anfang','mitte','leute','person','personen','jugendliche','kinder','frauen','männer','bürger','bürgerinnen','einwohner','gruppe','gruppen','mitglieder','mitarbeiter','kunden','nutzer','verbraucher','kollegen']);
 const TREND_ALLGEMEIN=/^(deutschland|europa|eu|usa|amerika|welt|bund|land|berlin|brüssel|washington|china|russland|regierung|bundesregierung|koalition|opposition|politik|wirtschaft|markets?|business|news|heute|gestern|morgen|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember|prozent|euro|dollar|milliarden?|millionen?|jahr|jahre|woche|tag|zeit|uhr)$/i;
 function trendTauglich(t){
   const v=norm(t);
@@ -1733,12 +1748,40 @@ function trendTauglich(t){
   for(const w of v.split(/\s+/))if(w.length>=5&&q.has(w))return false;
   return true;
 }
+/* Trump, Donald Trump, Trumps: drei Einträge für dieselbe Person. Beim
+   Auswerten werden Schreibweisen zusammengelegt, deren eine in der anderen
+   steckt und die auf dasselbe Wort enden. */
+function trendZusammenlegen(m){
+  const nachEnde={};
+  Object.keys(m).forEach(k=>{
+    const worte=k.slice(2).split(/\s+/);
+    const ende=(worte[worte.length-1]||'').replace(/s$/,'');
+    if(ende.length<3)return;
+    (nachEnde[ende]=nachEnde[ende]||[]).push(k);
+  });
+  Object.values(nachEnde).forEach(gruppe=>{
+    if(gruppe.length<2)return;
+    gruppe.sort((a,b)=>m[b].n-m[a].n);
+    const ziel=gruppe[0];
+    gruppe.slice(1).forEach(k=>{
+      const a=k.slice(2),b=ziel.slice(2);
+      if(!(a.includes(b)||b.includes(a)))return;
+      if(m[k].label.length>m[ziel].label.length)m[ziel].label=m[k].label;
+      m[k].s.forEach(x=>m[ziel].s.add(x));
+      m[ziel].ids.push(...m[k].ids);
+      delete m[k];
+    });
+    m[ziel].ids=[...new Set(m[ziel].ids)];
+    m[ziel].n=m[ziel].ids.length;
+  });
+  return m;
+}
 function trendRows(mode,von,bis){
   const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a));
   const m={};
   const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),ids:[]};m[k].n++;m[k].s.add(a.src);m[k].ids.push(a.id)};
   teil.forEach(a=>{
-    if(mode==='topics')a.topics.forEach(t=>add(t,TOPICS[t]||t,a));
+    if(mode==='topics')(a.topics||[]).filter(ressortTauglich).forEach(t=>add(t,TOPICS[t]||t,a));
     else if(mode==='issues'){
       /* Sachbegriffe aus dem Lauf (Nominalphrasen je Meldung). Ohne dieses
          Feld – nur in den Beispieldaten – die fest hinterlegten Sachfragen. */
@@ -1749,6 +1792,7 @@ function trendRows(mode,von,bis){
       if(a.ents&&a.ents.length){[...new Set(a.ents.map(e=>String(e).trim()))].filter(e=>e.length>=4&&trendTauglich(e)).forEach(e=>add('e:'+e.toLowerCase(),e,a))}
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));(a.personen||[]).forEach(pid=>{const p=ITEMS[pid];if(p)add('p:'+p.id,p.name,a)});ORTE.forEach(o=>{if(txt.includes(norm(o)))add('o:'+o,o,a)})}}
   });
+  if(mode==='entities'||mode==='issues')trendZusammenlegen(m);
   return m;
 }
 function renderTrends(){
@@ -2037,7 +2081,16 @@ function renderRulings(){
 function renderElections(){
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Wahlen</h2><span class="cnt">bevorstehend</span></div>`;
   window.WAHLLIST=ELECTIONS.map(e=>e.id);
-  h+=ELECTIONS.map(e=>{const days=Math.round((e.date-NOW)/D);return `<div class="box" style="padding:14px 16px;margin-bottom:10px;cursor:pointer" role="button" tabindex="0" onclick="openReader('${e.id}',WAHLLIST)" onkeydown="rowKey(event,'${e.id}')"><div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span></div>${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span>${e.quelle?`<span>${esc(e.quelle)}</span>`:''}${e.stand?`<span>Stand ${esc(e.stand)}</span>`:''}${typeof DEMO!=='undefined'&&DEMO?'<span class="pill amber">Beispielwerte</span>':''}</div>${e.polls.map(([n,v,c])=>`<div class="poll"><span class="tag">${n}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i></div><span class="v">${v} %</span></div>`).join('')}</div>`:'<p class="note" style="margin-top:6px">Umfragen liegen für diese Wahl nicht vor.</p>'}</div>`}).join('');
+  h+=ELECTIONS.map(e=>{
+    const days=Math.round((e.date-NOW)/D);
+    const sitze=e.parlament?sitzAnteile(e.kammer):null;
+    return `<div class="box" style="padding:14px 16px;margin-bottom:10px;cursor:pointer" role="button" tabindex="0" onclick="openReader('${e.id}',WAHLLIST)" onkeydown="rowKey(event,'${e.id}')">
+      <div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span>${e.parlament?'':'<span class="pill grey">keine Volkswahl</span>'}</div>
+      ${e.parlament?'':'<p class="note" style="margin-top:6px">Gewählt wird nicht an der Urne, sondern von der Bundesversammlung – Parteiumfragen sagen darüber wenig aus.</p>'}
+      ${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span>${e.quelle?`<span>${esc(e.quelle)}</span>`:''}${e.stand?`<span>Stand ${esc(e.stand)}</span>`:''}${sitze?'<span>Strich: heutige Sitze</span>':''}${typeof DEMO!=='undefined'&&DEMO?'<span class="pill amber">Beispielwerte</span>':''}</div>${e.polls.map(([n,v,c])=>{
+        const jetzt=sitze?sitze[fraktionKanon(n)]:null;
+        const d=jetzt!=null?v-jetzt:null;
+        return `<div class="poll"><span class="tag">${n}</span><div class="barw"><i style="width:${v*2}%;background:${c}"></i>${jetzt!=null?`<span class="mark" style="left:${Math.min(100,jetzt*2)}%" title="heute ${jetzt.toFixed(1).replace('.',',')} % der Sitze"></span>`:''}</div><span class="v">${v} %${d!=null?`<small class="${d>=0?'up':'dn'}"> ${d>=0?'+':'−'}${Math.abs(d).toFixed(1).replace('.',',')}</small>`:''}</span></div>`}).join('')}${sitze?`<p class="note" style="margin-top:6px">Vergleich mit der heutigen Sitzverteilung${(window.SEATS&&SEATS[e.kammer])||SITZE_AMTLICH[e.kammer]?'':' (aus dem Verzeichnis gezählt)'}. Umfragen sind Stimmenanteile, Sitze folgen daraus erst nach der Wahl.</p>`:''}</div>`:'<p class="note" style="margin-top:6px">Umfragen liegen für diese Wahl nicht vor.</p>'}</div>`}).join('');
   return h;
 }
 
@@ -2151,6 +2204,28 @@ function ebeneVon(x){
    Parlament. Liefert der Lauf eine amtliche Sitzzahl mit (Feld sitze je
    Fraktion), hätte die Vorrang – bis dahin ist die Mitgliederliste die
    beste verfügbare Quelle, und das steht auch dran. */
+/* Im Europaparlament heißen Fraktionen "Fraktion der Europäischen
+   Volkspartei (Christdemokraten)". In einer Legende ist das unlesbar. */
+const FRAKTION_KURZ=[
+  [/europ\u00e4ischen volkspartei|european people|\bepp\b/i,'EVP'],
+  [/sozialdemokraten|socialists and democrats|\bs&d\b/i,'S&D'],
+  [/renew|erneuer/i,'Renew'],
+  [/gr\u00fcnen\/|greens\/efa|gr\u00fcne\/efa/i,'Gr\u00fcne/EFA'],
+  [/konservative und reformer|conservatives and reformists|\becr\b|\bekr\b/i,'EKR'],
+  [/patrioten|patriots for europe|\bpfe\b/i,'PfE'],
+  [/souver\u00e4ne nationen|sovereign nations|\besn\b/i,'ESN'],
+  [/\blinke\b.*(europ|gue)|the left|gue\/ngl/i,'Die Linke (EP)'],
+  [/fraktionslos|non-attached|non attached/i,'Fraktionslos'],
+];
+function kurzFraktion(name){
+  const n=String(name||'').trim();
+  if(n.length<=18)return n;
+  const t=FRAKTION_KURZ.find(([re])=>re.test(n));
+  if(t)return t[1];
+  /* Sonst: Klammerzusätze weg, dann notfalls kürzen. */
+  const ohne=n.replace(/\s*\(.*?\)\s*/g,' ').replace(/^fraktion (der|des|die)\s+/i,'').trim();
+  return ohne.length>26?ohne.slice(0,24)+'\u2026':ohne;
+}
 function fraktionsFarbe(name){
   const n=String(name||'').trim();
   if(PARTEI_FARBE[n])return PARTEI_FARBE[n];
@@ -2190,7 +2265,7 @@ function spektrumRang(name){
 }
 /* Der Halbkreis: Reihen nach außen wachsend, Sätze von links nach rechts
    vergeben – so sitzt jede Fraktion als Block, wie im Plenarsaal. */
-function halbkreisHTML(reihen,gesamt){
+function halbkreisHTML(reihen,gesamt,hervor){
   const N=gesamt||reihen.reduce((n,r)=>n+r[1],0);
   if(!N)return '';
   const R=Math.max(3,Math.min(12,Math.round(Math.sqrt(N/5))));
@@ -2212,7 +2287,9 @@ function halbkreisHTML(reihen,gesamt){
   const pr=Math.max(.9,Math.min(3.4,abstand*.36));
   const punkte=plaetze.map((p,i)=>{
     const x=cx+Math.cos(p.w)*p.r*RA,y=cy-Math.sin(p.w)*p.r*RA;
-    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pr.toFixed(2)}" fill="${fraktionsFarbe(folge[i]||'')}"><title>${esc(folge[i]||'')}</title></circle>`;
+    const f=folge[i]||'';
+    const matt=hervor&&hervor!=='all'&&f!==hervor?' opacity=".22"':'';
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pr.toFixed(2)}" fill="${fraktionsFarbe(f)}"${matt}><title>${esc(f)}</title></circle>`;
   }).join('');
   return `<svg class="hemi" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sitzverteilung">
     <line x1="${cx}" y1="${cy-RA-5}" x2="${cx}" y2="${(cy-RA*innen+4).toFixed(1)}" stroke="currentColor" stroke-width=".7" opacity=".3" stroke-dasharray="2 2"/>
@@ -2245,47 +2322,70 @@ function sitzverteilung(personen){
       imVerzeichnis:g.leute.length};
   }).filter(g=>g.n>=8).sort((a,b)=>b.n-a.n);
 }
-function sitzHTML(g){
+function sitzHTML(g,hervor){
   const mehrheit=Math.floor(g.n/2)+1;
   const herkunft=g.amtlich
     ? `amtliche Sitze${g.stand?', '+esc(g.stand):''}${g.quelle?' \u00b7 '+esc(g.quelle):''}${g.imVerzeichnis&&g.imVerzeichnis<g.n?` \u00b7 ${g.imVerzeichnis} Personen im Verzeichnis`:''}`
     : `${g.n} Personen im Verzeichnis \u2013 keine amtliche Sitzliste`;
   return `<div class="sitz">
     <div class="kopf"><b>${esc(g.label)}</b><span class="note">${g.n} Sitze \u00b7 Mehrheit ab ${mehrheit}</span></div>
-    ${halbkreisHTML(g.reihen,g.n)}
-    <div class="fr">${g.groesse.map(([f,n])=>`<span><i style="background:${fraktionsFarbe(f)}"></i><b>${esc(f)}</b> ${n} \u00b7 ${(n/g.n*100).toFixed(1).replace('.',',')} %</span>`).join('')}</div>
+    ${halbkreisHTML(g.reihen,g.n,hervor)}
+    <div class="fr">${g.groesse.map(([f,n])=>`<button type="button" class="frbtn" aria-pressed="${hervor===f}" onclick="setFraktion('${esc(f).replace(/'/g,"&#39;")}')"><i style="background:${fraktionsFarbe(f)}"></i><b>${esc(kurzFraktion(f))}</b> ${n} \u00b7 ${(n/g.n*100).toFixed(1).replace('.',',')} %</button>`).join('')}</div>
     <div class="note" style="margin-top:6px">${herkunft}</div>
   </div>`;
 }
 function mentionsOf(p){if(typeof IDX!=='undefined'&&IDX.ready)return nurEinmal((IDX.mentions[p.id]||[]).slice().sort((a,b)=>b.date-a.date));return ARTICLES.filter(a=>(p.aliases||[]).some(al=>al.length>4&&(a._txt||norm(a.title+' '+a.desc)).includes(norm(al)))).sort((a,b)=>b.date-a.date)}
 function bySrc(x){const idx=typeof IDX!=='undefined'?IDX.src:null;const arr=idx?(x.srcs||[]).flatMap(s=>idx[s]||[]):ARTICLES.filter(a=>(x.srcs||[]).includes(a.src));return arr.slice().sort((a,b)=>b.date-a.date)}
-function setEbene(e){S.ebene=e;store.set('ebene',e);S.parl='all';render()}
+function setEbene(e){S.ebene=e;store.set('ebene',e);S.parl='all';S.kammer='all';S.fraktion='all';render()}
+function setParl(p){S.parl=p;S.kammer='all';S.fraktion='all';render()}
+function setKammer(k){S.kammer=k;S.fraktion='all';render()}
+function setFraktion(f){S.fraktion=S.fraktion===f?'all':f;render()}
+const kammerVon=x=>x.chamber||x.parl||'';
+function kammerLabel(k,leute){
+  const p=leute.find(x=>kammerVon(x)===k&&x.org);
+  return (p&&p.org)||(window.SEATS&&SEATS[k]&&SEATS[k].label)||(SITZE_AMTLICH[k]&&SITZE_AMTLICH[k].label)||PARL_LABEL[parlGruppe({parl:k})]||k;
+}
 function renderStakeholder(tab){
-  const cfg={people:['Personen',PEOPLE,'Personen durchsuchen – Name, Rolle, Gremium, Wahlkreis …','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen …','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen …','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen – Gerichte, EZB, Länder …','Keine Institution']}[tab];
+  const cfg={people:['Personen',PEOPLE,'Personen durchsuchen \u2013 Name, Rolle, Gremium, Wahlkreis \u2026','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen \u2026','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen \u2026','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen \u2013 Gerichte, EZB, L\u00e4nder \u2026','Keine Institution']}[tab];
   const mitParl=tab==='people'||tab==='committees';
-  /* Erst die Region (Berichtsgebiet), dann die Ebene (wo jemand sitzt). */
+  /* Vier Stufen, jede enger als die vorige: Region \u2192 Ebene \u2192 Parlament
+     \u2192 Kammer. Die Sitzverteilung zeigt genau die Stufe, die gerade
+     gew\u00e4hlt ist \u2013 unter "Bundesl\u00e4nder \u00b7 Berlin" also das Berliner
+     Abgeordnetenhaus, nicht alle Landtage zusammen. */
   const vorher=cfg[1].filter(x=>(inRegion(x)||!(x.regions||[]).length)&&matchLQ('sh',x));
   const ebenen=[...new Set(vorher.map(ebeneVon))];
   const nachEbene=vorher.filter(x=>S.ebene==='all'||ebeneVon(x)===S.ebene);
   const gruppen=mitParl?[...new Set(nachEbene.map(parlGruppe))]:[];
-  const list=nachEbene.filter(x=>!mitParl||S.parl==='all'||!S.parl||parlGruppe(x)===S.parl);
+  const nachParl=nachEbene.filter(x=>!mitParl||S.parl==='all'||!S.parl||parlGruppe(x)===S.parl);
+  const kammern=mitParl?[...new Set(nachParl.map(kammerVon).filter(Boolean))]:[];
+  const kammerAktiv=kammern.includes(S.kammer)?S.kammer:null;
+  const nachKammer=kammerAktiv?nachParl.filter(x=>kammerVon(x)===kammerAktiv):nachParl;
+  const fraktionen=tab==='people'
+    ?[...new Set(nachKammer.map(x=>(x.party||'').trim()).filter(Boolean))]
+      .map(f=>[f,nachKammer.filter(x=>(x.party||'').trim()===f).length]).sort((a,b)=>b[1]-a[1])
+    :[];
+  const frAktiv=fraktionen.some(([f])=>f===S.fraktion)?S.fraktion:null;
+  const list=frAktiv?nachKammer.filter(x=>(x.party||'').trim()===frAktiv):nachKammer;
   const lname='SHLIST';window.SHLIST=list.map(x=>x.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>${cfg[0]}</h2><span class="cnt">${list.length}</span><div class="tools">${lsearch('sh',cfg[2])}${copyBtn(SHLIST,cfg[0])}</div></div>`;
-  /* Ebenenwahl: Bund, Bundesländer, EU, USA, International. Angeboten wird
-     nur, was tatsächlich im Bestand liegt. */
   if(ebenen.length>1)h+=`<div class="chips" style="margin-bottom:8px" role="group" aria-label="Ebene">${EBENEN.filter(([k])=>k==='all'||ebenen.includes(k)).map(([k,l])=>`<button class="chip" aria-pressed="${S.ebene===k}" onclick="setEbene('${k}')">${l}${k==='all'?'':` <span class="n">${vorher.filter(x=>ebeneVon(x)===k).length}</span>`}</button>`).join('')}</div>`;
-  if(mitParl&&gruppen.length>1)h+=`<div class="chips" style="margin-bottom:10px" role="group" aria-label="Parlament"><button class="chip" aria-pressed="${!S.parl||S.parl==='all'}" onclick="S.parl='all';render()">Alle Parlamente</button>${['bt','br','ep','lt','us','sonst'].filter(g=>gruppen.includes(g)).map(g=>`<button class="chip" aria-pressed="${S.parl===g}" onclick="S.parl='${g}';render()">${PARL_LABEL[g]} <span class="n">${nachEbene.filter(x=>parlGruppe(x)===g).length}</span></button>`).join('')}</div>`;
-  /* Sitzverteilung – je Parlament ein Balken, gezählt aus dem Verzeichnis. */
+  if(mitParl&&gruppen.length>1)h+=`<div class="chips" style="margin-bottom:8px" role="group" aria-label="Parlament"><button class="chip" aria-pressed="${!S.parl||S.parl==='all'}" onclick="setParl('all')">Alle Parlamente</button>${['bt','br','ep','lt','us','sonst'].filter(g=>gruppen.includes(g)).map(g=>`<button class="chip" aria-pressed="${S.parl===g}" onclick="setParl('${g}')">${PARL_LABEL[g]} <span class="n">${nachEbene.filter(x=>parlGruppe(x)===g).length}</span></button>`).join('')}</div>`;
+  /* Kammern: die 16 Landtage, Senat und Repr\u00e4sentantenhaus. */
+  if(kammern.length>1)h+=`<div class="chips" style="margin-bottom:8px" role="group" aria-label="Kammer"><button class="chip" aria-pressed="${!kammerAktiv}" onclick="setKammer('all')">Alle</button>${kammern.map(k=>[k,kammerLabel(k,nachParl),nachParl.filter(x=>kammerVon(x)===k).length]).sort((a,b)=>a[1].localeCompare(b[1],'de')).map(([k,l,n])=>`<button class="chip" aria-pressed="${kammerAktiv===k}" onclick="setKammer('${k}')">${esc(l.replace(/^Landtag(?: von)? /,''))} <span class="n">${n}</span></button>`).join('')}</div>`;
+  /* Sitzverteilung genau zur gew\u00e4hlten Stufe. */
   if(tab==='people'){
-    const sitze=sitzverteilung(list).slice(0,S.parl&&S.parl!=='all'?4:3);
+    const sitze=sitzverteilung(nachKammer).slice(0,kammerAktiv?1:(S.parl&&S.parl!=='all'?3:2));
     if(sitze.length)h+=`<div class="box" style="margin-bottom:12px">
-      <div class="desk-hd" style="padding:10px 14px 0"><h3>Sitzverteilung</h3><span class="cnt">${sitze.length===1?'1 Parlament':sitze.length+' Parlamente'}</span></div>
-      ${sitze.map(sitzHTML).join('')}
+      <div class="desk-hd" style="padding:10px 14px 0"><h3>Sitzverteilung</h3><span class="cnt">${sitze.length===1?sitze[0].label:sitze.length+' Parlamente'}</span>${frAktiv?`<div class="tools"><button class="btn sm quiet" onclick="setFraktion('all')">Fraktionsfilter aufheben</button></div>`:''}</div>
+      ${sitze.map(g=>sitzHTML(g,frAktiv)).join('')}
       </div>`;
   }
-  h+=`<div class="box">${list.slice(0,400).map(x=>{let extra='';if(tab==='committees')extra=` · ${x.members.length} ${x.members.length===1?'Person':'Personen'}`;else if(tab==='institutions'||tab==='orgs'){const n=bySrc(x).length;extra=n?` · ${n} ${n===1?'Meldung':'Meldungen'}`:''}else{const n=mentionsOf(x).length;extra=n?` · ${n}× erwähnt`:''}
+  /* Fraktionen als eigene Liste \u2013 die Legende oben filtert dasselbe. */
+  if(fraktionen.length>1&&(kammerAktiv||gruppen.length===1||S.parl!=='all'))
+    h+=`<div class="chips" style="margin-bottom:10px" role="group" aria-label="Fraktion"><button class="chip" aria-pressed="${!frAktiv}" onclick="setFraktion('all')">Alle Fraktionen</button>${fraktionen.slice(0,12).map(([f,n])=>`<button class="chip" aria-pressed="${frAktiv===f}" onclick="setFraktion('${esc(f).replace(/'/g,"&#39;")}')"><i style="width:9px;height:9px;border-radius:3px;background:${fraktionsFarbe(f)};display:inline-block;margin-right:5px"></i>${esc(kurzFraktion(f))} <span class="n">${n}</span></button>`).join('')}</div>`;
+  h+=`<div class="box">${list.slice(0,400).map(x=>{let extra='';if(tab==='committees')extra=` \u00b7 ${x.members.length} ${x.members.length===1?'Person':'Personen'}`;else if(tab==='institutions'||tab==='orgs'){const n=bySrc(x).length;extra=n?` \u00b7 ${n} ${n===1?'Meldung':'Meldungen'}`:''}else{const n=mentionsOf(x).length;extra=n?` \u00b7 ${n}\u00d7 erw\u00e4hnt`:''}
     const ort=x.city||(tab==='orgs'||tab==='institutions'?EBENE_NAME[ebeneVon(x)]||'':'');
-    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||ort,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${cfg[1].length?'Andere Ebene, andere Region oder Suchbegriff kürzen.':'Das Verzeichnis ist noch leer – es füllt sich mit dem nächsten Lauf.'}</div>`}${list.length>400?`<div class="more"><span class="note">400 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`;
+    return personHTML({...x,role:(x.role||x.type)+extra,org:x.org||ort,city:''},lname)}).join('')||`<div class="empty"><b>${cfg[3]}</b>${cfg[1].length?'Andere Ebene, andere Region oder Suchbegriff k\u00fcrzen.':'Das Verzeichnis ist noch leer \u2013 es f\u00fcllt sich mit dem n\u00e4chsten Lauf.'}</div>`}${list.length>400?`<div class="more"><span class="note">400 von ${list.length} angezeigt \u2013 Suche eingrenzen</span></div>`:''}</div>`;
   return h;
 }
 /* ── Dokumentarten ───────────────────────────────────────────────────
@@ -2759,7 +2859,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v34 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v35 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -3242,15 +3342,19 @@ const ORG_HAUS={
   'mercator':['MERICS','Berlin','bund','China-Forschung'],
   'merics':['MERICS','Berlin','bund','China-Forschung'],
 };
-/* Je Quellenname einmal nachschlagen, nicht je Meldung – sonst kostet die
-   Liste bei zehntausend Meldungen eine Zehntelsekunde. */
+/* Gesucht wird nach ganzen Wörtern, nicht nach Zeichenketten: "RAND"
+   steckt sonst in "Landtag Brandenburg", und der Landtag erschien als
+   US-Denkfabrik mit 116 Veröffentlichungen. Je Quellenname wird einmal
+   nachgeschlagen, nicht je Meldung. */
+const ORG_MUSTER=Object.keys(ORG_HAUS).map(k=>[k,
+  new RegExp('(^|[^a-z0-9äöüß])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z0-9äöüß]|$)','i')]);
 const _orgC=new Map();
 function orgHaus(q){
   const k=String(q||'');
   if(_orgC.has(k))return _orgC.get(k);
   const n=norm(k);
-  const treffer=Object.keys(ORG_HAUS).find(x=>n.includes(x));
-  const v=treffer?ORG_HAUS[treffer]:null;
+  const treffer=ORG_MUSTER.find(([,re])=>re.test(n));
+  const v=treffer?ORG_HAUS[treffer[0]]:null;
   _orgC.set(k,v);
   return v;
 }
@@ -3311,15 +3415,60 @@ function abstimmungenZuordnen(){
 /* ── Wahlen aus elections.json ────────────────────────────────────── */
 const PARTEI_FARBE={'CDU':'#1f2937','CSU':'#1f2937','CDU/CSU':'#1f2937','SPD':'#c81e1e','GRÜNE':'#15803d','Grüne':'#15803d','B90/Grüne':'#15803d',
   'FDP':'#ca8a04','AfD':'#0ea5e9','LINKE':'#a21caf','Die Linke':'#a21caf','BSW':'#7c3aed','FW':'#0891b2','SSW':'#0891b2','Sonstige':'#94a3b8'};
+/* Welches Parlament wählt da eigentlich? Nur wenn das klar ist, lässt
+   sich die Umfrage mit der heutigen Sitzverteilung vergleichen. */
+const LAND_CODE={'baden-wurttemberg':'bw','baden-württemberg':'bw',bayern:'by',berlin:'be',brandenburg:'bb',bremen:'hb',
+  hamburg:'hh',hessen:'he','mecklenburg-vorpommern':'mv',niedersachsen:'ni','nordrhein-westfalen':'nw',
+  'rheinland-pfalz':'rp',saarland:'sl',sachsen:'sn','sachsen-anhalt':'st','schleswig-holstein':'sh',
+  thuringen:'th','thüringen':'th'};
+/* Union, CDU/CSU, CDU und CSU meinen dasselbe – sonst findet der Vergleich
+   zwischen Umfrage und Sitzen nie zusammen. */
+function fraktionKanon(name){
+  const t=norm(name);
+  if(/cdu|csu|union|evp|epp/.test(t))return 'union';
+  if(/grün|green|efa/.test(t))return 'gruene';
+  if(/linke|left|gue/.test(t))return 'linke';
+  if(/\bspd\b|sozialdem|s&d/.test(t))return 'spd';
+  if(/\bafd\b|esn/.test(t))return 'afd';
+  if(/\bfdp\b|renew/.test(t))return 'fdp';
+  if(/\bbsw\b/.test(t))return 'bsw';
+  if(/\bssw\b/.test(t))return 'ssw';
+  if(/freie wähler|\bfw\b/.test(t))return 'fw';
+  return t.replace(/[^a-z0-9]/g,'');
+}
 function mapWahlen(el){
   const wahlen=(el.elections||[]).filter(e=>e.status!=='past').sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,12);
   return wahlen.map(e=>{
     const umfrage=(el.polls||{})[e.region_id];
     const parteien=umfrage&&umfrage.parties?Object.entries(umfrage.parties).sort((a,b)=>b[1]-a[1]).slice(0,7)
       .map(([n,v])=>[n,v,PARTEI_FARBE[n]||farbeFuer(n)]):null;
-    return {id:'wahl-'+(e.id||e.region_id),kind:'election',title:(e.region||'')+(e.type?' · '+e.type:''),region:e.region||'',typ:e.type||'',date:new Date(e.date).getTime(),polls:parteien,
+    const art=norm((e.type||'')+' '+(e.region||''));
+    /* Bundespräsident und Bundesversammlung sind keine Volkswahl: kein
+       Wahlkreis, keine Stimmzettel, keine Parteiumfrage. */
+    const parlament=!/bundespräsident|bundesprasident|bundesversammlung|staatsoberhaupt/.test(art);
+    const kammer=!parlament?'':/bundestag/.test(art)?'bt':/europa/.test(art)?'ep':
+      (LAND_CODE[norm(e.region||'')]?'lt-'+LAND_CODE[norm(e.region||'')]:'');
+    return {id:'wahl-'+(e.id||e.region_id),kind:'election',title:(e.region||'')+(e.type?' · '+e.type:''),region:e.region||'',typ:e.type||'',
+      date:new Date(e.date).getTime(),polls:parteien,parlament,kammer,
       quelle:umfrage&&umfrage.institute?umfrage.institute:'',stand:umfrage&&umfrage.date?umfrage.date:'',link:e.link||e.url||'#',src:e.type||'Wahl',regions:['de']};
   });
+}
+/* Die heutige Sitzverteilung einer Kammer in Prozent – Grundlage für den
+   Vergleich mit der Umfrage. */
+function sitzAnteile(kammer){
+  if(!kammer)return null;
+  const q=(window.SEATS&&SEATS[kammer])||SITZE_AMTLICH[kammer];
+  let reihen=q&&q.fraktionen,gesamt=q&&q.gesamt;
+  if(!reihen){
+    const leute=PEOPLE.filter(p=>(p.chamber||p.parl)===kammer);
+    if(leute.length<20)return null;
+    const z={};leute.forEach(p=>{const f=(p.party||'').trim()||'Fraktionslos';z[f]=(z[f]||0)+1});
+    reihen=Object.entries(z);gesamt=leute.length;
+  }
+  if(!gesamt)return null;
+  const out={};
+  reihen.forEach(([f,n])=>{const k=fraktionKanon(f);out[k]=(out[k]||0)+n/gesamt*100});
+  return out;
 }
 
 /* ── Märkte aus markets.json ──────────────────────────────────────── */
