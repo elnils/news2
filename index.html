@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau: Dein News-Desk</title>
+<title>Presseschau – Entwurf v37</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -252,6 +252,7 @@ main{flex:1;min-width:0}
 .top-row .rank{font-size:16px;font-weight:800;color:var(--muted);line-height:1.35;grid-row:1/3}
 .top-row .ttl{font-size:var(--fs-md);font-weight:700;line-height:1.35;color:var(--text)}
 .top-row .meta{margin-top:3px}
+.top-row .ttl .ki-satz{display:block;font-size:var(--fs-sm);font-weight:450;color:var(--text2);margin-top:4px;line-height:1.45}
 .top-row .ttl,.top-row .meta{grid-column:2}
 .top-row .star{grid-column:3;grid-row:1/3;align-self:center}
 .top-row .meta button.pill{border:0;cursor:pointer;font-family:inherit}
@@ -708,7 +709,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v35</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v37</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -814,7 +815,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <div class="hd"><h2 id="login-h">Anmelden</h2><button class="icon-btn" onclick="closeSheet('login')" aria-label="Schließen"><svg class="i"><use href="#i-x"/></svg></button></div>
     <div class="body">
       <p class="note" id="login-reason" style="margin-bottom:14px"></p>
-      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@mail.de" autocomplete="username"></div>
+      <div class="field"><label for="login-mail">E-Mail</label><input id="login-mail" type="email" placeholder="name@redaktion.de" autocomplete="username"></div>
       <div class="field"><label for="login-pw">Passwort</label><input id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <p class="note">Mit Konto: KI-Zusammenfassungen, eigene Briefings, Archiv über 48 Stunden und Monitore auf allen Geräten. Im Entwurf genügt eine beliebige Eingabe.</p>
     </div>
@@ -1356,13 +1357,20 @@ function render(){
 const WERBUNG_RE=/^\s*(anzeige|werbung|sponsored|advertorial|promotion|partnerinhalt|gewinnspiel|in eigener sache)\b|\[anzeige\]|\(anzeige\)/i;
 const EVENT_RE=/^\s*[\[(]?\s*(virtual event|webinar|web ?seminar|online event|live event|roundtable|masterclass|workshop|whitepaper|white paper|ebook|e-book|report download|sponsored content)\b|\[(virtual event|webinar|sponsored|partner)\]|\b(jetzt anmelden|register now|kostenlos herunterladen|download the report|save your seat)\b/i;
 const SENDUNG_RE=/^(logo!?|heute[- ]journal|heute in|tagesschau|tagesthemen|mittagsmagazin|morgenmagazin|nachtmagazin|sendung vom)\b|(mittagsmagazin|morgenmagazin|heute[- ]journal|tagesschau|tagesthemen|logo!)\s+vom\b|\bvom\s+(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/i;
-const EIGENWERBUNG_RE=/(promoted content|sponsored content|heise-angebot|ix-webinar|webinar:|\[anzeige\]|advertorial|partner content|im angebot|angebot:|entdecken sie|werfen sie einen blick|jetzt im stream|in der mediathek|aktuelle pressemitteilungen|pressemitteilungen des|unser neues|in eigener sache|wir suchen|jetzt bewerben|gewinnspiel|abonnieren sie|newsletter bestellen|folgen sie uns)/i;
+const EIGENWERBUNG_RE=/(promoted content|sponsored content|heise-angebot|ix-webinar|ix-workshop|heise-workshop|c't-workshop|golem-karrierewelt|webinar:|workshop:|\[anzeige\]|advertorial|partner content|im angebot|angebot:|entdecken sie|werfen sie einen blick|jetzt im stream|in der mediathek|aktuelle pressemitteilungen|pressemitteilungen des|unser neues|in eigener sache|wir suchen|jetzt bewerben|gewinnspiel|abonnieren sie|newsletter bestellen|folgen sie uns)/i;
 const SERVICE_RE=/^(das wetter|wetter in|wettervorhersage|börsentag|börse am|dax aktuell|marktbericht|lottozahlen|die lottozahlen|verkehrslage|staumeldung|horoskop|sportschau|bundesliga-?ticker|ergebnisse vom|zahl des tages|bild des tages|zitat des tages)\b|\b(lohnen sich (aktuell )?die aktien|kaufen oder verkaufen|die besten (aktien|fonds|angebote)|was heute wichtig wird)\b/i;
 /* Produkttests, Kaufberatung und Deals sind Kaufhilfen, keine Nachrichten:
    "Huawei D3 im Test", "Die besten Powerbanks", "Jetzt 40 Prozent guenstiger". */
 const TEST_RE=/\b(im test|im praxistest|im dauertest|im alltagstest|im vergleichstest|im labortest|testbericht|vergleichstest|dauertest|kurztest|praxistest|hands[- ]?on|ausprobiert|angetestet|erster eindruck|kaufberatung|kaufratgeber|bestenliste|testsieger|preisvergleich|produkttest)\b|^\s*(test|review|hands[- ]?on)\s*[:|–-]|\b(test|review)\s*:\s/i;
 const DEAL_RE=/\b(schnäppchen|rabattaktion|gutschein(code)?|angebot des tages|prime day|black friday|cyber monday|tiefstpreis|bestpreis|spartipp|prozent günstiger|% günstiger|jetzt sichern|nur heute|deal des tages|zum deal)\b/i;
-const RATGEBER_RE=/\b(so geht'?s|so gehts|anleitung|tipps und tricks|schritt für schritt|ratgeber|how ?to|das müssen sie wissen|was sie wissen müssen|die wichtigsten fragen|checkliste|die besten \d)\b/i;
+const RATGEBER_RE=/\b(so geht'?s|so gehts|anleitung|tipps und tricks|schritt für schritt|ratgeber|how ?to|das müssen \w+ wissen|was \w+ wissen müssen|die wichtigsten fragen|checkliste|alles wichtige (zu|zum|zur)|alle infos (zu|zum|zur)|die besten \d)\b/i;
+/* Fortsetzungsformate: "Auslegungssache 168:", "c't uplink 52.1", "Folge 12".
+   Das sind Podcast- und Kolumnenfolgen, keine Meldungen – und weil dieselbe
+   Redaktion sie doppelt ausspielt, standen sie zuletzt gleich zweifach oben. */
+const SERIE_RE=/^(auslegungssache|kurz informiert|bit-rauschen|c'?t uplink|uplink|passwort|dev update|shortpaper|heise[- ]?sprechstunde|kommentar der woche|die woche)\b|^[a-zäöüß][\wäöüß'’-]{4,}\s+\d{2,4}(\.\d+)?\s*[::]|\b(folge \d+|episode \d+|teil \d+ von \d+|podcast)\b/i;
+/* Lokale Veranstaltungen und Verkehrsmeldungen: im Ort wichtig, in einer
+   überregionalen Top-Liste nicht. Sie werden nur dort ausgesiebt. */
+const LOKALES_RE=/\b(erntedankfest|stadtfest|volksfest|schützenfest|weihnachtsmarkt|kirmes|dorffest|straßenfest|festumzug|tag der offenen tür|verkehrsbehinderung|straßensperrung|vollsperrung|umleitung|baustelle|streckensperrung|schienenersatzverkehr)\b/i;
 const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für redaktionen|sperrfrist)/i;
 const DRUCKSACHE_RE=/^\s*\d{1,5}\/\d{2,4}\s*[|–-]|\b(drucksache|bundesratsdrucksache|bt-drs|br-drs)\b/i;
 const PR_RE=/^(press remarks|remarks by|statement by|speech by|doorstep|pressestatement|pressemitteilung|mitteilung|erklärung von|rede von|grußwort|readout)\b|\b(after his meeting|after her meeting|im anschluss an)\b/i;
@@ -1379,7 +1387,7 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||a.sendung===true;
+  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
@@ -1391,6 +1399,7 @@ function topTauglich(a){
   if(a.sendung===true||SENDUNG_RE.test(t))return false;
   if(WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||ORGA_RE.test(t)||DRUCKSACHE_RE.test(t))return false;
   if(TEST_RE.test(t)||DEAL_RE.test(t)||RATGEBER_RE.test(t))return false; /* Produkttests, Deals, Ratgeber */
+  if(SERIE_RE.test(t)||LOKALES_RE.test(t))return false; /* Podcastfolgen, Lokaltermine */
   if(/^(anzeige|sponsored)$/i.test((a.author||'').trim()))return false;
   if(AMT_CATS.has(a.cat)&&(a.cluster||1)<3)return false;
   return true;
@@ -1425,41 +1434,84 @@ function entdoppeln(arr){
    Themenlagen nicht gebuendelt haben, wird hier Paar fuer Paar verglichen.
    Behalten wird immer die staerkere Meldung, weil die Liste nach Rang
    durchlaufen wird. */
+/* Deutsche Komposita: "Spritpreise" und "Spritpreisentlastung" berichten
+   dasselbe, teilen aber kein einziges ganzes Wort. Verglichen wird deshalb
+   auch der Wortstamm – lange Wörter, die ineinander stecken. */
+function kompositumTreffer(A,B){
+  let n=0;
+  for(const a of A){
+    if(a.length<7)continue;
+    const stamm=a.slice(0,8);
+    for(const b of B){
+      if(b===a||b.length<7)continue;
+      if(b.includes(stamm)||a.includes(b.slice(0,8))){n++;break}
+    }
+  }
+  return n;
+}
 function dubNah(a,b){
   if(Math.abs(a.date-b.date)>36*H)return false;
   const A=a._tw||(a._tw=titelWorte(a.title)),B=b._tw||(b._tw=titelWorte(b.title));
   const {q,n}=titelAehnlich(A,B);
-  if(n<2)return false;
+  const komp=kompositumTreffer(A,B);
+  const nGes=n+komp;
+  const qGes=Math.min(1,nGes/Math.max(1,Math.min(A.size,B.size)));
+  if(nGes<2)return false;
   const sa=a._hart||(a._hart=hartSignale(a)),sb=b._hart||(b._hart=hartSignale(b));
   const na=[...sa].filter(x=>x[0]==='e'),nb=[...sb].filter(x=>x[0]==='e');
   const namenGem=hartGemeinsam(new Set(na),sb);
   /* Gegenprobe wie bei den Themenlagen: Tragen beide Schlagzeilen Eigennamen
      und teilen keinen davon, sind es zwei Meldungen – "Harker zur
      Zinserhöhung" und "Trump reagiert auf die Zinserhöhung" teilen fast
-     jedes Wort und sind trotzdem nicht dasselbe. */
-  if(na.length&&nb.length&&namenGem/Math.max(1,na.length+nb.length-namenGem)<0.5&&q<0.85)return false;
+     jedes Wort und sind trotzdem nicht dasselbe.
+     Ausnahme: Greifen zwei Komposita ineinander und deckt sich die halbe
+     Schlagzeile, wiegt das schwerer als ein unterschiedlicher Eigenname –
+     "Spritpreise: Hoppermann schlägt 25 Cent vor" (Tagesschau, Name
+     Hoppermann) und "Spritpreisentlastung könnte bis zu 25 Cent betragen"
+     (BR, Name Bayern) sind dieselbe Meldung. */
+  const kompStark=komp>=2&&qGes>=0.5;
+  if(!kompStark&&na.length&&nb.length&&namenGem/Math.max(1,na.length+nb.length-namenGem)<0.5&&q<0.85)return false;
   /* "vor der Landtagswahl" und "nach der Landtagswahl" sind zwei Meldungen,
      auch wenn sich die Schlagzeilen sonst weitgehend decken. */
   const zb=t=>({vor:/\b(vor|bis zur?)\s+(der|dem|den|die|das)\b/i.test(t),nach:/\bnach\s+(der|dem|den)\b/i.test(t)});
   const za=zb(a.title||''),zc=zb(b.title||'');
   if((za.vor&&zc.nach)||(za.nach&&zc.vor))return false;
   const gem=hartGemeinsam(sa,sb);
+  /* Zwei ineinandergreifende Komposita plus dieselbe Zahl – "25 Cent" in
+     beiden Schlagzeilen – reichen als Beleg, auch ohne gemeinsamen Namen. */
+  const zahlGem=[...sa].filter(x=>x[0]==='z'&&sb.has(x)).length;
+  if(komp>=2&&zahlGem>=1)return true;
   /* Ein gemeinsames langes Wort ("Ministerpräsidenten", "Kriegsverbrechen")
      wiegt schwerer als zwei kurze. */
   let starke=0;for(const w of A)if(B.has(w)&&w.length>=7)starke++;
   const gleichesHaus=(a._qb||(a._qb=hausVon(a.src)))===(b._qb||(b._qb=hausVon(b.src)));
-  if(q>=0.5&&n>=2&&(starke>=1||gem>=1))return true;                 /* weitgehend gleiche Schlagzeile */
-  if(gem>=2&&q>=0.34)return true;                                   /* zwei harte Belege plus Überschneidung */
-  if(gleichesHaus&&n>=3&&Math.abs(a.date-b.date)<=24*H)return true; /* Nachzieher desselben Hauses */
+  if(qGes>=0.5&&nGes>=2&&(starke>=1||gem>=1||komp>=1))return true;  /* weitgehend gleiche Schlagzeile */
+  if(gem>=2&&qGes>=0.34)return true;                                /* zwei harte Belege plus Überschneidung */
+  if(gleichesHaus&&nGes>=3&&Math.abs(a.date-b.date)<=24*H)return true; /* Nachzieher desselben Hauses */
   return false;
 }
-function topEntdoppeln(arr,max){
+function topEntdoppeln(arr,max,proHausMax){
   if(typeof IDX==='undefined'||!IDX||!IDX.ready)return arr.slice(0,max);
-  const out=[];
+  const grenze=proHausMax||Math.max(2,Math.ceil(max/4));
+  const out=[],zaehler={};
+  const passt=a=>!out.some(b=>dubNah(a,b));
+  /* Erster Durchgang mit Hausgrenze: sonst füllt ein einziges Fachmedium
+     die halbe Liste, wie zuletzt vier Heise-Meldungen von acht Plätzen. */
   for(const a of arr){
-    if(out.some(b=>dubNah(a,b)))continue;
-    out.push(a);
+    const haus=a._qb||(a._qb=hausVon(a.src));
+    if((zaehler[haus]||0)>=grenze)continue;
+    if(!passt(a))continue;
+    out.push(a);zaehler[haus]=(zaehler[haus]||0)+1;
     if(out.length>=max)break;
+  }
+  /* Zweiter Durchgang ohne Grenze – falls sonst zu wenig übrig bliebe. */
+  if(out.length<max){
+    for(const a of arr){
+      if(out.includes(a))continue;
+      if(!passt(a))continue;
+      out.push(a);
+      if(out.length>=max)break;
+    }
   }
   return out;
 }
@@ -1521,8 +1573,12 @@ function renderTop(){
   h+=secHd('top','Top-Meldungen',(S.region!=='all'?REGION_NAME[S.region]:''),
     `<div class="seg" role="group" aria-label="Zeitraum">${[[6,'6 Std.'],[12,'12 Std.'],[24,'24 Std.'],[48,'48 Std.']].map(([v,l])=>`<button aria-pressed="${win===v}" onclick="S.topWin=${v};store.set('topwin',${v});render()">${l}</button>`).join('')}</div>${copyBtn(TOPLIST,'Top-Meldungen')}`);
   h+=body('top',`<div class="box top">${top.length?top.map((a,i)=>{const cl=clusterArts(a),auf=S.openSrc===a.id;
-    return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl">${esc(a.title)}</div>
-      <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${zugangPill(a)}</div>${starHTML(a.id)}
+    /* Liegt eine geschriebene Schlagzeile vor, steht sie oben und die
+       Feed-Überschrift tritt zurück – die Herkunft bleibt in der Zeile
+       darunter sichtbar, und im Lesefenster steht ohnehin das Original. */
+    const k=(window.KISCHLAG||{})[a.id];
+    return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl"${k?` title="${esc(a.title)}"`:''}>${esc(k&&k.s?k.s:a.title)}${k&&k.t?`<span class="ki-satz">${esc(k.t)}</span>`:''}</div>
+      <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${k?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile und Satz automatisch geschrieben">KI</span>':''}${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${zugangPill(a)}</div>${starHTML(a.id)}
       ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
   const topics=[...new Set(base.flatMap(a=>a.topics))].filter(ressortTauglich).map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
   const srcs=[...new Set(base.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
@@ -2859,7 +2915,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v35 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v37 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -3679,6 +3735,19 @@ async function laden(){
   sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
   sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
   sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
+  /* Schlagzeilen der Top-Meldungen, im Lauf geschrieben
+     (ki_zusammenfassungen.py, alle sechs Stunden, je Region und in der
+     Sprache der Quellen). Flach abgelegt: id → Schlagzeile und Satz. */
+  sicher('KI-Schlagzeilen',()=>{
+    window.KISCHLAG={};
+    const sch=ki&&(ki.schlagzeilen||ki.lage);
+    if(!sch)return;
+    const bloecke=sch.regionen?Object.values(sch.regionen):[];
+    bloecke.forEach(r=>(r.items||[]).forEach(it=>{
+      if(it&&it.id&&it.schlagzeile)KISCHLAG[it.id]={s:it.schlagzeile,t:it.text||'',sp:r.sprache||'de'};
+    }));
+    window.KISTAND=sch.stand||'';
+  });
   sicher('Verzeichnis (Index)',indexieren);
 
   ZEITEN['_gesamt']=Math.round(performance.now()-(window.LADESTART||0));
