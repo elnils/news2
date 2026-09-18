@@ -100,13 +100,21 @@ jobs:
           ELECTION_BUDGET_MIN: '4'
         run: python fetch_elections.py
 
-      - name: Verzeichnis, DIP & Kalender
-        timeout-minutes: 10
+      # NEU (v11): Derselbe Lauf holt jetzt auch die namentlichen Abstimmungen
+      # des Bundestags (abgeordnetenwatch) nach votes.json und schreibt die
+      # Sitzverteilung je Parlament nach people.json → "seats".
+      # Weil das zusätzliche Abrufe sind, bekommt der Schritt mehr Luft:
+      # 14 Minuten Obergrenze, 11 Minuten Eigenbudget.
+      - name: Verzeichnis, DIP, Abstimmungen & Kalender
+        timeout-minutes: 14
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           TAGESLAGE_FEED: ${{ secrets.TAGESLAGE_FEED }}
-          TIME_BUDGET_MIN: '8'      # Skript beendet sich selbst nach 8 Minuten
-          LANDTAGE_PER_RUN: '4'     # 16 Landtage in 4 Läufen
+          TIME_BUDGET_MIN: '11'     # Skript beendet sich selbst nach 11 Minuten
+          LANDTAGE_PER_RUN: '6'     # 16 Landtage in 3 Läufen statt 4
+          POLLS_PER_RUN: '12'       # namentliche Abstimmungen je Lauf (je ~630 Stimmen)
+          POLLS_MAX: '80'           # so viele Abstimmungen der Wahlperiode insgesamt
+          VOTES_PER_PERSON: '40'    # Stimmverhalten je Person in people.json
           EP_DETAILS_PER_RUN: '150' # ~720 MEPs in 5 Läufen
           ENRICH_PER_RUN: '40'
           WIKI_PER_RUN: '15'        # Wikipedia drosselt ab ~20 Abrufen (HTTP 429)
@@ -173,11 +181,14 @@ jobs:
           # Diese Dateien werden ausschliesslich hier erzeugt: der frisch
           # erzeugte Stand gewinnt immer.
           # NEU (v10): markets.json und ki_meldungen.json
+          # NEU (v11): votes.json (namentliche Abstimmungen) und votes_cache.json.
+          # Der Zwischenspeicher MUSS mitcommittet werden - sonst holt jeder
+          # Lauf dieselben zwoelf Abstimmungen erneut und der Bestand waechst nie.
           for f in articles.json eu_articles.json bundestag_articles.json \
                    laender_articles.json us_articles.json documents.json \
                    people.json dip.json calendar.ics newsletters.json elections.json \
                    people_cache.json landtage_cache.json groq_cache.json ai.json access.json \
-                   markets.json ki_meldungen.json; do
+                   markets.json ki_meldungen.json votes.json votes_cache.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
