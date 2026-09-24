@@ -7,7 +7,7 @@ X-WR-CALNAME:Presseschau – Sitzungen & Termine
 X-WR-TIMEZONE:Europe/Berlin
 BEGIN:VEVENT
 UID:1f2bcc2d72db@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T143000Z
 DTEND:20260923T163000Z
 SUMMARY:Bau\, Bauwesen\, Wohnen\, Kommunen\, Städtebau\, Stadtentwicklung: 30. Sitzung am Mittwoch\, 23. September 2026\, 16:30 Uhr - öffentliche Anhörung
@@ -15,8 +15,17 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1200670/30-Sitzung-23-09-2026-TO-OeA.pdf
 END:VEVENT
 BEGIN:VEVENT
+UID:777272bbca5f@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART:20260923T123000Z
+DTEND:20260923T143000Z
+SUMMARY:Digitales\, Staatsmodernisierung: Tagesordnung der 32. Sitzung des Ausschusses für Digitales und Staatsmodernisierung am Mittwoch\, dem 23. September 2026\, 14.30 Uhr - teilweise öffentlich
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/1216198/TO-32-Sitzung.pdf
+URL:https://www.bundestag.de/resource/blob/1216198/TO-32-Sitzung.pdf
+END:VEVENT
+BEGIN:VEVENT
 UID:d701e5210edf@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T123000Z
 DTEND:20260923T143000Z
 SUMMARY:Digitales\, Staatsmodernisierung: Tagesordnung der 32. Sitzung des Ausschusses für Digitales und Staatsmodernisierung am Mittwoch\, dem 23. September 2026\, 14.30 Uhr - teilweise öffentlich*
@@ -25,7 +34,7 @@ URL:https://www.bundestag.de/resource/blob/1216198/TO-32-Sitzung.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:639c0747b00b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Digitales\, Staatsmodernisierung: 32. Sitzung - 1. Änderungs-/Ergänzungsmitteilung
@@ -34,7 +43,7 @@ URL:https://www.bundestag.de/resource/blob/1216388/TO-32-Sitzung-1-Ergaenzungsmi
 END:VEVENT
 BEGIN:VEVENT
 UID:d2651076450b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Digitales\, Staatsmodernisierung: 32. Sitzung - 2. Änderungs-/Ergänzungsmitteilung
@@ -42,8 +51,26 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1216762/TO-32-Sitzung-2-Ergaenzungsmitteilung.pdf
 END:VEVENT
 BEGIN:VEVENT
+UID:96e8393b2e2a@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260923
+DTEND;VALUE=DATE:20260924
+SUMMARY:Digitales\, Staatsmodernisierung: 32. Sitzung - 3. Änderungs-/Ergänzungsmitteilung
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/1217044/TO-32-Sitzung-3-Aenderung.pdf
+URL:https://www.bundestag.de/resource/blob/1217044/TO-32-Sitzung-3-Aenderung.pdf
+END:VEVENT
+BEGIN:VEVENT
+UID:86fd63108544@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20261002
+DTEND;VALUE=DATE:20261003
+SUMMARY:02.10.2026 | Einheit gemeinsam erleben: Der Bundesrat beim Bürgerfest in Bremen | Bremen\, Innenstadt
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/termine/DE/veranstaltung/tag-der-deutschen-einheit-2026.html
+URL:https://www.bundesrat.de/SharedDocs/termine/DE/veranstaltung/tag-der-deutschen-einheit-2026.html
+END:VEVENT
+BEGIN:VEVENT
 UID:ac67a842c07b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T093000Z
 DTEND:20260923T113000Z
 SUMMARY:Bauwesen\, Bau\, Wohnen\, Kommunen\, Städtebau\, Stadtentwicklung: 29. Sitzung am Mittwoch\, 23. September 2026\, 11:30 Uhr - 1. Ergänzungsmitteilung
@@ -51,8 +78,17 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1216628/29-Sitzung-23-09-2026-TO-1-E.pdf
 END:VEVENT
 BEGIN:VEVENT
+UID:1d71dfbb4822@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260924
+DTEND;VALUE=DATE:20260925
+SUMMARY:Haushalt: 2. Änderungs-/Ergänzungsmitteilung zur 45./46. Sitzung am 23./24. September 2026
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/1217086/to_045-046_aend-erg2.pdf
+URL:https://www.bundestag.de/resource/blob/1217086/to_045-046_aend-erg2.pdf
+END:VEVENT
+BEGIN:VEVENT
 UID:bde0b709bbc1@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T093000Z
 DTEND:20260923T113000Z
 SUMMARY:Bauwesen\, Bau\, Wohnen\, Kommunen\, Städtebau\, Stadtentwicklung: 29. Sitzung am Mittwoch\, 23. September 2026\, 11:30 Uhr - nicht öffentlich
@@ -60,8 +96,53 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1200672/29-Sitzung-23-09-2026-TO.pdf
 END:VEVENT
 BEGIN:VEVENT
+UID:2f83de23898a@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260922
+DTEND;VALUE=DATE:20260923
+SUMMARY:22.09.2026 | Umfrage 7/26 des Ausschusses für Auswärtige Angelegenheiten |
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/20260922-umfrage-7-26.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/20260922-umfrage-7-26.html
+END:VEVENT
+BEGIN:VEVENT
+UID:687f48ad329e@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260922
+DTEND;VALUE=DATE:20260923
+SUMMARY:22.09.2026 | Umfrage 7/26 des Ausschusses für Auswärtige Angelegenheiten |
+DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/20260922-umfrage-7-26.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/20260922-umfrage-7-26.html
+END:VEVENT
+BEGIN:VEVENT
+UID:56d6a30011e9@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260923
+DTEND;VALUE=DATE:20260924
+SUMMARY:Parlament: Tagesordnung Donnerstag (96. Sitzung)
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/504702/Tagesordnung-tagesaktuell-Do-.pdf
+URL:https://www.bundestag.de/resource/blob/504702/Tagesordnung-tagesaktuell-Do-.pdf
+END:VEVENT
+BEGIN:VEVENT
+UID:dcf9e08bfb66@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART:20260923T083000Z
+DTEND:20260923T103000Z
+SUMMARY:Wirtschaft\, Energie: 3. Ergänzungsmitteilung zur 46. Sitzung am Mittwoch\, den 23. September 2026\, 10:30 Uhr\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/1217040/to_46_23-09-2026_3-ergaenzung.pdf
+URL:https://www.bundestag.de/resource/blob/1217040/to_46_23-09-2026_3-ergaenzung.pdf
+END:VEVENT
+BEGIN:VEVENT
+UID:1e581eb673d6@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260923
+DTEND;VALUE=DATE:20260924
+SUMMARY:Parlament: Geplanter Ablauf der Plenarsitzung (95. - 97. Sitzung)
+DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/473454/Ablaufplan-kommende-Woche.pdf
+URL:https://www.bundestag.de/resource/blob/473454/Ablaufplan-kommende-Woche.pdf
+END:VEVENT
+BEGIN:VEVENT
 UID:b610168f9c3d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260924
 DTEND;VALUE=DATE:20260925
 SUMMARY:Haushalt: 1. Änderungs-/Ergänzungsmitteilung zur 45./46. Sitzung am 23./24. September 2026
@@ -69,8 +150,26 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1216970/to_045-046_aend-erg1.pdf
 END:VEVENT
 BEGIN:VEVENT
+UID:cb2bd5a65361@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260922
+DTEND;VALUE=DATE:20260923
+SUMMARY:22.09.2026 | Umfrage 10/26 des Ausschusses für Verteidigung nach § 43 GO BR |
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260922-umfrage-10-26.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260922-umfrage-10-26.html
+END:VEVENT
+BEGIN:VEVENT
+UID:c2a08d1a9d2b@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260922
+DTEND;VALUE=DATE:20260923
+SUMMARY:22.09.2026 | Umfrage 10/26 des Ausschusses für Verteidigung nach § 43 GO BR |
+DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260922-umfrage-10-26.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260922-umfrage-10-26.html
+END:VEVENT
+BEGIN:VEVENT
 UID:4a464e56d173@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T083000Z
 DTEND:20260923T103000Z
 SUMMARY:Wirtschaft\, Energie: 2. Ergänzungsmitteilung zur 46. Sitzung am Mittwoch\, den 23. September 2026\, 10:30 Uhr\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -79,7 +178,7 @@ URL:https://www.bundestag.de/resource/blob/1216958/to_46_23-09-2026_2-ergaenzung
 END:VEVENT
 BEGIN:VEVENT
 UID:d03470182fba@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260922
 DTEND;VALUE=DATE:20260923
 SUMMARY:Parlament: Tagesordnung komplett (95. - 97. Sitzung)
@@ -88,7 +187,7 @@ URL:https://www.bundestag.de/resource/blob/473450/Tagesordnung-komplett-kommende
 END:VEVENT
 BEGIN:VEVENT
 UID:28c67795e0aa@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T090000Z
 DTEND:20260923T110000Z
 SUMMARY:Gesundheit: 1. Ergänzungsmitteilung der 55. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 23. September 2026\, 11:00 Uhr - nicht öffentlich
@@ -97,7 +196,7 @@ URL:https://www.bundestag.de/resource/blob/1216956/to_55_ErgMi.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:136115e975df@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T083000Z
 DTEND:20260923T103000Z
 SUMMARY:Inneres: 42. Sitzung am Mittwoch\, dem 23. September 2026\, 10.30 Uhr - Ergänzung - nicht öffentlich
@@ -106,7 +205,7 @@ URL:https://www.bundestag.de/resource/blob/1216928/TO-042-Sitzung-23-09-2026-Erg
 END:VEVENT
 BEGIN:VEVENT
 UID:e33c783d9cd7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T140000Z
 DTEND:20260923T160000Z
 SUMMARY:Tourismus: Tagesordnung der 36. Sitzung des Ausschusses für Tourismus am Mittwoch\, dem 23. September 2026\, 16 Uhr - nicht öffentlich
@@ -115,7 +214,7 @@ URL:https://www.bundestag.de/resource/blob/1216852/to36.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:6f2c20f6c1fa@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T093000Z
 DTEND:20260923T113000Z
 SUMMARY:Umwelt\, Klimaschutz\, Naturschutz\, Nukleare Sicherheit: 42. Sitzung am Mittwoch\, dem 23. September 2026 11:30 Uhr - nichtöffentlich
@@ -124,7 +223,7 @@ URL:https://www.bundestag.de/resource/blob/1216856/to-042.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:485be1f2c824@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260922
 DTEND;VALUE=DATE:20260923
 SUMMARY:Parlament: Tagesordnung Mittwoch (95. Sitzung)
@@ -133,7 +232,7 @@ URL:https://www.bundestag.de/resource/blob/476228/Tagesordnung-tagesaktuell-Mi-.
 END:VEVENT
 BEGIN:VEVENT
 UID:ce2ed276e9e8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T120000Z
 DTEND:20260923T140000Z
 SUMMARY:Menschenrechte\, Humanitäre Hilfe: 1. Änderungsmitteilung zur 29. Sitzung\, Mittwoch\, 23. September 2026\, 14:00 Uhr - nicht öffentlich
@@ -141,17 +240,8 @@ DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/12
 URL:https://www.bundestag.de/resource/blob/1216792/to_29_1-aenderung.pdf
 END:VEVENT
 BEGIN:VEVENT
-UID:1e581eb673d6@presseschau
-DTSTAMP:20260923T041449Z
-DTSTART;VALUE=DATE:20260922
-DTEND;VALUE=DATE:20260923
-SUMMARY:Parlament: Geplanter Ablauf der Plenarsitzung (95. - 97. Sitzung)
-DESCRIPTION:Bundestag · Tagesordnung\nhttps://www.bundestag.de/resource/blob/473454/Ablaufplan-kommende-Woche.pdf
-URL:https://www.bundestag.de/resource/blob/473454/Ablaufplan-kommende-Woche.pdf
-END:VEVENT
-BEGIN:VEVENT
 UID:c357c7a6bcef@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Bildung\, Familie: 1. Änderungs-/Ergänzungsmitteilung zur 28. Sitzung am 23. September 2026
@@ -160,7 +250,7 @@ URL:https://www.bundestag.de/resource/blob/1216780/a13-28-TO-neu-1-Erg.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:c84077e414eb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T073000Z
 DTEND:20260923T093000Z
 SUMMARY:Arbeit\, Soziales: 1. Änderungs-/Ergänzungsmitteilung zu der Tagesordnung der 36. Sitzung am Mittwoch\, den 23. September 2026\, 9.30 Uhr - nicht öffentlich
@@ -169,7 +259,7 @@ URL:https://www.bundestag.de/resource/blob/1216724/TO-36-Sitzung-Erg-1.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:b91d0cdc4934@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T083000Z
 DTEND:20260923T103000Z
 SUMMARY:Wirtschaft\, Energie: 1. Ergänzungsmitteilung zur 46. Sitzung am Mittwoch\, den 23. September 2026\, 10:30 Uhr\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -178,7 +268,7 @@ URL:https://www.bundestag.de/resource/blob/1216668/to_46_23-09-2026_1-ergaenzung
 END:VEVENT
 BEGIN:VEVENT
 UID:a6ae7be125d3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T153000Z
 DTEND:20260923T173000Z
 SUMMARY:Parlamentarischer Beirat für nachhaltige Entwicklung: 21. Sitzung am Mittwoch\, dem 23. September2026\, 17.30 Uhr - öffentlich
@@ -187,7 +277,7 @@ URL:https://www.bundestag.de/resource/blob/1216528/to021.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:e7a0916c26e9@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T073000Z
 DTEND:20260923T093000Z
 SUMMARY:Forschung\, Technologie\, Raumfahrt\, Technikfolgenabschätzung: 29. Sitzung am Mittwoch\, 23. September 2026\, 9.30 Uhr - 1. Änderungsmitteilung
@@ -196,7 +286,7 @@ URL:https://www.bundestag.de/resource/blob/1216452/to29_23-09-2026_Aenderungsmit
 END:VEVENT
 BEGIN:VEVENT
 UID:398b770aef87@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Europäische Union\, Europapolitik: 29. Sitzung Mittwoch\, 23. September 2026 - Tagesordnung - nicht öffentlich
@@ -205,7 +295,7 @@ URL:https://www.bundestag.de/resource/blob/1216448/Neuer-Inhalt-5-.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:462008e70192@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Tourismus: Tagesordnung der 35. Sitzung des Ausschusses für Tourismus am Mittwoch\, dem 23. September 2026 - Öffentliche Anhörung
@@ -214,7 +304,7 @@ URL:https://www.bundestag.de/resource/blob/1216414/to35.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:936468b16af8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T073000Z
 DTEND:20260923T093000Z
 SUMMARY:Landwirtschaft\, Ernährung\, Heimat: 31. Sitzung am Mittwoch\, dem 23. September 2026\, 9.30 Uhr - nichtöffentlich
@@ -223,7 +313,7 @@ URL:https://www.bundestag.de/resource/blob/1216196/TO_31_Sitzung_am_23_09_2026.p
 END:VEVENT
 BEGIN:VEVENT
 UID:5082f3606305@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Kultur\, Medien: 1. Ergänzungsmitteilung zur 26. Sitzung am Mittwoch\, dem 23. September 2026
@@ -232,7 +322,7 @@ URL:https://www.bundestag.de/resource/blob/1216394/PA22_to26_EM1.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:d92fb294b470@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:21/8048: Fragen Fragen für die Fragestunde der 95. Sitzung des Deutschen Bundestages am Mittwoch\, dem 23. September 2026 (PDF)
@@ -241,7 +331,7 @@ URL:https://dserver.bundestag.de/btd/21/080/2108048.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:8b6468a21c7d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261002T080000Z
 DTEND:20261002T100000Z
 SUMMARY:02.10.2026 10:00 Uhr | 768. Sitzung des Ausschusses für Fragen der Europäischen Union | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -250,7 +340,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/eu/termine-to/2026100
 END:VEVENT
 BEGIN:VEVENT
 UID:a65b2f6ffe44@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261002T080000Z
 DTEND:20261002T100000Z
 SUMMARY:02.10.2026 10:00 Uhr | 768. Sitzung des Ausschusses für Fragen der Europäischen Union | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -259,7 +349,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/eu/termine-to/2026100
 END:VEVENT
 BEGIN:VEVENT
 UID:2f4cf19b18b0@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260924T140000Z
 DTEND:20260924T160000Z
 SUMMARY:Wahlprüfung: 11. Sitzung am Donnerstag\, 24. September 2026\, um 16.00 Uhr - nicht öffentlich
@@ -268,7 +358,7 @@ URL:https://www.bundestag.de/resource/blob/1216284/to_011.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:d6e77eadfd0f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T073000Z
 DTEND:20260923T093000Z
 SUMMARY:Forschung\, Technologie\, Raumfahrt\, Technikfolgenabschätzung: 29. Sitzung am Mittwoch\, 23. September 2026\, 9.30 Uhr
@@ -277,7 +367,7 @@ URL:https://www.bundestag.de/resource/blob/1216280/to29_23_09_2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:5697295f5cfa@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T120000Z
 DTEND:20260923T140000Z
 SUMMARY:Recht\, Verbraucherschutz: Tagesordnung der 48. Sitzung - 23. September 2026\, 14:00 Uhr - öffentliche Anhörung
@@ -286,7 +376,7 @@ URL:https://www.bundestag.de/resource/blob/1215332/to_048-pdf.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:dea6a5b5622b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T070000Z
 DTEND:20260923T090000Z
 SUMMARY:Recht\, Verbraucherschutz: Tagesordnung der 47. Sitzung - 23. September 2026\, 9:00 Uhr
@@ -295,7 +385,7 @@ URL:https://www.bundestag.de/resource/blob/1216276/to_047-pdf.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:441b4bed7a84@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T083000Z
 DTEND:20260923T103000Z
 SUMMARY:Inneres: 42. Sitzung am Mittwoch\, dem 23. September 2026\, 10.30 Uhr - nicht öffentlich
@@ -304,7 +394,7 @@ URL:https://www.bundestag.de/resource/blob/1216272/TO-042-Sitzung-23-09-2026-um.
 END:VEVENT
 BEGIN:VEVENT
 UID:93ac1bb884c1@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T090000Z
 DTEND:20260923T110000Z
 SUMMARY:Bildung\, Familie: 28. Sitzung am Mittwoch\, dem 23. September 2026\, 11:00 Uhr - teilweise öffentlich
@@ -313,7 +403,7 @@ URL:https://www.bundestag.de/resource/blob/1216270/a13-28-TO-neu.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:8d7ace5ae88b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T123000Z
 DTEND:20260923T143000Z
 SUMMARY:Sport: 30. Sitzung des Ausschusses für Sport und Ehrenamt am 23. September 2026\, 14:30 Uhr - öffentlich
@@ -322,7 +412,7 @@ URL:https://www.bundestag.de/resource/blob/1216268/to30.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:0e8bfb2a09eb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T090000Z
 DTEND:20260923T110000Z
 SUMMARY:Gesundheit: Tagesordnung der 55. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 23. September 2026\, 11:00 Uhr - nicht öffentlich
@@ -331,7 +421,7 @@ URL:https://www.bundestag.de/resource/blob/1216266/to_55.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:5c8488231764@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T063000Z
 DTEND:20260923T083000Z
 SUMMARY:Verteidigung: Tagesordnung für die 34. Sitzung des Verteidigungsausschusses am Mittwoch\, 23. September 2026\, 8:30 Uhr - nicht öffentlich
@@ -340,7 +430,7 @@ URL:https://www.bundestag.de/resource/blob/1216258/to_34-sitzung_23-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:ed69648f0b74@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T083000Z
 DTEND:20260923T103000Z
 SUMMARY:Wirtschaft\, Energie: 46. Sitzung am Mittwoch\, den 23. September 2026\, 10:30 Uhr\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -349,7 +439,7 @@ URL:https://www.bundestag.de/resource/blob/1216256/to_46_23-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:839dc6e33510@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T073000Z
 DTEND:20260923T093000Z
 SUMMARY:Arbeit\, Soziales: Tagesordnung der 36. Sitzung des Ausschusses für Arbeit und Soziales am Dienstag\, den 23. September 2026\, 09.30 Uhr - nicht öffentlich
@@ -358,7 +448,7 @@ URL:https://www.bundestag.de/resource/blob/1216254/TO-36-Sitzung-neu.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:ce909609ad2e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T063000Z
 DTEND:20260923T083000Z
 SUMMARY:Verkehr: Tagesordnung der 37. Sitzung des Verkehrsausschusses am Mittwoch\, den 23. September 2026\, 08.30 Uhr
@@ -367,7 +457,7 @@ URL:https://www.bundestag.de/resource/blob/1216250/37-Sitzung-23-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:8b401325b97a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260924
 DTEND;VALUE=DATE:20260925
 SUMMARY:Haushalt: Tagesordnung der 45. und 46. Sitzung am 23. und 24. September 2026
@@ -376,7 +466,7 @@ URL:https://www.bundestag.de/resource/blob/1216248/to_045-046.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:ee645be1eccc@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Auswärtiges: 1. Änderungs-/Ergänzungsmitteilung zur Tagesordnung der 30. Sitzung des Auswärtigen Ausschusses am 23. September 2026
@@ -385,7 +475,7 @@ URL:https://www.bundestag.de/resource/blob/1216224/TO-30_1-ergaenzung.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:2c2a182d71f0@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T120000Z
 DTEND:20260923T140000Z
 SUMMARY:Menschenrechte\, Humanitäre Hilfe: Tagesordnung der 29. Sitzung\, Mittwoch\, 23. September 2026\, 14:00 Uhr - nicht öffentlich
@@ -394,7 +484,7 @@ URL:https://www.bundestag.de/resource/blob/1216206/to_29.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:8208f36d92c3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Auswärtiges: Tagesordnung der 7. Sitzung des Unterausschusses Internationale Ordnung\, Vereinte Nationen und internationale Organisationen am Mittwoch\, dem 23. September 2026
@@ -403,7 +493,7 @@ URL:https://www.bundestag.de/resource/blob/1216204/to07_vn.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:f8e71a594f13@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T070000Z
 DTEND:20260923T090000Z
 SUMMARY:Auswärtiges: Tagesordnung der 30. Sitzung des Auswärtigen Ausschusses am 23. September 2026\, 9:00 Uhr
@@ -412,7 +502,7 @@ URL:https://www.bundestag.de/resource/blob/1216176/TO-30-23-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:283933a586a1@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Kultur\, Medien: 26. Sitzung am Mittwoch\, dem 23. September 2026\, nicht öffentlich
@@ -421,7 +511,7 @@ URL:https://www.bundestag.de/resource/blob/1216166/PA-22_to26-pdf.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:787531ebb64d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T160000Z
 DTEND:20260923T180000Z
 SUMMARY:23.09.2026 18:00 Uhr | Vermittlungsausschuss tagt zur Schuldnerberatung | Bundesrat\, Leipziger Straße 3-4\, 10117 Berlin\, Saal 1.128
@@ -430,7 +520,7 @@ URL:https://www.bundesrat.de/SharedDocs/termine/DE/presse/2026/20260923-va.html
 END:VEVENT
 BEGIN:VEVENT
 UID:f8fc9961b41e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T160000Z
 DTEND:20260923T180000Z
 SUMMARY:23.09.2026 18:00 Uhr | 2. Sitzung des Vermittlungsausschusses | Bundesrat\, Leipziger Straße 3-4\, 10117 Berlin\, Saal 1.128
@@ -439,7 +529,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/va/termine-to/21wp/20
 END:VEVENT
 BEGIN:VEVENT
 UID:9479f794f9ab@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260724T060000Z
 DTEND:20260724T080000Z
 SUMMARY:Recht: Tagesordnung der 13. Sitzung - 24. Juli 2026\, 8:00 Uhr
@@ -448,7 +538,7 @@ URL:https://www.bundestag.de/resource/blob/1216150/to_013.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:02184586c43b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260923
 DTEND;VALUE=DATE:20260924
 SUMMARY:Kinderkommission\, Jugend\, Familie: 21. Sitzung der Kinderkommission am 23. September 2026
@@ -457,7 +547,7 @@ URL:https://www.bundestag.de/resource/blob/1216100/21-Sitzung-am-23-September-20
 END:VEVENT
 BEGIN:VEVENT
 UID:452164f8d49a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T093000Z
 DTEND:20260923T113000Z
 SUMMARY:Wirtschaftliche Zusammenarbeit\, Entwicklung: 25. Sitzung am Mittwoch\, 23. September 2026\, 11:30 Uhr - teilweise öffentlich
@@ -466,7 +556,7 @@ URL:https://www.bundestag.de/resource/blob/1216142/to_25_23092026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:5ce56eecd475@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T063000Z
 DTEND:20260923T083000Z
 SUMMARY:Finanzen: 42. Sitzung des Finanzausschusses am Mittwoch\, 23. September 2026\, 8:30 Uhr
@@ -475,7 +565,7 @@ URL:https://www.bundestag.de/resource/blob/1216132/to-42.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:73819fbaa648@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 962. Sitzung des Wirtschaftsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -484,7 +574,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wi/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:f9410b90dbf8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20261002
 DTEND;VALUE=DATE:20261003
 SUMMARY:02.10.2026 | Fototermine bei Einheitsfeier in Bremen: Eröffnung und symbolische Amtsübergabe der Bundesratspräsidentschaft  | Bremen\, Alfred-Ries-Platz\, Pavillon des Bundesrates
@@ -493,7 +583,7 @@ URL:https://www.bundesrat.de/SharedDocs/termine/DE/veranstaltung/tdde26-eroeffnu
 END:VEVENT
 BEGIN:VEVENT
 UID:3906731d00b7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 962. Sitzung des Wirtschaftsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -502,7 +592,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wi/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:947dac352ccd@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260921T120000Z
 DTEND:20260921T140000Z
 SUMMARY:Enquete-Kommission Corona: 28. Sitzung der Enquete-Kommission „Aufarbeitung der Corona-Pandemie und Lehren für zukünftige pandemische Ereignisse“ am Montag\, dem 21. September 2026\, 14:00 Uhr - öffentlich
@@ -511,7 +601,7 @@ URL:https://www.bundestag.de/resource/blob/1215424/TO-28-Sitzung-2026-09-21.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:2a53f37d4803@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260921T113000Z
 DTEND:20260921T133000Z
 SUMMARY:Enquete-Kommission Corona: 27. Sitzung der Enquete-Kommission „Aufarbeitung der Corona-Pandemie und Lehren für zukünftige pandemische Ereignisse“ am Montag\, dem 21. September 2026\, 13:30 Uhr - nicht öffentlich -
@@ -520,7 +610,7 @@ URL:https://www.bundestag.de/resource/blob/1215422/TO-27-Sitzung-2026-09-21.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:ad71f7d68bac@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260924
 DTEND;VALUE=DATE:20260925
 SUMMARY:Auswärtiges: Tagesordnung der 10. Sitzung des Unterausschusses Auswärtige Kultur- und Bildungspolitik am Donnerstag\, dem 24. September 2026
@@ -529,7 +619,7 @@ URL:https://www.bundestag.de/resource/blob/1215372/to10_akbp.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:bbd86eca5ee5@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T083000Z
 DTEND:20260930T103000Z
 SUMMARY:30.09.2026 10:30 Uhr | 1030. Sitzung des Rechtsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 1.128
@@ -538,7 +628,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/r/termine-to/20260930
 END:VEVENT
 BEGIN:VEVENT
 UID:26b3764052fb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T083000Z
 DTEND:20260930T103000Z
 SUMMARY:30.09.2026 10:30 Uhr | 1030. Sitzung des Rechtsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 1.128
@@ -547,7 +637,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/r/termine-to/20260930
 END:VEVENT
 BEGIN:VEVENT
 UID:f765ca0e2816@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260928T090000Z
 DTEND:20260928T110000Z
 SUMMARY:28.09.2026 11:00 Uhr | 922. Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
@@ -556,7 +646,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/2026092
 END:VEVENT
 BEGIN:VEVENT
 UID:2101c2c1316e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T073000Z
 DTEND:20261001T093000Z
 SUMMARY:01.10.2026 09:30 Uhr | 1045. Sitzung des Ausschusses für Innere Angelegenheiten | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -565,7 +655,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/in/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:127147683ef7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260928T090000Z
 DTEND:20260928T110000Z
 SUMMARY:28.09.2026 11:00 Uhr | 922. Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
@@ -574,7 +664,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/2026092
 END:VEVENT
 BEGIN:VEVENT
 UID:4e86c430ccd7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T073000Z
 DTEND:20261001T093000Z
 SUMMARY:01.10.2026 09:30 Uhr | 1045. Sitzung des Ausschusses für Innere Angelegenheiten | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -583,7 +673,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/in/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:0de33b46be58@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261005T110000Z
 DTEND:20261005T130000Z
 SUMMARY:Parlamentarisches Kontrollgremium: Öffentliche Anhörung am Montag\, 5. Oktober 2026\, 10 bis 13 Uhr
@@ -592,7 +682,7 @@ URL:https://www.bundestag.de/resource/blob/1211994/to_02_2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:7860760eede1@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 952. Sitzung des Ausschusses für Arbeit\, Integration und Sozialpolitik | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 1.128
@@ -600,17 +690,17 @@ DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/ausch
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ais/termine-to/20261001.html
 END:VEVENT
 BEGIN:VEVENT
-UID:9430292f3908@presseschau
-DTSTAMP:20260923T041449Z
-DTSTART:20261001T120000Z
-DTEND:20261001T140000Z
-SUMMARY:01.10.2026 14:00 Uhr | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
-DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01.html
-URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01.html
+UID:c3ab0789ed2a@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20261001
+DTEND;VALUE=DATE:20261002
+SUMMARY:01.10.2026 | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung entfällt / Umfrageverfahren |
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01-Umfrageverfahren.html
 END:VEVENT
 BEGIN:VEVENT
 UID:c6c2b286b7cf@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 952. Sitzung des Ausschusses für Arbeit\, Integration und Sozialpolitik | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 1.128
@@ -618,8 +708,26 @@ DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/au
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ais/termine-to/20261001.html
 END:VEVENT
 BEGIN:VEVENT
+UID:4715c34b20be@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20261001
+DTEND;VALUE=DATE:20261002
+SUMMARY:01.10.2026 | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung entfällt / Umfrageverfahren |
+DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01-Umfrageverfahren.html
+END:VEVENT
+BEGIN:VEVENT
+UID:9430292f3908@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART:20261001T120000Z
+DTEND:20261001T140000Z
+SUMMARY:01.10.2026 14:00 Uhr | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10-01.html
+END:VEVENT
+BEGIN:VEVENT
 UID:dd237a56d7f6@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T120000Z
 DTEND:20261001T140000Z
 SUMMARY:01.10.2026 14:00 Uhr | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -628,7 +736,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:c1b98160571a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T090000Z
 DTEND:20260930T110000Z
 SUMMARY:30.09.2026 11:00 Uhr | 703. Sitzung des Gesundheitsausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -637,7 +745,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/g/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:79ff7dc949c7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T090000Z
 DTEND:20260930T110000Z
 SUMMARY:30.09.2026 11:00 Uhr | 703. Sitzung des Gesundheitsausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -646,7 +754,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/g/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:2985f2ef5bff@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T073000Z
 DTEND:20260930T093000Z
 SUMMARY:30.09.2026 09:30 Uhr | 753. Sitzung des Verkehrsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -655,7 +763,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/vk/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:42242dfeb48c@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T113000Z
 DTEND:20260930T133000Z
 SUMMARY:30.09.2026 13:30 Uhr | 11. Sitzung des Ausschusses für Familie\, Senioren\, Frauen und Jugend | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -663,26 +771,26 @@ DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/ausch
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fsfj/termine-to/20260930.html
 END:VEVENT
 BEGIN:VEVENT
-UID:1e795e9e7446@presseschau
-DTSTAMP:20260923T041449Z
-DTSTART:20260930T120000Z
-DTEND:20260930T140000Z
-SUMMARY:30.09.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
+UID:41c6b9abba9c@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260930
+DTEND;VALUE=DATE:20261001
+SUMMARY:30.09.2026 | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt / Umfrageverfahren |
 DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
 END:VEVENT
 BEGIN:VEVENT
-UID:8038287e7355@presseschau
-DTSTAMP:20260923T041449Z
-DTSTART:20261001T093000Z
-DTEND:20261001T113000Z
-SUMMARY:01.10.2026 11:30 Uhr | Sitzung des Finanzausschusses entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
-DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01.html
-URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01.html
+UID:ed14243010c9@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20261001
+DTEND;VALUE=DATE:20261002
+SUMMARY:01.10.2026 | Sitzung des Finanzausschusses entfällt / Umfrageverfahren |
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01-Umfrageverfahren.html
 END:VEVENT
 BEGIN:VEVENT
 UID:9a439bec2f5f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T073000Z
 DTEND:20260930T093000Z
 SUMMARY:30.09.2026 09:30 Uhr | 753. Sitzung des Verkehrsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -691,7 +799,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/vk/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:45c66ba552e2@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T113000Z
 DTEND:20260930T133000Z
 SUMMARY:30.09.2026 13:30 Uhr | 11. Sitzung des Ausschusses für Familie\, Senioren\, Frauen und Jugend | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -699,8 +807,44 @@ DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/au
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fsfj/termine-to/20260930.html
 END:VEVENT
 BEGIN:VEVENT
+UID:060020dccb62@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20260930
+DTEND;VALUE=DATE:20261001
+SUMMARY:30.09.2026 | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt / Umfrageverfahren |
+DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
+END:VEVENT
+BEGIN:VEVENT
+UID:60f470012dfc@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART;VALUE=DATE:20261001
+DTEND;VALUE=DATE:20261002
+SUMMARY:01.10.2026 | Sitzung des Finanzausschusses entfällt / Umfrageverfahren |
+DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01-Umfrageverfahren.html
+END:VEVENT
+BEGIN:VEVENT
+UID:1e795e9e7446@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART:20260930T120000Z
+DTEND:20260930T140000Z
+SUMMARY:30.09.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/20260930-Umfrageverfahren.html
+END:VEVENT
+BEGIN:VEVENT
+UID:8038287e7355@presseschau
+DTSTAMP:20260924T002216Z
+DTSTART:20261001T093000Z
+DTEND:20261001T113000Z
+SUMMARY:01.10.2026 11:30 Uhr | Sitzung des Finanzausschusses entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
+DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01.html
+URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10-01.html
+END:VEVENT
+BEGIN:VEVENT
 UID:02e5578097a0@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T120000Z
 DTEND:20260930T140000Z
 SUMMARY:30.09.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -709,7 +853,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026093
 END:VEVENT
 BEGIN:VEVENT
 UID:e7c9edfba88d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T093000Z
 DTEND:20261001T113000Z
 SUMMARY:01.10.2026 11:30 Uhr | Sitzung des Finanzausschusses entfällt / Umfrageverfahren | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
@@ -718,7 +862,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-10
 END:VEVENT
 BEGIN:VEVENT
 UID:cd1c64852590@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T120000Z
 DTEND:20260930T140000Z
 SUMMARY:30.09.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -727,7 +871,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026093
 END:VEVENT
 BEGIN:VEVENT
 UID:c97d8f59151c@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260930T120000Z
 DTEND:20260930T140000Z
 SUMMARY:30.09.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung entfällt | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -736,7 +880,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026093
 END:VEVENT
 BEGIN:VEVENT
 UID:cc9e93cc11d1@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260921T120000Z
 DTEND:20260921T140000Z
 SUMMARY:Inneres: 41. Sitzung am Montag\, dem 21. September 2026\, 14.00 Uhr - Öffentliche Anhörung
@@ -745,7 +889,7 @@ URL:https://www.bundestag.de/resource/blob/1211670/to041oeA.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:91709993ff3f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260921
 DTEND;VALUE=DATE:20260922
 SUMMARY:Auswärtiges: Tagesordnung der 11. Sitzung (öffentlich) des Unterausschusses Rüstungs- und Proliferationskontrolle\, Nichtverbreitung und internationale Abrüstung am Montag\, dem 21. September 2026
@@ -754,7 +898,7 @@ URL:https://www.bundestag.de/resource/blob/1211666/to11_rna_oeffentlich.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:04d3d42d11ec@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260921
 DTEND;VALUE=DATE:20260922
 SUMMARY:: Tagesordnung der 11. Sitzung am Montag\, dem 21. September 2026 - öffentlich
@@ -763,7 +907,7 @@ URL:https://www.bundestag.de/resource/blob/1211590/europa_osze_to.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:1b1e0087d79d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260928T103000Z
 DTEND:20260928T123000Z
 SUMMARY:28.09.2026 12:30 Uhr | 658. Sitzung des Ausschusses für Kulturfragen | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -772,7 +916,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/k/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:7e17fc5b4a6e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260928T103000Z
 DTEND:20260928T123000Z
 SUMMARY:28.09.2026 12:30 Uhr | 658. Sitzung des Ausschusses für Kulturfragen | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -781,7 +925,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/k/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:7b6d12874892@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260925T053000Z
 DTEND:20260925T073000Z
 SUMMARY:Rechnungsprüfung: 13. Sitzung am Freitag\, dem 25. September 2026\, 07:30 Uhr\, nicht-öffentlich
@@ -790,7 +934,7 @@ URL:https://www.bundestag.de/resource/blob/1211558/TO21WP13.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:edb2360b946a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260910
 DTEND;VALUE=DATE:20260911
 SUMMARY:Parlament: Tagesordnung Freitag (94. Sitzung)
@@ -799,7 +943,7 @@ URL:https://www.bundestag.de/resource/blob/682198/Tagesordnung-tagesaktuell-Fr-.
 END:VEVENT
 BEGIN:VEVENT
 UID:110d6ec6aa53@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T060000Z
 DTEND:20260909T080000Z
 SUMMARY:Verteidigung: Tagesordnung für die 33. Sitzung des Verteidigungsausschusses am Mittwoch\, 9. September 2026\, 8:00 Uhr - nicht öffentlich
@@ -808,7 +952,7 @@ URL:https://www.bundestag.de/resource/blob/1210116/to_33-sitzung_09-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:802a8538b4f8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260909
 DTEND;VALUE=DATE:20260910
 SUMMARY:Parlament: Tagesordnung Donnerstag (93. Sitzung)
@@ -817,7 +961,7 @@ URL:https://www.bundestag.de/resource/blob/504702/Tagesordnung-tagesaktuell-Do-.
 END:VEVENT
 BEGIN:VEVENT
 UID:2ebf59359ad9@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T063000Z
 DTEND:20260909T083000Z
 SUMMARY:Umwelt\, Klimaschutz\, Naturschutz\, Nukleare Sicherheit: 41. Sitzung am Mittwoch\, dem 9. September 2026\, 8:30 Uhr - 1. Änderungs-/Ergänzungsmitteilung
@@ -826,7 +970,7 @@ URL:https://www.bundestag.de/resource/blob/1210904/to-041-1.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:b67ea46dd369@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260908
 DTEND;VALUE=DATE:20260909
 SUMMARY:Parlament: Tagesordnung Mittwoch (92. Sitzung)
@@ -835,7 +979,7 @@ URL:https://www.bundestag.de/resource/blob/476228/Tagesordnung-tagesaktuell-Mi-.
 END:VEVENT
 BEGIN:VEVENT
 UID:de34918c3cb3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260908
 DTEND;VALUE=DATE:20260909
 SUMMARY:Parlament: Tagesordnung komplett (91. - 94. Sitzung)
@@ -844,7 +988,7 @@ URL:https://www.bundestag.de/resource/blob/473452/Tagesordnung-komplett.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:c744f00a7253@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T063000Z
 DTEND:20260909T083000Z
 SUMMARY:Umwelt\, Klimaschutz\, Naturschutz\, Nukleare Sicherheit: 41. Sitzung am Mittwoch\, dem 9. September 2026\, 8:30 Uhr - nichtöffentlich
@@ -853,7 +997,7 @@ URL:https://www.bundestag.de/resource/blob/1210694/to-041.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:6c51c802fa27@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260907
 DTEND;VALUE=DATE:20260908
 SUMMARY:Parlament: Tagesordnung Dienstag (91. Sitzung)
@@ -862,7 +1006,7 @@ URL:https://www.bundestag.de/resource/blob/885630/Tagesordnung-tagesaktuell-Di-.
 END:VEVENT
 BEGIN:VEVENT
 UID:db3ddc825e91@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T110000Z
 DTEND:20260910T130000Z
 SUMMARY:Inneres: 40. Sitzung am Donnerstag\, dem 10. September 2026\, 13.00 Uhr - nicht öffentlich
@@ -871,7 +1015,7 @@ URL:https://www.bundestag.de/resource/blob/1210660/to040.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:4d8bf59fa975@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260909
 DTEND;VALUE=DATE:20260910
 SUMMARY:Auswärtiges: 2. Änderungs-/Ergänzungsmitteilung zur Tagesordnung der 29. Sitzung des Auswärtigen Ausschusses am 9. September 2026
@@ -880,7 +1024,7 @@ URL:https://www.bundestag.de/resource/blob/1210234/TO-29-2-ergaenzung.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:34fc4a2cefb3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T073000Z
 DTEND:20260910T093000Z
 SUMMARY:10.09.2026 09:30 Uhr | 1044. Sitzung des Ausschusses für Innere Angelegenheiten | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -889,7 +1033,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/in/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:8bb308058056@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T073000Z
 DTEND:20260910T093000Z
 SUMMARY:10.09.2026 09:30 Uhr | 1044. Sitzung des Ausschusses für Innere Angelegenheiten | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -898,7 +1042,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/in/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:e1c4cc24e920@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T113000Z
 DTEND:20260909T133000Z
 SUMMARY:09.09.2026 13:30 Uhr | 10. Sitzung des Ausschusses für Familie\, Senioren\, Frauen und Jugend | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -907,7 +1051,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fsfj/termine-to/20260
 END:VEVENT
 BEGIN:VEVENT
 UID:853e2d803631@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T113000Z
 DTEND:20260909T133000Z
 SUMMARY:09.09.2026 13:30 Uhr | 10. Sitzung des Ausschusses für Familie\, Senioren\, Frauen und Jugend | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -916,7 +1060,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fsfj/termine-to/20260
 END:VEVENT
 BEGIN:VEVENT
 UID:455fb8731244@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260905T080000Z
 DTEND:20260905T100000Z
 SUMMARY:05.09.2026 10:00 Uhr | Der Bundesrat öffnet in Bonn seine Türen | Bonn\, Platz der Vereinten Nationen 7\, Historisches Gebäude des Bundesrates
@@ -925,7 +1069,7 @@ URL:https://www.bundesrat.de/SharedDocs/termine/DE/veranstaltung/20260905_tag-de
 END:VEVENT
 BEGIN:VEVENT
 UID:9b703bf4ddc8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260911T080000Z
 DTEND:20260911T100000Z
 SUMMARY:11.09.2026 10:00 Uhr | 767. Sitzung des Ausschusses für Fragen der Europäischen Union | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -934,7 +1078,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/eu/termine-to/2026091
 END:VEVENT
 BEGIN:VEVENT
 UID:b135eae2230f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260911T080000Z
 DTEND:20260911T100000Z
 SUMMARY:11.09.2026 10:00 Uhr | 767. Sitzung des Ausschusses für Fragen der Europäischen Union | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -943,7 +1087,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/eu/termine-to/2026091
 END:VEVENT
 BEGIN:VEVENT
 UID:9677bd5d666a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T083000Z
 DTEND:20260909T103000Z
 SUMMARY:09.09.2026 10:30 Uhr | 1029. Sitzung des Rechtsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 1.128
@@ -952,7 +1096,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/r/termine-to/20260909
 END:VEVENT
 BEGIN:VEVENT
 UID:c5966a93d064@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T090000Z
 DTEND:20260909T110000Z
 SUMMARY:09.09.2026 11:00 Uhr | 702. Sitzung des Gesundheitsausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -961,7 +1105,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/g/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:24d712ce1375@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T083000Z
 DTEND:20260909T103000Z
 SUMMARY:09.09.2026 10:30 Uhr | 1029. Sitzung des Rechtsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 1.128
@@ -970,7 +1114,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/r/termine-to/20260909
 END:VEVENT
 BEGIN:VEVENT
 UID:ec0d51ea2b95@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T090000Z
 DTEND:20260909T110000Z
 SUMMARY:09.09.2026 11:00 Uhr | 702. Sitzung des Gesundheitsausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -979,7 +1123,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/g/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:8ff16317b61b@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260911T060000Z
 DTEND:20260911T080000Z
 SUMMARY:Sport\, Ehrenamt: 29. Sitzung des Ausschusses für Sport und Ehrenamt am 11. September 2026\, 8:00 Uhr - öffentlich
@@ -988,7 +1132,7 @@ URL:https://www.bundestag.de/resource/blob/1210084/to29.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:b3a85e5f087a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260908T174500Z
 DTEND:20260908T194500Z
 SUMMARY:Wirtschaft\, Energie: 2. Änderungsmitteilung zur 45. (Sonder-)Sitzung am Dienstag\, den 8. September 2026\, 10 Minuten nach Ende der Plenarsitzung (ca. 19:45 Uhr)\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -997,7 +1141,7 @@ URL:https://www.bundestag.de/resource/blob/1210058/to_45_08-09-2026_2-ergaenzung
 END:VEVENT
 BEGIN:VEVENT
 UID:d3c19bdefee2@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260909
 DTEND;VALUE=DATE:20260910
 SUMMARY:Auswärtiges: 1. Änderungs-/Ergänzungsmitteilung zur Tagesordnung der 29. Sitzung des Auswärtigen Ausschusses am 9.September 2026
@@ -1006,7 +1150,7 @@ URL:https://www.bundestag.de/resource/blob/1210036/TO2-29_1-ergaenzung.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:7006695431d8@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T053000Z
 DTEND:20260909T073000Z
 SUMMARY:Auswärtiges: Tagesordnung der 29. Sitzung des Auswärtigen Ausschusses am 9. September 2026\, 7:30 Uhr
@@ -1015,7 +1159,7 @@ URL:https://www.bundestag.de/resource/blob/1209762/TO-29-09-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:14a51601fc41@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260908T174500Z
 DTEND:20260908T194500Z
 SUMMARY:Wirtschaft\, Energie: 1. Ergänzungsmitteilung zur 45. (Sonder-)Sitzung am Dienstag\, den 8. September 2026\, 10 Minuten nach Ende der Plenarsitzung (ca. 19.45 Uhr)\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -1024,7 +1168,7 @@ URL:https://www.bundestag.de/resource/blob/1209760/to_45_08-09-2026_1-ergaenzung
 END:VEVENT
 BEGIN:VEVENT
 UID:0f9f28aee8cf@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260907T090000Z
 DTEND:20260907T110000Z
 SUMMARY:07.09.2026 11:00 Uhr | 921. Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
@@ -1033,7 +1177,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/2026090
 END:VEVENT
 BEGIN:VEVENT
 UID:c8eb9fd88a63@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260907T090000Z
 DTEND:20260907T110000Z
 SUMMARY:07.09.2026 11:00 Uhr | 921. Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
@@ -1042,7 +1186,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/2026090
 END:VEVENT
 BEGIN:VEVENT
 UID:fc1c3bc4ffc3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260911T080000Z
 DTEND:20260911T100000Z
 SUMMARY:Landwirtschaft\, Ernährung\, Heimat: 30. Sitzung - öffentliche Anhörung am Freitag\, dem 11. September 2026\, 8.00 - 10.00 Uhr (inklusive Liste der Sachverständigen)
@@ -1051,7 +1195,7 @@ URL:https://www.bundestag.de/resource/blob/1209690/TO_30_Sitzung_am_11_09_2026_o
 END:VEVENT
 BEGIN:VEVENT
 UID:b6edca7365d4@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260911T080000Z
 DTEND:20260911T100000Z
 SUMMARY:Landwirtschaft\, Ernährung\, Heimat: 30. Sitzung - öffentliche Anhörung am Freitag\, dem 11. September 2026\, 8.00 - 10.00 Uhr (inklusive Liste der Sachverständigen)
@@ -1060,7 +1204,7 @@ URL:https://www.bundestag.de/resource/blob/1206678/TO_30_Sitzung_am_11_09_2026_o
 END:VEVENT
 BEGIN:VEVENT
 UID:f16e3d428f88@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260908T150000Z
 DTEND:20260908T170000Z
 SUMMARY:Landwirtschaft\, Ernährung\, Heimat: 29. Sitzung - öffentliche Anhörung am Dienstag\, dem 8. September 2026\, 15:00 - 17:00 Uhr (inklusive Liste der Sachverständigen)
@@ -1069,7 +1213,7 @@ URL:https://www.bundestag.de/resource/blob/1209424/TO_29_Sitzung_am_08_09_2026_o
 END:VEVENT
 BEGIN:VEVENT
 UID:205c1839570c@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260908T150000Z
 DTEND:20260908T170000Z
 SUMMARY:Landwirtschaft\, Ernährung\, Heimat: 29. Sitzung - öffentliche Anhörung am Dienstag\, dem 8. September 2026\, 15:00 - 17:00 Uhr (inklusive Liste der Sachverständigen)
@@ -1078,7 +1222,7 @@ URL:https://www.bundestag.de/resource/blob/1206676/TO_29_Sitzung_am_08_09_2026_o
 END:VEVENT
 BEGIN:VEVENT
 UID:43195504ea07@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260908T174500Z
 DTEND:20260908T194500Z
 SUMMARY:Wirtschaft\, Energie: 45. (Sonder-)Sitzung am Dienstag\, den 8. September 2026\, 10 Minuten nach Ende der Plenarsitzung (ca. 19.45 Uhr)\, Paul-Löbe-Haus\, Sitzungssaal PLH E.200 - nicht öffentlich
@@ -1087,7 +1231,7 @@ URL:https://www.bundestag.de/resource/blob/1209418/to_45_08-09-2026.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:3c392211bc78@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260910
 DTEND;VALUE=DATE:20260911
 SUMMARY:Auswärtiges: Tagesordnung der 10. Sitzung des Unterausschusses Rüstungs- und Proliferationskontrolle\, Nichtverbreitung und internationale Abrüstung am Donnerstag\, dem 10. September 2026
@@ -1096,7 +1240,7 @@ URL:https://www.bundestag.de/resource/blob/1209364/to10_rna.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:ee244e28a0cb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260706
 DTEND;VALUE=DATE:20260707
 SUMMARY:Auswärtiges: Tagesordnung der 9. Sitzung des Unterausschusses Rüstungs- und Proliferationskontrolle\, Nichtverbreitung und internationale Abrüstung am Montag\, dem 6. Juli 2026
@@ -1105,7 +1249,7 @@ URL:https://www.bundestag.de/resource/blob/1209356/to09_rna.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:d9e25cdd3d9a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260923T140000Z
 DTEND:20260923T160000Z
 SUMMARY:Gesundheit: 56. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 23. September 2026\, 16:00 Uhr - öffentlich
@@ -1114,7 +1258,7 @@ URL:https://www.bundestag.de/resource/blob/1209262/to_56_Hitzekrise.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:a63755d0bb05@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T124500Z
 DTEND:20260909T144500Z
 SUMMARY:Gesundheit: Tagesordnung der 54. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 9. September 2026\, 14.45 Uhr - öffentlich
@@ -1123,7 +1267,7 @@ URL:https://www.bundestag.de/resource/blob/1206084/to_54.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:15855fec0b85@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T124500Z
 DTEND:20260909T144500Z
 SUMMARY:Gesundheit: Tagesordnung der 54. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 9. September 2026\, 14:45 Uhr - nicht öffentlich
@@ -1132,7 +1276,7 @@ URL:https://www.bundestag.de/resource/blob/1206084/to_54.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:9bbc4649d66d@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T113000Z
 DTEND:20260909T133000Z
 SUMMARY:Gesundheit: Tagesordnung der 53. Sitzung des Ausschusses für Gesundheit am Mittwoch\, dem 9. September 2026\, 13:30 Uhr - nicht öffentlich
@@ -1141,7 +1285,7 @@ URL:https://www.bundestag.de/resource/blob/1206080/to_53.pdf
 END:VEVENT
 BEGIN:VEVENT
 UID:72cf32060efb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T093000Z
 DTEND:20260910T113000Z
 SUMMARY:10.09.2026 11:30 Uhr | 1012. Sitzung des Finanzausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
@@ -1150,7 +1294,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:16ec4b194890@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T093000Z
 DTEND:20260910T113000Z
 SUMMARY:10.09.2026 11:30 Uhr | 1012. Sitzung des Finanzausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
@@ -1159,7 +1303,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:65b43b226f47@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T120000Z
 DTEND:20260910T140000Z
 SUMMARY:10.09.2026 14:00 Uhr | 569. Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1168,7 +1312,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:3cb1589d6c3a@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T120000Z
 DTEND:20260910T140000Z
 SUMMARY:10.09.2026 14:00 Uhr | 569. Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1177,7 +1321,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-09
 END:VEVENT
 BEGIN:VEVENT
 UID:5a36f1db3375@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260907T103000Z
 DTEND:20260907T123000Z
 SUMMARY:07.09.2026 12:30 Uhr | 657. Sitzung des Ausschusses für Kulturfragen | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -1186,7 +1330,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/k/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:4b5f93d3cf1e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260907T103000Z
 DTEND:20260907T123000Z
 SUMMARY:07.09.2026 12:30 Uhr | 657. Sitzung des Ausschusses für Kulturfragen | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -1195,7 +1339,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/k/termine-to/2026-09-
 END:VEVENT
 BEGIN:VEVENT
 UID:c9ce491d84af@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T080000Z
 DTEND:20260910T100000Z
 SUMMARY:10.09.2026 10:00 Uhr | 951. Sitzung des Ausschusses für Arbeit\, Integration und Sozialpolitik | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 1.128
@@ -1204,7 +1348,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ais/termine-to/202609
 END:VEVENT
 BEGIN:VEVENT
 UID:d708d1b22571@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260910T080000Z
 DTEND:20260910T100000Z
 SUMMARY:10.09.2026 10:00 Uhr | 951. Sitzung des Ausschusses für Arbeit\, Integration und Sozialpolitik | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 1.128
@@ -1213,7 +1357,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ais/termine-to/202609
 END:VEVENT
 BEGIN:VEVENT
 UID:f495c3da0769@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T120000Z
 DTEND:20260909T140000Z
 SUMMARY:09.09.2026 14:00 Uhr | 9. Sitzung des Ausschusses für Digitales und Staatsmodernisierung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1222,7 +1366,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026090
 END:VEVENT
 BEGIN:VEVENT
 UID:948369cfb57f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260909T120000Z
 DTEND:20260909T140000Z
 SUMMARY:09.09.2026 14:00 Uhr | 9. Sitzung des Ausschusses für Digitales und Staatsmodernisierung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1231,7 +1375,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026090
 END:VEVENT
 BEGIN:VEVENT
 UID:c3a24d79e4d7@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 5/26 des Ausschusses für Auswärtige Angelegenheiten |
@@ -1240,7 +1384,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/2026082
 END:VEVENT
 BEGIN:VEVENT
 UID:6e8a73292102@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 6/26 des Ausschusses für Auswärtige Angelegenheiten |
@@ -1249,7 +1393,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/2026082
 END:VEVENT
 BEGIN:VEVENT
 UID:f825b84c7354@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 8/26 des Ausschusses für Verteidigung nach § 43 GO BR |
@@ -1258,7 +1402,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260825
 END:VEVENT
 BEGIN:VEVENT
 UID:2ea5a14fd7d5@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 9/26 des Ausschusses für Verteidigung nach § 43 GO BR |
@@ -1267,7 +1411,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260825
 END:VEVENT
 BEGIN:VEVENT
 UID:5f96c5c74376@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 5/26 des Ausschusses für Auswärtige Angelegenheiten |
@@ -1276,7 +1420,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/2026082
 END:VEVENT
 BEGIN:VEVENT
 UID:0d86510696ef@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 6/26 des Ausschusses für Auswärtige Angelegenheiten |
@@ -1285,7 +1429,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/aa/termine-to/2026082
 END:VEVENT
 BEGIN:VEVENT
 UID:d762604faafd@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 8/26 des Ausschusses für Verteidigung nach § 43 GO BR |
@@ -1294,7 +1438,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260825
 END:VEVENT
 BEGIN:VEVENT
 UID:03c706c9ef3f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART;VALUE=DATE:20260825
 DTEND;VALUE=DATE:20260826
 SUMMARY:25.08.2026 | Umfrage 9/26 des Ausschusses für Verteidigung nach § 43 GO BR |
@@ -1303,7 +1447,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/v/termine-to/20260825
 END:VEVENT
 BEGIN:VEVENT
 UID:acbaf69a275c@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261106T090000Z
 DTEND:20261106T110000Z
 SUMMARY:06.11.2026 10:00 Uhr | Sitzung des Ausschusses für Fragen der Europäischen Union | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -1312,7 +1456,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/eu/termine-to/2026110
 END:VEVENT
 BEGIN:VEVENT
 UID:f71eec8f23eb@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261104T123000Z
 DTEND:20261104T143000Z
 SUMMARY:04.11.2026 13:30 Uhr | Sitzung des Ausschusses für Familie\, Senioren\, Frauen und Jugend | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -1321,7 +1465,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fsfj/termine-to/20261
 END:VEVENT
 BEGIN:VEVENT
 UID:24c0016577a3@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261104T130000Z
 DTEND:20261104T150000Z
 SUMMARY:04.11.2026 14:00 Uhr | Sitzung des Ausschusses für Digitales und Staatsmodernisierung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1330,7 +1474,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ds/termine-to/2026110
 END:VEVENT
 BEGIN:VEVENT
 UID:275a1c3da2e4@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261104T093000Z
 DTEND:20261104T113000Z
 SUMMARY:04.11.2026 10:30 Uhr | Sitzung des Rechtsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 1.128
@@ -1339,7 +1483,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/r/termine-to/20261104
 END:VEVENT
 BEGIN:VEVENT
 UID:01a91d95522f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261102T100000Z
 DTEND:20261102T120000Z
 SUMMARY:02.11.2026 11:00 Uhr | Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
@@ -1347,17 +1491,8 @@ DESCRIPTION:Bundesrat · Tagesordnung\nhttps://www.bundesrat.de/SharedDocs/ausch
 URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/20261102.html
 END:VEVENT
 BEGIN:VEVENT
-UID:04a7ce6f82b5@presseschau
-DTSTAMP:20260923T041449Z
-DTSTART:20261102T100000Z
-DTEND:20261102T120000Z
-SUMMARY:02.11.2026 11:00 Uhr | Sitzung des Ausschusses für Agrarpolitik und Verbraucherschutz | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.088
-DESCRIPTION:Bundesrat · Ausschusstermin\nhttps://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/20261102.html
-URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/av/termine-to/20261102.html
-END:VEVENT
-BEGIN:VEVENT
 UID:72f6e56629b9@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 447. Sitzung des Ausschusses für Umwelt\, Naturschutz und nukleare Sicherheit | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.128
@@ -1366,7 +1501,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/u/termine-to/20261001
 END:VEVENT
 BEGIN:VEVENT
 UID:51055ccd4c84@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T090000Z
 DTEND:20261105T110000Z
 SUMMARY:05.11.2026 10:00 Uhr | Sitzung des Ausschusses für Umwelt\, Naturschutz und nukleare Sicherheit | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.128
@@ -1375,7 +1510,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/u/termine-to/20261105
 END:VEVENT
 BEGIN:VEVENT
 UID:672a15444658@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261001T080000Z
 DTEND:20261001T100000Z
 SUMMARY:01.10.2026 10:00 Uhr | 447. Sitzung des Ausschusses für Umwelt\, Naturschutz und nukleare Sicherheit | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 3.128
@@ -1384,7 +1519,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/u/termine-to/20261001
 END:VEVENT
 BEGIN:VEVENT
 UID:dd1d3b973169@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T103000Z
 DTEND:20261105T123000Z
 SUMMARY:05.11.2026 11:30 Uhr | Sitzung des Finanzausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.128
@@ -1393,7 +1528,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/fz/termine-to/2026-11
 END:VEVENT
 BEGIN:VEVENT
 UID:d9d78cd9956f@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T090000Z
 DTEND:20261105T110000Z
 SUMMARY:05.11.2026 10:00 Uhr | Sitzung des Ausschusses für Arbeit\, Integration und Sozialpolitik | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 1.128
@@ -1402,7 +1537,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/ais/termine-to/202611
 END:VEVENT
 BEGIN:VEVENT
 UID:ea370fdb4f5e@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T090000Z
 DTEND:20261105T110000Z
 SUMMARY:05.11.2026 10:00 Uhr | Sitzung des Wirtschaftsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -1411,7 +1546,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wi/termine-to/2026-11
 END:VEVENT
 BEGIN:VEVENT
 UID:2d8ed4591af4@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261104T083000Z
 DTEND:20261104T103000Z
 SUMMARY:04.11.2026 09:30 Uhr | Sitzung des Verkehrsausschusses | Berlin\, Bundesrat\, Leipziger Straße 3-4\, Saal 3.088
@@ -1420,7 +1555,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/vk/termine-to/2026-11
 END:VEVENT
 BEGIN:VEVENT
 UID:da5181cd6e62@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261104T100000Z
 DTEND:20261104T120000Z
 SUMMARY:04.11.2026 11:00 Uhr | Sitzung des Gesundheitsausschusses | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1429,7 +1564,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/g/termine-to/2026-11-
 END:VEVENT
 BEGIN:VEVENT
 UID:4e1b85179815@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T130000Z
 DTEND:20261105T150000Z
 SUMMARY:05.11.2026 14:00 Uhr | Sitzung des Ausschusses für Städtebau\, Wohnungswesen und Raumordnung | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 4.041
@@ -1438,7 +1573,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/wo/termine-to/2026-11
 END:VEVENT
 BEGIN:VEVENT
 UID:11cec03431f2@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261105T083000Z
 DTEND:20261105T103000Z
 SUMMARY:05.11.2026 09:30 Uhr | Sitzung des Ausschusses für Innere Angelegenheiten | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -1447,7 +1582,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/in/termine-to/2026-11
 END:VEVENT
 BEGIN:VEVENT
 UID:828cc89d8275@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261102T113000Z
 DTEND:20261102T133000Z
 SUMMARY:02.11.2026 12:30 Uhr | Sitzung des Ausschusses für Kulturfragen | Berlin\, Bundesrat\, Leipziger Str. 3-4\, Saal 2.088
@@ -1456,7 +1591,7 @@ URL:https://www.bundesrat.de/SharedDocs/auschuesse-termine/k/termine-to/2026-11-
 END:VEVENT
 BEGIN:VEVENT
 UID:03cd2ca37458@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20260925T073000Z
 DTEND:20260925T093000Z
 SUMMARY:25.09.2026 09:30 Uhr | 1068. Plenarsitzung | Bundesrat\, Leipziger Str. 3-4\, Plenarsaal
@@ -1465,7 +1600,7 @@ URL:https://www.bundesrat.de/SharedDocs/termine/DE/plenum/2026/2026-09-25.html
 END:VEVENT
 BEGIN:VEVENT
 UID:45888878ae10@presseschau
-DTSTAMP:20260923T041449Z
+DTSTAMP:20260924T002216Z
 DTSTART:20261016T073000Z
 DTEND:20261016T093000Z
 SUMMARY:16.10.2026 09:30 Uhr | Plenarsitzung | Bundesrat\, Leipziger Str. 3-4\, Plenarsaal
