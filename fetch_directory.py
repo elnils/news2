@@ -1485,6 +1485,9 @@ VOTES_CACHE      = "votes_cache.json"
 POLLS_PER_RUN    = int(os.environ.get("POLLS_PER_RUN", "12"))
 POLLS_MAX        = int(os.environ.get("POLLS_MAX", "80"))
 VOTES_PER_PERSON = int(os.environ.get("VOTES_PER_PERSON", "40"))
+# Wie viele Wahlperioden, die laufende eingerechnet? Eine ältere kommt erst
+# an die Reihe, wenn alle Abstimmungen der neueren im Zwischenspeicher sind.
+VOTES_WAHLPERIODEN = int(os.environ.get("VOTES_WAHLPERIODEN", "2"))
 AW_STIMME = {"yes": "ja", "no": "nein", "abstain": "enthalten", "no_show": "abwesend"}
 _LEER = {"ja": 0, "nein": 0, "enthalten": 0, "abwesend": 0}
 
@@ -1495,21 +1498,73 @@ def _entities(t):
     return re.sub(r"\s+", " ", unescape(t or "")).strip()
 
 
-def _aw_bundestag_periode():
-    parls = aw_all("parliaments")
+VOTES_BUDGET_SEC = int(os.environ.get("VOTES_BUDGET_SEC", "150"))
+_VOTES_FRIST = [0.0]
+
+
+def _votes_zeit_um():
+    return time.monotonic() >= _VOTES_FRIST[0]
+
+
+def _aw_frei(path, **params):
+    """Wie aw_all, aber mit eigenem Zeitfenster. aw_all bricht ab, sobald das
+    Gesamtbudget des Laufs aufgebraucht ist – und das ist es regelmäßig,
+    weil Landtage, EP und Wikipedia es bewusst ausschöpfen. Ohne eigenes
+    Fenster hätten die Abstimmungen nie eine Chance bekommen."""
+    page = int(params.pop("page_size", 500))
+    out, start = [], 0
+    while not _votes_zeit_um():
+        p = dict(params); p.update({"range_start": start, "range_end": page})
+        d = get_json(f"{ENDPOINTS['aw']}/{path}", p)
+        if not d or "data" not in d:
+            break
+        out.extend(d["data"])
+        total = (d.get("meta", {}).get("result", {}) or {}).get("total", 0)
+        start += page
+        if start >= total or not d["data"]:
+            break
+        time.sleep(0.25)
+    return out
+
+
+def _aw_bundestag_perioden(anzahl):
+    """Die letzten Wahlperioden des Bundestags, neueste zuerst."""
+    parls = _aw_frei("parliaments")
     bt = next((p for p in parls if "Bundestag" in p.get("label", "")), None)
     if not bt:
-        return None
-    periods = aw_all("parliament-periods", parliament=bt["id"], type="legislature",
-                     sort_by="id", sort_direction="desc")
-    return periods[0] if periods else None
+        return []
+    periods = _aw_frei("parliament-periods", parliament=bt["id"], type="legislature",
+                       sort_by="id", sort_direction="desc")
+    return periods[:max(1, anzahl)]
+
+
+def _wp_nummer(periode):
+    """"Bundestag 2021 - 2025" → 20. Die Wahlperioden folgen im Vierjahrestakt
+    auf die 21. ab 2025."""
+    m = re.search(r"(\d{4})", (periode or {}).get("label", ""))
+    return 21 + (int(m.group(1)) - 2025) // 4 if m else None
+
+
+def _frak_kurz(label):
+    """"BÜNDNIS 90/DIE GRÜNEN (Bundestag 2021 - 2025)" → "Grüne"."""
+    t = re.sub(r"\s*\(.*?\)\s*$", "", label or "").strip()
+    u = t.upper()
+    if "CDU" in u or "CSU" in u:
+        return "CDU/CSU"
+    if "GRÜNE" in u:
+        return "Grüne"
+    if "LINKE" in u:
+        return "Linke"
+    if "FRAKTIONSLOS" in u:
+        return "fraktionslos"
+    return t or "fraktionslos"
 
 
 def _poll_stimmen(poll_id):
     """Die Einzelstimmen einer Abstimmung. Erst der /votes-Endpunkt mit
     Filter, sonst /polls/<id>?related_data=votes – derselbe Inhalt, anderer
     Weg. Einer von beiden antwortet erfahrungsgemäß immer."""
-    roh = aw_all("votes", poll=poll_id, page_size=500)
+    roh = _aw_frei("votes", poll=poll_id, page_size=500)
     if not roh:
         d = get_json(f"{ENDPOINTS['aw']}/polls/{poll_id}", {"related_data": "votes"})
         daten = (d or {}).get("data") or {}
@@ -1519,6 +1574,7 @@ def _poll_stimmen(poll_id):
 
 def fetch_abstimmungen(people):
     print("── Namentliche Abstimmungen (abgeordnetenwatch) ──")
+    _VOTES_FRIST[0] = time.monotonic() + VOTES_BUDGET_SEC
     cache = {}
     try:
         cache = json.load(open(VOTES_CACHE, encoding="utf-8"))
@@ -1526,77 +1582,99 @@ def fetch_abstimmungen(people):
         pass
     cache.setdefault("polls", {})
 
-    periode = _aw_bundestag_periode()
-    if not periode:
+    perioden = _aw_bundestag_perioden(VOTES_WAHLPERIODEN)
+    if not perioden:
         note_problem("Abstimmungen", "Wahlperiode nicht gefunden",
                      ENDPOINTS["aw"] + "/parliament-periods")
         return None
-    pid_periode = str(periode["id"])
-
-    polls = aw_all("polls", field_legislature=periode["id"],
-                   sort_by="field_poll_date", sort_direction="desc")
-    if not polls:
-        note_problem("Abstimmungen", "keine Abstimmungen geliefert",
-                     ENDPOINTS["aw"] + "/polls")
-        print("  keine Abstimmungen geliefert")
-        polls = []
-    polls.sort(key=lambda p: (p.get("field_poll_date") or ""), reverse=True)
-    polls = polls[:POLLS_MAX]
-    print(f"  {len(polls)} Abstimmungen in {periode.get('label')}")
-
-    # Mandat → Person: liefert Fraktion und das persönliche Stimmverhalten.
-    mandat2person = {str(p.get("_mandate_id")): p for p in people if p.get("_mandate_id")}
+    aktuell = perioden[0]
 
     neu = 0
-    for poll in polls:
-        pid = str(poll.get("id"))
-        if pid in cache["polls"]:
-            continue
-        if neu >= POLLS_PER_RUN or out_of_time():
-            budget_note("Abstimmungen")
+    for k, periode in enumerate(perioden):
+        pid_periode = str(periode["id"])
+        wp = _wp_nummer(periode)
+        # polls antwortet auf sort_by=id mit HTTP 500 – deshalb nach Datum.
+        polls = _aw_frei("polls", field_legislature=periode["id"],
+                         sort_by="field_poll_date", sort_direction="desc")
+        polls.sort(key=lambda p: (p.get("field_poll_date") or ""), reverse=True)
+        polls = polls[:POLLS_MAX]
+        offen = [p for p in polls if str(p.get("id")) not in cache["polls"]]
+        print(f"  {periode.get('label')}: {len(polls)} Abstimmungen, {len(offen)} noch offen")
+        if not polls and k == 0:
+            note_problem("Abstimmungen", "keine Abstimmungen geliefert", ENDPOINTS["aw"] + "/polls")
+        for poll in offen:
+            if neu >= POLLS_PER_RUN or _votes_zeit_um():
+                if _votes_zeit_um():
+                    budget_note("Abstimmungen")
+                break
+            pid = str(poll.get("id"))
+            stimmen = _poll_stimmen(pid)
+            if not stimmen:
+                continue
+            eintrag = {
+                "id": pid, "periode": pid_periode, "wp": wp,
+                "titel": (poll.get("label") or "").strip(),
+                "datum": (poll.get("field_poll_date") or "")[:10],
+                "thema": ", ".join(t.get("label", "") for t in (poll.get("field_topics") or [])[:2]),
+                "url": poll.get("abgeordnetenwatch_url")
+                       or f"https://www.abgeordnetenwatch.de/bundestag/abstimmungen/{pid}",
+                "intro": _entities(strip_tags(poll.get("field_intro") or ""))[:600],
+                "stimmen": {}, "frak": {},
+            }
+            for v in stimmen:
+                mid = str((v.get("mandate") or {}).get("id") or "")
+                if not mid:
+                    continue
+                eintrag["stimmen"][mid] = AW_STIMME.get(v.get("vote"), "abwesend")
+                eintrag["frak"][mid] = _frak_kurz((v.get("fraction") or {}).get("label", ""))
+                if periode is not aktuell:
+                    # Ältere Mandate haben andere IDs als die heutigen – dort
+                    # hilft nur der Name, um das Stimmverhalten zuzuordnen.
+                    name = re.sub(r"\s*\(.*?\)\s*$", "", (v.get("mandate") or {}).get("label", "")).strip()
+                    eintrag.setdefault("namen", {})[mid] = norm_name(name) if name else ""
+            cache["polls"][pid] = eintrag
+            neu += 1
+            print(f"  + WP {wp} {eintrag['datum']} {eintrag['titel'][:64]} ({len(eintrag['stimmen'])} Stimmen)")
+            time.sleep(0.3)
+        # Eine ältere Wahlperiode erst, wenn diese vollständig ist.
+        if any(str(p.get("id")) not in cache["polls"] for p in polls):
             break
-        stimmen = _poll_stimmen(pid)
-        if not stimmen:
-            continue
-        eintrag = {
-            "id": pid,
-            "periode": pid_periode,
-            "titel": (poll.get("label") or "").strip(),
-            "datum": (poll.get("field_poll_date") or "")[:10],
-            "thema": ", ".join(t.get("label", "") for t in (poll.get("field_topics") or [])[:2]),
-            "url": poll.get("abgeordnetenwatch_url")
-                   or f"https://www.abgeordnetenwatch.de/bundestag/abstimmungen/{pid}",
-            "intro": _entities(strip_tags(poll.get("field_intro") or ""))[:600],
-            "stimmen": {str((v.get("mandate") or {}).get("id")): AW_STIMME.get(v.get("vote"), "abwesend")
-                        for v in stimmen if (v.get("mandate") or {}).get("id")},
-        }
-        cache["polls"][pid] = eintrag
-        neu += 1
-        print(f"  + {eintrag['datum']} {eintrag['titel'][:70]} ({len(eintrag['stimmen'])} Stimmen)")
-        time.sleep(0.3)
+        if neu >= POLLS_PER_RUN or _votes_zeit_um():
+            break
 
     print(f"  {neu} neu geholt, {len(cache['polls'])} im Zwischenspeicher")
     _atomic_dump(cache, VOTES_CACHE)
 
     # ── Auswerten: Gesamtergebnis, Fraktionen, persönliches Verhalten ──
+    mandat2person = {str(p.get("_mandate_id")): p for p in people if p.get("_mandate_id")}
+    name2person = {}
+    for p in people:
+        if p.get("_norm"):
+            name2person.setdefault(p["_norm"], []).append(p)
+    erlaubt = {str(p["id"]) for p in perioden}
     out = []
     for pid, c in cache["polls"].items():
-        if c.get("periode") and c["periode"] != pid_periode:
-            continue                      # alte Wahlperiode: Mandate passen nicht mehr
+        if c.get("periode") and c["periode"] not in erlaubt:
+            continue
+        aktuelle_wp = c.get("periode") == str(aktuell["id"]) or not c.get("periode")
         z = dict(_LEER)
         frak = {}
         for mid, art in (c.get("stimmen") or {}).items():
             if art not in z:
                 art = "abwesend"
             z[art] += 1
-            person = mandat2person.get(mid)
-            f = ((person or {}).get("party") or "").strip() or "Fraktionslos"
+            person = mandat2person.get(mid) if aktuelle_wp else None
+            if person is None and c.get("namen"):
+                treffer = name2person.get(c["namen"].get(mid) or "") or []
+                person = treffer[0] if len(treffer) == 1 else None
+            f = (c.get("frak") or {}).get(mid) or ((person or {}).get("party") or "").strip() or "fraktionslos"
             frak.setdefault(f, dict(_LEER))[art] += 1
             if person is not None:
                 person.setdefault("votes", []).append({
-                    "poll": pid, "titel": c["titel"], "datum": c["datum"],
+                    "poll": pid, "titel": c["titel"], "datum": c["datum"], "wahlperiode": c.get("wp"),
                     "thema": c.get("thema", ""), "url": c.get("url", ""), "entscheidung": art})
         out.append({"id": "ab-" + pid, "titel": c["titel"], "datum": c["datum"],
+                    "wahlperiode": c.get("wp") or _wp_nummer(aktuell),
                     "thema": c.get("thema", ""), "url": c.get("url", ""),
                     "intro": c.get("intro", ""), "namentlich": True,
                     "ja": z["ja"], "nein": z["nein"], "enthalten": z["enthalten"], "abwesend": z["abwesend"],
@@ -1611,7 +1689,8 @@ def fetch_abstimmungen(people):
 
     _atomic_dump({"updated": datetime.now(timezone.utc).isoformat(),
                   "quelle": "abgeordnetenwatch.de (CC BY 4.0)",
-                  "periode": periode.get("label", ""),
+                  "periode": aktuell.get("label", ""),
+                  "wahlperioden": sorted({a["wahlperiode"] for a in out if a.get("wahlperiode")}, reverse=True),
                   "hinweis": "Nur namentliche Abstimmungen. Nicht-namentliche stehen "
                              "ausschließlich im Plenarprotokoll und fehlen hier.",
                   "abstimmungen": out}, "votes.json")
@@ -1664,6 +1743,10 @@ def main():
     print(f"[{datetime.now().isoformat()}] Presseschau Verzeichnis-Fetch "
           f"(Zeitbudget {TIME_BUDGET_MIN} Min)")
     bt_people, bt_comm = safe("Bundestag", fetch_bundestag, ([], []))
+    # Namentliche Abstimmungen gleich hier, solange Zeit ist – mit eigenem
+    # Fenster (VOTES_BUDGET_SEC). Sie brauchen nur die Bundestagsmandate;
+    # das Stimmverhalten landet in denselben Personen-Einträgen.
+    safe("Namentliche Abstimmungen", lambda: fetch_abstimmungen(bt_people), None)
     safe("Reden (DIP)", lambda: fetch_speeches_dip(bt_people), None)
     br_people, br_comm = safe("Bundesrat", fetch_bundesrat, ([], []))
     lt_people, lt_comm = safe("Landtage", fetch_landtage, ([], []))
@@ -1677,8 +1760,6 @@ def main():
     safe("Profil-Anreicherung",
          lambda: enrich_people([p for p in people if p["parliament"] in ("bt", "br", "ep")], base_of), None)
     safe("Wikipedia", lambda: enrich_wikipedia(people), None)
-    # Abstimmungen brauchen _mandate_id, laufen also vor dem Aufräumen.
-    safe("Namentliche Abstimmungen", lambda: fetch_abstimmungen(people), None)
     seats = safe("Sitzverteilung", lambda: build_seats(people), {})
     for p in people:
         p.pop("_mandate_id", None); p.pop("_norm", None); p.pop("land", None)

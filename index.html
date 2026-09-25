@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Dein News Desk</title>
+<title>Presseschau – Entwurf v43</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -709,7 +709,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v37</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v43</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1225,7 +1225,7 @@ const WS=[
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',kammer:'all',fraktion:'all',voteErg:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',kammer:'all',fraktion:'all',voteErg:'all',voteArt:'all',voteWp:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
 let MONITORS=store.get('monitors',DEFAULT_MONITORS).map(m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]}));
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
@@ -1420,6 +1420,8 @@ function dubKey(a){
   if(st)return 'st:'+st.id;
   /* Auch Buendel, die keine Themenlage ergeben haben (zwei Eilmeldungen
      desselben Hauses zur selben Sache), zaehlen als Dublette. */
+  const kg=(window.KIDUB||{})[a.id];
+  if(kg)return kg;
   const gr=(window._DUB||{})[a.id];
   if(gr)return 'gr:'+gr;
   const k=a._nt||(typeof normTitel==='function'?(a._nt=normTitel(a.title)):'');
@@ -1439,12 +1441,16 @@ function entdoppeln(arr){
    auch der Wortstamm – lange Wörter, die ineinander stecken. */
 function kompositumTreffer(A,B){
   let n=0;
+  const steckt=(kurz,lang)=>kurz.length>=5&&lang.length>=kurz.length+1&&(lang.startsWith(kurz)||(lang.length>=kurz.length+3&&lang.endsWith(kurz)));
   for(const a of A){
-    if(a.length<7)continue;
+    if(a.length<5)continue;
     const stamm=a.slice(0,8);
     for(const b of B){
-      if(b===a||b.length<7)continue;
-      if(b.includes(stamm)||a.includes(b.slice(0,8))){n++;break}
+      if(b===a||b.length<5)continue;
+      /* Lange Wörter, die ineinanderstecken ("Spritpreise" / "Spritpreis-
+         entlastung"), oder ein Stamm am Anfang oder Ende eines Kompositums
+         ("Burka" in "Burkaverbot", "Schule" in "Schulen"). */
+      if((a.length>=7&&b.length>=7&&(b.includes(stamm)||a.includes(b.slice(0,8))))||steckt(a,b)||steckt(b,a)){n++;break}
     }
   }
   return n;
@@ -1490,9 +1496,16 @@ function dubNah(a,b){
   if(gleichesHaus&&nGes>=3&&Math.abs(a.date-b.date)<=24*H)return true; /* Nachzieher desselben Hauses */
   return false;
 }
+/* Sport bekommt in den Top-Meldungen höchstens zwei Plätze – in derselben
+   Liste standen sonst Bundestrainer, Nationalelf und Auftaktsieg oben. Wer
+   Sport sucht, findet ihn im Ressort. */
+const SPORT_RE=/\b(bundesliga|bundestrainer\w*|nationalmannschaft|nationalelf|dfb(-\w+)?|champions league|europa league|wm-qualifikation|em-qualifikation|länderspiel\w*|olympi\w+|davis[- ]cup|formel 1|grand slam|wimbledon|tour de france|handball-\w+|biathlon|torjäger|auftaktsieg|trainerwechsel)\b/i;
+const istSport=a=>(a.topics||[]).some(t=>/^sport/i.test(t))||SPORT_RE.test(a.title||'');
 function topEntdoppeln(arr,max,proHausMax){
   if(typeof IDX==='undefined'||!IDX||!IDX.ready)return arr.slice(0,max);
   const grenze=proHausMax||Math.max(2,Math.ceil(max/4));
+  const sportGrenze=2;
+  let sport=0;
   const out=[],zaehler={};
   const passt=a=>!out.some(b=>dubNah(a,b));
   /* Erster Durchgang mit Hausgrenze: sonst füllt ein einziges Fachmedium
@@ -1500,8 +1513,10 @@ function topEntdoppeln(arr,max,proHausMax){
   for(const a of arr){
     const haus=a._qb||(a._qb=hausVon(a.src));
     if((zaehler[haus]||0)>=grenze)continue;
+    const sp=istSport(a);
+    if(sp&&sport>=sportGrenze)continue;
     if(!passt(a))continue;
-    out.push(a);zaehler[haus]=(zaehler[haus]||0)+1;
+    out.push(a);zaehler[haus]=(zaehler[haus]||0)+1;if(sp)sport++;
     if(out.length>=max)break;
   }
   /* Zweiter Durchgang ohne Grenze – falls sonst zu wenig übrig bliebe. */
@@ -1524,6 +1539,12 @@ function topEntdoppeln(arr,max,proHausMax){
 function hausVon(x){return typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim()}
 function clusterArts(a){
   if(a._cl)return a._cl;
+  /* Von der KI gebildete Gruppe: deren Mitglieder sind die weiteren Quellen. */
+  if(a._kiGruppe&&a._kiGruppe.length>1){
+    const eigen=a._qb||(a._qb=hausVon(a.src));
+    const seen=new Set([eigen]);
+    return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
+  }
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
   /* Gezählt werden HÄUSER, nicht Beiträge: der eigene Beitrag und weitere
      Beiträge desselben Hauses fallen heraus, sonst zählt Tagesschau doppelt. */
@@ -1547,12 +1568,37 @@ function verwandt(a,limit=8){
   const sa=a._selten||(a._selten=selten(a));if(sa.size<1)return [];
   const eigene=(typeof IDX!=='undefined'&&IDX.story[a.id])||null;
   const eigeneIds=new Set(eigene?(eigene.alle||eigene.arts):[a.id]);
+  /* Bisher reichten zwei seltene Signale gleich welcher Art \u2013 auch eine
+     Jahreszahl und eine Stadt. Das führte zu Treffern, die nur zufällig
+     dieselben Nebenbegriffe hatten. Jetzt wird gewichtet: gemeinsame
+     Eigennamen zählen am meisten, Sachbegriffe etwas weniger, Zahlen nur
+     halb, und mindestens ein Eigenname oder Sachbegriff muss geteilt sein.
+     Zusätzlich muss sich die Schlagzeile berühren (gleiches Wort oder
+     gleicher Wortstamm), und Meldungen derselben KI-Gruppe stehen schon
+     unter „Dieselbe Meldung“. */
+  const gruppe=(window.KIDUB||{})[a.id];
+  const A=a._tw||(a._tw=titelWorte(a.title));
+  const entWorte=new Set((a.ents||[]).flatMap(x=>[...titelWorte(String(x))]));
   const treffer=[];
   for(const b of ARTICLES){
     if(eigeneIds.has(b.id)||b.isDoc||b.isTicker||b.isPodcast||Math.abs(b.date-a.date)>36*H)continue;
+    if(gruppe&&(window.KIDUB||{})[b.id]===gruppe)continue;
+    if(istRauschen(b))continue;
     const sb=b._selten||(b._selten=selten(b));if(!sb.size)continue;
-    const n=hartGemeinsam(sa,sb);
-    if(n>=2)treffer.push({b,n});
+    let e=0,t=0,z=0;
+    for(const k of sa){if(!sb.has(k))continue;if(k[0]==='e')e++;else if(k[0]==='t')t++;else z++}
+    if(e+t<1)continue;
+    const B=b._tw||(b._tw=titelWorte(b.title));
+    /* Titelwörter, die nur den gemeinsamen Eigennamen wiederholen ("Berlin"),
+       zählen nicht doppelt. */
+    let nFrei=0;for(const w of A)if(B.has(w)&&!entWorte.has(w))nFrei++;
+    const komp=kompositumTreffer(A,B);
+    const punkte=e*2+t*1.5+z*0.5+nFrei+komp;
+    /* Ein einzelner gemeinsamer Name reicht nur mit zwei weiteren
+       gemeinsamen Titelwörtern – sonst verbindet "Berlin" alles mit allem. */
+    if((e+t)<2&&(nFrei+komp)<2)continue;
+    if(punkte<3.5)continue;
+    treffer.push({b,n:punkte});
   }
   return nurEinmal(treffer.sort((p,q)=>q.n-p.n||q.b.date-p.b.date).map(p=>p.b)).slice(0,limit);
 }
@@ -1562,10 +1608,46 @@ function newsBase(){return ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&inRegion(a
 /* Für die Top-Meldungen zählt die HAUPTregion: Unter "Deutschland" steht
    dann nicht der US-Kongress, nur weil eine deutsche Quelle berichtet. */
 const inHauptRegion=a=>S.region==='all'||(a.region1||(a.regions||[])[0])===S.region;
+/* Die Top-Meldungen. Liegt ein frischer KI-Block für die Region vor
+   (höchstens zwölf Stunden alt), bestimmt er Auswahl und Reihenfolge –
+   wie in der Tageslage: erst nach Ereignissen gruppiert, dann nach
+   Nachrichtenwert gewählt. Was seit dem KI-Stand neu hereinkam und keiner
+   Gruppe gleicht, rückt nach dem Rechenverfahren dazu. Ohne KI-Block
+   bleibt es beim Rechenverfahren allein. */
+function kiBlockFuer(region){
+  const b=(window.KIBLOCK||{})[region]||((region==='all')?null:null);
+  if(!b||!b.gruppen.length)return null;
+  if(NOW-b.ts>12*H)return null;
+  return b;
+}
+function topAuswahl(base,win){
+  const rechnen=base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a));
+  const block=kiBlockFuer(S.region);
+  if(!block)return topEntdoppeln(entdoppeln(rechnen),10);
+  const zeilen=[];
+  block.gruppen.forEach(g=>{
+    const arts=g.ids.map(id=>ITEMS[id]).filter(a=>a&&a.kind!=='story'&&a.ago<=win&&!istRauschen(a));
+    if(!arts.length)return;
+    const lead=arts.find(a=>a.id===g.lead)||arts[0];
+    lead._kiGruppe=arts;lead._cl=null;
+    if(!zeilen.includes(lead))zeilen.push(lead);
+  });
+  const kiIds=new Set(block.gruppen.flatMap(g=>g.ids));
+  const seitStand=(NOW-block.ts)/H;
+  const frisch=rechnen.filter(a=>a.ago<seitStand&&!kiIds.has(a.id)&&!zeilen.some(b=>dubNah(a,b)));
+  /* Frische Meldungen nur, wenn sie wirklich gewichtig sind: mehrere
+     Quellen oder Eilmeldung. Sonst verdrängt jede neue Kurzmeldung die
+     kuratierte Auswahl. */
+  const gewichtig=frisch.filter(a=>(a.cluster||1)>=3||a.priority==='eil'||/\beil\b/i.test(a.src));
+  /* Hat der KI-Block weniger als zehn Ereignisse, füllt das Rechenverfahren
+     auf – hinten angestellt und gegen alle Gruppen geprüft. */
+  const rest=rechnen.filter(a=>!kiIds.has(a.id)&&!gewichtig.includes(a));
+  return topEntdoppeln(entdoppeln([...gewichtig.slice(0,3),...zeilen,...rest]),10,4);
+}
 function renderTop(){
   const base=newsBase();
   const win=S.topWin||24;
-  const top=topEntdoppeln(entdoppeln(base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a))),8);
+  const top=topAuswahl(base,win);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
   all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
@@ -1765,10 +1847,60 @@ function renderDesk(){
 }
 
 /* ── Stories, Trends, Studien, Märkte, Archiv ── */
+/* Themenlagen und Top-Meldungen sollen dieselben Ereignisse kennen.
+   Die KI-Gruppen aus ki_meldungen.json werden deshalb mit den gerechneten
+   Themenlagen verschnitten: Wo sich eine Gruppe mit einer Themenlage
+   überschneidet, bekommt die Themenlage die geschriebene Schlagzeile und
+   alle Meldungen der Gruppe; mehrere Themenlagen, die das Modell als ein
+   Ereignis erkannt hat, werden zu einer. Gruppen ohne Gegenstück werden
+   neue Themenlagen – sofern mindestens zwei Häuser berichten. */
+function kiThemenVerschneiden(){
+  const bl=window.KIBLOCK||{};
+  if(!Object.keys(bl).length)return;
+  const nachId=new Map(ARTICLES.map(a=>[a.id,a]));
+  const gesehen=new Set();
+  let neu=0,verschnitten=0;
+  Object.values(bl).forEach(b=>b.gruppen.forEach(g=>{
+    if(gesehen.has(g.lead))return;gesehen.add(g.lead);
+    const arts=g.ids.map(id=>nachId.get(id)).filter(Boolean);
+    if(arts.length<2)return;
+    const proHaus=new Map();
+    arts.slice().sort((a,b)=>b.date-a.date).forEach(a=>{const h=a._qb||(a._qb=hausVon(a.src));if(!proHaus.has(h))proHaus.set(h,a)});
+    if(proHaus.size<2)return;
+    const idSet=new Set(arts.map(a=>a.id));
+    const treffer=STORIES.filter(st=>(st.alle||st.arts).some(id=>idSet.has(id)));
+    const k=(window.KISCHLAG||{})[g.lead]||{};
+    let ziel;
+    if(treffer.length){
+      ziel=treffer[0];
+      treffer.slice(1).forEach(st=>{(st.alle||st.arts).forEach(id=>idSet.add(id));const i=STORIES.indexOf(st);if(i>=0)STORIES.splice(i,1)});
+      (ziel.alle||ziel.arts).forEach(id=>idSet.add(id));
+      verschnitten++;
+    }else{
+      ziel={id:'kst'+neu,kind:'story',link:(nachId.get(g.lead)||arts[0]).link};
+      STORIES.push(ziel);neu++;
+    }
+    const alle=[...idSet].map(id=>nachId.get(id)).filter(Boolean).sort((a,b)=>b.date-a.date);
+    const haeuser=new Map();
+    alle.forEach(a=>{const h=a._qb||(a._qb=hausVon(a.src));if(!haeuser.has(h))haeuser.set(h,a)});
+    const leit=nachId.get(g.lead)||alle[0];
+    Object.assign(ziel,{
+      title:k.s||ziel.title||leit.title,
+      sum:k.t||ziel.sum||(leit.desc||'').slice(0,240),
+      ki:!!k.s,
+      date:alle[0].date,
+      src:haeuser.size+' Quellen',
+      topics:[...new Set(alle.flatMap(a=>a.topics||[]))].slice(0,4),
+      regions:[...new Set(alle.flatMap(a=>a.regions||[]))],
+      arts:[...haeuser.values()].map(a=>a.id),
+      alle:alle.map(a=>a.id)});
+  }));
+  if(neu||verschnitten)LOADLOG.push({f:'Themenlagen mit KI',ok:true,n:neu+verschnitten});
+}
 function renderStories(){
   const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date);window.STORYLIST=list.map(s=>s.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools">${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
-  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>ITEMS[id].src))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span></div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
+  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>(ITEMS[id]||{}).src).filter(Boolean))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span>${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
 const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte']];
@@ -1832,8 +1964,22 @@ function trendZusammenlegen(m){
   });
   return m;
 }
+/* Was als Sachbegriff taugt: kurz, kein Satzfetzen, keine Webadresse und
+   kein Metadaten-Vokabular aus Dokumentfeeds ("Content files pdf xml",
+   "Preservation metadata"). Vorher kamen ganze Schlagzeilen samt
+   "tagesschau.de" als Begriff durch. */
+const BEGRIFF_MUELL=/\.(de|com|org|net|eu|gov|int)\b|https?:|\b(metadata|metadaten|pdf|xml|html|json|rss|download|content|files?|preservation|descriptive|structural|cookie|newsletter|abonnieren|livestream|liveblog|ticker|podcast|video|audio)\b/i;
+function begriffTauglich(t){
+  const v=String(t||'').trim();
+  if(v.length<4||v.length>32)return false;
+  if(v.split(/\s+/).length>3)return false;
+  if(BEGRIFF_MUELL.test(v))return false;
+  return trendTauglich(v);
+}
 function trendRows(mode,von,bis){
-  const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a));
+  /* Dokumente, Ticker und Werbung zählen nicht: Ein Dokumentfeed mit
+     65 gleichen Metadatenzeilen ist kein Trend. */
+  const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a)&&!a.isDoc&&!istRauschen(a));
   const m={};
   const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),ids:[]};m[k].n++;m[k].s.add(a.src);m[k].ids.push(a.id)};
   teil.forEach(a=>{
@@ -1841,11 +1987,11 @@ function trendRows(mode,von,bis){
     else if(mode==='issues'){
       /* Sachbegriffe aus dem Lauf (Nominalphrasen je Meldung). Ohne dieses
          Feld – nur in den Beispieldaten – die fest hinterlegten Sachfragen. */
-      if(a.terms&&a.terms.length){[...new Set(a.terms.map(t=>String(t).toLowerCase()))].filter(t=>t.length>=5&&trendTauglich(t)).forEach(t=>add('t:'+t,t.replace(/^\w/,c=>c.toUpperCase()),a))}
+      if(a.terms&&a.terms.length){[...new Set(a.terms.map(t=>String(t).toLowerCase()))].filter(t=>t.length>=5&&begriffTauglich(t)).forEach(t=>add('t:'+t,t.replace(/^\w/,c=>c.toUpperCase()),a))}
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}}
     else{
       /* Eigennamen aus der Entitätenerkennung des Laufs (spaCy). */
-      if(a.ents&&a.ents.length){[...new Set(a.ents.map(e=>String(e).trim()))].filter(e=>e.length>=4&&trendTauglich(e)).forEach(e=>add('e:'+e.toLowerCase(),e,a))}
+      if(a.ents&&a.ents.length){[...new Set(a.ents.map(e=>String(e).trim()))].filter(e=>e.length>=4&&begriffTauglich(e)).forEach(e=>add('e:'+e.toLowerCase(),e,a))}
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));(a.personen||[]).forEach(pid=>{const p=ITEMS[pid];if(p)add('p:'+p.id,p.name,a)});ORTE.forEach(o=>{if(txt.includes(norm(o)))add('o:'+o,o,a)})}}
   });
   if(mode==='entities'||mode==='issues')trendZusammenlegen(m);
@@ -1854,7 +2000,10 @@ function trendRows(mode,von,bis){
 function renderTrends(){
   const mode=S.trendMode||'topics';
   const c=trendRows(mode,0,S.win),p=trendRows(mode,S.win,2*S.win);
-  const rows=Object.entries(c).filter(([k,v])=>mode==='topics'||v.n>=2).sort((a,b)=>b[1].n-a[1].n).slice(0,mode==='topics'?14:20);
+  /* Ein Trend ist, worüber mehrere Häuser schreiben – nicht, was ein
+     einzelner Feed hundertmal wiederholt. Gereiht wird deshalb nach der
+     Zahl der Quellen, bei Gleichstand nach Meldungen. */
+  const rows=Object.entries(c).filter(([k,v])=>mode==='topics'||(v.n>=2&&v.s.size>=3)).sort((a,b)=>mode==='topics'?b[1].n-a[1].n:(b[1].s.size-a[1].s.size)||(b[1].n-a[1].n)).slice(0,mode==='topics'?14:20);
   const max=rows.length?rows[0][1].n:1;
   let h=secHd('tr','Trends','',`
     <div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.win===24}" onclick="S.win=24;render()">24 Std.</button><button aria-pressed="${S.win===72}" onclick="S.win=72;render()">3 Tage</button><button aria-pressed="${S.win===168}" onclick="S.win=168;render()">7 Tage</button></div>`);
@@ -1872,8 +2021,37 @@ function renderTrends(){
   }
   return h+body('tr',b);
 }
+/* Denkfabriken spielen dieselbe Studie mehrfach aus: im Studien- und im
+   Kurzanalyse-Feed, auf Deutsch und auf Englisch, mit und ohne
+   Tracking-Parameter. Gleich sind zwei Einträge, wenn der Link ohne
+   Parameter und Sprachpfad derselbe ist, der Titel normalisiert gleich ist
+   oder derselbe Herausgeber binnen zehn Tagen fast denselben Titel bringt. */
+function linkKern(u){
+  return String(u||'').toLowerCase().replace(/^https?:\/\/(www\.)?/,'').replace(/[?#].*$/,'')
+    .replace(/\/(de|en|fr)(\/|$)/,'/').replace(/\/(index\.html?)?$/,'');
+}
+function studienEntdoppeln(list){
+  const out=[],linkGesehen=new Set(),titelGesehen=new Set();
+  for(const a of list){
+    const l=linkKern(a.link);
+    const t=a._nt||(a._nt=normTitel(a.title));
+    if(l&&linkGesehen.has(l))continue;
+    if(t.length>=15&&titelGesehen.has(t))continue;
+    const haus=a._qb||(a._qb=hausVon(a.src));
+    const doppelt=out.some(b=>(b._qb||hausVon(b.src))===haus&&Math.abs(b.date-a.date)<=10*D&&
+      (()=>{const A=a._tw||(a._tw=titelWorte(a.title)),B=b._tw||(b._tw=titelWorte(b.title));
+        /* Jaccard statt Anteil am kürzeren Titel: "Zukunft der Nato-Ostflanke"
+           und "… Optionen für Deutschland" sind zwei Papiere. */
+        let n=0;for(const w of A)if(B.has(w))n++;const k=kompositumTreffer(A,B);
+        return (n+k)>=2&&(n+k)/Math.max(1,A.size+B.size-n)>=0.7})());
+    if(doppelt)continue;
+    if(l)linkGesehen.add(l);if(t.length>=15)titelGesehen.add(t);
+    out.push(a);
+  }
+  return out;
+}
 function renderStudies(){
-  const list=ARTICLES.filter(a=>a.herkunft==='think'&&inRegion(a)&&matchLQ('sd',a)).sort((a,b)=>b.date-a.date);window.STLIST=list.map(a=>a.id);
+  const list=studienEntdoppeln(ARTICLES.filter(a=>a.herkunft==='think'&&inRegion(a)&&matchLQ('sd',a)).sort((a,b)=>b.date-a.date));window.STLIST=list.map(a=>a.id);
   const orgs=ORGS.filter(o=>o.srcs.length&&inRegion(o));
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Studien & Analysen</h2><span class="cnt">${list.length} · nur Denkfabriken und Stiftungen, keine Medien</span><div class="tools">${lsearch('sd','Studien durchsuchen …')}${copyBtn(STLIST,'Studien')}</div></div>`;
   h+=`<div class="chips" style="margin-bottom:10px">${orgs.map(o=>`<button class="chip" onclick="openReader('${o.id}')">${esc(o.srcs[0])}</button>`).join('')}</div>`;
@@ -2038,6 +2216,14 @@ function nurEinmal(arr){
     if(haus.has(h))return false;haus.add(h);return true;
   });
 }
+const VERFAHREN_STOP=/^(gesetz\w*|entwurf\w*|änderung\w*|anderung\w*|verordnung\w*|antrag\w*|beschluss\w*|bericht\w*|bundes\w{0,8}|regierung\w*|fraktion\w*|modernisierung\w*|stärkung\w*|umsetzung\w*|richtlinie\w*|anpassung\w*|weiterentwicklung\w*|verbesserung\w*|einführung\w*|drucksache\w*|deutschland\w*|deutschen?)$/;
+/* Wie oft kommt ein Wort in den Meldungen vor? Einmal gezählt, dann gemerkt. */
+const _wortDf=new Map();
+function wortHaeufigkeit(w){
+  if(_wortDf.has(w)&&_wortDf.get(w).n===ARTICLES.length)return _wortDf.get(w).df;
+  let df=0;for(const a of ARTICLES){const t=a._txt||(a._txt=norm(a.title+' '+a.desc));if(t.includes(w))df++}
+  _wortDf.set(w,{n:ARTICLES.length,df});return df;
+}
 function bezugMeldungen(x,limit=12){
   if(x.kind==='election'){
     /* Nur Meldungen, die die Region UND die Wahl selbst nennen – sonst landet
@@ -2050,9 +2236,17 @@ function bezugMeldungen(x,limit=12){
   }
   /* Meldungen zu einem Verfahren oder einer Wahl: über die Schlagwörter des
      Vorgangs (Deskriptoren) und die Kernwörter des Titels. */
-  const worte=new Set([...(x.desk||[]).map(norm),...sigWorte(x.title||'').filter(w=>w.length>=6),...(x.region?[norm(x.region)]:[])]);
-  if(!worte.size)return [];
-  const treffer=ARTICLES.map(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));let n=0;for(const w of worte)if(t.includes(w))n++;return n>=2?{a,n}:null}).filter(Boolean)
+  /* "Gesetz", "Änderung", "Modernisierung" stehen in jedem zweiten
+     Verfahrenstitel und in hunderten Meldungen. Gesucht wird deshalb nur
+     mit Wörtern, die in den Meldungen selten sind; mindestens eines muss
+     ein langes Fachwort sein (Bundespolizeigesetz, Spritpreisdeckel). */
+  const worte=[...new Set([...(x.desk||[]).map(norm),...sigWorte(x.title||'').filter(w=>w.length>=6)])]
+    .filter(w=>!VERFAHREN_STOP.test(w)&&wortHaeufigkeit(w)<=Math.max(8,ARTICLES.length*0.004));
+  if(!worte.length)return [];
+  const lang=worte.filter(w=>w.length>=10);
+  const treffer=ARTICLES.map(a=>{const t=a._txt||(a._txt=norm(a.title+' '+a.desc));
+      let n=0,l=0;for(const w of worte)if(t.includes(w)){n++;if(w.length>=10)l++}
+      return (l>=1&&n>=2)||(l>=1&&lang.length===1&&n>=1&&worte.length<=2)?{a,n:n+l}:null}).filter(Boolean)
     .sort((p,q)=>q.n-p.n||q.a.date-p.a.date).map(p=>p.a);
   return nurEinmal(ohneRauschen(treffer)).slice(0,limit);
 }
@@ -2068,17 +2262,22 @@ function renderProcs(){
 }
 /* Die Abstimmungsliste: Ergebnis auf einen Blick, Fraktionen im Balken. */
 function renderVotes(){
-  const list=VOTES.filter(v=>matchLQ('ab',v)&&(S.voteErg==='all'||!S.voteErg||v.ergebnis===S.voteErg));
+  const list=VOTES.filter(v=>matchLQ('ab',v)&&(S.voteErg==='all'||!S.voteErg||v.ergebnis===S.voteErg)
+    &&(!S.voteArt||S.voteArt==='all'||(S.voteArt==='nam')===!!v.abstimmung.namentlich)
+    &&(!S.voteWp||S.voteWp==='all'||String(v.wp)===String(S.voteWp)));
+  const wps=[...new Set(VOTES.map(v=>v.wp).filter(Boolean))].sort((a,b)=>b-a);
   window.ABLIST=list.map(v=>v.id);
-  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Namentliche Abstimmungen</h2><span class="cnt">${list.length}${VOTES.length!==list.length?' von '+VOTES.length:''}</span><div class="tools">${lsearch('ab','Abstimmungen durchsuchen …')}${copyBtn(ABLIST,'Abstimmungen')}</div></div>`;
-  h+=`<div class="filters"><div class="chips" role="group" aria-label="Ergebnis">${[['all','Alle'],['angenommen','Angenommen'],['abgelehnt','Abgelehnt']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteErg||'all')===k}" onclick="S.voteErg='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>v.ergebnis===k).length}</span>`}</button>`).join('')}</div></div>`;
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Abstimmungen im Bundestag</h2><span class="cnt">${list.length}${VOTES.length!==list.length?' von '+VOTES.length:''}</span><div class="tools">${lsearch('ab','Abstimmungen durchsuchen …')}${copyBtn(ABLIST,'Abstimmungen')}</div></div>`;
+  h+=`<div class="filters"><div class="chips" role="group" aria-label="Art" style="margin-bottom:6px">${[['all','Alle'],['nam','Namentlich'],['hand','Per Handzeichen']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteArt||'all')===k}" onclick="S.voteArt='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>(k==='nam')===!!v.abstimmung.namentlich).length}</span>`}</button>`).join('')}</div>`;
+  if(wps.length>1)h+=`<div class="chips" role="group" aria-label="Wahlperiode" style="margin-bottom:6px"><button class="chip" aria-pressed="${!S.voteWp||S.voteWp==='all'}" onclick="S.voteWp='all';render()">Alle Wahlperioden</button>${wps.map(w=>`<button class="chip" aria-pressed="${String(S.voteWp)===String(w)}" onclick="S.voteWp='${w}';render()">${w}. WP <span class="n">${VOTES.filter(v=>v.wp===w).length}</span></button>`).join('')}</div>`;
+  h+=`<div class="chips" role="group" aria-label="Ergebnis">${[['all','Alle'],['angenommen','Angenommen'],['abgelehnt','Abgelehnt']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteErg||'all')===k}" onclick="S.voteErg='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>v.ergebnis===k).length}</span>`}</button>`).join('')}</div></div>`;
   h+=`<div class="box">${list.length?list.slice(0,150).map(v=>{
     const z=v.abstimmung,ab=z.ja+z.nein+z.enthalten||1;
     return `<div class="proc" role="button" tabindex="0" style="cursor:pointer" onclick="openReader('${v.id}',ABLIST)" onkeydown="rowKey(event,'${v.id}')">
-      <div class="bar"><b>${esc(v.title)}</b><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span>${v.thema?`<span class="pill grey">${esc(v.thema)}</span>`:''}<span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
+      <div class="bar"><b>${esc(v.title)}</b><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span>${v.wp&&v.wp!==WP_AKTUELL?`<span class="pill grey">${v.wp}. WP</span>`:''}${v.thema?`<span class="pill grey">${esc(v.thema)}</span>`:''}<span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
       <div class="sitz" style="padding:6px 0 0;border:0"><div class="balken" style="height:12px">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/ab*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte"></span></div></div>
-      <div class="meta" style="margin-top:6px"><span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
-  h+=`<p class="note" style="margin-top:10px">Quelle: abgeordnetenwatch.de. Nicht-namentliche Abstimmungen stehen nur im Plenarprotokoll und fehlen deshalb.</p>`;
+      <div class="meta" style="margin-top:6px">${z.rechnerisch?`<span class="pill grey">Handzeichen</span>${(z.seiten.dafuer||[]).length?`<span>dafür: ${esc(z.seiten.dafuer.join(', '))}</span>`:''}${(z.seiten.dagegen||[]).length?`<span>dagegen: ${esc(z.seiten.dagegen.join(', '))}</span>`:''}${(z.seiten.enthalten||[]).length?`<span>Enthaltung: ${esc(z.seiten.enthalten.join(', '))}</span>`:''}`:`<span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}`}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
+  h+=`<p class="note" style="margin-top:10px">Namentliche Abstimmungen: abgeordnetenwatch.de, mit jeder einzelnen Stimme. Abstimmungen per Handzeichen: aus den Plenarprotokollen gelesen – dort steht nur das Votum der Fraktionen; die Stimmenzahlen sind aus den Fraktionsstärken hochgerechnet.</p>`;
   return h;
 }
 function renderDocs(){
@@ -2191,7 +2390,7 @@ function abstimmungHTML(ab){
   return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Abstimmung</h2>
       <span class="cnt">${ab.namentlich?'namentlich':'nicht namentlich'}</span>${ab.datum?`<span class="note">${esc(ab.datum)}</span>`:''}</div>
     <div class="box" style="padding:12px 14px">
-      <div class="bar" style="margin-bottom:8px"><span class="pill ${angenommen?'green':'red'}">${angenommen?'Angenommen':'Abgelehnt'}</span><span class="note">${abgegeben} abgegebene Stimmen${z.abwesend?` · ${z.abwesend} nicht abgegeben`:''}</span></div>
+      <div class="bar" style="margin-bottom:8px"><span class="pill ${angenommen?'green':'red'}">${angenommen?'Angenommen':'Abgelehnt'}</span><span class="note">${ab.rechnerisch?'Stimmen rechnerisch aus den Fraktionsstärken'+(ab.wp&&ab.wp!==WP_AKTUELL?` der ${ab.wp}. Wahlperiode`:'')+' – per Handzeichen abgestimmt':`${abgegeben} abgegebene Stimmen${z.abwesend?` · ${z.abwesend} nicht abgegeben`:''}`}</span></div>
       <div class="sitz" style="padding:0;border:0">
         <div class="balken">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/abgegeben*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte" title="Mehrheit"></span></div>
         <div class="fr">${['ja','enthalten','nein','abwesend'].filter(k=>z[k]).map(k=>`<span><i style="background:${STIMM_FARBE[k]}"></i><b>${z[k]}</b> ${STIMM_LABEL[k]}</span>`).join('')}</div>
@@ -2200,10 +2399,34 @@ function abstimmungHTML(ab){
         const y={ja:+w.ja||0,nein:+w.nein||0,enthalten:+w.enthalten||0,abwesend:+w.abwesend||0};
         const g2=y.ja+y.nein+y.enthalten+y.abwesend||1;
         const mehrheit=y.ja>=y.nein&&y.ja>=y.enthalten?'ja':y.nein>=y.enthalten?'nein':'enthalten';
-        return `<div class="abst"><span style="display:flex;align-items:center;gap:6px"><i class="stimme" style="background:${fraktionsFarbe(name)}"></i>${esc(name)}</span>${stimmBalken(y,g2)}<span class="wert">${stimmPunkt(mehrheit)} ${y.ja}/${y.enthalten}/${y.nein}</span></div>`}).join('')}
-        <div class="note" style="margin-top:6px">Je Fraktion: Zustimmungen / Enthaltungen / Ablehnungen.</div></div>`:''}
+        return `<div class="abst"><span style="display:flex;align-items:center;gap:6px"><i class="stimme" style="background:${fraktionsFarbe(name)}"></i>${esc(name)}</span>${stimmBalken(y,g2)}<span class="wert">${stimmPunkt(mehrheit)} ${ab.rechnerisch?STIMM_LABEL[mehrheit]:`${y.ja}/${y.enthalten}/${y.nein}`}</span></div>`}).join('')}
+        <div class="note" style="margin-top:6px">${ab.rechnerisch?'Je Fraktion das Votum laut Plenarprotokoll.':'Je Fraktion: Zustimmungen / Enthaltungen / Ablehnungen.'}</div></div>`:''}
       ${ab.beschluss?`<div class="note" style="margin-top:10px"><b>Beschlusstext</b><br>${esc(ab.beschluss)}</div>`:''}
     </div>`;
+}
+/* Reden einer Person im Plenum – mit dem, worüber danach abgestimmt
+   wurde und wie es ausging. */
+function redenHTML(x){
+  const r=x.reden||[];
+  if(!r.length)return '';
+  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Reden im Plenum</h2><span class="cnt">${r.length}</span></div>
+    <div class="box">${r.slice(0,8).map(e=>{
+      const folgen=(e.abstimmungen||[]).map(id=>ITEMS[id]).filter(Boolean);
+      return `<div class="rul" style="cursor:default;display:block;padding:10px 14px">
+        <div class="meta"><span class="pill blue">${esc(e.top||'Plenum')}</span><span>${esc(e.datum||'')}</span>${e.sitzung?`<span>Sitzung ${esc(e.sitzung)}</span>`:''}${e.zeichen?`<span>${Math.max(1,Math.round(e.zeichen/900))} Min.</span>`:''}</div>
+        ${e.betreff?`<div class="ttl" style="margin-top:4px">${esc(e.betreff)}</div>`:''}
+        ${e.auszug?`<div class="note" style="margin-top:4px;line-height:1.45">„${esc(e.auszug)}“</div>`:''}
+        ${folgen.length?`<div class="meta" style="margin-top:6px">${folgen.map(v=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs)" onclick="openReader('${v.id}')">${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}${v.thema?' · '+esc(v.thema):''}</button>`).join('')}</div>`:''}
+      </div>`}).join('')}</div>
+    ${r.length>8?`<div class="note" style="margin-top:6px">${r.length-8} weitere Reden in den letzten Monaten.</div>`:''}`;
+}
+/* Die Debatte vor einer Abstimmung: wer gesprochen hat, in Reihenfolge. */
+function debatteHTML(ab){
+  const r=(ab&&ab.redner)||[];
+  if(!r.length)return '';
+  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Debatte</h2><span class="cnt">${r.length} ${r.length===1?'Rede':'Reden'}${ab.top?' · '+esc(ab.top):''}</span></div>
+    <div class="reader-tags">${r.map(e=>{const pid=(window.REDE_PERSON||{})[e.id];
+      return `<button class="chip" ${pid&&ITEMS[pid]?`onclick="openReader('${pid}')"`:'disabled'}><i style="width:9px;height:9px;border-radius:3px;background:${fraktionsFarbe(e.fraktion||'')};display:inline-block;margin-right:5px"></i>${esc(e.name)}${e.fraktion?` <span class="n">${esc(kurzFraktion(e.fraktion))}</span>`:''}</button>`}).join('')}</div>`;
 }
 /* Das Abstimmungsverhalten einer Person – Quote, Bilanz, Liste. */
 function stimmverhaltenHTML(x){
@@ -2682,6 +2905,7 @@ function openReader(id,list){
       ${x.wiki?`<p class="note" style="margin-top:10px">${esc(x.wiki)}${x.wikiUrl?` <a href="${esc(x.wikiUrl)}" target="_blank" rel="noopener">Wikipedia</a>`:''}</p>`:''}
       ${aus.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Ausschüsse</h2></div><div class="reader-tags">${aus.map(k=>`<button class="chip" ${ITEMS[k.id]?`onclick="openReader('${k.id}')"`:''}>${esc(k.name.split(' – ')[0])}${k.role?` <span class="n">${esc(k.role)}</span>`:''}</button>`).join('')}</div>`:''}
       ${stimmverhaltenHTML(x)}
+      ${redenHTML(x)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.slice(0,20).map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
       ${(()=>{
         /* Ein Eintrag ist nur dann eine Wortmeldung, wenn er aus einem Protokoll
@@ -2708,13 +2932,15 @@ function openReader(id,list){
       ${x.abstract?`<div class="reader-text">${esc(x.abstract)}</div>`:''}${x.ki?`<div class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>Kurzfassung</div><div class="txt">${esc(x.ki)}</div></div>`:''}
       ${(x.desk||[]).length?`<div class="reader-tags">${x.desk.slice(0,10).map(d=>`<span class="pill grey">${esc(d)}</span>`).join('')}</div>`:''}
       ${abstimmungHTML(x.abstimmung)}
+      ${debatteHTML(x.abstimmung)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu diesem Vorgang gefunden.</p>'}`;
   } else if(x.kind==='vote'){
     const rel=bezugMeldungen(x);window.READERSUB=rel.map(a=>a.id);
-    b=`<div class="meta"><span class="pill grey">Namentliche Abstimmung</span><span>${esc(x.abstimmung.datum||'')}</span>${x.thema?`<span class="pill blue">${esc(x.thema)}</span>`:''}</div>
+    b=`<div class="meta"><span class="pill grey">${x.abstimmung.namentlich?'Namentliche Abstimmung':'Abstimmung per Handzeichen'}</span><span>${esc(x.abstimmung.datum||'')}</span>${x.thema?`<span class="pill blue">${esc(x.thema)}</span>`:''}</div>
       <h3 class="reader-title">${esc(x.title)}</h3>
       ${x.desc?`<div class="reader-text">${esc(x.desc)}</div>`:''}
       ${abstimmungHTML(x.abstimmung)}
+      ${debatteHTML(x.abstimmung)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2><span class="cnt">${rel.length}</span></div>${rel.length?`<div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Noch keine Berichterstattung zu dieser Abstimmung gefunden.</p>'}`;
   } else if(x.kind==='election'){
     const rel=bezugMeldungen(x);window.READERSUB=rel.map(a=>a.id);const days=Math.round((x.date-NOW)/D);
@@ -2915,14 +3141,14 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v37 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v43 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
   laender:'laender_articles.json', us:'us_articles.json',
   docs:'documents.json', people:'people.json', newsletters:'newsletters.json',
   dip:'dip.json', elections:'elections.json', markets:'markets.json', ki:'ki_meldungen.json',
-  votes:'votes.json',
+  votes:'votes.json', plenum:'plenum_votes.json',
 };
 const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
 
@@ -3131,11 +3357,28 @@ function glatt(s){const t=String(s||'').toLowerCase().normalize('NFD').replace(/
 /* Sprachbruecke: die Feeds mischen deutsche und englische Schlagzeilen.
    "Canada" und "Kanada", "convicted" und "verurteilt" muessen dasselbe Wort
    sein, sonst finden zwei Berichte ueber dieselbe Sache nie zusammen. */
-const UEBER={canada:'kanada',canadian:'kanada',russia:'russland',russian:'russland',moscow:'moskau',germany:'deutschland',german:'deutsch',berlin:'berlin',france:'frankreich',french:'frankreich',italy:'italien',spain:'spanien',poland:'polen',turkey:'turkei',ukraine:'ukraine',ukrainian:'ukraine',china:'china',chinese:'china',japan:'japan',india:'indien',brazil:'brasilien',mexico:'mexiko',egypt:'agypten',greece:'griechenland',sweden:'schweden',norway:'norwegen',denmark:'danemark',finland:'finnland',austria:'osterreich',switzerland:'schweiz',netherlands:'niederlande',belgium:'belgien',britain:'grossbritannien',british:'grossbritannien',israel:'israel',iran:'iran',syria:'syrien',lebanon:'libanon',serbia:'serbien',commission:'kommission',parliament:'parlament',council:'rat',court:'gericht',judges:'gericht',chancellor:'kanzler',president:'prasident',minister:'minister',government:'regierung',coalition:'koalition',election:'wahl',elections:'wahl',voters:'wahler',sanctions:'sanktionen',tariffs:'zolle',tariff:'zolle',trade:'handel',inflation:'inflation',interest:'zins',rates:'zinsen',crimes:'verbrechen',convicted:'verurteilt',sentenced:'verurteilt',verdict:'urteil',jailed:'haft',prison:'haft',years:'jahre',former:'ehemalig',talks:'gesprache',summit:'gipfel',defence:'verteidigung',defense:'verteidigung',military:'militar',migration:'migration',budget:'haushalt',energy:'energie',climate:'klima',health:'gesundheit',security:'sicherheit',congress:'kongress',senate:'senat',bill:'gesetz'};
+const UEBER={canada:'kanada',canadian:'kanada',russia:'russland',russian:'russland',moscow:'moskau',germany:'deutschland',german:'deutsch',berlin:'berlin',france:'frankreich',french:'frankreich',italy:'italien',spain:'spanien',poland:'polen',turkey:'turkei',ukraine:'ukraine',ukrainian:'ukraine',china:'china',chinese:'china',japan:'japan',india:'indien',brazil:'brasilien',mexico:'mexiko',egypt:'agypten',greece:'griechenland',sweden:'schweden',norway:'norwegen',denmark:'danemark',finland:'finnland',austria:'osterreich',switzerland:'schweiz',netherlands:'niederlande',belgium:'belgien',britain:'grossbritannien',british:'grossbritannien',israel:'israel',iran:'iran',syria:'syrien',lebanon:'libanon',serbia:'serbien',commission:'kommission',parliament:'parlament',council:'rat',court:'gericht',judges:'gericht',chancellor:'kanzler',president:'prasident',minister:'minister',government:'regierung',coalition:'koalition',election:'wahl',elections:'wahl',voters:'wahler',sanctions:'sanktionen',tariffs:'zolle',tariff:'zolle',trade:'handel',inflation:'inflation',interest:'zins',rates:'zinsen',crimes:'verbrechen',convicted:'verurteilt',sentenced:'verurteilt',verdict:'urteil',jailed:'haft',prison:'haft',years:'jahre',former:'ehemalig',talks:'gesprache',summit:'gipfel',defence:'verteidigung',defense:'verteidigung',military:'militar',migration:'migration',budget:'haushalt',energy:'energie',climate:'klima',health:'gesundheit',security:'sicherheit',congress:'kongress',senate:'senat',bill:'gesetz',
+  /* Häufige Nachrichtenwörter, jeweils auf den deutschen Wortstamm. Nicht
+     dabei sind Wörter, die es auch im Deutschen gibt ("war", "union") – sie
+     würden deutsche Schlagzeilen verfälschen. Der
+     Stamm reicht, weil der Vergleich unten auch Wortanfänge und -enden
+     innerhalb längerer Wörter findet ("burka" in "Burkaverbot"). */
+  italian:'italien',polish:'polen',danish:'danemark',greenland:'gronland',swiss:'schweiz',dutch:'niederlande',
+  school:'schule',schools:'schule',class:'klasse',classes:'klasse',pupils:'schuler',students:'student',teachers:'lehrer',
+  ban:'verbot',bans:'verbot',banned:'verbot',burqa:'burka',burka:'burka',niqab:'nikab',headscarf:'kopftuch',
+  cap:'obergrenze',limit:'obergrenze',foreigners:'ausland',foreign:'ausland',migrants:'migrant',refugees:'fluchtling',asylum:'asyl',border:'grenze',borders:'grenze',
+  knife:'messer',attack:'angriff',attacks:'angriff',attacker:'angreifer',priest:'priester',abbey:'abtei',church:'kirche',killed:'getotet',dead:'tot',injured:'verletzt',wounded:'verletzt',
+  police:'polizei',arrested:'festgenommen',arrest:'festnahme',suspect:'verdachtig',trial:'prozess',judge:'richter',
+  ceasefire:'waffenruhe',troops:'truppen',soldiers:'soldat',army:'armee',missile:'rakete',missiles:'rakete',drone:'drohne',drones:'drohne',airport:'flughafen',
+  strike:'streik',strikes:'streik',workers:'arbeiter',prices:'preis',price:'preis',fuel:'sprit',petrol:'benzin',
+  growth:'wachstum',recession:'rezession',unemployment:'arbeitslos',debt:'schulden',taxes:'steuer',pension:'rente',pensions:'rente',
+  hospital:'krankenhaus',vaccine:'impfstoff',emissions:'emission',coal:'kohle',nuclear:'atom',flood:'hochwasser',floods:'hochwasser',wildfire:'waldbrand',earthquake:'erdbeben',storm:'sturm',
+  deal:'abkommen',agreement:'abkommen',agree:'einig',agreed:'einig',protest:'protest',protests:'protest',
+  football:'fussball',coach:'trainer',goal:'tor',wins:'sieg',victory:'sieg'};
 const kanon=w=>UEBER[w]||w;
 const kanonSatz=s=>String(s).split(/\s+/).map(kanon).join(' ');
 function titelWorte(t){
-  return new Set((glatt(t).match(/[a-z]{4,}/g)||[]).map(kanon).filter(w=>!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
+  return new Set((glatt(t).match(/[a-z]{3,}/g)||[]).map(kanon).filter(w=>w.length>=4&&!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
 }
 function titelAehnlich(A,B){
   if(!A.size||!B.size)return {q:0,n:0};
@@ -3437,7 +3680,8 @@ function mapVerfahren(p,i){
   return {id:'vf-'+(p.id||i),kind:'proc',title:p.title||'Vorgang ohne Titel',src:p.art==='eu'||/EU|Richtlinie/.test(p.type||'')?'EU':'Bundestag',
     steps:STAGES.map(s=>STAGE_L[s]),now:idx,stage:STAGE_L[p.stage]||p.stage||'',type:p.type||p.art||'Vorgang',date:p.updated||p.date||null,
     link:p.link||p.url||'#',ki:p.ki_summary||'',desk:p.deskriptoren||[],abstract:p.abstract||'',
-    abstimmung:p.abstimmung||p.vote||p.vote_result||null,regions:[p.art==='eu'?'eu':'de']};
+    abstimmung:p.abstimmung||p.vote||p.vote_result||null,regions:[p.art==='eu'?'eu':'de'],
+    _drs:(JSON.stringify(p).match(/\b\d{2}\/\d{1,5}\b/g)||[]).slice(0,40)};
 }
 
 /* ── Namentliche Abstimmungen aus votes.json ───────────────────
@@ -3450,16 +3694,93 @@ function mapAbstimmungen(j){
     return {id:String(v.id||('ab'+i)),kind:'vote',title:v.titel||v.title||'Abstimmung',
       date:t,ago:(NOW-t)/H,src:'Bundestag',link:v.url||'#',regions:['de'],topics:[],
       thema:v.thema||'',desc:v.intro||'',ergebnis:v.ergebnis||((+v.ja||0)>(+v.nein||0)?'angenommen':'abgelehnt'),
+      wp:+v.wahlperiode||WP_AKTUELL,
       abstimmung:{datum:v.datum||'',namentlich:v.namentlich!==false,
         ja:+v.ja||0,nein:+v.nein||0,enthalten:+v.enthalten||0,abwesend:+v.abwesend||0,
         fraktionen:v.fraktionen||{},beschluss:v.beschluss||''}};
   }).sort((a,b)=>b.date-a.date);
+}
+/* ── Nicht-namentliche Abstimmungen aus plenum_votes.json ───────────
+   Aus dem Protokolltext gelesen (fetch_plenum.py): welche Fraktion dafür,
+   dagegen, enthalten. Stimmenzahlen gibt es nicht – sie werden wie in der
+   Democracy-App aus den Fraktionsstärken hochgerechnet und so benannt. */
+/* Fraktionsstärken früherer Wahlperioden – zu Beginn der Wahlperiode, mit
+   Stichtag, wo sich das Gefüge grundlegend änderte (20. WP: ab Dezember
+   2023 zwei Gruppen statt einer Linksfraktion). Für die laufende gilt die
+   amtliche Sitzverteilung aus dem Lauf. Alphabetisch, damit die
+   Reihenfolge nichts gewichtet. */
+const SITZE_WP={
+  20:[['2021-10-26',[['AfD',83],['CDU/CSU',197],['FDP',92],['Grüne',118],['Linke',39],['SPD',206],['SSW',1]]],
+      ['2023-12-06',[['AfD',77],['BSW',10],['CDU/CSU',195],['FDP',91],['Grüne',117],['Linke',28],['SPD',207],['SSW',1]]]],
+  19:[['2017-10-24',[['AfD',94],['CDU/CSU',246],['FDP',80],['Grüne',67],['Linke',69],['SPD',153]]]],
+};
+const WP_AKTUELL=21;
+function sitzeDerFraktion(f,wp,datum){
+  let reihen;
+  if(!wp||wp===WP_AKTUELL){const q=(window.SEATS&&SEATS.bt)||SITZE_AMTLICH.bt;reihen=q&&q.fraktionen}
+  else{const st=(SITZE_WP[wp]||[]).filter(([ab])=>!datum||ab<=datum);reihen=(st[st.length-1]||(SITZE_WP[wp]||[])[0]||[])[1]}
+  const k=fraktionKanon(f);
+  const r=(reihen||[]).find(([n])=>fraktionKanon(n)===k);
+  return r?r[1]:0;
+}
+/* Reden aus den Plenarprotokollen (fetch_plenum.py) an die Personen
+   hängen – über den vollen Namen ohne Titel, denn im Protokoll steht
+   "Dr. Erika Mustermann (SPD):", im Verzeichnis "Dr. Erika Mustermann".
+   Bei Namensgleichheit entscheidet die Fraktion. */
+function redenZuordnen(j){
+  window.REDEN=(j&&j.reden)||[];
+  window.REDE_PERSON={};
+  if(!REDEN.length||!PEOPLE.length)return;
+  const nachName={};
+  PEOPLE.forEach(p=>{personVorbereiten(p);if(p._voll)(nachName[p._voll]=nachName[p._voll]||[]).push(p)});
+  let n=0;
+  REDEN.forEach(r=>{
+    const k=norm(String(r.name||'').replace(/^((dr|prof)\.\s*)+/i,''));
+    let ps=nachName[k]||[];
+    if(ps.length>1&&r.fraktion)ps=ps.filter(p=>fraktionKanon(p.party||'')===fraktionKanon(r.fraktion));
+    const p=ps[0];if(!p)return;
+    (p.reden=p.reden||[]).push(r);REDE_PERSON[r.id]=p.id;n++;
+  });
+  PEOPLE.forEach(p=>{if(p.reden)p.reden.sort((a,b)=>String(b.datum).localeCompare(String(a.datum)))});
+  LOADLOG.push({f:'Reden im Plenum',ok:true,n});
+}
+function mapPlenum(j){
+  const roh=(j&&j.abstimmungen)||[];
+  return roh.map((v,i)=>{
+    const t=Date.parse(v.datum||'')||NOW-i*D;
+    const fr={},z={ja:0,nein:0,enthalten:0,abwesend:0};
+    [['dafuer','ja'],['dagegen','nein'],['enthalten','enthalten']].forEach(([seite,art])=>{
+      (v[seite]||[]).forEach(f=>{const n=sitzeDerFraktion(f,v.wahlperiode,v.datum);fr[f]=fr[f]||{ja:0,nein:0,enthalten:0,abwesend:0};fr[f][art]+=n;z[art]+=n});
+    });
+    let titel=String(v.gegenstand||'').replace(/^(den|die|das)\s+/i,'').replace(/^von der Bundesregierung eingebrachten\s+/i,'');
+    /* "Antrag der Fraktion X auf Drucksache 21/1234 mit dem Titel „…“"
+       → "… (Antrag der X)". Der Titel des Papiers ist, was man
+       wiedererkennt. */
+    const tm=titel.match(/mit dem titel\s*[„"»]?([^“"«]+)/i);
+    if(tm){const art=(titel.match(/^(\w+)/)||[])[1]||'';const wer=(titel.match(/der fraktion (der |von )?([\wäöüÄÖÜ\/ 90]+?)(?= auf| mit|$)/i)||[])[2];
+      titel=tm[1].trim().replace(/[.\s]+$/,'')+(art?` (${art}${wer?' der '+wer.trim():''})`:'')}
+    else titel=titel.replace(/\s+auf\s+Drucksachen?\s+[\d\/,\s und]+/i,' ').trim();
+    titel=titel?titel.charAt(0).toUpperCase()+titel.slice(1):('Abstimmung'+((v.drucksachen||[]).length?' zu Drucksache '+v.drucksachen[0]:''));
+    const ergebnis=v.ergebnis||(z.ja>z.nein?'angenommen':'abgelehnt');
+    return {id:String(v.id||('pl'+i)),kind:'vote',title:titel,date:t,ago:(NOW-t)/H,src:'Bundestag',
+      link:v.link||'#',regions:['de'],topics:[],thema:v.stufe||'',desc:'',ergebnis,drucksachen:v.drucksachen||[],
+      wp:+v.wahlperiode||+(String(v.sitzung||'').split('/')[0])||WP_AKTUELL,
+      abstimmung:{datum:v.datum||'',namentlich:false,rechnerisch:true,wp:+v.wahlperiode||0,ja:z.ja,nein:z.nein,enthalten:z.enthalten,abwesend:0,
+        fraktionen:fr,beschluss:v.text||'',seiten:{dafuer:v.dafuer||[],dagegen:v.dagegen||[],enthalten:v.enthalten||[]},
+        redner:v.redner||[],top:v.top||''}};
+  });
 }
 /* Zu welchem Verfahren gehört eine Abstimmung? Der Titel ist bei beiden
    derselbe Gesetzentwurf – deshalb dieselbe Prüfung wie bei den
    Themenlagen, nur strenger. */
 function abstimmungenZuordnen(){
   if(!VOTES.length||!PROCS.length)return;
+  /* Zuerst über die Drucksache – das ist eindeutig. Die Schlussabstimmung
+     schlägt die zweite Beratung. */
+  const rang=v=>/schluss/i.test(v.thema||'')?3:/zweite/i.test(v.thema||'')?2:1;
+  VOTES.filter(v=>(v.drucksachen||[]).length).sort((a,b)=>rang(a)-rang(b)).forEach(v=>{
+    PROCS.forEach(p=>{if((p._drs||[]).some(d=>v.drucksachen.includes(d)))p.abstimmung=v.abstimmung});
+  });
   const kandidaten=VOTES.map(v=>({v,w:titelWorte(v.title)}));
   PROCS.forEach(p=>{
     const pw=titelWorte(p.title);if(pw.size<3)return;
@@ -3548,6 +3869,56 @@ function leeren(){
 /* var statt const: Das erste Bild wird gezeichnet, bevor diese Zeile läuft.
    Bei const scheitert dort schon die Abfrage typeof IDX. */
 var IDX={nt:{},story:{},src:{},mentions:{},personNach:{},ready:false};
+/* ── Personen in Meldungen erkennen ─────────────────────────────────
+   Drei Belege, von stark nach schwach:
+   1. der volle Name (ohne Titel): "Friedrich Merz", "Erika Mustermann";
+   2. eine Rolle direkt davor: "Kanzler Merz", "Wirtschaftsministerin
+      Reiche", "SPD-Politiker Klingbeil" – steht eine Partei im Rollenwort,
+      muss sie zur Person passen;
+   3. der Nachname allein, wenn er im Verzeichnis nur einmal vorkommt,
+      kein Allerweltsname ist und lang genug – oder die Partei der Person
+      steht in unmittelbarer Nähe.
+   Allerweltsnamen (Müller, Schulz, Wagner …) und Nachnamen, die mehrere
+   Abgeordnete tragen, brauchen Beleg 1 oder 2. */
+const NACHNAME_ALLTAG=new Set(['müller','schmidt','schneider','fischer','weber','meyer','meier','wagner','becker','schulz','schulze','hoffmann','koch','richter','klein','wolf','schröder','neumann','schwarz','braun','zimmermann','krüger','hartmann','lange','werner','krause','lehmann','köhler','herrmann','könig','walter','mayer','huber','kaiser','fuchs','peters','lang','scholz','möller','weiß','weiss','jung','hahn','vogel','friedrich','keller','günther','frank','berger','winkler','roth','beck','lorenz','baumann','franke','albrecht','schuster','simon','ludwig','böhm','winter','kraus','martin','schumacher','krämer','vogt','stein','otto','sommer','groß','seidel','heinrich','brandt','haas','schreiber','graf','dietrich','ziegler','kuhn','pohl','engel','horn','busch','bergmann','thomas','voigt','sauer','arnold','wolff','pfeiffer','kraft','bär','reiche','stark','frei','kern','linke','grün','grüne','mark','ernst','paul','may','may','beer','held','heil','hase','rose','lamm','bauer','jäger','schäfer','schubert','dietz','barth','stahl','bock','kurz','link','wirth','sturm','schmitt','schmitz']);
+const ROLLE_RE=/(kanzler\w*|vizekanzler\w*|minister\w*|staatssekretär\w*|staatsminister\w*|abgeordnete\w*|mdb|mdl|mdep|fraktionschef\w*|fraktionsvorsitzende\w*|fraktionsvize|parteichef\w*|parteivorsitzende\w*|vorsitzende\w*|generalsekretär\w*|sprecher\w*|politiker\w*|präsident\w*|ministerpräsident\w*|bürgermeister\w*|senator\w*|landrat|landrätin|obfrau|obmann|berichterstatter\w*|bundestagsvize\w*|[a-zäöü]+-(politiker\w*|chef\w*|abgeordnete\w*|fraktionschef\w*|vorsitzende\w*|generalsekretär\w*|spitzenkandidat\w*))\s+([a-zäöüß.-]+\s+){0,2}$/;
+const PARTEI_WORT=/\b(cdu|csu|union|spd|grünen?|afd|linken?|fdp|bsw|ssw)\b/g;
+const escRe=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function personVorbereiten(p){
+  if(p._nn)return;
+  const ohneTitel=String(p.name||'').replace(/^((dr|prof|sen|rep)\.\s*|dr\.\s*h\.\s*c\.\s*)+/i,'').trim();
+  p._voll=norm(ohneTitel);
+  p._nn=norm((p.aliases||[])[1]||ohneTitel.split(/\s+/).pop()||'');
+  p._alltag=NACHNAME_ALLTAG.has(p._nn);
+  p._kanon=p.party?fraktionKanon(p.party):'';
+  p._prominent=/kanzler|minister|präsident|vorsitz|fraktionschef|generalsekret/i.test((p.role||'')+' '+(p.org||''));
+  p._re=new RegExp('(^|[^a-zäöüß])'+escRe(p._nn)+'(?=[^a-zäöüß]|$)','g');
+}
+function personPasst(p,txt,mehrdeutig){
+  personVorbereiten(p);
+  if(p._voll&&p._voll.includes(' ')&&txt.includes(p._voll))return true;
+  p._re.lastIndex=0;let m;
+  while((m=p._re.exec(txt))){
+    const pos=m.index+m[1].length;
+    const vor=txt.slice(Math.max(0,pos-70),pos);
+    const r=vor.match(ROLLE_RE);
+    if(r){
+      /* "SPD-Politiker X": Partei im Rollenwort muss passen. */
+      const pm=r[1].match(/^([a-zäöü]+)-/);
+      if(!pm||!p._kanon||fraktionKanon(pm[1])===p._kanon||!/^(cdu|csu|union|spd|grüne\w*|afd|linke\w*|fdp|bsw)$/.test(pm[1]))return true;
+    }
+    if(mehrdeutig||p._alltag)continue;
+    /* Partei in unmittelbarer Nähe (etwa zehn Wörter). */
+    if(p._kanon){
+      const fenster=txt.slice(Math.max(0,pos-80),pos+80);
+      let pw;PARTEI_WORT.lastIndex=0;
+      while((pw=PARTEI_WORT.exec(fenster)))if(fraktionKanon(pw[1])===p._kanon)return true;
+    }
+    /* Eindeutiger, unverwechselbarer Nachname. */
+    if(p._nn.length>=6||(p._prominent&&p._nn.length>=4))return true;
+  }
+  return false;
+}
 function indexieren(){
   [...ARTICLES,...STORIES,...DOCS,...EVENTS,...PEOPLE,...ORGS,...COMMITTEES,...INSTITUTIONS,...NEWSLETTERS,...PROCS,...ELECTIONS,...VOTES].forEach(x=>{if(x.id)ITEMS[x.id]=x});
   MARKET_CATALOG.forEach(m=>{MARKET_BY_SYM[m.sym]=m});
@@ -3561,18 +3932,27 @@ function indexieren(){
   });
   /* Erwähnungen: bevorzugt das Feld "personen" aus fetch_news.py; sonst
      Nachnamen-Index wie im Backend (voller Name oder Nachname + Partei). */
-  PEOPLE.forEach(p=>{const n=norm((p.aliases||[])[1]||p.name.split(' ').pop());if(n.length>3)(IDX.personNach[n]=IDX.personNach[n]||[]).push(p)});
+  PEOPLE.forEach(p=>{personVorbereiten(p);if(p._nn.length>3)(IDX.personNach[p._nn]=IDX.personNach[p._nn]||[]).push(p)});
   const hatFeld=ARTICLES.some(a=>a.personen&&a.personen.length);
   ARTICLES.forEach(a=>{
-    if(hatFeld){(a.personen||[]).forEach(pid=>(IDX.mentions[pid]=IDX.mentions[pid]||[]).push(a));return}
     /* Eigennamen aus der Entitätenerkennung zählen mit – dort steht der volle Name oft, auch wenn der Teaser gekürzt ist. */
-    const txt=a._txt+' '+norm((a.ents||[]).join(' '));
-    const woerter=txt.match(/[a-zäöüß][a-zäöüß-]{2,}/g)||[];
+    const txt=(a._txt||(a._txt=norm(a.title+' '+a.desc)))+' | '+norm((a.ents||[]).join(' | '));
     const gesehen=new Set();
+    const merke=p=>{if(gesehen.has(p.id))return;gesehen.add(p.id);(IDX.mentions[p.id]=IDX.mentions[p.id]||[]).push(a)};
+    if(hatFeld){
+      /* Die Zuordnung des Laufs wird übernommen – außer bei Allerwelts- und
+         Mehrfachnamen: "Schulz" oder "Müller" plus irgendwo "SPD" im Text
+         ist noch kein Beleg. Dort muss der volle Name oder eine Rolle
+         ("SPD-Politiker Schulz", "Ministerin Reiche") dastehen. */
+      (a.personen||[]).forEach(pid=>{const p=ITEMS[pid]||PEOPLE.find(x=>x.id===pid);if(!p)return;
+        personVorbereiten(p);
+        const zweifel=p._alltag||(IDX.personNach[p._nn]||[]).length>1;
+        if(!zweifel||personPasst(p,txt,true))merke(p)});
+    }
+    const woerter=txt.match(/[a-zäöüß][a-zäöüß-]{2,}/g)||[];
     for(const w of woerter){const ps=IDX.personNach[w];if(!ps)continue;
-      for(const p of ps){if(gesehen.has(p.id))continue;
-        const kurz=norm(p.name.replace(/^(dr\.|prof\.|dr\. h\. c\.|sen\.|rep\.)\s*/i,''));
-        if(txt.includes(norm(p.name))||txt.includes(kurz)||(p.party&&txt.includes(norm(p.party)))){gesehen.add(p.id);(IDX.mentions[p.id]=IDX.mentions[p.id]||[]).push(a)}}}
+      const mehrdeutig=ps.length>1;
+      for(const p of ps){if(!gesehen.has(p.id)&&personPasst(p,txt,mehrdeutig))merke(p)}}
   });
   ARTICLES.forEach(a=>{delete a._cl;a.clusterZiel=a.cluster;const l=clusterArts(a);a._cl=l;a.cluster=l.length+1});
   IDX.ready=true;
@@ -3600,8 +3980,8 @@ async function laden(){
   leeren();render();
   zeigeLadebalken('Lade Daten …');
   const [n,e,b]=await Promise.all([hole(DATEIEN.news),hole(DATEIEN.eu),hole(DATEIEN.bt)]);
-  const [la,us,dc,pp,nl,dip,el,mk,ki,vo]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
-    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki),hole(DATEIEN.votes)]);
+  const [la,us,dc,pp,nl,dip,el,mk,ki,vo,pl]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
+    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki),hole(DATEIEN.votes),hole(DATEIEN.plenum)]);
 
   /* Jeder Abschnitt einzeln abgesichert: scheitert einer (unerwartetes Feld
      in genau einer Meldung, einem Termin, einer Person …), fallen die
@@ -3731,7 +4111,8 @@ async function laden(){
   sicher('Verfahren',()=>{if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,400).map(mapVerfahren))});
   /* Amtliche Sitzverteilung aus dem Lauf – schlägt die eingebaute Tabelle. */
   sicher('Sitzverteilung',()=>{window.SEATS=(pp&&pp.seats)||null});
-  sicher('Abstimmungen',()=>{VOTES.push(...mapAbstimmungen(vo));abstimmungenZuordnen()});
+  sicher('Abstimmungen',()=>{VOTES.push(...mapAbstimmungen(vo),...mapPlenum(pl));VOTES.sort((a,b)=>b.date-a.date);abstimmungenZuordnen()});
+  sicher('Reden im Plenum',()=>redenZuordnen(pl));
   sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
   sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
   sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
@@ -3739,15 +4120,28 @@ async function laden(){
      (ki_zusammenfassungen.py, alle sechs Stunden, je Region und in der
      Sprache der Quellen). Flach abgelegt: id → Schlagzeile und Satz. */
   sicher('KI-Schlagzeilen',()=>{
-    window.KISCHLAG={};
+    window.KISCHLAG={};window.KIBLOCK={};window.KIDUB={};
     const sch=ki&&(ki.schlagzeilen||ki.lage);
-    if(!sch)return;
-    const bloecke=sch.regionen?Object.values(sch.regionen):[];
-    bloecke.forEach(r=>(r.items||[]).forEach(it=>{
-      if(it&&it.id&&it.schlagzeile)KISCHLAG[it.id]={s:it.schlagzeile,t:it.text||'',sp:r.sprache||'de'};
-    }));
+    if(!sch||!sch.regionen)return;
+    Object.entries(sch.regionen).forEach(([region,r])=>{
+      const gruppen=[];
+      (r.items||[]).forEach((it,i)=>{
+        if(!it||!it.schlagzeile)return;
+        const ids=(it.ids&&it.ids.length?it.ids:[it.id]).filter(Boolean);
+        const lead=it.id||ids[0];
+        if(!lead)return;
+        KISCHLAG[lead]={s:it.schlagzeile,t:it.text||'',sp:r.sprache||'de'};
+        /* Alles in einer Gruppe ist für die Dublettenprüfung EINE Meldung –
+           auch über Sprachgrenzen: "Dänemark und USA einigen sich" und
+           "Denmark hails Greenland deal" hat das Modell zusammengelegt. */
+        ids.forEach(id=>{if(!KIDUB[id])KIDUB[id]='kg:'+region+':'+i});
+        gruppen.push({lead,ids});
+      });
+      KIBLOCK[region]={ts:(r.ts||0)*1000,gruppen,sprache:r.sprache||'de'};
+    });
     window.KISTAND=sch.stand||'';
   });
+  sicher('Themenlagen mit KI',kiThemenVerschneiden);
   sicher('Verzeichnis (Index)',indexieren);
 
   ZEITEN['_gesamt']=Math.round(performance.now()-(window.LADESTART||0));

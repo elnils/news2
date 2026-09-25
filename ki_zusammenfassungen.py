@@ -53,6 +53,10 @@ MODELLE: OpenRouter nimmt Modelle regelmäßig aus dem kostenlosen Kontingent
 erst auf den Nachfolger, den die Fehlermeldung nennt, dann auf ein anderes
 freies Modell aus der Modell-Liste von OpenRouter, zuletzt auf Groq.
 
+STAPEL: Die Meldungen gehen zu KI_BATCH Stück in eine Anfrage (Antwort als
+JSON mit Nummern). Bei gleichem Kontingent werden so etwa achtmal so viele
+Meldungen zusammengefasst wie früher mit einer Anfrage je Meldung.
+
 KOSTEN: rund 400 Eingabe- und 120 Ausgabe-Token je Meldung. Bei 25 Meldungen
 alle 25 Minuten bleibt das im Rahmen des kostenlosen Groq-Kontingents; wer
 sparen will, setzt KI_MAX kleiner oder ruft das Skript nur stündlich auf.
@@ -73,10 +77,12 @@ OR_KEY = os.environ.get("OPEN_ROUTER_API", "").strip()
 OR_MODEL = os.environ.get("OR_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
 GROQ_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.environ.get("KI_MODELL", "llama-3.3-70b-versatile")
-MAX_NEU = int(os.environ.get("KI_MAX", "15"))
-SCHLAG_N = int(os.environ.get("KI_SCHLAG_N", "10"))            # Meldungen je Region
-SCHLAG_MIN = int(os.environ.get("KI_SCHLAG_MIN", "360"))       # Minuten: alle sechs Stunden
-SCHLAG_REGIONEN = int(os.environ.get("KI_SCHLAG_REGIONEN", "2"))  # Regionen je Lauf
+MAX_NEU = int(os.environ.get("KI_MAX", "48"))      # Meldungen je Lauf
+BATCH = int(os.environ.get("KI_BATCH", "8"))        # Meldungen je Anfrage
+SCHLAG_N = int(os.environ.get("KI_SCHLAG_N", "10"))            # Ereignisse je Region
+SCHLAG_KANDIDATEN = int(os.environ.get("KI_SCHLAG_KANDIDATEN", "30"))  # Gruppen, die das Modell sieht
+SCHLAG_MIN = int(os.environ.get("KI_SCHLAG_MIN", "120"))       # Minuten bis zur Neufassung
+SCHLAG_REGIONEN = int(os.environ.get("KI_SCHLAG_REGIONEN", "3"))  # Regionen je Lauf
 KEEP_DAYS = int(os.environ.get("KI_KEEP_DAYS", "7"))
 TIMEOUT = int(os.environ.get("KI_TIMEOUT", "30"))
 OUT = "ki_meldungen.json"
@@ -295,6 +301,9 @@ def _aehnlich(a, b):
 
 
 def auswahl_fuer(artikel, region, anzahl):
+    """Wie in der Tageslage: erst vorsortieren und grob buendeln, dann dem
+    Modell die Gruppen zeigen. Liefert eine Liste von Gruppen (je eine Liste
+    von Meldungen), die wichtigste zuerst."""
     kandidaten = []
     for a in artikel:
         if alter_stunden(a.get("date", "")) > 24:
@@ -306,24 +315,31 @@ def auswahl_fuer(artikel, region, anzahl):
             continue
         kandidaten.append(a)
     kandidaten.sort(key=lambda a: (wichtig(a), a.get("date", "")), reverse=True)
-    raus = []
+    gruppen = []
     for a in kandidaten:
-        if any(_aehnlich(a.get("title"), b.get("title")) >= 0.45 for b in raus):
-            continue
-        raus.append(a)
-        if len(raus) >= anzahl:
+        # Schwelle wie im Newsletter fuer themengleiche Meldungen (0.38)
+        ziel = next((g for g in gruppen if _aehnlich(a.get("title"), g[0].get("title")) >= 0.38), None)
+        if ziel is not None:
+            ziel.append(a)
+        else:
+            gruppen.append([a])
+        if len(gruppen) >= anzahl:
             break
-    return raus
+    return gruppen
 
 
-SCHLAG_REGELN_DE = """REGELN (in dieser Reihenfolge, sie überschreiben alles andere):
+SCHLAG_REGELN_DE = """REGELN (in dieser Reihenfolge, sie ueberschreiben alles andere):
 - Verwende ausschliesslich Namen, Zahlen, Daten und Orte, die woertlich in den Meldungen unten stehen.
 - Steht ein Amt ohne Namen da, schreibe die Institution: "Wirtschaftsminister kuendigt an" wird
   "Das Wirtschaftsministerium kuendigt an". Erfinde nie eine Behoerde, die nicht dasteht.
-- Schlagzeile: ein Hauptsatz im Praesens, hoechstens 75 Zeichen, ohne Doppelpunkt-Konstruktion
-  am Anfang, ohne Quellenname, ohne Anfuehrungszeichen, ohne Punkt am Ende.
-  Schlecht: "Spritpreise: Hoppermann schlaegt bis zu 25 Cent Entlastung pro Liter vor"
-  Gut:      "Koalition erwaegt 25 Cent Entlastung beim Sprit"
+- Schlagzeile: ein Hauptsatz im Praesens, hoechstens 75 Zeichen, nennt WER und WAS konkret.
+  Ohne Quellenname, ohne Anfuehrungszeichen, ohne Punkt am Ende.
+  VERBOTEN sind Schlagzeilen ohne Gegenstand oder ohne Akteur:
+    schlecht: "Buerger muessen mit Konsequenzen leben"   (wer? welche Konsequenzen?)
+    schlecht: "Daenemark und USA einigen sich"            (worauf?)
+    schlecht: "Brandenburg tankt teuer"                   (Stimmung statt Nachricht)
+    gut:      "Daenemark und USA einigen sich im Groenland-Streit"
+    gut:      "Mineraloelbranche warnt vor Spritpreisdeckel"
 - Satz: eine ganze Aussage, hoechstens 180 Zeichen, nennt das Wesentliche und, wenn es dasteht,
   die Folge. Keine Wiederholung der Schlagzeile mit anderen Worten.
 - Keine Meta-Kommentare ("laut Quelltext", "unklar bleibt"), keine leeren Phrasen
@@ -335,38 +351,62 @@ SCHLAG_REGELN_EN = """RULES (in this order, they override everything else):
 - Use only names, numbers, dates and places that appear verbatim in the items below.
 - If an office is mentioned without a name, write the institution instead of a person.
   Never invent an agency that is not in the text.
-- Headline: one main clause in present tense, at most 75 characters, no source name,
-  no quotation marks, no trailing period.
+- Headline: one main clause in present tense, at most 75 characters, naming WHO does WHAT.
+  No source name, no quotation marks, no trailing period. Vague headlines without an
+  actor or subject ("Citizens must live with consequences") are forbidden.
 - Sentence: one complete statement, at most 180 characters, giving the substance and,
   where stated, the consequence. Do not restate the headline.
-- No meta comments ("according to the source"), no empty phrases ("experts warn",
-  "far-reaching consequences"), no opinion."""
+- No meta comments, no empty phrases ("experts warn"), no opinion."""
+
+AUSWAHL_DE = """AUSWAHL (wie in der Tageslage):
+1. Mehrere Eintraege koennen DASSELBE Ereignis beschreiben – auch in verschiedenen Sprachen
+   ("Daenemark und USA einigen sich" = "Denmark hails Greenland deal"). Fasse sie zu EINER
+   Meldung zusammen und nenne alle ihre Nummern.
+2. Waehle danach die {n} wichtigsten Ereignisse nach Nachrichtenwert: Tragweite, Zahl der
+   Betroffenen, politische und wirtschaftliche Bedeutung, Zahl der Quellen.
+   Sport, Vermischtes, Service und Lokales nur, wenn sie ausnahmsweise herausragen.
+3. Zwei Aspekte desselben Themas (etwa zwei Meldungen zu den Spritpreisen) sind EIN Eintrag,
+   ausser sie berichten wirklich verschiedene Ereignisse."""
+
+AUSWAHL_EN = """SELECTION (like a daily briefing):
+1. Several items may describe the SAME event, also across languages. Merge them into ONE entry
+   and list all their numbers.
+2. Then choose the {n} most newsworthy events: reach, people affected, political and economic
+   weight, number of sources. Sports, lifestyle, service and local news only if exceptional.
+3. Two angles on the same topic count as ONE entry unless they report genuinely different events."""
 
 
-def schlag_frage(anbieter, meldungen, sprache, region):
-    liste = "\n".join(
-        f"[{i+1}] ({a.get('source','')}) {a.get('title','')}"
-        + (f" – {(a.get('desc') or '')[:260]}" if a.get("desc") else "")
-        for i, a in enumerate(meldungen))
+def schlag_frage(anbieter, gruppen, sprache, region):
+    zeilen = []
+    for i, g in enumerate(gruppen):
+        a = g[0]
+        quellen = sorted({x.get("source", "") for x in g if x.get("source")})
+        zusatz = "; ".join(x.get("title", "") for x in g[1:3])
+        zeilen.append(f"[{i+1}] ({', '.join(quellen[:4])}{' +' + str(len(quellen)-4) if len(quellen) > 4 else ''}) "
+                      f"{a.get('title','')}"
+                      + (f" – {(a.get('desc') or '')[:240]}" if a.get("desc") else "")
+                      + (f" | auch: {zusatz[:200]}" if zusatz else ""))
+    liste = "\n".join(zeilen)
     heute = datetime.now(timezone.utc).strftime("%d.%m.%Y")
     if sprache == "en":
-        system = ("You are a sober news editor. You rewrite wire headlines into clean news "
-                  "headlines and one factual sentence. You never add facts.")
-        auftrag = (f"Today is {heute}; your training data is outdated.\n\n{SCHLAG_REGELN_EN}\n\n"
-                   f"Items ({REGION_NAME.get(region, region)}):\n{liste}\n\n"
-                   'Answer with JSON only, no prose, no code fence: '
-                   '[{"nr":1,"schlagzeile":"…","text":"…"}] – one object per item, same order, English.')
+        system = ("You are a sober news editor who compiles the daily top stories. You group "
+                  "duplicate reports, pick the most important events and write clean headlines. "
+                  "You never add facts.")
+        auftrag = (f"Today is {heute}; your training data is outdated.\n\n{AUSWAHL_EN.format(n=SCHLAG_N)}\n\n"
+                   f"{SCHLAG_REGELN_EN}\n\nItems ({REGION_NAME.get(region, region)}):\n{liste}\n\n"
+                   'Answer with JSON only, no prose, no code fence, most important first: '
+                   '[{"nrs":[1,4],"schlagzeile":"…","text":"…"}] – English.')
     else:
-        system = ("Du bist ein nuechterner Nachrichtenredakteur. Du machst aus Feed-Ueberschriften "
-                  "saubere Schlagzeilen und einen sachlichen Satz. Du erfindest nichts hinzu.")
-        auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n{SCHLAG_REGELN_DE}\n\n"
-                   f"Meldungen ({REGION_NAME.get(region, region)}):\n{liste}\n\n"
-                   'Antworte nur mit JSON, ohne Vorspann, ohne Code-Zaun: '
-                   '[{"nr":1,"schlagzeile":"…","text":"…"}] – ein Objekt je Meldung, gleiche '
-                   'Reihenfolge, auf Deutsch.')
+        system = ("Du bist ein nuechterner Nachrichtenredakteur und stellst die wichtigsten Meldungen "
+                  "des Tages zusammen. Du legst doppelte Berichte zusammen, waehlst die wichtigsten "
+                  "Ereignisse und schreibst saubere Schlagzeilen. Du erfindest nichts hinzu.")
+        auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n{AUSWAHL_DE.format(n=SCHLAG_N)}\n\n"
+                   f"{SCHLAG_REGELN_DE}\n\nMeldungen ({REGION_NAME.get(region, region)}):\n{liste}\n\n"
+                   'Antworte nur mit JSON, ohne Vorspann, ohne Code-Zaun, das Wichtigste zuerst: '
+                   '[{"nrs":[1,4],"schlagzeile":"…","text":"…"}] – auf Deutsch.')
     name, url, key, modell = anbieter
     koerper = json.dumps({
-        "model": modell, "temperature": 0.2, "max_tokens": 1200,
+        "model": modell, "temperature": 0.2, "max_tokens": 1600,
         "messages": [{"role": "system", "content": system},
                      {"role": "user", "content": auftrag}],
     }).encode("utf-8")
@@ -374,16 +414,23 @@ def schlag_frage(anbieter, meldungen, sprache, region):
     if name == "openrouter":
         kopf["HTTP-Referer"] = "https://presseschau.example"
         kopf["X-Title"] = "Presseschau"
-    with urlopen(Request(url, data=koerper, headers=kopf), timeout=TIMEOUT) as r:
+    with urlopen(Request(url, data=koerper, headers=kopf), timeout=max(TIMEOUT, 60)) as r:
         j = json.loads(r.read().decode("utf-8", "replace"))
     text = (j.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
-    return _schlag_lesen(text, meldungen)
+    return _schlag_lesen(text, gruppen)
 
 
-def _schlag_lesen(text, meldungen):
-    """Antwort auswerten: bevorzugt JSON, sonst zeilenweise."""
-    roh = text.strip()
-    roh = re.sub(r"^```(?:json)?|```$", "", roh, flags=re.M).strip()
+# Allgemeinplaetze, die trotz Anweisung durchrutschen: lieber die
+# Feed-Ueberschrift behalten als eine leere Schlagzeile zeigen.
+LEERE_SCHLAGZEILE = re.compile(
+    r"^(buerger|bürger|menschen|verbraucher|citizens|people)\s+(muessen|müssen|must)\b|"
+    r"\b(mit (den )?konsequenzen leben|live with (the )?consequences)\b|"
+    r"^\S+\s+(und|and)\s+\S+\s+(einigen sich|agree)$", re.I)
+
+
+def _schlag_lesen(text, gruppen):
+    """Antwort auswerten: JSON mit nrs → Gruppen → Meldungs-IDs."""
+    roh = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
     daten = None
     m = re.search(r"\[.*\]", roh, re.S)
     if m:
@@ -391,28 +438,49 @@ def _schlag_lesen(text, meldungen):
             daten = json.loads(m.group(0))
         except Exception:
             daten = None
-    out = []
-    if isinstance(daten, list):
-        for eintrag in daten:
-            if not isinstance(eintrag, dict):
-                continue
+    out, vergeben = [], set()
+    if not isinstance(daten, list):
+        return out
+    for eintrag in daten:
+        if not isinstance(eintrag, dict):
+            continue
+        nrs = eintrag.get("nrs") or eintrag.get("nr") or []
+        if isinstance(nrs, (int, str)):
+            nrs = [nrs]
+        nummern = []
+        for n in nrs:
             try:
-                nr = int(eintrag.get("nr") or eintrag.get("id") or 0)
+                n = int(n)
             except (TypeError, ValueError):
-                nr = 0
-            if not 1 <= nr <= len(meldungen):
                 continue
-            kopf = str(eintrag.get("schlagzeile") or eintrag.get("headline") or "").strip(" \"'.")
-            satz = str(eintrag.get("text") or eintrag.get("sentence") or "").strip()
-            if len(kopf) < 12:
-                continue
-            out.append({"id": meldungen[nr - 1].get("id"), "schlagzeile": kopf[:120],
-                        "text": satz[:240], "quelle": meldungen[nr - 1].get("source", "")})
+            if 1 <= n <= len(gruppen) and n not in vergeben:
+                nummern.append(n)
+        if not nummern:
+            continue
+        kopf = str(eintrag.get("schlagzeile") or eintrag.get("headline") or "").strip(" \"'.")
+        satz = str(eintrag.get("text") or eintrag.get("sentence") or "").strip()
+        if len(kopf) < 12 or LEERE_SCHLAGZEILE.search(kopf):
+            kopf = ""                     # Frontend zeigt dann die Feed-Ueberschrift
+        vergeben.update(nummern)
+        meldungen = [x for n in nummern for x in gruppen[n - 1]]
+        lead = gruppen[nummern[0] - 1][0]
+        eintrag_out = {"id": lead.get("id"), "ids": [x.get("id") for x in meldungen if x.get("id")],
+                       "quellen": sorted({x.get("source", "") for x in meldungen if x.get("source")})}
+        if kopf:
+            eintrag_out["schlagzeile"] = kopf[:120]
+            eintrag_out["text"] = satz[:240]
+        else:
+            eintrag_out["schlagzeile"] = lead.get("title", "")[:120]
+            eintrag_out["text"] = ""
+        out.append(eintrag_out)
+        if len(out) >= SCHLAG_N:
+            break
     return out
 
 
-def sprache_fuer(meldungen):
+def sprache_fuer(gruppen):
     """Englisch schreiben, wenn die Meldungen ueberwiegend englisch sind."""
+    meldungen = [g[0] for g in gruppen] if gruppen and isinstance(gruppen[0], list) else gruppen
     if not meldungen:
         return "de"
     deutsch = sum(1 for a in meldungen if DEUTSCH_RE.search(a.get("title") or ""))
@@ -427,12 +495,12 @@ def schlagzeilen_bauen(artikel, anbieter, alt_block):
     alt = dict((alt_block or {}).get("regionen") or {})
     faellig = []
     for region in REGIONEN:
-        auswahl = auswahl_fuer(artikel, region, SCHLAG_N)
+        auswahl = auswahl_fuer(artikel, region, SCHLAG_KANDIDATEN)
         if len(auswahl) < 3:
             continue
-        ids = [a.get("id") for a in auswahl]
+        ids = [g[0].get("id") for g in auswahl[:SCHLAG_N]]
         vorher = alt.get(region) or {}
-        alt_ids = [i.get("id") for i in (vorher.get("items") or [])]
+        alt_ids = [x for i in (vorher.get("items") or []) for x in (i.get("ids") or [i.get("id")])]
         gleich = len(set(ids) & set(alt_ids)) >= max(1, len(ids) * 0.6)
         frisch = (vorher.get("ts") or 0) > time.time() - SCHLAG_MIN * 60
         if vorher and frisch and gleich:
@@ -453,7 +521,9 @@ def schlagzeilen_bauen(artikel, anbieter, alt_block):
                     alt[region] = {"sprache": sprache, "ts": int(time.time()),
                                    "stand": _stand_jetzt(), "via": anbieter[0][0],
                                    "modell": anbieter[0][3], "items": items}
-                    print(f"  Schlagzeilen {region}: {len(items)} Stueck ({sprache}, {anbieter[0][0]})")
+                    gebuendelt = sum(1 for i in items if len(i.get("ids") or []) > 1)
+                    print(f"  Schlagzeilen {region}: {len(items)} Ereignisse aus {len(auswahl)} Gruppen, "
+                          f"{gebuendelt} gebuendelt ({sprache}, {anbieter[0][0]})")
                 else:
                     print(f"  Schlagzeilen {region}: keine verwertbare Antwort")
                 break
@@ -487,6 +557,61 @@ def _stand_jetzt():
         return datetime.now(timezone.utc).strftime("%d.%m.%Y, %H:%M Uhr")
 
 
+def frage_stapel(anbieter, meldungen):
+    """Mehrere Meldungen in einer Anfrage zusammenfassen. Antwort als JSON
+    mit Nummern – die Zuordnung zur Meldung macht das Skript, nicht das
+    Modell (derselbe Kniff wie im Newsletter)."""
+    heute = datetime.now(timezone.utc).strftime("%d.%m.%Y")
+    zeilen = []
+    for i, a in enumerate(meldungen):
+        z = (f"[{i+1}] Quelle: {a.get('source','')}\nTitel: {a.get('title','')}\n"
+             f"Text: {(a.get('desc') or '')[:900]}")
+        if a.get("ls"):
+            z += f"\nLeitsatz: {a['ls']}"
+        zeilen.append(z)
+    auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n"
+               + AUFGABE
+               + "Regeln: nur Namen, Zahlen und Orte verwenden, die woertlich im Text stehen; "
+                 "steht ein Amt ohne Namen da, die Institution nennen; keine Meta-Kommentare, "
+                 "keine leeren Phrasen. Englische Meldungen auf Deutsch zusammenfassen.\n\n"
+               + "\n\n".join(zeilen)
+               + '\n\nAntworte nur mit JSON, ohne Vorspann und ohne Code-Zaun: '
+                 '[{"nr":1,"ki":"…"}] – ein Objekt je Meldung.')
+    name, url, key, modell = anbieter
+    koerper = json.dumps({
+        "model": modell, "temperature": 0.2, "max_tokens": 180 * len(meldungen) + 200,
+        "messages": [{"role": "system", "content": SYSTEM},
+                     {"role": "user", "content": auftrag}],
+    }).encode("utf-8")
+    kopf = {"Content-Type": "application/json", "Authorization": f"Bearer {key}"}
+    if name == "openrouter":
+        kopf["HTTP-Referer"] = "https://presseschau.example"
+        kopf["X-Title"] = "Presseschau"
+    with urlopen(Request(url, data=koerper, headers=kopf), timeout=max(TIMEOUT, 60)) as r:
+        j = json.loads(r.read().decode("utf-8", "replace"))
+    text = (j.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
+    roh = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
+    m = re.search(r"\[.*\]", roh, re.S)
+    out = {}
+    if not m:
+        return out
+    try:
+        daten = json.loads(m.group(0))
+    except Exception:
+        return out
+    for e in daten if isinstance(daten, list) else []:
+        if not isinstance(e, dict):
+            continue
+        try:
+            nr = int(e.get("nr"))
+        except (TypeError, ValueError):
+            continue
+        t = str(e.get("ki") or e.get("text") or "").strip()
+        if 1 <= nr <= len(meldungen) and len(t) >= 30 and meldungen[nr - 1].get("id"):
+            out[meldungen[nr - 1]["id"]] = t[:600]
+    return out
+
+
 def main():
     if not ANBIETER:
         print("Weder OPEN_ROUTER_API noch GROQ_API_KEY gesetzt – ki_meldungen.json bleibt unverändert.")
@@ -512,49 +637,65 @@ def main():
     items = {k: v for k, v in items.items()
              if k in bekannt and (v.get("ts") or 0) > grenze}
 
+    # Mehr Meldungen als frueher: Statt einer Anfrage je Meldung gehen
+    # KI_BATCH Meldungen in eine Anfrage. Bei gleichem Kontingent werden so
+    # rund achtmal so viele Meldungen zusammengefasst. Ausgelassen wird nur,
+    # was keinen Teaser hat (dann steht nichts drin, was nicht schon der
+    # Titel sagt) und was Werbung, Test oder Podcastfolge ist.
     offen = [a for a in artikel
-             if a.get("id") and a["id"] not in items and alter_stunden(a.get("date", "")) <= 36]
+             if a.get("id") and a["id"] not in items and alter_stunden(a.get("date", "")) <= 36
+             and not RAUSCH_RE.search(a.get("title") or "")
+             and len(a.get("desc") or "") >= 140]
     offen.sort(key=wichtig, reverse=True)
-    offen = [a for a in offen if wichtig(a) >= 2][:MAX_NEU]
+    offen = offen[:MAX_NEU]
 
     if not offen:
         print("Nichts Neues, das eine Zusammenfassung braucht.")
     neu = fehler = 0
     anbieter = list(ANBIETER)          # bei 401/403/429 fällt der erste weg
-    for a in offen:
+    stapel = [offen[k:k + BATCH] for k in range(0, len(offen), BATCH)]
+    for teil in stapel:
+        for _versuch in range(2):
+            if not anbieter:
+                break
+            try:
+                ergebnis = frage_stapel(anbieter[0], teil)
+                for aid, text in ergebnis.items():
+                    items[aid] = {"ki": text, "ts": int(time.time()), "via": anbieter[0][0]}
+                    neu += 1
+                print(f"  ok   {anbieter[0][0]:<10} {len(ergebnis)}/{len(teil)} Meldungen zusammengefasst")
+                break
+            except HTTPError as e:
+                leib = ""
+                try:
+                    leib = json.loads(e.read().decode())["error"]["message"]
+                except Exception:
+                    pass
+                print(f"  ---  {anbieter[0][0]} HTTP {e.code}: {leib[:140]}")
+                fehler += 1
+                # Modell weg (404) oder nicht mehr kostenlos: anderes Modell,
+                # derselbe Stapel wird noch einmal versucht.
+                if anbieter[0][0] == "openrouter" and (e.code in (400, 404) or "unavailable for free" in leib):
+                    ersatz = or_ersatzmodell(leib, anbieter[0][3])
+                    if ersatz:
+                        print(f"     Modellwechsel: {anbieter[0][3]} → {ersatz}")
+                        anbieter[0][3] = ersatz
+                        continue
+                    print("     Kein freies Modell gefunden – OpenRouter fällt weg.")
+                    anbieter.pop(0)
+                    continue
+                if e.code in (401, 403, 429, 402):
+                    print(f"     {anbieter[0][0]} fällt für diesen Lauf weg.")
+                    anbieter.pop(0)
+                    continue
+                break
+            except (URLError, ValueError, KeyError) as e:
+                print(f"  ---  {type(e).__name__}: {e}")
+                fehler += 1
+                break
         if not anbieter:
             print("Kein Anbieter mehr verfügbar – Rest im nächsten Lauf.")
             break
-        try:
-            t = frage(anbieter[0], a)
-            if t:
-                items[a["id"]] = {"ki": t, "ts": int(time.time()), "via": anbieter[0][0]}
-                neu += 1
-                print(f"  ok   {anbieter[0][0]:<10} {a.get('source','')[:16]:<16} {a.get('title','')[:56]}")
-        except HTTPError as e:
-            leib = ""
-            try:
-                leib = json.loads(e.read().decode())["error"]["message"]
-            except Exception:
-                pass
-            print(f"  ---  {anbieter[0][0]} HTTP {e.code}: {leib[:140]}")
-            fehler += 1
-            # Modell weg (404) oder nicht mehr kostenlos: anderes Modell nehmen,
-            # statt den ganzen Anbieter fallen zu lassen.
-            if anbieter[0][0] == "openrouter" and e.code in (400, 404) or "unavailable for free" in leib:
-                ersatz = or_ersatzmodell(leib, anbieter[0][3])
-                if ersatz:
-                    print(f"     Modellwechsel: {anbieter[0][3]} → {ersatz}")
-                    anbieter[0][3] = ersatz
-                    continue
-                print("     Kein freies Modell gefunden – OpenRouter fällt weg.")
-                anbieter.pop(0)
-            elif e.code in (401, 403, 429, 402):
-                print(f"     {anbieter[0][0]} fällt für diesen Lauf weg.")
-                anbieter.pop(0)
-        except (URLError, ValueError, KeyError) as e:
-            print(f"  ---  {type(e).__name__}: {e}")
-            fehler += 1
         time.sleep(0.5)
 
     schlag = schlagzeilen_bauen(artikel, anbieter, (alt.get("schlagzeilen") or None))
