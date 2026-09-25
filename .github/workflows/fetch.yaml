@@ -74,21 +74,24 @@ jobs:
       # aus dem kostenlosen Kontingent nimmt ("unavailable for free") - erst
       # auf den in der Fehlermeldung genannten Nachfolger, dann auf ein
       # anderes freies Modell, zuletzt auf Groq. OR_MODEL ist nur der
-      # Startwert. Zusaetzlich schreibt es je Region die zehn wichtigsten
-      # Meldungen als Schlagzeile mit einem Satz - alle sechs Stunden, je
-      # Lauf hoechstens zwei Regionen.
-      - name: KI-Zusammenfassungen und Schlagzeilen (Meldungen)
+      # Startwert. Zusaetzlich stellt es je Region die zehn wichtigsten
+      # Ereignisse zusammen wie die Tageslage: doppelte Berichte buendeln
+      # (auch ueber Sprachgrenzen), nach Nachrichtenwert waehlen, Schlagzeile
+      # und Satz schreiben. Alle zwei Stunden, je Lauf hoechstens drei Regionen.
+      - name: KI-Zusammenfassungen und Top-Auswahl (Meldungen)
         continue-on-error: true
-        timeout-minutes: 6
+        timeout-minutes: 8
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          KI_MAX: '15'
+          KI_MAX: '48'                 # Meldungen je Lauf, die eine Zusammenfassung bekommen
+          KI_BATCH: '8'                # Meldungen je Anfrage (48 Meldungen = 6 Anfragen)
           KI_KEEP_DAYS: '7'
-          KI_SCHLAG_N: '10'          # Meldungen je Region
-          KI_SCHLAG_MIN: '360'       # alle sechs Stunden neu schreiben
-          KI_SCHLAG_REGIONEN: '2'    # Regionen je Lauf (6 Regionen = 3 Laeufe)
+          KI_SCHLAG_N: '10'            # Ereignisse je Region
+          KI_SCHLAG_KANDIDATEN: '30'   # so viele Gruppen sieht das Modell zur Auswahl
+          KI_SCHLAG_MIN: '120'         # alle zwei Stunden neu zusammenstellen
+          KI_SCHLAG_REGIONEN: '3'      # Regionen je Lauf (6 Regionen = 2 Laeufe)
         run: python ki_zusammenfassungen.py
 
       # NEU (v10): Kurse für die Ansicht "Märkte". Kein Schlüssel nötig.
@@ -123,6 +126,8 @@ jobs:
           TIME_BUDGET_MIN: '11'     # Skript beendet sich selbst nach 11 Minuten
           LANDTAGE_PER_RUN: '6'     # 16 Landtage in 3 Läufen statt 4
           POLLS_PER_RUN: '12'       # namentliche Abstimmungen je Lauf (je ~630 Stimmen)
+          VOTES_BUDGET_SEC: '150'   # eigenes Zeitfenster dafür, läuft direkt nach dem Bundestag
+          VOTES_WAHLPERIODEN: '2'   # laufende + vorige; die vorige erst, wenn die laufende komplett ist
           POLLS_MAX: '80'           # so viele Abstimmungen der Wahlperiode insgesamt
           VOTES_PER_PERSON: '40'    # Stimmverhalten je Person in people.json
           EP_DETAILS_PER_RUN: '150' # ~720 MEPs in 5 Läufen
@@ -179,6 +184,26 @@ jobs:
           PROTO_BUDGET_MIN: '3'
         run: python3 fetch_protokolle.py
 
+      # NEU (v12): Nicht-namentliche Abstimmungen und Reden aus den
+      # Plenarprotokollen. Liest je Lauf wenige neue Protokolle, erkennt jede
+      # Abstimmung per Handzeichen mit Ergebnis und Fraktionsverhalten, dazu
+      # die Reden je Tagesordnungspunkt, und schreibt plenum_votes.json. Welche Protokolle fertig sind, steht in
+      # plenum_cache.json. Bricht nie den uebrigen Ablauf ab.
+      - name: Abstimmungen per Handzeichen (Plenarprotokolle)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          DIP_KEY: ${{ secrets.DIP_KEY }}
+          WAHLPERIODE: '21'
+          PLENUM_PER_RUN: '6'        # Protokolle je Lauf
+          PLENUM_BUDGET_MIN: '3'
+          WAHLPERIODEN: '21,20,19'   # aktuelle zuerst; ältere erst, wenn die neuere vollständig ist
+          # Koalition und Fraktionen stehen je Wahlperiode im Skript (WP_INFO).
+          # Nach einem Regierungswechsel lässt sich die laufende übersteuern:
+          # KOALITION: '…,…'   FRAKTIONEN: '…,…,…'
+          REDEN_TAGE: '120'          # Reden so lange aufbewahren
+        run: python3 fetch_plenum.py
+
       - name: JSON-Dateien committen
         if: always()
         run: |
@@ -198,7 +223,8 @@ jobs:
                    laender_articles.json us_articles.json documents.json \
                    people.json dip.json calendar.ics newsletters.json elections.json \
                    people_cache.json landtage_cache.json groq_cache.json ai.json access.json \
-                   markets.json ki_meldungen.json votes.json votes_cache.json; do
+                   markets.json ki_meldungen.json votes.json votes_cache.json \
+                   plenum_votes.json plenum_cache.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
