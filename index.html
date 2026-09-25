@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v43</title>
+<title>Presseschau – Entwurf v44</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -370,6 +370,17 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .abst .sp i{display:block;height:100%}
 .abst .wert{font-variant-numeric:tabular-nums;color:var(--text2);font-size:var(--fs-xs)}
 .stimme{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.trend2{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.trend2:last-child{border-bottom:0}
+.trend2 .kopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.trend2 .kopf b{font-size:var(--fs-md);line-height:1.3}
+.trend2 .mv{font-weight:700;font-size:var(--fs-sm);white-space:nowrap}
+.trend2 .mv.up{color:var(--green,#15803d)}.trend2 .mv.dn{color:var(--red,#be123c)}.trend2 .mv.new{color:var(--blue)}.trend2 .mv.eq{color:var(--muted)}
+.trend2 .zahlen{display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap}
+.trend2 .spark{width:64px;height:18px;flex:0 0 auto}
+.trend2 .leit{margin-top:6px;font-size:var(--fs-sm);color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.trend2 .mit{margin-top:6px;font-size:var(--fs-xs);color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.trend2 .mit span{border:1px solid var(--border);border-radius:999px;padding:1px 8px;color:var(--text2)}
 .poll .barw{position:relative}
 .poll .barw .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55;border-radius:1px}
 .poll .v small.up{color:var(--green,#15803d)}
@@ -709,7 +720,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v43</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v44</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1455,45 +1466,75 @@ function kompositumTreffer(A,B){
   }
   return n;
 }
+/* Für die Top-Liste zählt auch, was die KI über eine Meldung geschrieben
+   hat: Ihre Schlagzeile ("Musiala fällt aus") trifft oft die Wörter einer
+   anderen Meldung zur selben Sache besser als die Feed-Überschrift. */
+function dubWorte(a){
+  if(a._twk)return a._twk;
+  const k=(window.KISCHLAG||{})[a.id];
+  const w=titelWorte(a.title);
+  if(k){for(const x of titelWorte((k.s||'')+' '+(k.t||'')))w.add(x)}
+  return a._twk=w;
+}
+/* Seltene Eigennamen im Sinn einer Top-Liste: nicht "Trump" oder
+   "Bundestag", die in jeder zehnten Meldung stehen, aber "Musiala" oder
+   ein Regierungschef auf Staatsbesuch. Grenze: drei Prozent der Meldungen. */
+function fadenNamen(a){
+  if(a._faden)return a._faden;
+  const S0=window._STORY_DF;const s=new Set();
+  const grenze=S0?Math.max(10,Math.round(ARTICLES.length*0.03)):0;
+  (a._hart||(a._hart=hartSignale(a))).forEach(k=>{if(k[0]==='e'&&!ORT_ENT.test(k.slice(2).trim())&&(!S0||(S0.df[k]||0)<=grenze))s.add(k)});
+  return a._faden=s;
+}
+/* Orte, Länder und Institutionen sind kein Faden: Ein Regionalsender
+   schreibt jeden Tag mehrfach über "Sachsen-Anhalt", ein Hauptstadtbüro
+   über "Bundestag". Nur Personen und seltene Einzelereignisse binden. */
+const ORT_ENT=/^(berlin|hamburg|münchen|munchen|köln|koln|frankfurt|stuttgart|düsseldorf|dusseldorf|dresden|leipzig|hannover|bremen|brüssel|brussel|straßburg|strassburg|karlsruhe|luxemburg|washington|peking|beijing|moskau|moscow|kiew|kyiv|london|paris|rom|wien|new york|gaza|israel|iran|ukraine|russland|russia|china|usa|us|eu|europa|europe|nato|uno?|deutschland|germany|frankreich|france|italien|italy|polen|poland|spanien|spain|türkei|turkei|turkey|kanada|canada|japan|indien|india|bayern|baden-württemberg|baden wurttemberg|nordrhein-westfalen|nordrhein westfalen|niedersachsen|hessen|sachsen|sachsen-anhalt|sachsen anhalt|thüringen|thuringen|brandenburg|mecklenburg-vorpommern|mecklenburg vorpommern|schleswig-holstein|schleswig holstein|rheinland-pfalz|rheinland pfalz|saarland|bundestag|bundesrat|bundesregierung|landtag|kabinett|koalition|regierung|opposition|polizei|bundeswehr|weißes haus|weisses haus|white house|kreml|kremlin|kommission)$/i;
 function dubNah(a,b){
   if(Math.abs(a.date-b.date)>36*H)return false;
-  const A=a._tw||(a._tw=titelWorte(a.title)),B=b._tw||(b._tw=titelWorte(b.title));
+  /* "vor der Landtagswahl" und "nach der Landtagswahl" sind zwei Meldungen. */
+  const zb=t=>({vor:/\b(vor|bis zur?)\s+(der|dem|den|die|das)\b/i.test(t),nach:/\bnach\s+(der|dem|den)\b/i.test(t)});
+  const za=zb(a.title||''),zc=zb(b.title||'');
+  if((za.vor&&zc.nach)||(za.nach&&zc.vor))return false;
+  const A=dubWorte(a),B=dubWorte(b);
   const {q,n}=titelAehnlich(A,B);
   const komp=kompositumTreffer(A,B);
   const nGes=n+komp;
   const qGes=Math.min(1,nGes/Math.max(1,Math.min(A.size,B.size)));
-  if(nGes<2)return false;
   const sa=a._hart||(a._hart=hartSignale(a)),sb=b._hart||(b._hart=hartSignale(b));
+  const gleichesHaus=(a._qb||(a._qb=hausVon(a.src)))===(b._qb||(b._qb=hausVon(b.src)));
+  const nah24=Math.abs(a.date-b.date)<=24*H;
+  /* Derselbe Faden: ein seltener Name in beiden Meldungen, dazu …
+     – dasselbe Haus binnen eines Tages ("Netanjahu verteidigt Krieg" und
+       "Proteste gegen Netanjahu", beides Stern) oder
+     – ein weiteres gemeinsames Wort oder ein gemeinsamer Wortstamm ("Musiala
+       fällt aus" und "Klopp spricht über Verletzungen von Musiala").
+     In einer Liste von zehn Plätzen gehört ein Faden auf einen Platz. */
+  const fa=fadenNamen(a),fb=fadenNamen(b);
+  let fadenGem=0;const namensWorte=new Set();
+  for(const k of fa)if(fb.has(k)){fadenGem++;titelWorte(k.slice(2)).forEach(w=>namensWorte.add(w))}
+  if(fadenGem&&nah24){
+    if(gleichesHaus)return true;
+    let frei=0;for(const w of A)if(B.has(w)&&!namensWorte.has(w))frei++;
+    if(frei+komp>=1)return true;
+  }
+  if(nGes<2)return false;
   const na=[...sa].filter(x=>x[0]==='e'),nb=[...sb].filter(x=>x[0]==='e');
   const namenGem=hartGemeinsam(new Set(na),sb);
-  /* Gegenprobe wie bei den Themenlagen: Tragen beide Schlagzeilen Eigennamen
-     und teilen keinen davon, sind es zwei Meldungen – "Harker zur
-     Zinserhöhung" und "Trump reagiert auf die Zinserhöhung" teilen fast
-     jedes Wort und sind trotzdem nicht dasselbe.
-     Ausnahme: Greifen zwei Komposita ineinander und deckt sich die halbe
-     Schlagzeile, wiegt das schwerer als ein unterschiedlicher Eigenname –
-     "Spritpreise: Hoppermann schlägt 25 Cent vor" (Tagesschau, Name
-     Hoppermann) und "Spritpreisentlastung könnte bis zu 25 Cent betragen"
-     (BR, Name Bayern) sind dieselbe Meldung. */
+  /* Gegenprobe: Tragen beide Schlagzeilen Eigennamen und teilen KEINEN
+     davon, sind es zwei Meldungen – "Harker zur Zinserhöhung" und "Trump
+     reagiert auf die Zinserhöhung". Ausnahme: zwei ineinandergreifende
+     Komposita bei halb gleicher Schlagzeile ("Spritpreise …" / "Sprit-
+     preisentlastung …"). */
   const kompStark=komp>=2&&qGes>=0.5;
-  if(!kompStark&&na.length&&nb.length&&namenGem/Math.max(1,na.length+nb.length-namenGem)<0.5&&q<0.85)return false;
-  /* "vor der Landtagswahl" und "nach der Landtagswahl" sind zwei Meldungen,
-     auch wenn sich die Schlagzeilen sonst weitgehend decken. */
-  const zb=t=>({vor:/\b(vor|bis zur?)\s+(der|dem|den|die|das)\b/i.test(t),nach:/\bnach\s+(der|dem|den)\b/i.test(t)});
-  const za=zb(a.title||''),zc=zb(b.title||'');
-  if((za.vor&&zc.nach)||(za.nach&&zc.vor))return false;
+  if(!kompStark&&na.length&&nb.length&&namenGem===0&&q<0.85)return false;
   const gem=hartGemeinsam(sa,sb);
-  /* Zwei ineinandergreifende Komposita plus dieselbe Zahl – "25 Cent" in
-     beiden Schlagzeilen – reichen als Beleg, auch ohne gemeinsamen Namen. */
   const zahlGem=[...sa].filter(x=>x[0]==='z'&&sb.has(x)).length;
   if(komp>=2&&zahlGem>=1)return true;
-  /* Ein gemeinsames langes Wort ("Ministerpräsidenten", "Kriegsverbrechen")
-     wiegt schwerer als zwei kurze. */
   let starke=0;for(const w of A)if(B.has(w)&&w.length>=7)starke++;
-  const gleichesHaus=(a._qb||(a._qb=hausVon(a.src)))===(b._qb||(b._qb=hausVon(b.src)));
   if(qGes>=0.5&&nGes>=2&&(starke>=1||gem>=1||komp>=1))return true;  /* weitgehend gleiche Schlagzeile */
   if(gem>=2&&qGes>=0.34)return true;                                /* zwei harte Belege plus Überschneidung */
-  if(gleichesHaus&&nGes>=3&&Math.abs(a.date-b.date)<=24*H)return true; /* Nachzieher desselben Hauses */
+  if(gleichesHaus&&nGes>=3&&nah24)return true;                      /* Nachzieher desselben Hauses */
   return false;
 }
 /* Sport bekommt in den Top-Meldungen höchstens zwei Plätze – in derselben
@@ -1956,6 +1997,7 @@ function trendZusammenlegen(m){
       if(!(a.includes(b)||b.includes(a)))return;
       if(m[k].label.length>m[ziel].label.length)m[ziel].label=m[k].label;
       m[k].s.forEach(x=>m[ziel].s.add(x));
+      (m[k].h||[]).forEach(x=>m[ziel].h&&m[ziel].h.add(x));
       m[ziel].ids.push(...m[k].ids);
       delete m[k];
     });
@@ -1968,7 +2010,14 @@ function trendZusammenlegen(m){
    kein Metadaten-Vokabular aus Dokumentfeeds ("Content files pdf xml",
    "Preservation metadata"). Vorher kamen ganze Schlagzeilen samt
    "tagesschau.de" als Begriff durch. */
-const BEGRIFF_MUELL=/\.(de|com|org|net|eu|gov|int)\b|https?:|\b(metadata|metadaten|pdf|xml|html|json|rss|download|content|files?|preservation|descriptive|structural|cookie|newsletter|abonnieren|livestream|liveblog|ticker|podcast|video|audio)\b/i;
+const BEGRIFF_MUELL=/\.(de|com|org|net|eu|gov|int)\b|https?:|\b(metadata|metadaten|pdf|xml|html|json|rss|download|content|files?|preservation|descriptive|structural|cookie|newsletter|abonnieren|livestream|liveblog|ticker|podcast|video|audio|unencrypted|personal information|ms ?now|msnbc|cnn|fox news|bbc|reuters|associated press|ap news|dpa|afp|bloomberg|politico|axios|nbc|abc news|cbs news)\b/i;
+/* "Weißen Haus" und "Weißes Haus", "wirtschaftlichen Aufschwung" und
+   "wirtschaftlicher Aufschwung" sind derselbe Begriff. Gezählt wird unter
+   einem Schlüssel ohne Beugungsendung, angezeigt die häufigste Form. */
+const begriffSchluessel=t=>norm(t).split(/\s+/).map(w=>w.length>=6?w.replace(/(en|em|er|es|e|s)$/,''):w).join(' ');
+/* Das Haus hinter einer Quelle: "CISA Advisories" und "CISA ICS" sind ein
+   Absender. Ein Trend braucht mehrere Häuser, nicht mehrere Feeds. */
+const hausKern=src=>norm(src).split(/[\s\-–|:.]+/)[0]||norm(src);
 function begriffTauglich(t){
   const v=String(t||'').trim();
   if(v.length<4||v.length>32)return false;
@@ -1981,13 +2030,25 @@ function trendRows(mode,von,bis){
      65 gleichen Metadatenzeilen ist kein Trend. */
   const teil=ARTICLES.filter(a=>a.ago>von&&a.ago<=bis&&inRegion(a)&&!a.isDoc&&!istRauschen(a));
   const m={};
-  const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),ids:[]};m[k].n++;m[k].s.add(a.src);m[k].ids.push(a.id)};
+  const add=(k,label,a)=>{m[k]=m[k]||{label,n:0,s:new Set(),h:new Set(),ids:[],formen:{}};const e=m[k];
+    if(e.ids.includes(a.id))return;
+    e.n++;e.s.add(a.src);e.h.add(hausKern(a.src));e.ids.push(a.id);e.formen[label]=(e.formen[label]||0)+1};
   teil.forEach(a=>{
     if(mode==='topics')(a.topics||[]).filter(ressortTauglich).forEach(t=>add(t,TOPICS[t]||t,a));
     else if(mode==='issues'){
       /* Sachbegriffe aus dem Lauf (Nominalphrasen je Meldung). Ohne dieses
          Feld – nur in den Beispieldaten – die fest hinterlegten Sachfragen. */
-      if(a.terms&&a.terms.length){[...new Set(a.terms.map(t=>String(t).toLowerCase()))].filter(t=>t.length>=5&&begriffTauglich(t)).forEach(t=>add('t:'+t,t.replace(/^\w/,c=>c.toUpperCase()),a))}
+      if(a.terms&&a.terms.length){
+        /* Steckt eine Person oder ein Ort im Begriff ("US-Präsident Donald
+           Trump", "Staatsbesuch Xi Jinpings"), gehört er zu "Personen & Orte"
+           und nicht zu den Sachfragen. */
+        const ents=(a.ents||[]).map(e=>norm(e)).filter(e=>e.length>=4);
+        [...new Set(a.terms.map(t=>String(t).trim()))].filter(t=>t.length>=5&&begriffTauglich(t)).forEach(t=>{
+          const low=norm(t);
+          if(ents.some(e=>low.includes(e)))return;
+          add('t:'+begriffSchluessel(t),t.charAt(0).toUpperCase()+t.slice(1),a);
+        });
+      }
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}}
     else{
       /* Eigennamen aus der Entitätenerkennung des Laufs (spaCy). */
@@ -1995,29 +2056,72 @@ function trendRows(mode,von,bis){
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));(a.personen||[]).forEach(pid=>{const p=ITEMS[pid];if(p)add('p:'+p.id,p.name,a)});ORTE.forEach(o=>{if(txt.includes(norm(o)))add('o:'+o,o,a)})}}
   });
   if(mode==='entities'||mode==='issues')trendZusammenlegen(m);
+  Object.values(m).forEach(e=>{if(e.formen){const f=Object.entries(e.formen).sort((x,y)=>y[1]-x[1])[0];if(f)e.label=f[0]}});
   return m;
+}
+/* Kleiner Verlauf: acht Abschnitte über den gewählten Zeitraum, links
+   alt, rechts jetzt. Zeigt, ob ein Thema gerade erst hochkommt oder schon
+   abflaut – das sagt eine einzelne Zahl nicht. */
+function trendVerlauf(arts,win){
+  const b=new Array(8).fill(0),breite=win/8;
+  arts.forEach(a=>{const i=7-Math.min(7,Math.floor(a.ago/breite));b[i]++});
+  const mx=Math.max(1,...b);
+  return `<svg class="spark" viewBox="0 0 64 18" aria-hidden="true">${b.map((v,i)=>`<rect x="${i*8+1}" y="${(18-Math.max(1.5,v/mx*17)).toFixed(1)}" width="6" height="${Math.max(1.5,v/mx*17).toFixed(1)}" rx="1.5" fill="var(--blue)" opacity="${(0.35+0.65*(i/7)).toFixed(2)}"/>`).join('')}</svg>`;
 }
 function renderTrends(){
   const mode=S.trendMode||'topics';
+  const sortierung=S.trendSort||'breite';
   const c=trendRows(mode,0,S.win),p=trendRows(mode,S.win,2*S.win);
   /* Ein Trend ist, worüber mehrere Häuser schreiben – nicht, was ein
-     einzelner Feed hundertmal wiederholt. Gereiht wird deshalb nach der
-     Zahl der Quellen, bei Gleichstand nach Meldungen. */
-  const rows=Object.entries(c).filter(([k,v])=>mode==='topics'||(v.n>=2&&v.s.size>=3)).sort((a,b)=>mode==='topics'?b[1].n-a[1].n:(b[1].s.size-a[1].s.size)||(b[1].n-a[1].n)).slice(0,mode==='topics'?14:20);
-  const max=rows.length?rows[0][1].n:1;
+     einzelner Absender hundertmal wiederholt. */
+  let kandidaten=Object.entries(c).filter(([k,v])=>mode==='topics'||(v.n>=2&&(v.h||v.s).size>=3));
+  const vorher=k=>p[k]?p[k].n:0;
+  const wachstum=([k,v])=>{const pn=vorher(k);return pn?(v.n-pn)/pn:(v.n>=3?9:0)};
+  if(sortierung==='zunahme')kandidaten=kandidaten.filter(([k,v])=>v.n>=3&&v.n>vorher(k)).sort((a,b)=>wachstum(b)-wachstum(a)||b[1].n-a[1].n);
+  else if(sortierung==='neu')kandidaten=kandidaten.filter(([k])=>!vorher(k)).sort((a,b)=>((b[1].h||b[1].s).size-(a[1].h||a[1].s).size)||b[1].n-a[1].n);
+  else kandidaten.sort((a,b)=>mode==='topics'?b[1].n-a[1].n:(((b[1].h||b[1].s).size-(a[1].h||a[1].s).size)||(b[1].n-a[1].n)));
+  const rows=kandidaten.slice(0,mode==='topics'?14:20);
+  /* Kennzahlen je Zeile – nur für die angezeigten, damit es schnell bleibt. */
+  const info={};
+  rows.forEach(([k,v])=>{
+    const arts=v.ids.map(id=>ITEMS[id]).filter(Boolean);
+    const reg={};arts.forEach(a=>{const r=a.region1||'de';reg[r]=(reg[r]||0)+1});
+    const leit=arts.slice().sort((a,b)=>((b.cluster||1)-(a.cluster||1))||(b.date-a.date))[0];
+    info[k]={arts,leit,ids:new Set(v.ids),reg:Object.entries(reg).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([r,n])=>`${REGION_NAME[r]||r} ${Math.round(n/arts.length*100)} %`)};
+  });
+  rows.forEach(([k])=>{
+    /* Was gemeinsam mit diesem Begriff vorkommt – das Umfeld eines Themas. */
+    info[k].mit=rows.filter(([k2])=>k2!==k).map(([k2,v2])=>{let n=0;for(const id of info[k2].ids)if(info[k].ids.has(id))n++;return [v2.label,n,k2]})
+      .filter(x=>x[1]>=2).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  });
+  /* Kurzbefund oben: was zulegt, was neu ist. */
+  const alle=Object.entries(c).filter(([k,v])=>mode==='topics'||(v.n>=3&&(v.h||v.s).size>=3));
+  const zulegend=alle.filter(([k,v])=>vorher(k)>=2&&v.n>=vorher(k)*1.5).sort((a,b)=>wachstum(b)-wachstum(a)).slice(0,2);
+  const neue=alle.filter(([k])=>!vorher(k)).sort((a,b)=>((b[1].h||b[1].s).size-(a[1].h||a[1].s).size)).slice(0,2);
   let h=secHd('tr','Trends','',`
     <div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${S.win===24}" onclick="S.win=24;render()">24 Std.</button><button aria-pressed="${S.win===72}" onclick="S.win=72;render()">3 Tage</button><button aria-pressed="${S.win===168}" onclick="S.win=168;render()">7 Tage</button></div>`);
-  let b=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
-  b+=`<p class="note" style="margin-bottom:10px">${mode==='topics'?'Ressorts der letzten Meldungen, verglichen mit dem gleich langen Zeitraum davor.':mode==='issues'?'Sachbegriffe, die in den Meldungen am häufigsten vorkommen – ein Antippen zeigt die Meldungen dazu.':'Personen, Organisationen und Orte aus der Eigennamen-Erkennung – ein Antippen zeigt die Meldungen dazu.'}</p>`;
-  b+=`<div class="box">${rows.map(([k,v])=>{const pn=p[k]?p[k].n:0;let mv,cls;if(!pn){mv='neu';cls='new'}else{const d=v.n-pn;mv=(d>0?'+':d<0?'−':'±')+Math.abs(d);cls=d>=2?'up':d<=-2?'dn':'eq'}
+  let b=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:8px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
+  b+=`<div class="chips" role="group" aria-label="Reihenfolge" style="margin-bottom:10px">${[['breite','Größte Breite'],['zunahme','Stärkste Zunahme'],['neu','Neu aufgekommen']].map(([k,l])=>`<button class="chip" aria-pressed="${sortierung===k}" onclick="S.trendSort='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
+  if(zulegend.length||neue.length)b+=`<div class="box" style="padding:10px 14px;margin-bottom:10px;font-size:var(--fs-sm);line-height:1.5">
+    ${zulegend.length?`<div><b>Legt zu:</b> ${zulegend.map(([k,v])=>`${esc(v.label)} <span class="note">(${vorher(k)} → ${v.n})</span>`).join(', ')}</div>`:''}
+    ${neue.length?`<div><b>Neu im Gespräch:</b> ${neue.map(([k,v])=>`${esc(v.label)} <span class="note">(${(v.h||v.s).size} Häuser)</span>`).join(', ')}</div>`:''}
+    <div class="note" style="margin-top:4px">Verglichen mit den ${S.win===24?'24 Stunden':S.win===72?'drei Tagen':'sieben Tagen'} davor.</div></div>`;
+  b+=`<p class="note" style="margin-bottom:10px">${mode==='topics'?'Ressorts der letzten Meldungen.':mode==='issues'?'Sachbegriffe, über die mindestens drei Häuser schreiben – Personen und Orte stehen unter „Personen & Orte".':'Personen, Organisationen und Orte, über die mindestens drei Häuser schreiben.'} Der kleine Verlauf zeigt die Meldungen im Zeitraum, rechts ist jetzt.</p>`;
+  b+=`<div class="box">${rows.map(([k,v])=>{
+    const pn=vorher(k),d=v.n-pn,I=info[k];
+    const mv=!pn?'neu':(d>0?'+':d<0?'−':'±')+(pn>=3?Math.abs(Math.round(d/pn*100))+' %':Math.abs(d));
+    const cls=!pn?'new':d>=2?'up':d<=-2?'dn':'eq';
     const sel=S.trendPick===k;
-    return `<div class="trend" role="button" tabindex="0" aria-pressed="${sel}" style="cursor:pointer;${sel?'background:var(--blue-lt)':''}" onclick="S.trendPick=${sel?'null':`'${k}'`};render()" onkeydown="if(event.key==='Enter'){S.trendPick=${sel?'null':`'${k}'`};render()}">
-      <div class="lbl">${esc(v.label)}<small>${v.n} ${v.n===1?'Meldung':'Meldungen'}<span class="dsk"> · ${v.s.size} ${v.s.size===1?'Quelle':'Quellen'}</span></small></div><div class="barw"><i style="width:${Math.round(v.n/max*100)}%"></i></div>
-      <div class="mv ${cls}">${mv}<br><small style="font-weight:500;color:var(--muted)">${cls==='new'?'vorher nicht':cls==='up'?'zieht an':cls==='dn'?'klingt ab':'konstant'}</small></div></div>`}).join('')||'<div class="empty"><b>Keine Meldungen</b>In diesem Zeitraum und dieser Region liegt nichts vor.</div>'}</div>`;
+    return `<div class="trend2" role="button" tabindex="0" aria-pressed="${sel}" style="${sel?'background:var(--blue-lt)':''}" onclick="S.trendPick=${sel?'null':`'${k}'`};render()" onkeydown="if(event.key==='Enter'){S.trendPick=${sel?'null':`'${k}'`};render()}">
+      <div class="kopf"><b>${esc(v.label)}</b><span class="mv ${cls}">${mv}</span></div>
+      <div class="zahlen">${trendVerlauf(I.arts,S.win)}<span class="note">${v.n} ${v.n===1?'Meldung':'Meldungen'} · ${(v.h||v.s).size} Häuser${I.reg.length?' · '+I.reg.join(' · '):''}</span></div>
+      ${I.leit&&mode!=='topics'?`<div class="leit">${esc(I.leit.title)}</div>`:''}
+      ${I.mit.length?`<div class="mit">mit ${I.mit.map(([l])=>`<span>${esc(l)}</span>`).join('')}</div>`:''}
+    </div>`}).join('')||`<div class="empty"><b>Nichts gefunden</b>${sortierung==='neu'?'Keine neuen Themen gegenüber dem Zeitraum davor.':sortierung==='zunahme'?'Nichts legt gegenüber dem Zeitraum davor zu.':'In diesem Zeitraum und dieser Region liegt nichts vor.'}</div>`}</div>`;
   if(S.trendPick&&c[S.trendPick]){
-    const v=c[S.trendPick];const arts=v.ids.map(id=>ITEMS[id]).sort((a,b)=>b.date-a.date);window.TRENDLIST=arts.map(a=>a.id);
+    const v=c[S.trendPick];const arts=v.ids.map(id=>ITEMS[id]).filter(Boolean).sort((a,b)=>b.date-a.date);window.TRENDLIST=arts.map(a=>a.id);
     b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">${esc(v.label)}</h2><span class="cnt">${arts.length} Meldungen</span><div class="tools">${copyBtn(TRENDLIST,esc(v.label))}<button class="btn sm quiet" onclick="S.trendPick=null;render()">Schließen</button></div></div>
-      <div class="box list">${arts.map(a=>rowHTML(a,'TRENDLIST')).join('')}</div>`;
+      <div class="box list">${nurEinmal(arts).map(a=>rowHTML(a,'TRENDLIST')).join('')}</div>`;
   }
   return h+body('tr',b);
 }
@@ -3141,7 +3245,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v43 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v44 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',

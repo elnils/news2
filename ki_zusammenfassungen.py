@@ -332,8 +332,13 @@ SCHLAG_REGELN_DE = """REGELN (in dieser Reihenfolge, sie ueberschreiben alles an
 - Verwende ausschliesslich Namen, Zahlen, Daten und Orte, die woertlich in den Meldungen unten stehen.
 - Steht ein Amt ohne Namen da, schreibe die Institution: "Wirtschaftsminister kuendigt an" wird
   "Das Wirtschaftsministerium kuendigt an". Erfinde nie eine Behoerde, die nicht dasteht.
-- Schlagzeile: ein Hauptsatz im Praesens, hoechstens 75 Zeichen, nennt WER und WAS konkret.
+- Schlagzeile: ein Hauptsatz im Praesens, 40 bis 80 Zeichen, nennt WER, WAS und den
+  Zusammenhang (wo, worum, wogegen) – soweit er in den Meldungen steht.
   Ohne Quellenname, ohne Anfuehrungszeichen, ohne Punkt am Ende.
+  ZU KNAPP (so nicht):  "Netanjahu verteidigt Kriege"   "Musiala faellt aus"   "Fraktion fordert Register"
+  RICHTIG:             "Netanjahu verteidigt vor der UN-Vollversammlung den Gaza-Krieg"
+                       "Musiala faellt fuer die naechsten Laenderspiele verletzt aus"
+  Steht der Zusammenhang nicht in den Meldungen, erfinde ihn nicht.
   VERBOTEN sind Schlagzeilen ohne Gegenstand oder ohne Akteur:
     schlecht: "Buerger muessen mit Konsequenzen leben"   (wer? welche Konsequenzen?)
     schlecht: "Daenemark und USA einigen sich"            (worauf?)
@@ -366,7 +371,12 @@ AUSWAHL_DE = """AUSWAHL (wie in der Tageslage):
    Betroffenen, politische und wirtschaftliche Bedeutung, Zahl der Quellen.
    Sport, Vermischtes, Service und Lokales nur, wenn sie ausnahmsweise herausragen.
 3. Zwei Aspekte desselben Themas (etwa zwei Meldungen zu den Spritpreisen) sind EIN Eintrag,
-   ausser sie berichten wirklich verschiedene Ereignisse."""
+   ausser sie berichten wirklich verschiedene Ereignisse.
+4. Mehrere Meldungen zur selben Person am selben Tag und beim selben Anlass (etwa Rede und
+   Proteste beim selben Besuch) sind EIN Eintrag.
+5. Mitteilungen ueber eingebrachte Antraege oder Anfragen einzelner Fraktionen (etwa aus dem
+   Pressedienst des Bundestags) sind Ankuendigungen, keine Entscheidungen. Nimm sie nur, wenn
+   sonst nichts Wichtigeres vorliegt."""
 
 AUSWAHL_EN = """SELECTION (like a daily briefing):
 1. Several items may describe the SAME event, also across languages. Merge them into ONE entry
@@ -382,13 +392,16 @@ def schlag_frage(anbieter, gruppen, sprache, region):
         a = g[0]
         quellen = sorted({x.get("source", "") for x in g if x.get("source")})
         zusatz = "; ".join(x.get("title", "") for x in g[1:3])
-        zeilen.append(f"[{i+1}] ({', '.join(quellen[:4])}{' +' + str(len(quellen)-4) if len(quellen) > 4 else ''}) "
+        # Sprache je Eintrag: die der Leitmeldung. Eine deutsche Quelle bekommt
+        # eine deutsche Schlagzeile, auch wenn die Region sonst englisch ist.
+        spr = "de" if DEUTSCH_RE.search(a.get("title") or "") else "en"
+        zeilen.append(f"[{i+1}] [{spr}] ({', '.join(quellen[:4])}{' +' + str(len(quellen)-4) if len(quellen) > 4 else ''}) "
                       f"{a.get('title','')}"
                       + (f" – {(a.get('desc') or '')[:240]}" if a.get("desc") else "")
                       + (f" | auch: {zusatz[:200]}" if zusatz else ""))
     liste = "\n".join(zeilen)
     heute = datetime.now(timezone.utc).strftime("%d.%m.%Y")
-    if sprache == "en":
+    if False:   # früher: ganze Region englisch – jetzt entscheidet die Sprache je Eintrag
         system = ("You are a sober news editor who compiles the daily top stories. You group "
                   "duplicate reports, pick the most important events and write clean headlines. "
                   "You never add facts.")
@@ -402,8 +415,10 @@ def schlag_frage(anbieter, gruppen, sprache, region):
                   "Ereignisse und schreibst saubere Schlagzeilen. Du erfindest nichts hinzu.")
         auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n{AUSWAHL_DE.format(n=SCHLAG_N)}\n\n"
                    f"{SCHLAG_REGELN_DE}\n\nMeldungen ({REGION_NAME.get(region, region)}):\n{liste}\n\n"
+                   'SPRACHE: Schreibe Schlagzeile und Satz in der Sprache, die hinter der Nummer steht – '
+                   '[de] deutsch, [en] englisch. Legst du Eintraege zusammen, gilt die Sprache des ersten.\n\n'
                    'Antworte nur mit JSON, ohne Vorspann, ohne Code-Zaun, das Wichtigste zuerst: '
-                   '[{"nrs":[1,4],"schlagzeile":"…","text":"…"}] – auf Deutsch.')
+                   '[{"nrs":[1,4],"schlagzeile":"…","text":"…"}]')
     name, url, key, modell = anbieter
     koerper = json.dumps({
         "model": modell, "temperature": 0.2, "max_tokens": 1600,
@@ -459,7 +474,9 @@ def _schlag_lesen(text, gruppen):
             continue
         kopf = str(eintrag.get("schlagzeile") or eintrag.get("headline") or "").strip(" \"'.")
         satz = str(eintrag.get("text") or eintrag.get("sentence") or "").strip()
-        if len(kopf) < 12 or LEERE_SCHLAGZEILE.search(kopf):
+        # Unter 32 Zeichen fehlt fast immer der Zusammenhang ("Musiala faellt aus") –
+        # dann lieber die Feed-Ueberschrift als eine leere Schlagzeile.
+        if len(kopf) < 32 or LEERE_SCHLAGZEILE.search(kopf):
             kopf = ""                     # Frontend zeigt dann die Feed-Ueberschrift
         vergeben.update(nummern)
         meldungen = [x for n in nummern for x in gruppen[n - 1]]
