@@ -79,6 +79,9 @@ GROQ_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.environ.get("KI_MODELL", "llama-3.3-70b-versatile")
 MAX_NEU = int(os.environ.get("KI_MAX", "48"))      # Meldungen je Lauf
 BATCH = int(os.environ.get("KI_BATCH", "8"))        # Meldungen je Anfrage
+# Marktlage zweimal am Handelstag: morgens nach Handelsbeginn in Europa,
+# nachmittags nach Handelsbeginn in den USA (Stunden, deutsche Zeit).
+MARKT_ZEITEN = [int(x) for x in os.environ.get("KI_MARKT_ZEITEN", "9,16").split(",") if x.strip().isdigit()]
 SCHLAG_N = int(os.environ.get("KI_SCHLAG_N", "10"))            # Ereignisse je Region
 SCHLAG_KANDIDATEN = int(os.environ.get("KI_SCHLAG_KANDIDATEN", "30"))  # Gruppen, die das Modell sieht
 SCHLAG_MIN = int(os.environ.get("KI_SCHLAG_MIN", "120"))       # Minuten bis zur Neufassung
@@ -629,6 +632,139 @@ def frage_stapel(anbieter, meldungen):
     return out
 
 
+# ─────────────────────────────────────────────────────────────
+# MARKTLAGE – zwei, drei Absätze zur Lage an den Finanzmärkten
+#
+# Grundlage sind die Kurse aus markets.json (Veränderung über Tag, Woche,
+# Monat, Jahr) und die Wirtschaftsmeldungen der letzten 24 Stunden. Das
+# Modell darf nur Zahlen aus der Tabelle nennen und Ursachen nur, wenn eine
+# Meldung sie nennt. Keine Empfehlung, keine Prognose.
+# ─────────────────────────────────────────────────────────────
+MARKT_THEMEN = re.compile(r"\b(zins\w*|ezb|fed|notenbank\w*|inflation|aktie\w*|börse\w*|boerse\w*|dax|anleihe\w*|rendite\w*|"
+                          r"ölpreis\w*|oelpreis|gaspreis\w*|strompreis\w*|dollar|euro|konjunktur\w*|rezession|zölle|zoelle|"
+                          r"zoll\w*|opec|gold|bitcoin|stocks?|markets?|bonds?|yields?|oil|tariffs?|earnings)\b", re.I)
+
+
+def _de(x, stellen=1, vorzeichen=False):
+    """Zahl im deutschen Format: 18.412,5 – mit Vorzeichen auf Wunsch."""
+    t = f"{x:{'+' if vorzeichen else ''},.{stellen}f}"
+    return t.replace(",", "§").replace(".", ",").replace("§", ".")
+
+
+def _markt_tabelle():
+    try:
+        with open("markets.json", encoding="utf-8") as fh:
+            mk = json.load(fh)
+    except Exception:
+        return [], ""
+    zeilen = []
+    for gr in mk.get("groups") or []:
+        for i in gr.get("items") or []:
+            reihen = i.get("series") or {}
+            last = i.get("last")
+            if last is None and i.get("s"):
+                last = i["s"][-1]
+            if last is None:
+                continue
+            pp = (i.get("unit") or "") == "%"
+            teile = []
+            for k, name in (("1t", "Tag"), ("1w", "Woche"), ("1m", "Monat"), ("1j", "Jahr")):
+                r = reihen.get(k) or []
+                if len(r) > 1 and r[0]:
+                    if pp:
+                        teile.append(f"{name} {_de(r[-1] - r[0], 2, True)} Pkt.")
+                    else:
+                        teile.append(f"{name} {_de((r[-1] - r[0]) / r[0] * 100, 1, True)} %")
+            if not teile:
+                continue
+            einheit = " %" if pp else (f" {i.get('unit')}" if i.get("unit") else "")
+            zeilen.append(f"- {i.get('n', i.get('sym', ''))} ({gr.get('grp', '')}): "
+                          f"{_de(last, int(i.get('dec', 2)))}{einheit} | " + " | ".join(teile))
+    return zeilen, mk.get("updated", "")
+
+
+def marktlage_bauen(artikel, anbieter, alt):
+    zeilen, stand_kurse = _markt_tabelle()
+    if len(zeilen) < 4:
+        print("  Marktlage: keine Kursdaten – übersprungen.")
+        return alt
+    # Fällig ist eine neue Fassung, wenn seit der letzten ein Termin
+    # (etwa 9 oder 16 Uhr) verstrichen ist. Am Wochenende nur, wenn es noch
+    # gar keine gibt – die Börsen sind zu.
+    try:
+        from zoneinfo import ZoneInfo
+        jetzt = datetime.now(ZoneInfo("Europe/Berlin"))
+    except Exception:
+        jetzt = datetime.now(timezone.utc)
+    letzte = datetime.fromtimestamp((alt or {}).get("ts", 0), jetzt.tzinfo) if alt else None
+    termine = [jetzt.replace(hour=h, minute=0, second=0, microsecond=0) for h in sorted(MARKT_ZEITEN)]
+    faellig_seit = max((t for t in termine if t <= jetzt), default=None)
+    if alt:
+        if jetzt.weekday() >= 5:
+            print("  Marktlage: Wochenende – bleibt stehen.")
+            return alt
+        if faellig_seit is None or (letzte and letzte >= faellig_seit):
+            print("  Marktlage: nächster Termin steht noch aus.")
+            return alt
+    meldungen = [a for a in artikel if alter_stunden(a.get("date", "")) <= 24
+                 and (MARKT_THEMEN.search(a.get("title") or "")
+                      or any(t in ("finanzen", "wirtschaft", "energie", "handel") for t in (a.get("topics") or [])))
+                 and not RAUSCH_RE.search(a.get("title") or "")]
+    meldungen.sort(key=lambda a: (wichtig(a), a.get("date", "")), reverse=True)
+    kopf = "\n".join(f"- ({a.get('source', '')}) {a.get('title', '')}" for a in meldungen[:15])
+    heute = datetime.now(timezone.utc).strftime("%d.%m.%Y")
+    auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n"
+               "Schreibe die Lage an den Finanzmärkten in zwei bis drei kurzen Absätzen auf Deutsch "
+               "(zusammen höchstens 900 Zeichen).\n"
+               "Absatz 1: Aktien – was bewegte sich, in welche Richtung, wie breit.\n"
+               "Absatz 2: Zinsen, Währungen, Energie und Rohstoffe.\n"
+               "Absatz 3 (nur wenn die Meldungen es hergeben): was die Nachrichtenlage dazu sagt.\n\n"
+               "REGELN: Zahlen ausschließlich aus der Tabelle, gerundet wie dort. Ursachen nur, wenn eine "
+               "der Meldungen sie nennt – sonst keine. Keine Empfehlung, keine Prognose, keine Floskeln "
+               "(\"Anleger zeigten sich vorsichtig\"). Keine Aufzählung, keine Überschriften.\n\n"
+               f"KURSE (Veränderung über Tag, Woche, Monat, Jahr):\n" + "\n".join(zeilen[:34]) +
+               (f"\n\nMELDUNGEN DER LETZTEN 24 STUNDEN:\n{kopf}" if kopf else ""))
+    for _versuch in range(2):
+        if not anbieter:
+            return alt
+        name, url, key, modell = anbieter[0]
+        koerper = json.dumps({"model": modell, "temperature": 0.2, "max_tokens": 500,
+                              "messages": [{"role": "system", "content": SYSTEM},
+                                           {"role": "user", "content": auftrag}]}).encode("utf-8")
+        kopfz = {"Content-Type": "application/json", "Authorization": f"Bearer {key}"}
+        if name == "openrouter":
+            kopfz["HTTP-Referer"] = "https://presseschau.example"
+            kopfz["X-Title"] = "Presseschau"
+        try:
+            with urlopen(Request(url, data=koerper, headers=kopfz), timeout=max(TIMEOUT, 60)) as r:
+                j = json.loads(r.read().decode("utf-8", "replace"))
+            text = ((j.get("choices") or [{}])[0].get("message", {}).get("content", "") or "").strip()
+            text = re.sub(r"^#+.*$", "", text, flags=re.M).strip()
+            absaetze = [a.strip() for a in re.split(r"\n\s*\n", text) if len(a.strip()) >= 35][:3]
+            if not absaetze:
+                return alt
+            print(f"  Marktlage: {len(absaetze)} Absätze ({name})")
+            return {"absaetze": absaetze, "stand": _stand_jetzt(), "ts": int(time.time()),
+                    "kurse": stand_kurse, "via": name, "modell": modell}
+        except HTTPError as e:
+            leib = ""
+            try:
+                leib = json.loads(e.read().decode())["error"]["message"]
+            except Exception:
+                pass
+            print(f"  ---  Marktlage: {name} HTTP {e.code}: {leib[:140]}")
+            if name == "openrouter" and (e.code in (400, 404) or "unavailable for free" in leib):
+                ersatz = or_ersatzmodell(leib, modell)
+                if ersatz:
+                    anbieter[0][3] = ersatz
+                    continue
+            anbieter.pop(0)
+        except (URLError, ValueError, KeyError) as e:
+            print(f"  ---  Marktlage: {type(e).__name__}: {e}")
+            return alt
+    return alt
+
+
 def main():
     if not ANBIETER:
         print("Weder OPEN_ROUTER_API noch GROQ_API_KEY gesetzt – ki_meldungen.json bleibt unverändert.")
@@ -716,12 +852,14 @@ def main():
         time.sleep(0.5)
 
     schlag = schlagzeilen_bauen(artikel, anbieter, (alt.get("schlagzeilen") or None))
+    markt = marktlage_bauen(artikel, anbieter, (alt.get("marktlage") or None))
 
     out = {"updated": datetime.now(timezone.utc).isoformat(),
            "anbieter": [x[0] + ":" + x[3] for x in ANBIETER],
            "hinweis": "Automatisch erzeugte Zusammenfassungen. Im Zweifel gilt die Originalmeldung.",
            "items": items,
-           "schlagzeilen": schlag or {}}
+           "schlagzeilen": schlag or {},
+           "marktlage": markt or {}}
     tmp = OUT + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh, ensure_ascii=False, separators=(",", ":"))

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v44</title>
+<title>Presseschau – Entwurf v48</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -370,8 +370,44 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .abst .sp i{display:block;height:100%}
 .abst .wert{font-variant-numeric:tabular-nums;color:var(--text2);font-size:var(--fs-xs)}
 .stimme{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.wk-kopf{padding:12px 14px}
+.vs-p{display:flex;gap:14px;align-items:center;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+.vs-p-zahl{font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:74px;color:var(--blue)}
+.vs-p-text{flex:1;font-size:var(--fs-sm);line-height:1.4}
+.vs-balken{position:relative;height:8px;border-radius:4px;background:var(--surface2);margin:6px 0 4px;overflow:visible}
+.vs-balken i{display:block;height:100%;border-radius:4px;background:var(--blue)}
+.vs-marke{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.6}
+.vs-profil{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:var(--fs-xs);color:var(--text2)}
+.vs-warum{margin-top:6px;font-size:var(--fs-xs);color:var(--text2)}
+.vs-warum summary{cursor:pointer;color:var(--blue)}
+.vs-warum ol{margin:4px 0 0;padding-left:18px;line-height:1.5}
+.vs-klasse{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-2px 0 8px;font-size:var(--fs-xs)}
+.wk-lead{margin:0 0 6px;font-size:var(--fs-md);line-height:1.5}
+.wk-karte{padding:12px 14px;margin-top:12px}
+.wk-titel{margin:6px 0 8px;font-size:var(--fs-lg,1.15rem);line-height:1.3}
+.wk-kette{list-style:none;margin:0;padding:0;counter-reset:wk}
+.wk-kette li{position:relative;padding:6px 0 6px 20px;font-size:var(--fs-sm);line-height:1.45;border-left:2px solid var(--blue);margin-left:6px}
+.wk-kette li::before{content:'';position:absolute;left:-6px;top:11px;width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.wk-kette li:last-child{border-left-color:transparent}
+.wk-stufe{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.wk-mess{margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:var(--fs-sm)}
+.wk-mess b.up{color:var(--green,#15803d)}.wk-mess b.dn{color:var(--red,#be123c)}
+.wk-zwei{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;font-size:var(--fs-sm)}
+.wk-zwei ul{margin:4px 0 0;padding-left:18px}
+@media (max-width:560px){.wk-zwei{grid-template-columns:1fr}}
+.wk-folgen{margin-top:8px;font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px}
+.wk-quellen{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
 .trend2{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
 .trend2:last-child{border-bottom:0}
+.trend-auf{background:var(--surface2);border-bottom:1px solid var(--border);padding-bottom:4px}
+.trend2 .spark-w{display:inline-flex;flex-direction:column;align-items:stretch;flex:0 0 auto}
+.trend2 .spark-l{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);line-height:1;margin-top:2px}
+.verlauf-gross{display:flex;align-items:flex-end;gap:6px;padding:12px 14px 6px;height:96px}
+.verlauf-gross .vg-spalte{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;min-width:0}
+.verlauf-gross i{display:block;width:100%;max-width:28px;background:var(--blue);border-radius:3px}
+.verlauf-gross .vg-n{font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums;min-height:13px}
+.verlauf-gross .vg-t{font-size:10px;color:var(--muted);white-space:nowrap}
+.trend-auf .list>*{background:transparent}
 .trend2 .kopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .trend2 .kopf b{font-size:var(--fs-md);line-height:1.3}
 .trend2 .mv{font-weight:700;font-size:var(--fs-sm);white-space:nowrap}
@@ -720,7 +756,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v44</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v48</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1346,7 +1382,7 @@ function render(){
     h=`<div class="page-hd ${w.tabs.length?'has-tabs':''}"><h1>${w.label}</h1>${w.tabs.length?`<div class="tabs" role="tablist">${w.tabs.map(t=>`<button class="tab" role="tab" aria-selected="${t[0]===tab}" onclick="go('${w.id}','${t[0]}')"><svg aria-hidden="true"><use href="#${t[2]}"/></svg>${t[1]}</button>`).join('')}</div>`:''}
       ${(REGION_TABS[w.id]||[]).includes(tab)?`<div id="regions" role="group" aria-label="Region">${REGIONS.map(([k,l])=>`<button class="chip" data-r="${k}" aria-pressed="${S.region===k}" title="${l}" onclick="setRegion('${k}')">${REGION_SHORT[k]||l}</button>`).join('')}</div>`:''}</div>`;
     if(w.id==='news'){
-      if(tab==='top')h+=renderTop();else if(tab==='desk')h+=renderDesk();else if(tab==='stories')h+=renderStories();else if(tab==='trends')h+=renderTrends();else if(tab==='studies')h+=renderStudies();else if(tab==='markets')h+=renderMarkets();else h+=renderArchive();
+      if(tab==='top')h+=renderTop();else if(tab==='desk')h+=renderDesk();else if(tab==='stories')h+=renderStories();else if(tab==='trends')h+=renderTrends();else if(tab==='studies')h+=renderStudies();else if(tab==='markets')h+=renderMarkets();else if(tab==='foresight'){S.trendMode='vorausschau';h+=renderTrends()}else h+=renderArchive();
     } else if(w.id==='monitor')h+=renderMonitor();
     else if(w.id==='policy'){if(tab==='procs')h+=renderProcs();else if(tab==='votes')h+=renderVotes();else if(tab==='docs')h+=renderDocs();else if(tab==='events')h+=renderEvents();else if(tab==='rulings')h+=renderRulings();else h+=renderElections()}
     else if(w.id==='stakeholder')h+=renderStakeholder(tab);
@@ -1381,6 +1417,19 @@ const RATGEBER_RE=/\b(so geht'?s|so gehts|anleitung|tipps und tricks|schritt fü
 const SERIE_RE=/^(auslegungssache|kurz informiert|bit-rauschen|c'?t uplink|uplink|passwort|dev update|shortpaper|heise[- ]?sprechstunde|kommentar der woche|die woche)\b|^[a-zäöüß][\wäöüß'’-]{4,}\s+\d{2,4}(\.\d+)?\s*[::]|\b(folge \d+|episode \d+|teil \d+ von \d+|podcast)\b/i;
 /* Lokale Veranstaltungen und Verkehrsmeldungen: im Ort wichtig, in einer
    überregionalen Top-Liste nicht. Sie werden nur dort ausgesiebt. */
+/* "Der Tag: 25. September", "September 25, 2026", "Nachrichten vom
+   25.09." – Tagesübersichten ohne eigene Nachricht. Übrig bleibt nach dem
+   Datum kaum ein Wort. */
+const DATUM_MONATE='januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember|january|february|march|may|june|july|october|december';
+const DATUM_RE=new RegExp(`\\b(\\d{1,2}\\.?\\s*(${DATUM_MONATE})|(${DATUM_MONATE})\\s+\\d{1,2}(st|nd|rd|th)?|\\d{1,2}\\.\\d{1,2}\\.(\\d{2,4})?)(,?\\s*\\d{4})?\\b`,'gi');
+const TAGES_WORT=/\b(der|die|das|tag|am|vom|von|zum|heute|news|nachrichten|überblick|ueberblick|kalenderblatt|chronik|lage|morgen|abend|briefing|update|today|in|history|on|this|day|was|geschah|wichtig|ist|the|of)\b/gi;
+function istDatumsMeldung(t){
+  const s=String(t||'');
+  if(!DATUM_RE.test(s)){DATUM_RE.lastIndex=0;return false}
+  DATUM_RE.lastIndex=0;
+  const rest=s.replace(DATUM_RE,' ').replace(TAGES_WORT,' ').replace(/[^\wäöüß]+/gi,' ').trim();
+  return rest.split(/\s+/).filter(w=>w.length>=3).length<2;
+}
 const LOKALES_RE=/\b(erntedankfest|stadtfest|volksfest|schützenfest|weihnachtsmarkt|kirmes|dorffest|straßenfest|festumzug|tag der offenen tür|verkehrsbehinderung|straßensperrung|vollsperrung|umleitung|baustelle|streckensperrung|schienenersatzverkehr)\b/i;
 const ORGA_RE=/(einladung|akkreditierung|terminvorschau|tagesordnung|vorschau auf|save the date|pressekonferenz|fototermin|hinweis für redaktionen|sperrfrist)/i;
 const DRUCKSACHE_RE=/^\s*\d{1,5}\/\d{2,4}\s*[|–-]|\b(drucksache|bundesratsdrucksache|bt-drs|br-drs)\b/i;
@@ -1398,7 +1447,7 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||a.sendung===true;
+  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
@@ -1484,6 +1533,12 @@ function fadenNamen(a){
   const S0=window._STORY_DF;const s=new Set();
   const grenze=S0?Math.max(10,Math.round(ARTICLES.length*0.03)):0;
   (a._hart||(a._hart=hartSignale(a))).forEach(k=>{if(k[0]==='e'&&!ORT_ENT.test(k.slice(2).trim())&&(!S0||(S0.df[k]||0)<=grenze))s.add(k)});
+  /* Personen aus dem Verzeichnis zählen mit, auch wenn die Eigennamen-
+     Erkennung sie verpasst hat ("Schwesig kritisiert …"). Selten heißt
+     auch hier: nicht in jeder dreißigsten Meldung. */
+  if(a._pids&&typeof IDX!=='undefined'&&IDX.ready)a._pids.forEach(pid=>{
+    const n=(IDX.mentions[pid]||[]).length;
+    if(!grenze||n<=grenze){const p=ITEMS[pid];if(p&&p._nn)s.add('e:'+p._nn)}});
   return a._faden=s;
 }
 /* Orte, Länder und Institutionen sind kein Faden: Ein Regionalsender
@@ -1760,9 +1815,16 @@ function mkData(m,range){
   const c=pp?+(last-first).toFixed(2):+((last-first)/first*100).toFixed(2);
   return {s,last,c,pp};
 }
+/* Hat die tägliche Quellenprüfung beim Wert etwas gefunden, steht es an
+   der Kachel – ein falscher Kurs soll nicht still weiterlaufen. */
+function quellHinweis(sym){
+  const a=((((window.WK||{}).quellen_status)||{}).auffaellig)||[];
+  const q=a.filter(x=>x.sym===sym).sort((x,y)=>(x.status==='fehler'?0:1)-(y.status==='fehler'?0:1))[0];
+  return q?`<span class="pill ${q.status==='fehler'?'red':'amber'}" title="${esc(q.detail||'')}" style="font-size:10px;padding:0 6px">${q.status==='fehler'?'Daten fehlerhaft':'Daten prüfen'}</span>`:'';
+}
 function tileHTML(m,range){
   const d=mkData(m,range||S.mkRange),up=d.c>=0;
-  return `<div class="t" role="button" tabindex="0" style="cursor:pointer" onclick="openMarket('${m.sym}')" onkeydown="if(event.key==='Enter')openMarket('${m.sym}')"><div class="nm" title="${esc(m.n)}${m.unit?' · '+esc(m.unit):''}">${esc(m.n)}${m.unit&&m.unit!=='%'?` <span style="opacity:.75">· ${esc(m.unit)}</span>`:''}</div>
+  return `<div class="t" role="button" tabindex="0" style="cursor:pointer" onclick="openMarket('${m.sym}')" onkeydown="if(event.key==='Enter')openMarket('${m.sym}')"><div class="nm" title="${esc(m.n)}${m.unit?' · '+esc(m.unit):''}">${esc(m.n)}${m.unit&&m.unit!=='%'?` <span style="opacity:.75">· ${esc(m.unit)}</span>`:''} ${quellHinweis(m.sym)}</div>
     <div class="v">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}</div>
     <div class="c ${up?'up':'dn'}">${up?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</div>
     ${sparkline(d.s,up)}</div>`;
@@ -1944,7 +2006,7 @@ function renderStories(){
   h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>(ITEMS[id]||{}).src).filter(Boolean))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span>${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
-const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte']];
+const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['vorausschau','Vorausschau']];
 /* Quellennamen gehören nicht in die Trends: "Tagesschau", "Reuters" oder
    "Handelsblatt" sagen nichts über das Thema. Ebenso wenig Wörter wie
    "Unternehmen" oder Ländernamen, die in jeder zweiten Meldung stehen. */
@@ -2068,8 +2130,38 @@ function trendVerlauf(arts,win){
   const mx=Math.max(1,...b);
   return `<svg class="spark" viewBox="0 0 64 18" aria-hidden="true">${b.map((v,i)=>`<rect x="${i*8+1}" y="${(18-Math.max(1.5,v/mx*17)).toFixed(1)}" width="6" height="${Math.max(1.5,v/mx*17).toFixed(1)}" rx="1.5" fill="var(--blue)" opacity="${(0.35+0.65*(i/7)).toFixed(2)}"/>`).join('')}</svg>`;
 }
+/* Die Meldungen zu einem Trend klappen direkt unter seiner Zeile auf –
+   nicht am Ende der Liste, wo man sie erst suchen muss. */
+/* Der Verlauf groß: acht Abschnitte mit Zahl darüber und Zeit darunter –
+   aufgeklappt unter dem Trend, damit klar wird, was die kleinen Balken
+   bedeuten. */
+function trendVerlaufGross(arts,win){
+  const b=new Array(8).fill(0),breite=win/8;
+  arts.forEach(a=>{const i=7-Math.min(7,Math.floor(a.ago/breite));b[i]++});
+  const mx=Math.max(1,...b);
+  const zeit=i=>{const h=Math.round((8-i)*breite);return i===7?'jetzt':win<=24?`−${h} h`:`−${Math.round(h/24*10)/10} T`};
+  return `<div class="verlauf-gross" aria-label="Verlauf der Meldungen">
+    ${b.map((v,i)=>`<div class="vg-spalte"><span class="vg-n">${v||''}</span><i style="height:${Math.max(2,v/mx*56)}px;opacity:${(0.4+0.6*(i/7)).toFixed(2)}"></i><span class="vg-t">${zeit(i)}</span></div>`).join('')}
+  </div>
+  <div class="note" style="padding:0 14px 6px">Meldungen je ${win<=24?'drei Stunden':win<=72?'neun Stunden':'knapp einem Tag'} – rechts die jüngsten. Steigen die Balken nach rechts, kommt das Thema gerade hoch; fallen sie, klingt es ab.</div>`;
+}
+function trendListeHTML(v){
+  const arts=nurEinmal(v.ids.map(id=>ITEMS[id]).filter(Boolean).sort((a,b)=>b.date-a.date));
+  window.TRENDLIST=arts.map(a=>a.id);
+  return `<div class="trend-auf" onclick="event.stopPropagation()">
+    ${trendVerlaufGross(v.ids.map(id=>ITEMS[id]).filter(Boolean),S.win)}
+    <div class="bar" style="padding:6px 14px 0"><span class="note grow">${arts.length} ${arts.length===1?'Meldung':'Meldungen'}</span>${copyBtn(TRENDLIST,esc(v.label))}<button class="btn sm quiet" onclick="S.trendPick=null;render()">Zuklappen</button></div>
+    <div class="list">${arts.slice(0,25).map(a=>rowHTML(a,'TRENDLIST',true)).join('')}</div>
+    ${arts.length>25?`<div class="note" style="padding:4px 14px 10px">${arts.length-25} weitere – über „Kopieren" als Liste.</div>`:''}
+  </div>`;
+}
 function renderTrends(){
   const mode=S.trendMode||'topics';
+  if(mode==='vorausschau'){
+    const kopf=secHd('tr','Trends','','');
+    const chips=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
+    return kopf+body('tr',chips+renderVorausschau());
+  }
   const sortierung=S.trendSort||'breite';
   const c=trendRows(mode,0,S.win),p=trendRows(mode,S.win,2*S.win);
   /* Ein Trend ist, worüber mehrere Häuser schreiben – nicht, was ein
@@ -2114,15 +2206,10 @@ function renderTrends(){
     const sel=S.trendPick===k;
     return `<div class="trend2" role="button" tabindex="0" aria-pressed="${sel}" style="${sel?'background:var(--blue-lt)':''}" onclick="S.trendPick=${sel?'null':`'${k}'`};render()" onkeydown="if(event.key==='Enter'){S.trendPick=${sel?'null':`'${k}'`};render()}">
       <div class="kopf"><b>${esc(v.label)}</b><span class="mv ${cls}">${mv}</span></div>
-      <div class="zahlen">${trendVerlauf(I.arts,S.win)}<span class="note">${v.n} ${v.n===1?'Meldung':'Meldungen'} · ${(v.h||v.s).size} Häuser${I.reg.length?' · '+I.reg.join(' · '):''}</span></div>
+      <div class="zahlen"><span class="spark-w" title="Meldungen im Zeitraum: links vor ${S.win===24?'24 Stunden':S.win===72?'drei Tagen':'sieben Tagen'}, rechts jetzt">${trendVerlauf(I.arts,S.win)}<span class="spark-l"><span>${S.win===24?'−24 h':S.win===72?'−3 T':'−7 T'}</span><span>jetzt</span></span></span><span class="note">${v.n} ${v.n===1?'Meldung':'Meldungen'} · ${(v.h||v.s).size} Häuser${I.reg.length?' · '+I.reg.join(' · '):''}</span></div>
       ${I.leit&&mode!=='topics'?`<div class="leit">${esc(I.leit.title)}</div>`:''}
       ${I.mit.length?`<div class="mit">mit ${I.mit.map(([l])=>`<span>${esc(l)}</span>`).join('')}</div>`:''}
-    </div>`}).join('')||`<div class="empty"><b>Nichts gefunden</b>${sortierung==='neu'?'Keine neuen Themen gegenüber dem Zeitraum davor.':sortierung==='zunahme'?'Nichts legt gegenüber dem Zeitraum davor zu.':'In diesem Zeitraum und dieser Region liegt nichts vor.'}</div>`}</div>`;
-  if(S.trendPick&&c[S.trendPick]){
-    const v=c[S.trendPick];const arts=v.ids.map(id=>ITEMS[id]).filter(Boolean).sort((a,b)=>b.date-a.date);window.TRENDLIST=arts.map(a=>a.id);
-    b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">${esc(v.label)}</h2><span class="cnt">${arts.length} Meldungen</span><div class="tools">${copyBtn(TRENDLIST,esc(v.label))}<button class="btn sm quiet" onclick="S.trendPick=null;render()">Schließen</button></div></div>
-      <div class="box list">${nurEinmal(arts).map(a=>rowHTML(a,'TRENDLIST')).join('')}</div>`;
-  }
+    </div>${sel?trendListeHTML(v):''}`}).join('')||`<div class="empty"><b>Nichts gefunden</b>${sortierung==='neu'?'Keine neuen Themen gegenüber dem Zeitraum davor.':sortierung==='zunahme'?'Nichts legt gegenüber dem Zeitraum davor zu.':'In diesem Zeitraum und dieser Region liegt nichts vor.'}</div>`}</div>`;
   return h+body('tr',b);
 }
 /* Denkfabriken spielen dieselbe Studie mehrfach aus: im Studien- und im
@@ -2162,6 +2249,72 @@ function renderStudies(){
   h+=list.length?`<div class="box list teasers-on">${list.map(a=>rowHTML(a,'STLIST')).join('')}</div>`:'<div class="box"><div class="empty"><b>Keine Studie</b>Andere Region oder Suchbegriff kürzen.</div></div>';
   return h;
 }
+/* ── Marktanalyse ───────────────────────────────────────────────────
+   Aus den Kursreihen gerechnet, ohne KI: Breite der Bewegung, stärkster
+   und schwächster Wert je Gruppe, Lage im Jahresband, ungewöhnlich große
+   Tagesbewegungen, Zinsänderung in Basispunkten. */
+function mkKennzahlen(m){
+  const tag=mkData(m,'1t'),jahr=mkData(m,'1j'),monat=mkData(m,'1m');
+  const s=jahr.s||[],lo=Math.min(...s),hi=Math.max(...s);
+  const lage=hi>lo?(jahr.last-lo)/(hi-lo):null;
+  /* typische Tagesbewegung: Streuung der Veränderungen in der Monatsreihe */
+  const r=monat.s||[];const ret=[];
+  for(let i=1;i<r.length;i++)if(r[i-1])ret.push(m.unit==='%'?r[i]-r[i-1]:(r[i]-r[i-1])/r[i-1]*100);
+  const mw=ret.length?ret.reduce((a,b)=>a+b,0)/ret.length:0;
+  const sd=ret.length>3?Math.sqrt(ret.reduce((a,b)=>a+(b-mw)**2,0)/(ret.length-1)):null;
+  return {tag:tag.c,pp:tag.pp,lage,sd,abHoch:hi&&m.unit!=='%'?(jahr.last-hi)/hi*100:null};
+}
+function marktAnalyseHTML(){
+  const werte=MARKET_CATALOG.filter(m=>(m.series&&Object.keys(m.series).length)||(typeof DEMO!=='undefined'&&DEMO));
+  if(werte.length<4)return '';
+  const range=S.mkRange,rl=(MARKET_RANGES.find(r=>r[0]===range)||[])[1]||'';
+  const mitD=werte.map(m=>({m,d:mkData(m,range),k:mkKennzahlen(m)}));
+  const zeilen=[];
+  const idx=mitD.filter(x=>x.m.grp==='Indizes');
+  if(idx.length){
+    const plus=idx.filter(x=>x.d.c>0).length;
+    const best=idx.slice().sort((a,b)=>b.d.c-a.d.c)[0],worst=idx.slice().sort((a,b)=>a.d.c-b.d.c)[0];
+    zeilen.push(`<b>Aktien:</b> ${plus} von ${idx.length} Indizes im Plus (${esc(rl)}). Vorn ${esc(best.m.n)} ${fmtPct(best.d.c)}, hinten ${esc(worst.m.n)} ${fmtPct(worst.d.c)}.`);
+  }
+  const zins=mitD.filter(x=>x.m.unit==='%');
+  if(zins.length)zeilen.push(`<b>Zinsen:</b> ${zins.map(x=>`${esc(x.m.n)} ${fmtNum(x.d.last,2)} % (${x.d.c>=0?'+':'−'}${Math.round(Math.abs(x.d.c)*100)} Bp.)`).join(', ')}.`);
+  const andere=['Energie','Rohstoffe','Zinsen & Devisen'].map(g=>mitD.filter(x=>x.m.grp===g&&x.m.unit!=='%')).filter(l=>l.length);
+  andere.forEach(l=>{const t=l.slice().sort((a,b)=>Math.abs(b.d.c)-Math.abs(a.d.c))[0];
+    zeilen.push(`<b>${esc(l[0].m.grp)}:</b> größte Bewegung ${esc(t.m.n)} ${fmtPct(t.d.c)} (${esc(rl)}).`)});
+  /* Auffälligkeiten: Jahreshoch/-tief, ungewöhnlicher Tag */
+  const auff=[];
+  mitD.forEach(({m,k})=>{
+    if(k.lage!=null&&k.lage>=0.97)auff.push(`${esc(m.n)} nahe Jahreshoch`);
+    else if(k.lage!=null&&k.lage<=0.03)auff.push(`${esc(m.n)} nahe Jahrestief`);
+    if(k.sd&&Math.abs(k.tag)>2.5*k.sd&&Math.abs(k.tag)>=(k.pp?0.05:0.8))auff.push(`${esc(m.n)} mit ungewöhnlich großer Tagesbewegung (${k.pp?(k.tag>=0?'+':'−')+Math.round(Math.abs(k.tag)*100)+' Bp.':fmtPct(k.tag)})`);
+  });
+  return `<div class="box" style="padding:12px 14px;margin-bottom:12px;font-size:var(--fs-sm);line-height:1.55">
+    <div class="desk-hd" style="padding:0 0 6px"><h3>Überblick</h3><span class="note">gerechnet aus den Kursreihen</span></div>
+    ${zeilen.map(z=>`<div>${z}</div>`).join('')}
+    ${auff.length?`<div style="margin-top:6px"><b>Auffällig:</b> ${auff.slice(0,5).join(' · ')}</div>`:''}
+  </div>`;
+}
+function fmtPct(c){return (c>=0?'+':'−')+fmtNum(Math.abs(c),1)+' %'}
+/* Verweis auf die Wirkungsketten in den Märkten – lädt die kleine Datei nach. */
+function wkTeaserHTML(){
+  if(!window.WK){wkLaden();return ''}
+  const k=(window.WK.einschaetzungen||window.WK.ketten||[]);if(!k.length)return '';
+  return `<div class="box" style="padding:10px 14px;margin-bottom:12px;cursor:pointer" role="button" tabindex="0" onclick="S.trendMode='vorausschau';go('news','trends')">
+    <div class="desk-hd" style="padding:0 0 4px"><h3>Vorausschau heute</h3><span class="note">${k.length} geprüft · unter Trends</span></div>
+    ${k.slice(0,3).map(x=>`<div class="note" style="margin-top:2px">${x.wahrscheinlichkeit?`<b>${Math.round(x.wahrscheinlichkeit.p*100)} %</b> `:''}${esc(x.titel)}</div>`).join('')}
+  </div>`;
+}
+/* Marktlage in zwei, drei Absätzen – im Lauf von der KI geschrieben, aus
+   der Kurstabelle und den Wirtschaftsmeldungen des Tages. */
+function marktlageHTML(){
+  const l=window.MARKTLAGE;
+  if(!l||(l.ts&&NOW-l.ts*1000>30*H))return '';
+  return `<div class="box" style="padding:12px 14px;margin-bottom:12px">
+    <div class="desk-hd" style="padding:0 0 6px"><h3>Marktlage</h3><span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>${l.stand?`<span class="note">${esc(l.stand)}</span>`:''}</div>
+    ${l.absaetze.map(a=>`<p style="margin:0 0 8px;font-size:var(--fs-sm);line-height:1.55">${esc(a)}</p>`).join('')}
+    <div class="note">Automatisch zusammengefasst aus Kursen und Meldungen. Keine Anlageempfehlung.</div>
+  </div>`;
+}
 function renderMarkets(){
   const w=watchlist(),q=norm(S.mkQ);
   const treffer=q?MARKET_CATALOG.filter(m=>norm(m.n+' '+m.sym+' '+m.grp).includes(q)):[];
@@ -2174,6 +2327,7 @@ function renderMarkets(){
       <div class="val">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}<small style="color:${d.c>=0?'var(--green)':'var(--red)'}">${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</small></div>
       <button class="btn sm ${drin?'':'primary'}" onclick="watchToggle('${m.sym}')">${drin?'Entfernen':'Hinzufügen'}</button></div>`}).join(''):'<div class="empty"><b>Nichts gefunden</b>Anderer Name oder Symbol – der Katalog im Entwurf enthält Indizes, ETFs, Energie, Zinsen und Rohstoffe.</div>'}</div>`;
   }
+  if(!q)b+=marktlageHTML()+wkTeaserHTML()+marktAnalyseHTML();
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
   b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
     :(MARKET_CATALOG.length?'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>':'<div class="box"><div class="empty"><b>Keine Kursdaten</b>Kurse erscheinen hier, sobald der nächste Lauf sie geholt hat.</div></div>');
@@ -2510,27 +2664,57 @@ function abstimmungHTML(ab){
 }
 /* Reden einer Person im Plenum – mit dem, worüber danach abgestimmt
    wurde und wie es ausging. */
+/* Link auf das Plenarprotokoll: dserver.bundestag.de/btp/21/21095.pdf für
+   die 95. Sitzung der 21. Wahlperiode. Drucksachen liegen unter
+   /btd/21/082/2108210.pdf. */
+function protokollLink(nr){
+  const m=String(nr||'').match(/^(\d{2})\/(\d{1,3})$/);
+  return m?`https://dserver.bundestag.de/btp/${m[1]}/${m[1]}${m[2].padStart(3,'0')}.pdf`:'';
+}
+function drucksacheLink(nr){
+  const m=String(nr||'').match(/^(\d{2})\/(\d{1,5})$/);
+  if(!m)return '';const z=m[2].padStart(5,'0');
+  return `https://dserver.bundestag.de/btd/${m[1]}/${z.slice(0,3)}/${m[1]}${z}.pdf`;
+}
 function redenHTML(x){
   const r=x.reden||[];
   if(!r.length)return '';
   return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Reden im Plenum</h2><span class="cnt">${r.length}</span></div>
     <div class="box">${r.slice(0,8).map(e=>{
-      const folgen=(e.abstimmungen||[]).map(id=>ITEMS[id]).filter(Boolean);
+      /* Fragen in Befragung und Fragestunde führen zu keiner Abstimmung –
+         dort keine Verknüpfung, auch wenn im selben Punkt später abgestimmt
+         wurde. Gleiche Abstimmungsergebnisse stehen einmal da. */
+      const frage=/frage|intervention/i.test(e.art||'');
+      const folgen=frage?[]:(e.abstimmungen||[]).map(id=>ITEMS[id]).filter(Boolean);
+      const chips=[];const gesehen=new Set();
+      folgen.forEach(v=>{const t=(v.title||'').replace(/^(Gesetz|Antrag|Beschlussempfehlung)\s+(zur|zum|zu|der|des|über)\s+/i,'');
+        const l=`${v.thema?v.thema+': ':''}${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}`;const k=l+'|'+t;
+        if(gesehen.has(k))return;gesehen.add(k);chips.push({v,l,t})});
+      const link=e.link||protokollLink(e.sitzung);
+      const art=e.art||'Rede';
       return `<div class="rul" style="cursor:default;display:block;padding:10px 14px">
-        <div class="meta"><span class="pill blue">${esc(e.top||'Plenum')}</span><span>${esc(e.datum||'')}</span>${e.sitzung?`<span>Sitzung ${esc(e.sitzung)}</span>`:''}${e.zeichen?`<span>${Math.max(1,Math.round(e.zeichen/900))} Min.</span>`:''}</div>
+        <div class="meta"><span class="pill ${frage?'grey':'blue'}">${esc(art)}</span>${e.top?`<span>${esc(e.top)}</span>`:''}<span>${esc(e.datum||'')}</span>${e.zeichen?`<span>${Math.max(1,Math.round(e.zeichen/900))} Min.</span>`:''}${link?`<a href="${esc(link)}" target="_blank" rel="noopener">Protokoll ${esc(e.sitzung||'')}</a>`:''}</div>
         ${e.betreff?`<div class="ttl" style="margin-top:4px">${esc(e.betreff)}</div>`:''}
         ${e.auszug?`<div class="note" style="margin-top:4px;line-height:1.45">„${esc(e.auszug)}“</div>`:''}
-        ${folgen.length?`<div class="meta" style="margin-top:6px">${folgen.map(v=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs)" onclick="openReader('${v.id}')">${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}${v.thema?' · '+esc(v.thema):''}</button>`).join('')}</div>`:''}
+        ${chips.length?`<div class="meta" style="margin-top:6px">${chips.map(({v,l,t})=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs);text-align:left" onclick="openReader('${v.id}')" title="${esc(v.title||'')}">${esc(l)}${chips.length>1&&t?` · ${esc(t.slice(0,40))}${t.length>40?'…':''}`:''}</button>`).join('')}</div>`:''}
       </div>`}).join('')}</div>
     ${r.length>8?`<div class="note" style="margin-top:6px">${r.length-8} weitere Reden in den letzten Monaten.</div>`:''}`;
 }
 /* Die Debatte vor einer Abstimmung: wer gesprochen hat, in Reihenfolge. */
 function debatteHTML(ab){
-  const r=(ab&&ab.redner)||[];
-  if(!r.length)return '';
-  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Debatte</h2><span class="cnt">${r.length} ${r.length===1?'Rede':'Reden'}${ab.top?' · '+esc(ab.top):''}</span></div>
+  const roh=(ab&&ab.redner)||[];
+  if(!roh.length)return '';
+  /* Mehr als 30 Reden zu einer Abstimmung gibt es praktisch nicht – dann
+     ist der Tagesordnungspunkt im Protokoll nicht erkannt worden, und die
+     Liste wäre die halbe Sitzung. Lieber ehrlich weglassen. */
+  if(roh.length>30)return `<p class="note" style="margin-top:12px">Die Debatte zu dieser Abstimmung ließ sich im Protokoll nicht eindeutig abgrenzen.</p>`;
+  const nachName=new Map();
+  roh.forEach(e=>{const k=e.name+'|'+(e.fraktion||'');if(!nachName.has(k))nachName.set(k,{...e,n:0});nachName.get(k).n++});
+  const r=[...nachName.values()];
+  return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Debatte</h2><span class="cnt">${roh.length} ${roh.length===1?'Rede':'Reden'}${r.length<roh.length?` von ${r.length} Personen`:''}${ab.top?' · '+esc(ab.top):''}</span></div>
     <div class="reader-tags">${r.map(e=>{const pid=(window.REDE_PERSON||{})[e.id];
-      return `<button class="chip" ${pid&&ITEMS[pid]?`onclick="openReader('${pid}')"`:'disabled'}><i style="width:9px;height:9px;border-radius:3px;background:${fraktionsFarbe(e.fraktion||'')};display:inline-block;margin-right:5px"></i>${esc(e.name)}${e.fraktion?` <span class="n">${esc(kurzFraktion(e.fraktion))}</span>`:''}</button>`}).join('')}</div>`;
+      const amt=e.fraktion&&e.fraktion.length>24&&!/cdu|csu|spd|grün|linke|afd|fdp|bsw|fraktionslos/i.test(e.fraktion);
+      return `<button class="chip" ${pid&&ITEMS[pid]?`onclick="openReader('${pid}')"`:'disabled'}><i style="width:9px;height:9px;border-radius:3px;background:${fraktionsFarbe(e.fraktion||'')};display:inline-block;margin-right:5px"></i>${esc(e.name)}${e.fraktion?` <span class="n">${esc(amt?'Regierung':kurzFraktion(e.fraktion))}</span>`:''}${e.n>1?` <span class="n">×${e.n}</span>`:''}</button>`}).join('')}</div>`;
 }
 /* Das Abstimmungsverhalten einer Person – Quote, Bilanz, Liste. */
 function stimmverhaltenHTML(x){
@@ -3016,11 +3200,30 @@ function openReader(id,list){
            stammt. Alles andere – Kleine Anfrage, Antrag, Gesetzentwurf – ist
            eine Beteiligung an einem Vorgang und heißt hier auch so. */
         const sp=x.speeches||[];if(!sp.length)return '';
-        const art=s=>dokArt({type:s.type||s.art||'',title:(s.title||'')+' '+(s.bezug||'')});
-        const reden=sp.filter(s=>s.protocol||/protokoll/i.test(art(s)));
-        const vorgaenge=sp.filter(s=>!reden.includes(s));
-        const block=(titel,liste)=>liste.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">${titel}</h2><span class="cnt">${liste.length}</span></div><div class="box">${liste.slice(0,10).map(s=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(s.title||'')}</div><div class="meta"><span class="pill blue">${esc(art(s))}</span>${s.date?`<span>${fmtAgo(new Date(s.date).getTime())}</span>`:''}${s.protocol?`<span>${esc(s.protocol)}</span>`:''}${s.rolle||s.role?`<span class="pill grey">${esc(s.rolle||s.role)}</span>`:''}${s.link?`<a href="${esc(s.link)}" target="_blank" rel="noopener">Öffnen</a>`:''}</div></div><span></span></div>`).join('')}</div>`:'';
-        return block('Wortmeldungen im Plenum',reden)+block('Beteiligt an Vorgängen',vorgaenge);
+        /* Aus der Nummer lässt sich die Art ablesen: "21/95" ist ein
+           Plenarprotokoll, also eine Rede; "21/8210" ist eine Drucksache,
+           also Antrag, Anfrage oder Gesetzentwurf – das ist Beteiligung an
+           einem Vorgang, keine Wortmeldung. */
+        const istProtokoll=s=>/^\d{2}\/\d{1,3}$/.test(String(s.protocol||'').trim())||/plenarprotokoll/i.test(s.dokumentart||'');
+        const art=s=>{
+          if(s.art&&!/^dokument$/i.test(s.art))return s.art;
+          if(istProtokoll(s))return /frage/i.test(s.title||'')?'Frage im Plenum':'Rede';
+          const t=(s.title||'')+' '+(s.bezug||'');
+          if(/kleine anfrage/i.test(t))return 'Kleine Anfrage';
+          if(/große anfrage|grosse anfrage/i.test(t))return 'Große Anfrage';
+          if(/entschließungsantrag/i.test(t))return 'Entschließungsantrag';
+          if(/gesetzentwurf|entwurf eines gesetzes/i.test(t))return 'Gesetzentwurf';
+          const d=dokArt({type:s.type||'',title:t});
+          return d&&!/^dokument$/i.test(d)?d:'Antrag oder Anfrage';
+        };
+        const link=s=>s.link||(istProtokoll(s)?protokollLink(s.protocol):drucksacheLink(s.protocol));
+        const reden=sp.filter(istProtokoll);
+        const vorgaenge=sp.filter(s=>!istProtokoll(s));
+        const block=(titel,liste)=>liste.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">${titel}</h2><span class="cnt">${liste.length}</span></div><div class="box">${liste.slice(0,10).map(s=>`<div class="rul" style="cursor:default"><div><div class="ttl">${link(s)?`<a href="${esc(link(s))}" target="_blank" rel="noopener" style="color:inherit">${esc(s.title||'')}</a>`:esc(s.title||'')}</div><div class="meta"><span class="pill blue">${esc(art(s))}</span>${s.date?`<span>${fmtAgo(new Date(s.date).getTime())}</span>`:''}${s.protocol?`<span>${esc(s.protocol)}</span>`:''}${s.rolle||s.role?`<span class="pill grey">${esc(s.rolle||s.role)}</span>`:''}${s.link?`<a href="${esc(s.link)}" target="_blank" rel="noopener">Öffnen</a>`:''}</div></div><span></span></div>`).join('')}</div>`:'';
+        /* Stehen die Reden schon aus den Protokollen oben, hier nur, was dort fehlt. */
+        const schonDa=new Set((x.reden||[]).map(r=>r.sitzung));
+        const rest=reden.filter(s=>!schonDa.has(String(s.protocol||'').trim()));
+        return block((x.reden||[]).length?'Weitere Wortmeldungen im Plenum':'Wortmeldungen im Plenum',rest)+block('Beteiligt an Vorgängen',vorgaenge);
       })()}
       ${qs.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zitiert in Protokollen</h2><span class="cnt">${qs.length}</span></div>${qs.map(q=>`<div class="quote">„${esc(q.text)}“<span class="who"><a href="#" onclick="event.preventDefault();openReader('${q.doc}')">${esc(ITEMS[q.doc].title)}</a> · ${esc(ITEMS[q.doc].src)}</span></div>`).join('')}`:''}
       ${rel.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Aktuelles aus dem Themenfeld</h2></div><div class="box list">${rel.map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:''}`;
@@ -3245,7 +3448,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v44 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v48 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -4042,7 +4245,7 @@ function indexieren(){
     /* Eigennamen aus der Entitätenerkennung zählen mit – dort steht der volle Name oft, auch wenn der Teaser gekürzt ist. */
     const txt=(a._txt||(a._txt=norm(a.title+' '+a.desc)))+' | '+norm((a.ents||[]).join(' | '));
     const gesehen=new Set();
-    const merke=p=>{if(gesehen.has(p.id))return;gesehen.add(p.id);(IDX.mentions[p.id]=IDX.mentions[p.id]||[]).push(a)};
+    const merke=p=>{if(gesehen.has(p.id))return;gesehen.add(p.id);(IDX.mentions[p.id]=IDX.mentions[p.id]||[]).push(a);(a._pids||(a._pids=new Set())).add(p.id)};
     if(hatFeld){
       /* Die Zuordnung des Laufs wird übernommen – außer bei Allerwelts- und
          Mehrfachnamen: "Schulz" oder "Müller" plus irgendwo "SPD" im Text
@@ -4220,6 +4423,7 @@ async function laden(){
   sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
   sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
   sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
+  sicher('KI-Marktlage',()=>{window.MARKTLAGE=ki&&ki.marktlage&&(ki.marktlage.absaetze||[]).length?ki.marktlage:null});
   /* Schlagzeilen der Top-Meldungen, im Lauf geschrieben
      (ki_zusammenfassungen.py, alle sechs Stunden, je Region und in der
      Sprache der Quellen). Flach abgelegt: id → Schlagzeile und Satz. */
@@ -4316,6 +4520,136 @@ async function tlHolen(url){
     const arr=Array.isArray(d)?d:(d&&(d.ausgaben||d.issues));
     return (arr&&arr.length)?arr:null;
   }catch(e){return null}
+}
+/* ── Wirkungsketten ────────────────────────────────────────────────
+   Einmal am Tag von wirkungsketten.py geschrieben: geprüfte Ketten aus
+   Meldungen und Kursen, dazu Beobachtungsliste, Bilanz, Wissensbasis und
+   Literatur. Geladen wird erst, wenn der Reiter oder die Märkte offen
+   sind – die Startseite wird dadurch nicht langsamer. */
+window.WK=null;let _wkLaeuft=false;
+async function wkLaden(){
+  if(window.WK||_wkLaeuft)return;_wkLaeuft=true;
+  try{
+    let j=await hole('vorausschau.json');
+    if(!j||!(j.einschaetzungen||j.basis))j=await hole('wirkungsketten.json');
+    if(j&&!j.einschaetzungen&&j.ketten)j.einschaetzungen=j.ketten;
+    window.WK=j&&(j.einschaetzungen||j.basis)?j:{einschaetzungen:[],leer:true};
+  }catch(e){window.WK={einschaetzungen:[],leer:true}}
+  finally{_wkLaeuft=false;render()}
+}
+function wkKurs(sym){return MARKET_CATALOG.find(m=>m.sym===sym)}
+function wkMessHTML(mp){
+  if(!mp)return '<div class="wk-mess note">Kein automatischer Messpunkt – diese Kette wird nicht gegen Kurse geprüft.</div>';
+  const m=wkKurs(mp.sym);const jetzt=m?m.p:null;
+  const pp=mp.einheit==='%';
+  const diff=jetzt!=null&&mp.startwert?(pp?jetzt-mp.startwert:(jetzt-mp.startwert)/mp.startwert*100):null;
+  const pfeil=mp.richtung>0?'steigt':'fällt';
+  const tag=String(mp.pruefdatum||'').split('-').reverse().slice(0,2).join('.')+'.';
+  const passt=diff!=null&&diff*mp.richtung>0;
+  return `<div class="wk-mess"><b>Messpunkt:</b> ${esc(mp.name||mp.sym)} ${pfeil} bis zum ${esc(tag)}
+    <span class="note">· Start ${fmtNum(mp.startwert,pp?2:2)}${mp.einheit&&!pp?' '+esc(mp.einheit):pp?' %':''}${jetzt!=null?` · jetzt ${fmtNum(jetzt,2)}`:''}${diff!=null?` <b class="${passt?'up':'dn'}">(${diff>=0?'+':'−'}${fmtNum(Math.abs(diff),pp?2:1)}${pp?' Pkt.':' %'})</b>`:''}${mp.grundrate!=null?` · Grundrate ${Math.round(mp.grundrate*100)} %`:''}</span></div>`;
+}
+function wkMonitor(kbId){
+  const e=((window.WK||{}).basis||[]).find(x=>x.id===kbId);if(!e)return;
+  const woerter=String((e.stichworte||[])[0]||'').split('|').map(w=>w.replace(/\\b|[()\\\[\]?*+^$.]/g,'').trim()).filter(w=>w.length>=3).slice(0,6);
+  if(!woerter.length){toast('Keine Stichworte hinterlegt');return}
+  MONITORS.push({...MON_FELDER,id:'m'+Date.now(),name:'Vorausschau: '+e.titel,kw:woerter,color:'#7c3aed'});
+  store.set('monitors',MONITORS);toast('Monitor angelegt – unter „Beobachten"');
+}
+/* Wahrscheinlichkeit als Zahl, Balken mit Grundrate, Zeitprofil, Spanne
+   und – aufklappbar – wie die Zahl entsteht. */
+function vsWkeitHTML(k){
+  const w=k.wahrscheinlichkeit,mp=k.messpunkt;
+  if(!w)return mp&&mp.hinweis?`<div class="note" style="margin-top:6px">${esc(mp.hinweis)}</div>`:'';
+  const p=Math.round(w.p*100),g=Math.round(w.grundrate*100),dp=p-g;
+  const tag=mp?String(mp.pruefdatum||'').split('-').reverse().slice(0,2).join('.')+'.':'';
+  const pp=w.einheit==='%';const e=pp?' Pkt.':' %';
+  const sp=w.spanne;
+  return `<div class="vs-p">
+      <div class="vs-p-zahl">${p} %</div>
+      <div class="vs-p-text">Wahrscheinlichkeit, dass ${esc(mp?(mp.name||mp.sym):'')} bis zum ${esc(tag)} ${mp&&mp.richtung>0?'höher':'tiefer'} steht
+        <div class="vs-balken" title="Grundrate ${g} %"><i style="width:${p}%"></i><span class="vs-marke" style="left:${g}%"></span></div>
+        <span class="note">Grundrate ${g} % (ohne Ereignis) · ${dp>=0?'+':'−'}${Math.abs(dp)} Punkte durch das Ereignis</span></div>
+    </div>
+    ${(w.profil||[]).length?`<div class="vs-profil">${w.profil.map(x=>`<span><b>${Math.round(x.p*100)} %</b> in ${x.tage} Handelstagen <span class="note">(Grundrate ${Math.round(x.grundrate*100)} %)</span></span>`).join('')}</div>`:''}
+    ${sp?`<div class="note" style="margin-top:4px">Übliche Spanne in ${mp.tage} Handelstagen: ${fmtNum(sp.p10,pp?2:1)}${e} bis ${sp.p90>=0?'+':''}${fmtNum(sp.p90,pp?2:1)}${e} (10. bis 90. Perzentil des vergangenen Jahres)</div>`:''}
+    ${(w.warum||[]).length?`<details class="vs-warum"><summary>Wie die Zahl entsteht</summary><ol>${w.warum.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></details>`:''}`;
+}
+function renderVorausschau(){
+  if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
+  const W=window.WK;
+  const liste=W.einschaetzungen||W.ketten||[];
+  const lit=Object.fromEntries((W.literatur||[]).map(l=>[l.id,l]));
+  const kurzLit=id=>{const l=lit[id];if(!l)return id;const m=l.text.match(/^([^(]+?)\s*\((\d{4})\)/);return m?m[1].replace(/,\s*[A-Z]\.( [A-Z]\.)*/g,'').replace(/\s+&\s+/,' & ').trim()+' '+m[2]:id};
+  const bereiche=[...new Set(liste.map(k=>k.bereich))];
+  const sel=S.wkBereich&&bereiche.includes(S.wkBereich)?S.wkBereich:'all';
+  const ketten=liste.filter(k=>sel==='all'||k.bereich===sel);
+  let b='';
+  if(W.leer)return `<div class="box"><div class="empty"><b>Noch keine Vorausschau</b>Die erste Ausgabe entsteht mit dem nächsten Tageslauf (vorausschau.py).</div></div>`;
+  b+=`<div class="box wk-kopf">
+    <div class="desk-hd" style="padding:0 0 6px"><h3>Vorausschau</h3><span class="note">Foresight${W.stand?' · Stand '+esc(W.stand):''}</span></div>
+    ${W.tagesbild?`<p class="wk-lead">${esc(W.tagesbild)}</p>`:''}
+    <div class="note">${liste.length} geprüfte ${liste.length===1?'Einschätzung':'Einschätzungen'} · ${(W.beobachtung||[]).length} unter Beobachtung · ${(W.verworfen||[]).length} verworfen${W.bilanz&&W.bilanz.geprueft?` · Bilanz ${W.bilanz.eingetreten} von ${W.bilanz.geprueft} eingetreten`:''}</div>
+    <div class="note" style="margin-top:4px">${esc(W.hinweis||'Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.')}</div>
+  </div>`;
+  if(bereiche.length>1)b+=`<div class="chips" role="group" aria-label="Bereich" style="margin:10px 0">${[['all','Alle'],...bereiche.map(x=>[x,x])].map(([k,l])=>`<button class="chip" aria-pressed="${sel===k}" onclick="S.wkBereich='${esc(k)}';render()">${esc(l)}</button>`).join('')}</div>`;
+  b+=ketten.map(k=>{
+    const q=(k.quellen||[]).map(x=>{const a=x.id&&ITEMS[x.id];
+      return a?`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span><span class="ttl">${esc(a.title)}</span></div>`
+        :`<div class="hit"><span class="meta"><span class="src">${esc(x.quelle||'')}</span><span>${esc(x.datum||'')}</span></span><span class="ttl">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.titel)}</a>`:esc(x.titel)}</span></div>`}).join('');
+    const sg=k.signal||{},kl=k.klassifikation;
+    return `<div class="box wk-karte">
+      <div class="meta"><span class="pill grey">${esc(k.bereich)}</span><span class="pill ${k.sicherheit==='hoch'?'green':k.sicherheit==='niedrig'?'amber':'blue'}">Prüfung: ${esc(k.sicherheit)}</span>${k.fortgeschrieben_seit?`<span class="note">seit ${esc(String(k.fortgeschrieben_seit).split('-').reverse().slice(0,2).join('.'))}. beobachtet</span>`:''}<span class="note">${esc(k.kb_id)}</span></div>
+      <h3 class="wk-titel">${esc(k.titel)}</h3>
+      ${kl?`<div class="vs-klasse">${[['Art',kl.art],['Ziel',kl.ziel],['Zuschreibung',kl.zuschreibung],['Akteur',kl.akteur]].filter(x=>x[1]).map(([n,v])=>`<span><span class="note">${n}</span> <b>${esc(v)}</b></span>`).join('')}</div>`:''}
+      <ol class="wk-kette">
+        <li><span class="wk-stufe">Ereignis</span>${esc(k.ereignis)}</li>
+        <li><span class="wk-stufe">Mechanismus</span>${esc(k.mechanismus)}</li>
+        <li><span class="wk-stufe">Erwartete Wirkung</span>${esc(k.wirkung)} <span class="note">· ${esc(k.zeitraum||'')}</span></li>
+      </ol>
+      ${vsWkeitHTML(k)}
+      ${wkMessHTML(k.messpunkt)}
+      ${k.eingepreist?`<div class="note" style="margin-top:4px"><b>Schon eingepreist?</b> ${esc(k.eingepreist)}</div>`:''}
+      ${(k.folgen_offen||[]).length?`<div class="wk-folgen"><b>Mögliche Folgen</b>${k.folgen_offen.map(f=>`<div><span class="pill ${f.plausibilitaet==='hoch'?'green':f.plausibilitaet==='niedrig'?'grey':'blue'}">${esc(f.plausibilitaet)}</span> ${esc(f.text)}${f.begruendung?` – <span class="note">${esc(f.begruendung)}</span>`:''}</div>`).join('')}</div>`:''}
+      ${(k.annahmen||[]).length||(k.gegenkraefte||[]).length?`<div class="wk-zwei">
+        ${(k.annahmen||[]).length?`<div><b>Annahmen</b><ul>${k.annahmen.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+        ${(k.gegenkraefte||[]).length?`<div><b>Gegenkräfte</b><ul>${k.gegenkraefte.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}</div>`:''}
+      ${(k.folgen||[]).length?`<div class="wk-folgen"><b>Folgen zweiter Ordnung</b>${k.folgen.map(f=>`<div><span class="pill grey">${esc(f.id)}</span> ${esc(f.titel)}${f.text?` – <span class="note">${esc(f.text)}</span>`:''}</div>`).join('')}</div>`:''}
+      <div class="note" style="margin-top:8px">Signal: ${sg.haeuser||0} Häuser · ${sg.meldungen||0} Meldungen, ${sg.jung||0} aus den letzten 24 Stunden${sg.gdelt&&sg.gdelt.faktor?` · weltweit ${sg.gdelt.faktor>=1?'×'+fmtNum(sg.gdelt.faktor,1):'rückläufig'} (GDELT)`:''}${(k.belege||[]).length?` · Belege: ${k.belege.map(kurzLit).map(esc).join('; ')}`:''}</div>
+      ${q?`<div class="wk-quellen">${q}</div>`:''}
+      <div class="bar" style="margin-top:8px"><button class="btn sm quiet" onclick="wkMonitor('${esc(k.kb_id)}')">Als Monitor beobachten</button></div>
+    </div>`}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
+  if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
+    <p class="note" style="margin-bottom:6px">Erste Anzeichen, aber noch zu dünn belegt – meist nur ein Haus.</p>
+    <div class="box">${W.beobachtung.map(o=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(o.id)}</span><span>${esc(o.bereich)}</span><span>${o.haeuser} ${o.haeuser===1?'Haus':'Häuser'}</span></div><div class="ttl" style="margin-top:3px">${esc(o.titel)}</div>${(o.meldungen||[]).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</div>`).join('')}</div>`;
+  const B=W.bilanz||{};
+  b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Bilanz</h2><span class="cnt">${B.geprueft||0} geprüft · ${B.offen||0} offen</span></div>`;
+  b+=B.geprueft?`<div class="box" style="padding:12px 14px">
+      <div style="font-size:var(--fs-sm)"><b>${B.eingetreten} von ${B.geprueft}</b> eingetreten (${Math.round((B.quote||0)*100)} %)${B.grundrate!=null?` · Grundrate ${Math.round(B.grundrate*100)} %`:''}</div>
+      ${B.brier!=null?`<div style="font-size:var(--fs-sm);margin-top:4px"><b>Brier-Wert ${fmtNum(B.brier,3)}</b> gegen ${fmtNum(B.brier_grundrate,3)} bei bloßer Grundrate – ${B.brier<B.brier_grundrate?'das Modell schätzt besser als der Zufall':'das Modell ist noch nicht besser als die Grundrate'} (kleiner ist besser, ${B.mit_p} Einschätzungen).</div>`:''}
+      ${Object.entries(B.nach_bereich||{}).map(([n,v])=>`<div class="note">${esc(n)}: ${v.eingetreten}/${v.geprueft}${v.grundrate!=null?` (Grundrate ${Math.round(v.grundrate*100)} %)`:''}${v.brier!=null?` · Brier ${fmtNum(v.brier,3)}`:''}</div>`).join('')}
+      <div class="list" style="margin-top:8px">${(B.liste||[]).slice(0,12).map(k=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(k.titel)}</div><div class="meta"><span class="pill ${k.ergebnis==='eingetreten'?'green':k.ergebnis==='gegenläufig'?'red':'grey'}">${esc(k.ergebnis)}</span>${(k.wahrscheinlichkeit||{}).p!=null?`<span>geschätzt ${Math.round(k.wahrscheinlichkeit.p*100)} %</span>`:''}<span>${esc((k.messpunkt||{}).name||'')}</span>${k.veraenderung!=null?`<span>${k.veraenderung>=0?'+':''}${fmtNum(k.veraenderung,2)}${(k.messpunkt||{}).einheit==='%'?' Pkt.':' %'}</span>`:''}<span>${esc(k.geprueft_am||'')}</span></div></div><span></span></div>`).join('')}</div>
+    </div>`:`<p class="note">Noch keine Einschätzung hat ihr Prüfdatum erreicht. Die Bilanz füllt sich mit der Zeit und zeigt dann, welche Zusammenhänge tragen und ob die Wahrscheinlichkeiten stimmen.</p>`;
+  if((W.vorschlaege||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Vorschläge für neue Zusammenhänge</h2><span class="cnt">ungeprüft</span></div>
+    <p class="note" style="margin-bottom:6px">Breit berichtete Themen, die kein Eintrag der Wissensbasis abdeckt. Werden erst nach deiner Prüfung in vorausschau_basis.json übernommen.</p>
+    <div class="box">${W.vorschlaege.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="ttl">${esc(v.ausloeser)} → ${esc(v.wirkung)}</div><div class="note">${esc(v.mechanismus||'')}${v.zeitraum?' · '+esc(v.zeitraum):''}${v.messpunkt?' · Messpunkt '+esc(v.messpunkt)+' '+esc(v.richtung||''):''}</div>${v.begruendung?`<div class="note">${esc(v.begruendung)}</div>`:''}</div>`).join('')}</div>`;
+  if((W.verworfen||[]).length)b+=`<p class="note" style="margin-top:12px"><b>Verworfen:</b> ${W.verworfen.map(v=>`${esc(v.id)} ${esc(v.titel)}${v.grund?` (${esc(v.grund)})`:''}`).join(' · ')}</p>`;
+  /* Datenquellen: was die Quellenprüfung gefunden hat */
+  const QS=W.quellen_status||{};const z=QS.zusammenfassung||(typeof QS.ok==='number'?QS:null);
+  if(z)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Datenquellen</h2><span class="cnt">${z.ok||0} in Ordnung · ${z.warnung||0} Warnungen · ${z.fehler||0} Fehler</span></div>
+    ${(QS.auffaellig||[]).length?`<div class="box">${QS.auffaellig.map(q=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(q.name)} <span class="note">${esc(q.sym||'')}</span></div><div class="meta"><span class="pill ${q.status==='fehler'?'red':'amber'}">${esc(q.status)}</span><span>${esc(q.typ||'')}</span><span>${esc(q.detail||'')}</span></div></div><span></span></div>`).join('')}</div>`:'<p class="note">Alle Quellen haben die tägliche Prüfung bestanden: erreichbar, richtiges Kürzel, aktuell, plausible Werte.</p>'}`;
+  const auf=S.wkBasisAuf;
+  const nachB={};(W.basis||[]).forEach(e=>{const n=(W.bereiche||{})[e.id[0]]||'Weitere';(nachB[n]=nachB[n]||[]).push(e)});
+  b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Wissensbasis</h2><span class="cnt">${(W.basis||[]).length} Zusammenhänge</span><div class="tools"><button class="btn sm quiet" aria-expanded="${!!auf}" onclick="S.wkBasisAuf=${auf?'false':'true'};render()">${auf?'Zuklappen':'Aufklappen'}</button></div></div>`;
+  if(auf)b+=Object.entries(nachB).map(([n,l])=>`<div class="box" style="margin-bottom:8px"><div class="desk-hd" style="padding:10px 14px 4px"><h3>${esc(n)}</h3></div>${l.map(e=>{const mp=e.messpunkt;const mt=!mp?'kein Kurs – offene Folgen':(mp.wahl?mp.wahl.join(' / '):((wkKurs(mp.sym)||{}).n||mp.sym))+(mp.richtung===1?' ↑':mp.richtung===-1?' ↓':' ↕')+` in ${mp.tage} Handelstagen`;
+      return `<div class="rul" style="cursor:default;display:block;padding:8px 14px"><div class="ttl"><span class="pill grey">${esc(e.id)}</span> ${esc(e.ausloeser)}</div><div class="note">${esc(e.wirkung)} – ${esc(e.mechanismus)} · ${esc(e.zeitraum)}${e.effekt?` · Stärke ${esc(e.effekt)}`:''}</div><div class="note">Messpunkt: ${esc(mt)} · Gegenkräfte: ${esc(e.gegenkraefte||'')}${(e.belege||[]).length?' · '+e.belege.map(kurzLit).map(esc).join('; '):''}</div>${(e.folgen_offen||[]).length?`<div class="note">Mögliche Folgen: ${e.folgen_offen.map(esc).join(' · ')}</div>`:''}</div>`}).join('')}</div>`).join('');
+  const litB={};(W.literatur||[]).forEach(l=>{(litB[l.bereich]=litB[l.bereich]||[]).push(l)});
+  b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Literatur und Werkzeuge</h2><span class="cnt">${(W.literatur||[]).length}</span></div>
+    <div class="box" style="padding:10px 14px">${Object.entries(litB).map(([n,l])=>`<div style="margin-bottom:10px"><b style="font-size:var(--fs-sm)">${esc(n)}</b>${l.map(x=>`<div class="note" style="margin-top:3px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.text)}</a>${x.wofuer?` – ${esc(x.wofuer)}`:''}</div>`).join('')}</div>`).join('')}
+      ${(W.werkzeuge||[]).length?`<div><b style="font-size:var(--fs-sm)">Offene Werkzeuge und Daten</b>${W.werkzeuge.map(x=>`<div class="note" style="margin-top:3px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.name)}</a> – ${esc(x.wofuer)}</div>`).join('')}</div>`:''}
+    </div>
+    <p class="note" style="margin-top:10px"><b>So entsteht eine Einschätzung:</b> Meldungen treffen die Stichworte eines Zusammenhangs (mindestens zwei Häuser) → ein Sprachmodell prüft streng, ob ein aktuelles Ereignis vorliegt, und schreibt den Wirkungspfad auf den Fall angewandt aus → das Skript rechnet die Wahrscheinlichkeit aus Grundrate, Stärke des Zusammenhangs, Belegen und schon erfolgter Kursbewegung → am Prüfdatum wird gegen die Kurse abgeglichen, und die Bilanz fließt in künftige Wahrscheinlichkeiten ein.${W.modell&&W.modell.text?' Formel: '+esc(W.modell.text):''}</p>`;
+  return b;
 }
 async function tageslageLaden(){
   if(TL.liste||TL.laeuft)return;TL.laeuft=true;
