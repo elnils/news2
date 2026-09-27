@@ -1213,6 +1213,11 @@ def main():
                                            {"haeuser_n": len(s["haeuser"]), "gdelt": gd}, sicherheit, archiv)
             elif gestoert:
                 messpunkt["hinweis"] = "Kursquelle laut Quellenprüfung gestört – keine Wahrscheinlichkeit gerechnet"
+            if not w:
+                # Wert steht (noch) nicht in markets.json – etwa bevor die
+                # Zusatzwerte das erste Mal geholt wurden. Kein Startwert, keine
+                # Prüfung; die App zeigt das offen an.
+                messpunkt["hinweis"] = f"Kurs {sym} fehlt noch in den Marktdaten – keine Wahrscheinlichkeit gerechnet"
         nummern = [n for n in (d.get("quellen") or []) if isinstance(n, int) and 1 <= n <= len(meldungen)] or [1]
         quellen = [{"id": meldungen[n - 1].get("id"), "titel": meldungen[n - 1].get("title", ""),
                     "quelle": meldungen[n - 1].get("source", ""), "url": meldungen[n - 1].get("link", ""),

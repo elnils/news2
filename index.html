@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v48</title>
+<title>Presseschau – Entwurf v49</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -756,7 +756,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v48</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v49</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1381,12 +1381,20 @@ function render(){
     const w=WS.find(x=>x.id===S.ws);const tab=S.tab[w.id];
     h=`<div class="page-hd ${w.tabs.length?'has-tabs':''}"><h1>${w.label}</h1>${w.tabs.length?`<div class="tabs" role="tablist">${w.tabs.map(t=>`<button class="tab" role="tab" aria-selected="${t[0]===tab}" onclick="go('${w.id}','${t[0]}')"><svg aria-hidden="true"><use href="#${t[2]}"/></svg>${t[1]}</button>`).join('')}</div>`:''}
       ${(REGION_TABS[w.id]||[]).includes(tab)?`<div id="regions" role="group" aria-label="Region">${REGIONS.map(([k,l])=>`<button class="chip" data-r="${k}" aria-pressed="${S.region===k}" title="${l}" onclick="setRegion('${k}')">${REGION_SHORT[k]||l}</button>`).join('')}</div>`:''}</div>`;
+    try{
     if(w.id==='news'){
       if(tab==='top')h+=renderTop();else if(tab==='desk')h+=renderDesk();else if(tab==='stories')h+=renderStories();else if(tab==='trends')h+=renderTrends();else if(tab==='studies')h+=renderStudies();else if(tab==='markets')h+=renderMarkets();else if(tab==='foresight'){S.trendMode='vorausschau';h+=renderTrends()}else h+=renderArchive();
     } else if(w.id==='monitor')h+=renderMonitor();
     else if(w.id==='policy'){if(tab==='procs')h+=renderProcs();else if(tab==='votes')h+=renderVotes();else if(tab==='docs')h+=renderDocs();else if(tab==='events')h+=renderEvents();else if(tab==='rulings')h+=renderRulings();else h+=renderElections()}
     else if(w.id==='stakeholder')h+=renderStakeholder(tab);
     else{if(tab==='brief')h+=renderBrief();else if(tab==='tageslage')h+=renderTageslage();else h+=renderNewsletter()}
+    }catch(e){
+      /* Eine Ansicht, die beim Zeichnen scheitert, zeigt das jetzt an – sonst
+         bliebe der vorige Inhalt stehen (etwa "wird geladen …") und es sähe
+         aus, als hinge die Seite. */
+      console.error('Ansicht',tab,e);
+      h+=`<div class="box"><div class="empty"><b>Diese Ansicht ließ sich nicht darstellen</b>${esc(String(e&&e.message||e))} – die übrigen Bereiche funktionieren weiter.</div></div>`;
+    }
   }
   g('page').innerHTML=h;
   g('q-clear').hidden=!S.q;
@@ -1806,7 +1814,9 @@ function mkSeries(m,range){
   for(let i=0;i<n;i++){v*=1+(rnd()-.5)*2*schritt+(Math.pow(gesamt,1/n)-1);out.push(v)}
   const k=m.p/out[out.length-1];return out.map(x=>x*k);
 }
-function fmtNum(x,dec){return x.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
+/* Fehlt ein Wert (null, undefined, NaN), steht ein Strich da. Vorher brach
+   das Zeichnen der ganzen Ansicht an einem einzigen fehlenden Kurs ab. */
+function fmtNum(x,dec){if(x==null||typeof x!=='number'||!isFinite(x))return '–';return x.toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
 function mkData(m,range){
   /* Echte Reihe aus markets.json, sonst die erzeugte Beispielreihe (?demo=1). */
   const echt=m.series&&m.series[range]&&m.series[range].length>1?m.series[range]:null;
@@ -3448,7 +3458,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v48 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v49 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -3462,7 +3472,11 @@ const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
 async function hole(datei){
   const t0=performance.now();
   try{
-    const r = await fetch(datei+'?t='+Date.now());
+    /* Nie ewig warten: Nach 20 Sekunden gilt die Datei als nicht erreichbar. */
+    const ab=typeof AbortController!=='undefined'?new AbortController():null;
+    const uhr=ab?setTimeout(()=>ab.abort(),20000):null;
+    const r = await fetch(datei+'?t='+Date.now(),ab?{signal:ab.signal}:undefined);
+    if(uhr)clearTimeout(uhr);
     if(!r.ok){LOADLOG.push({f:datei,ok:false,why:'HTTP '+r.status});return null}
     const txt = await r.text();
     const ms=Math.round(performance.now()-t0), kb=Math.round(txt.length/1024);
@@ -3473,7 +3487,7 @@ async function hole(datei){
     LOADLOG.push({f:datei,ok:true,n:(j.articles||j.documents||j.people||j.items||j.procedures||j.elections||j.groups||j.ausgaben||[]).length,ms,kb});
     return j;
   }catch(e){
-    LOADLOG.push({f:datei,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':'nicht erreichbar'});
+    LOADLOG.push({f:datei,ok:false,why:e.name==='SyntaxError'?'kein gültiges JSON':e.name==='AbortError'?'Zeitüberschreitung (20 s)':'nicht erreichbar'});
     return null;
   }
 }
@@ -4539,7 +4553,8 @@ async function wkLaden(){
 }
 function wkKurs(sym){return MARKET_CATALOG.find(m=>m.sym===sym)}
 function wkMessHTML(mp){
-  if(!mp)return '<div class="wk-mess note">Kein automatischer Messpunkt – diese Kette wird nicht gegen Kurse geprüft.</div>';
+  if(!mp)return '<div class="wk-mess note">Kein automatischer Messpunkt – diese Einschätzung wird nicht gegen Kurse geprüft.</div>';
+  if(mp.startwert==null)return `<div class="wk-mess note">Messpunkt ${esc(mp.name||mp.sym||'')}: Kurs fehlt noch in den Marktdaten – Prüfung beginnt, sobald er vorliegt.</div>`;
   const m=wkKurs(mp.sym);const jetzt=m?m.p:null;
   const pp=mp.einheit==='%';
   const diff=jetzt!=null&&mp.startwert?(pp?jetzt-mp.startwert:(jetzt-mp.startwert)/mp.startwert*100):null;
@@ -4572,7 +4587,7 @@ function vsWkeitHTML(k){
         <span class="note">Grundrate ${g} % (ohne Ereignis) · ${dp>=0?'+':'−'}${Math.abs(dp)} Punkte durch das Ereignis</span></div>
     </div>
     ${(w.profil||[]).length?`<div class="vs-profil">${w.profil.map(x=>`<span><b>${Math.round(x.p*100)} %</b> in ${x.tage} Handelstagen <span class="note">(Grundrate ${Math.round(x.grundrate*100)} %)</span></span>`).join('')}</div>`:''}
-    ${sp?`<div class="note" style="margin-top:4px">Übliche Spanne in ${mp.tage} Handelstagen: ${fmtNum(sp.p10,pp?2:1)}${e} bis ${sp.p90>=0?'+':''}${fmtNum(sp.p90,pp?2:1)}${e} (10. bis 90. Perzentil des vergangenen Jahres)</div>`:''}
+    ${sp&&mp?`<div class="note" style="margin-top:4px">Übliche Spanne in ${mp.tage} Handelstagen: ${fmtNum(sp.p10,pp?2:1)}${e} bis ${sp.p90>=0?'+':''}${fmtNum(sp.p90,pp?2:1)}${e} (10. bis 90. Perzentil des vergangenen Jahres)</div>`:''}
     ${(w.warum||[]).length?`<details class="vs-warum"><summary>Wie die Zahl entsteht</summary><ol>${w.warum.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></details>`:''}`;
 }
 function renderVorausschau(){
@@ -4593,7 +4608,7 @@ function renderVorausschau(){
     <div class="note" style="margin-top:4px">${esc(W.hinweis||'Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.')}</div>
   </div>`;
   if(bereiche.length>1)b+=`<div class="chips" role="group" aria-label="Bereich" style="margin:10px 0">${[['all','Alle'],...bereiche.map(x=>[x,x])].map(([k,l])=>`<button class="chip" aria-pressed="${sel===k}" onclick="S.wkBereich='${esc(k)}';render()">${esc(l)}</button>`).join('')}</div>`;
-  b+=ketten.map(k=>{
+  b+=ketten.map(k=>{try{
     const q=(k.quellen||[]).map(x=>{const a=x.id&&ITEMS[x.id];
       return a?`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span><span class="ttl">${esc(a.title)}</span></div>`
         :`<div class="hit"><span class="meta"><span class="src">${esc(x.quelle||'')}</span><span>${esc(x.datum||'')}</span></span><span class="ttl">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.titel)}</a>`:esc(x.titel)}</span></div>`}).join('');
@@ -4618,7 +4633,7 @@ function renderVorausschau(){
       <div class="note" style="margin-top:8px">Signal: ${sg.haeuser||0} Häuser · ${sg.meldungen||0} Meldungen, ${sg.jung||0} aus den letzten 24 Stunden${sg.gdelt&&sg.gdelt.faktor?` · weltweit ${sg.gdelt.faktor>=1?'×'+fmtNum(sg.gdelt.faktor,1):'rückläufig'} (GDELT)`:''}${(k.belege||[]).length?` · Belege: ${k.belege.map(kurzLit).map(esc).join('; ')}`:''}</div>
       ${q?`<div class="wk-quellen">${q}</div>`:''}
       <div class="bar" style="margin-top:8px"><button class="btn sm quiet" onclick="wkMonitor('${esc(k.kb_id)}')">Als Monitor beobachten</button></div>
-    </div>`}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
+    </div>`}catch(e){console.error('Einschätzung',k&&k.kb_id,e);return `<div class="box wk-karte"><div class="note">Einschätzung ${esc((k&&k.kb_id)||'')} ließ sich nicht darstellen (${esc(String(e.message||e))}).</div></div>`}}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
   if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
     <p class="note" style="margin-bottom:6px">Erste Anzeichen, aber noch zu dünn belegt – meist nur ein Haus.</p>
     <div class="box">${W.beobachtung.map(o=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(o.id)}</span><span>${esc(o.bereich)}</span><span>${o.haeuser} ${o.haeuser===1?'Haus':'Häuser'}</span></div><div class="ttl" style="margin-top:3px">${esc(o.titel)}</div>${(o.meldungen||[]).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</div>`).join('')}</div>`;
