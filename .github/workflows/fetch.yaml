@@ -70,6 +70,28 @@ jobs:
       # Verzeichnis. Schreibt ki_meldungen.json (ai.json gehört weiter dem
       # Verzeichnis-Skript). Überspringt, was schon zusammengefasst ist;
       # KI_MAX begrenzt die Zahl neuer Anfragen je Lauf.
+      # NEU (v10): Kurse für die Ansicht "Märkte". Läuft VOR den KI-Zusammen-
+      # fassungen, damit die Marktlage mit frischen Kursen geschrieben wird. Kein Schlüssel nötig.
+      # Lässt bei Fehlschlag die alte markets.json stehen.
+      - name: Märkte (Indizes, Energie, Zinsen, Devisen)
+        continue-on-error: true
+        timeout-minutes: 8
+        env:
+          MARKET_TIMEOUT: '12'
+          MARKET_PAUSE: '0.25'   # 113 Werte × 2 Abrufe ≈ 2 Minuten
+        run: python fetch_markets.py
+
+      # NEU (v13): Zusatzwerte für die Vorausschau – Agrarrohstoffe,
+      # Branchen-ETFs, Rheinpegel Kaub. Ergänzt markets.json, fasst die
+      # Gruppen von fetch_markets.py nicht an; Ausfälle behalten den alten Wert.
+      - name: Märkte – Zusatzwerte für die Vorausschau
+        continue-on-error: true
+        timeout-minutes: 4
+        env:
+          MARKET_TIMEOUT: '12'
+          MARKET_PAUSE: '0.25'
+        run: python fetch_markets_extra.py
+
       # NEU (v11): Das Skript wechselt das Modell selbst, wenn OpenRouter es
       # aus dem kostenlosen Kontingent nimmt ("unavailable for free") - erst
       # auf den in der Fehlermeldung genannten Nachfolger, dann auf ein
@@ -78,9 +100,9 @@ jobs:
       # Ereignisse zusammen wie die Tageslage: doppelte Berichte buendeln
       # (auch ueber Sprachgrenzen), nach Nachrichtenwert waehlen, Schlagzeile
       # und Satz schreiben. Alle zwei Stunden, je Lauf hoechstens drei Regionen.
-      - name: KI-Zusammenfassungen und Top-Auswahl (Meldungen)
+      - name: KI-Zusammenfassungen, Top-Auswahl und Marktlage
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 9
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
@@ -92,17 +114,39 @@ jobs:
           KI_SCHLAG_KANDIDATEN: '30'   # so viele Gruppen sieht das Modell zur Auswahl
           KI_SCHLAG_MIN: '120'         # alle zwei Stunden neu zusammenstellen
           KI_SCHLAG_REGIONEN: '3'      # Regionen je Lauf (6 Regionen = 2 Laeufe)
+          KI_MARKT_ZEITEN: '9,16'      # Marktlage zweimal je Handelstag (Uhr, deutsche Zeit)
         run: python ki_zusammenfassungen.py
 
-      # NEU (v10): Kurse für die Ansicht "Märkte". Kein Schlüssel nötig.
-      # Lässt bei Fehlschlag die alte markets.json stehen.
-      - name: Märkte (Indizes, Energie, Zinsen, Devisen)
+
+      # NEU (v14): Quellenprüfung – einmal am Tag. Prüft jede Kursquelle auf
+      # Erreichbarkeit, richtiges Kürzel (Währung, Name), Aktualität und
+      # plausible Werte, dazu Pegelonline und GDELT. Ergebnis in
+      # quellen_status.json; die App zeigt Auffälliges an.
+      - name: Datenquellen prüfen (einmal täglich)
+        continue-on-error: true
+        timeout-minutes: 4
+        env:
+          QP_TIMEOUT: '15'
+          QP_PAUSE: '0.3'
+        run: python quellen_pruefen.py
+
+      # NEU (v14): Vorausschau (Foresight) – einmal am Tag ab 7 Uhr deutscher
+      # Zeit. Rechnet Wahrscheinlichkeiten aus Grundrate, Stärke des Zusammen-
+      # hangs, Belegen und Kursbewegung; klassifiziert hybride Bedrohungen.
+      # Übernimmt beim ersten Lauf eine vorhandene wirkungsketten_basis.json.
+      - name: Vorausschau (einmal täglich)
         continue-on-error: true
         timeout-minutes: 8
         env:
-          MARKET_TIMEOUT: '12'
-          MARKET_PAUSE: '0.25'   # 113 Werte × 2 Abrufe ≈ 2 Minuten
-        run: python fetch_markets.py
+          OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          VS_STUNDE: '7'          # ab dieser Stunde (deutsche Zeit) der erste Lauf des Tages
+          VS_MAX: '10'            # höchstens so viele Zusammenhänge prüfen
+          VS_MIN_HAEUSER: '2'     # so viele Häuser braucht ein Signal mindestens
+          VS_FENSTER_H: '72'      # Meldungen der letzten 72 Stunden
+          VS_GDELT: '1'           # weltweite Berichterstattung als zweites Signal
+        run: python vorausschau.py
 
       # Verzeichnis, DIP, Kalender, Newsletter.
       # Läuft nur im ersten Lauf jeder Stunde und hat ein eigenes Zeitbudget:
@@ -224,7 +268,8 @@ jobs:
                    people.json dip.json calendar.ics newsletters.json elections.json \
                    people_cache.json landtage_cache.json groq_cache.json ai.json access.json \
                    markets.json ki_meldungen.json votes.json votes_cache.json \
-                   plenum_votes.json plenum_cache.json; do
+                   plenum_votes.json plenum_cache.json \
+                   vorausschau.json vorausschau_archiv.json vorausschau_basis.json quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
