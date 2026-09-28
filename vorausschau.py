@@ -34,6 +34,20 @@ und Netze, Desinformation, Migration als Druckmittel). Die KI klassifiziert
 Art, Ziel und Stand der Zuschreibung und wählt aus einer Liste möglicher
 Folgen – auch solcher ohne Kurs (politisch, sicherheitspolitisch).
 
+ARCHIV ALS DATENQUELLE
+Aus archive/ (Monatsdateien von fetch_news.py) sucht das Skript frühere
+Auslöser desselben Zusammenhangs (Tage mit mindestens zwei Häusern) und
+misst, wie der Messpunkt danach lief. Ab drei solchen Ereignissen fließt
+diese historische Trefferquote in die Wahrscheinlichkeit ein. Außerdem ist
+das Archiv die Messlatte für die Berichterstattung: So oft wird über den
+Auslöser sonst pro Tag berichtet – wie stark ist heute der Ausschlag?
+
+FORSCHUNGSINSTITUTE
+Neue Veröffentlichungen von Deutsche Bank Research, ifo, IfW Kiel, DIW,
+IW, Bundesbank, EZB, IWF, BIZ, OECD, IEA, FAO und Bruegel (über die
+Google-News-Suche je Website, wie in fetch_news.py). Passen sie zu einem
+Zusammenhang, stehen sie bei der Einschätzung als Einordnung.
+
 QUELLEN
 quellen_status.json aus quellen_pruefen.py: Ist die Kursquelle eines
 Messpunkts gestört, wird keine Wahrscheinlichkeit gerechnet.
@@ -65,6 +79,26 @@ BASIS = "vorausschau_basis.json"
 ALT = {"vorausschau_basis.json": "wirkungsketten_basis.json",
        "vorausschau_archiv.json": "wirkungsketten_archiv.json"}   # Übernahme aus der Vorversion
 QUELLEN_STATUS = "quellen_status.json"
+FORSCHUNG = "vorausschau_forschung.json"
+ARCHIV_MONATE = int(os.environ.get("VS_ARCHIV_MONATE", "12"))
+FORSCHUNG_QUELLEN = [
+    # Research von Banken und Vermögensverwaltern – nur, was öffentlich
+    # zugänglich ist. Kundenstudien (etwa die vollständigen Notizen von
+    # Goldman Sachs, Morgan Stanley, UBS, Eurointelligence) sind nicht frei;
+    # von ihnen erscheint, was die Häuser selbst öffentlich stellen.
+    ("Deutsche Bank Research", "dbresearch.com"), ("ING Think", "think.ing.com"),
+    ("Commerzbank Research", "research.commerzbank.com"), ("KfW Research", "kfw.de"),
+    ("Allianz Research", "allianz.com"), ("Goldman Sachs", "goldmansachs.com"),
+    ("Morgan Stanley", "morganstanley.com"), ("J.P. Morgan", "jpmorgan.com"), ("UBS", "ubs.com"),
+    ("Berenberg", "berenberg.de"), ("BNP Paribas Research", "economic-research.bnpparibas.com"),
+    ("DZ Bank Research", "dzbank.de"), ("Deka", "deka.de"), ("Helaba", "helaba.com"),
+    ("Eurointelligence", "eurointelligence.com"), ("NBER", "nber.org"),
+    # Institute und öffentliche Stellen
+    ("ifo Institut", "ifo.de"), ("IfW Kiel", "ifw-kiel.de"),
+    ("DIW Berlin", "diw.de"), ("IW Köln", "iwkoeln.de"), ("Bundesbank", "bundesbank.de"),
+    ("EZB", "ecb.europa.eu"), ("IWF", "imf.org"), ("BIZ", "bis.org"), ("OECD", "oecd.org"),
+    ("IEA", "iea.org"), ("FAO", "fao.org"), ("Bruegel", "bruegel.org"),
+]
 BASIS_VERSION = 3
 KANDIDATEN = "vorausschau_kandidaten.json"
 MAX_KETTEN = int(os.environ.get("VS_MAX", "10"))
@@ -850,7 +884,7 @@ def tages_sigma(w):
     return math.sqrt(sum((v - m) ** 2 for v in d) / (len(d) - 1))
 
 
-def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv):
+def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv, historie=None):
     """Gibt p für den Prüfzeitraum zurück, dazu Zeitprofil, Spanne und die
     Begründung Schritt für Schritt."""
     warum = []
@@ -863,7 +897,11 @@ def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv):
     effekt = EFFEKT.get(eintrag.get("effekt") or EFFEKT_VORGABE.get(eintrag["id"], "mittel"), 0.6)
     belege = min(1.0, max(0.0, (sig["haeuser_n"] - 1) / 4))
     gd = (sig.get("gdelt") or {}).get("faktor")
+    af = sig.get("archiv_faktor")
     if gd and gd >= 1.5:
+        belege = min(1.0, belege + 0.2)
+    elif af and af >= 3:
+        # Ohne GDELT: Ausschlag gegenüber der eigenen Grundlinie im Archiv
         belege = min(1.0, belege + 0.2)
     sich = {"hoch": 1.0, "mittel": 0.75, "niedrig": 0.45}.get(sicherheit, 0.75)
     ein = 1.0
@@ -883,8 +921,18 @@ def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv):
     d = effekt * belege * sich * ein
     warum.append(f"Verschiebung {_dez(d, 2)} Log-Odds = Stärke {_dez(effekt, 1, False)} × Belege {_dez(belege, 2, False)} "
                  f"({sig['haeuser_n']} Häuser" + (f", weltweit ×{_dez(gd, 1, False)}" if gd else "")
+                 + (f", {_dez(af, 1, False)}-mal so viel wie sonst im Archiv" if af and not gd else "")
                  + f") × Sicherheit {_dez(sich, 2, False)} × Eingepreist-Faktor {_dez(ein, 1, False)}")
     p = _logistisch(_logit(p0) + d)
+    # Ereignisstudie aus dem Archiv: wie lief der Wert nach früheren Auslösern?
+    h = historie or {}
+    if h.get("geprueft", 0) >= 3 and h.get("sym") == w.get("sym"):
+        m = 8
+        p_alt = p
+        p = (h["in_richtung"] + p * m) / (h["geprueft"] + m)
+        warum.append(f"Archiv: nach {h['geprueft']} früheren Ereignissen lief {w['n']} {h['in_richtung']}-mal in diese Richtung "
+                     f"(im Mittel {_dez(h['mittel'])}{' Pkt.' if w['unit']=='%' else ' %'} in {h['tage']} Handelstagen) – "
+                     f"p von {round(p_alt*100)} auf {round(p*100)} %")
     # Lernen aus der eigenen Bilanz
     frueher = [k for k in archiv if k.get("kb_id") == eintrag["id"] and k.get("ergebnis") in ("eingetreten", "gegenläufig", "unverändert")]
     if len(frueher) >= 3:
@@ -917,12 +965,146 @@ def artikel_laden():
             continue
         if ki.RAUSCH_RE.search(a.get("title") or ""):
             continue
-        k = a.get("id") or a.get("link") or a.get("title")
+        # Dieselbe Meldung kommt oft über mehrere Feeds eines Hauses – als
+        # Schlüssel zählen Haus und Wortlaut, nicht die ID.
+        k = (hauskern(a.get("source", "")), re.sub(r"\W+", " ", (a.get("title") or "").lower()).strip())
         if k in gesehen:
             continue
         gesehen.add(k)
         out.append(a)
     return out
+
+
+# ─────────────────────────────────────────────────────────────
+# ARCHIV: frühere Ereignisse und was danach geschah
+# ─────────────────────────────────────────────────────────────
+def archiv_laden():
+    idx = _laden("archive/index.json", {})
+    monate = sorted((m for m in idx.get("months") or [] if m.get("month")), key=lambda m: m["month"])[-ARCHIV_MONATE:]
+    out = []
+    for m in monate:
+        d = _laden(m.get("file") or f"archive/{m['month']}.json", {})
+        for a in (d.get("articles") if isinstance(d, dict) else d) or []:
+            if a.get("title") and a.get("date"):
+                out.append({"title": a.get("title", ""), "desc": (a.get("desc") or "")[:400],
+                            "source": a.get("source", ""), "date": str(a.get("date", ""))[:10]})
+    return out
+
+
+def treffer_tage(eintrag, artikel):
+    """Tag → Menge der Häuser, die an dem Tag über den Auslöser berichteten."""
+    muster = [re.compile(g, re.I) for g in eintrag.get("stichworte") or []]
+    if not muster:
+        return {}
+    aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
+    tage = {}
+    for a in artikel:
+        titel = a["title"]
+        text = titel + " " + a.get("desc", "")
+        if all(m.search(text) for m in muster) and any(m.search(titel) for m in muster) and not (aus and aus.search(text)):
+            tage.setdefault(a["date"], set()).add(hauskern(a["source"]))
+    return tage
+
+
+def _werktage(von, bis):
+    a = datetime.strptime(von, "%Y-%m-%d").date()
+    b = datetime.strptime(bis, "%Y-%m-%d").date()
+    n = 0
+    while a < b:
+        a += timedelta(days=1)
+        if a.weekday() < 5:
+            n += 1
+    return n
+
+
+def historie_fuer(eintrag, archiv_art, kurse, heute):
+    """Frühere Ereignisse (Tage mit mindestens zwei Häusern, im Abstand von
+    mehr als fünf Tagen) und die Bewegung des Messpunkts danach – eine kleine
+    Ereignisstudie aus dem eigenen Archiv."""
+    tage = treffer_tage(eintrag, archiv_art)
+    ereignisse = []
+    for d in sorted(t for t, h in tage.items() if len(h) >= MIN_HAEUSER and t < heute):
+        if not ereignisse or (datetime.strptime(d, "%Y-%m-%d") - datetime.strptime(ereignisse[-1], "%Y-%m-%d")).days > 5:
+            ereignisse.append(d)
+    # Grundlinie der Berichterstattung: Treffer pro Tag in den letzten 60 Tagen
+    grenze = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=60)).strftime("%Y-%m-%d")
+    pro_tag = sum(len(h) for t, h in tage.items() if grenze <= t < heute) / 60
+    out = {"ereignisse": len(ereignisse), "daten": ereignisse[-6:], "pro_tag": round(pro_tag, 2)}
+    mp = eintrag.get("messpunkt") or {}
+    sym = mp.get("sym") or ((mp.get("wahl") or [None])[0])
+    richtung = mp.get("richtung") if mp.get("richtung") in (1, -1) else None
+    w = kurse.get(sym) if sym else None
+    if not (w and richtung and ereignisse):
+        return out
+    r = [x for x in ((w.get("series") or {}).get("1j") or []) if x is not None]
+    h = int(mp.get("tage", 5))
+    reaktionen = []
+    for d in ereignisse:
+        i0 = len(r) - 1 - _werktage(d, heute)
+        i1 = i0 + h
+        if i0 < 0 or i1 > len(r) - 1 or not r[i0]:
+            continue
+        v = (r[i1] - r[i0]) if w["unit"] == "%" else (r[i1] - r[i0]) / r[i0] * 100
+        reaktionen.append({"datum": d, "veraenderung": round(v, 2)})
+    if reaktionen:
+        k = sum(1 for x in reaktionen if x["veraenderung"] * richtung > 0)
+        out.update({"geprueft": len(reaktionen), "in_richtung": k, "sym": sym, "einheit": w["unit"],
+                    "mittel": round(sum(x["veraenderung"] for x in reaktionen) / len(reaktionen), 2),
+                    "tage": h, "beispiele": reaktionen[-5:]})
+    return out
+
+
+# ─────────────────────────────────────────────────────────────
+# FORSCHUNGSINSTITUTE
+# ─────────────────────────────────────────────────────────────
+def forschung_holen(heute):
+    """Neue Veröffentlichungen der Institute, gesammelt über 60 Tage."""
+    import xml.etree.ElementTree as ET
+    from email.utils import parsedate_to_datetime
+    alt = _laden(FORSCHUNG, {"eintraege": []})
+    bekannt = {e["link"] for e in alt.get("eintraege") or []}
+    neu = 0
+    for name, domain in FORSCHUNG_QUELLEN:
+        url = "https://news.google.com/rss/search?" + urlencode({"q": f"site:{domain} when:14d", "hl": "de", "gl": "DE", "ceid": "DE:de"})
+        try:
+            with urlopen(Request(url, headers={"User-Agent": "Mozilla/5.0 (Presseschau)"}), timeout=20) as r:
+                wurzel = ET.fromstring(r.read())
+        except Exception as e:
+            print(f"  Forschung {name}: {type(e).__name__}")
+            continue
+        for it in wurzel.iter("item"):
+            titel = (it.findtext("title") or "").strip()
+            link = (it.findtext("link") or "").strip()
+            if not titel or not link or link in bekannt:
+                continue
+            titel = re.sub(r"\s+[-–]\s+[^-–]{2,40}$", "", titel)      # " - ifo Institut" am Ende weg
+            # Stellenanzeigen, Veranstaltungen, Pressemitteilungen in eigener
+            # Sache gehören nicht in die Forschung
+            if re.search(r"karriere|stellenangebot|job|webinar|event|veranstaltung|konferenz|anmeldung|award|preis verliehen|sponsor", titel, re.I):
+                continue
+            try:
+                datum = parsedate_to_datetime(it.findtext("pubDate") or "").strftime("%Y-%m-%d")
+            except Exception:
+                datum = heute
+            alt["eintraege"].append({"institut": name, "titel": titel, "link": link, "datum": datum})
+            bekannt.add(link)
+            neu += 1
+        time.sleep(0.5)
+    grenze = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=60)).strftime("%Y-%m-%d")
+    alt["eintraege"] = sorted((e for e in alt["eintraege"] if e["datum"] >= grenze), key=lambda e: e["datum"], reverse=True)[:600]
+    _speichern(FORSCHUNG, alt)
+    print(f"  Forschung: {neu} neue Veröffentlichungen, {len(alt['eintraege'])} im Bestand")
+    return alt["eintraege"]
+
+
+def forschung_fuer(eintrag, forschung):
+    """Forschungstitel sind kurz: Es reicht, wenn zwei Stichwortgruppen (bei
+    einem Eintrag mit nur einer Gruppe: diese) im Titel vorkommen."""
+    muster = [re.compile(g, re.I) for g in eintrag.get("stichworte") or []]
+    if not muster:
+        return []
+    noetig = min(2, len(muster))
+    return [f for f in forschung if sum(1 for m in muster if m.search(f["titel"])) >= noetig][:4]
 
 
 def signal_fuer(eintrag, artikel):
@@ -953,10 +1135,19 @@ def signal_fuer(eintrag, artikel):
             "aelter": len(treffer) - len(jung), "cluster": cl, "staerke": staerke}
 
 
+_GDELT = {"letzte": 0.0, "gesperrt": False, "grund": ""}
+
+
 def gdelt_volumen(anfrage):
-    """Weltweite Berichterstattung: letzte zwei Tage gegen die fünf davor."""
-    if not GDELT or not anfrage:
+    """Weltweite Berichterstattung: letzte zwei Tage gegen die fünf davor.
+    GDELT verlangt mindestens fünf Sekunden zwischen Anfragen; wer schneller
+    fragt, bekommt HTTP 429. Nach einer Sperre (403/429 zweimal) wird GDELT
+    für den Rest des Laufs nicht mehr gefragt – das Archiv springt ein."""
+    if not GDELT or not anfrage or _GDELT["gesperrt"]:
         return None
+    warte = 6 - (time.time() - _GDELT["letzte"])
+    if warte > 0:
+        time.sleep(warte)
     pfad = "/api/v2/doc/doc?" + urlencode(
         {"query": anfrage, "mode": "timelinevolraw", "timespan": "7d", "format": "json"})
     j, grund = None, ""
@@ -965,16 +1156,20 @@ def gdelt_volumen(anfrage):
     for versuch, basis in enumerate(("https://api.gdeltproject.org", "http://api.gdeltproject.org")):
         try:
             if versuch:
-                time.sleep(6)
+                time.sleep(8)
+            _GDELT["letzte"] = time.time()
             with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (Presseschau)"}), timeout=35) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             break
         except HTTPError as e:
             grund = f"HTTP {e.code}"
+            if e.code in (403, 429) and versuch:
+                _GDELT["gesperrt"] = True
         except (URLError, ValueError, TimeoutError) as e:
             grund = f"{type(e).__name__}: {getattr(e, 'reason', e)}"
     if j is None:
-        print(f"  GDELT nicht erreichbar ({grund}) – ohne zweites Signal weiter.")
+        _GDELT["grund"] = grund
+        print(f"  GDELT nicht erreichbar ({grund})" + (" – für diesen Lauf abgeschaltet" if _GDELT["gesperrt"] else "") + ".")
         return None
     try:
         daten = ((j.get("timeline") or [{}])[0].get("data") or [])
@@ -1292,6 +1487,13 @@ def main():
 
     artikel = artikel_laden()
     kurse = kurse_laden()
+    archiv_art = archiv_laden()
+    print(f"  Archiv: {len(archiv_art)} Meldungen aus bis zu {ARCHIV_MONATE} Monaten")
+    try:
+        forschung = forschung_holen(heute)
+    except Exception as e:
+        print(f"  Forschung übersprungen: {type(e).__name__}")
+        forschung = _laden(FORSCHUNG, {}).get("eintraege") or []
     archiv = _laden(ARCHIV, None)
     if archiv is None:
         archiv = _laden(ALT[ARCHIV], [])
@@ -1313,11 +1515,24 @@ def main():
     rang = {"stark": 0, "mittel": 1, "schwach": 2}
     signale.sort(key=lambda es: (rang[es[1]["staerke"]], -len(es[1]["haeuser"]), -es[1]["jung"]))
     kandidaten = [es for es in signale if es[1]["staerke"] != "schwach"][:MAX_KETTEN]
-    beobachtung = [{"id": e["id"], "titel": e["titel"], "bereich": BEREICHE.get(e["id"][0], ""),
-                    "haeuser": len(s["haeuser"]),
-                    "meldungen": [{"titel": a.get("title", ""), "quelle": a.get("source", ""), "id": a.get("id"),
-                                   "url": a.get("link", "")} for a in s["treffer"][:3]]}
-                   for e, s in signale if s["staerke"] == "schwach"][:12]
+    # Unter Beobachtung: dieselben Meldungen, die mehrere Zusammenhänge
+    # treffen, stehen EINMAL da – mit allen passenden Zusammenhängen.
+    beobachtung, nach_meldungen = [], {}
+    for e, s in signale:
+        if s["staerke"] != "schwach":
+            continue
+        meld = [{"titel": a.get("title", ""), "quelle": a.get("source", ""), "id": a.get("id"), "url": a.get("link", "")}
+                for a in s["treffer"][:3]]
+        schluessel = tuple(sorted(re.sub(r"\W+", " ", m["titel"].lower()).strip() for m in meld))
+        if schluessel in nach_meldungen:
+            b = nach_meldungen[schluessel]
+            b["auch"].append({"id": e["id"], "titel": e["titel"]})
+            continue
+        b = {"id": e["id"], "titel": e["titel"], "bereich": BEREICHE.get(e["id"][0], ""),
+             "haeuser": len(s["haeuser"]), "meldungen": meld, "auch": [], "kennzahl": (e.get("messpunkt") or {}).get("sym")}
+        nach_meldungen[schluessel] = b
+        beobachtung.append(b)
+    beobachtung = beobachtung[:12]
     print(f"  {len(signale)} Einträge mit Treffern, {len(kandidaten)} zur Prüfung, {len(beobachtung)} unter Beobachtung")
 
     anbieter = [list(a) for a in ki.ANBIETER]
@@ -1331,7 +1546,9 @@ def main():
         if not isinstance(d, dict):
             continue
         if not d.get("passt"):
-            verworfen.append({"id": e["id"], "titel": e["titel"], "grund": str(d.get("grund", ""))[:200]})
+            verworfen.append({"id": e["id"], "titel": e["titel"], "grund": str(d.get("grund", ""))[:200],
+                              "meldungen": [{"titel": a.get("title", ""), "quelle": a.get("source", ""), "id": a.get("id"),
+                                             "url": a.get("link", "")} for a in meldungen[:3]]})
             print(f"  – {e['id']} verworfen: {str(d.get('grund',''))[:80]}")
             continue
         # Messpunkt: vom Skript gesetzt; bei Auswahl nur aus der erlaubten Liste
@@ -1349,6 +1566,11 @@ def main():
         wkeit = None
         sicherheit = d.get("sicherheit") if d.get("sicherheit") in ("niedrig", "mittel", "hoch") else "mittel"
         gd = gdelt_volumen(e.get("gdelt"))
+        historie = historie_fuer(e, archiv_art, kurse, heute) if archiv_art else {}
+        heute_n = len(s["haeuser"])
+        # Ausschlag gegenüber der Grundlinie; bei sehr seltenen Auslösern
+        # gedeckelt, damit "100-mal so viel" nicht falsche Genauigkeit vortäuscht
+        archiv_faktor = min(20.0, round(heute_n / historie["pro_tag"], 1)) if historie.get("pro_tag") else None
         if sym and richtung in (1, -1):
             w = kurse.get(sym)
             kal = math.ceil(int(mp.get("tage", 5)) * 7 / 5)
@@ -1360,7 +1582,8 @@ def main():
             gestoert = (status.get(sym) or {}).get("status") == "fehler"
             if w and not gestoert:
                 wkeit = wahrscheinlichkeit(e, w, int(mp.get("tage", 5)), richtung,
-                                           {"haeuser_n": len(s["haeuser"]), "gdelt": gd}, sicherheit, archiv)
+                                           {"haeuser_n": len(s["haeuser"]), "gdelt": gd, "archiv_faktor": archiv_faktor},
+                                           sicherheit, archiv, historie)
             elif gestoert:
                 messpunkt["hinweis"] = "Kursquelle laut Quellenprüfung gestört – keine Wahrscheinlichkeit gerechnet"
             if not w:
@@ -1392,8 +1615,10 @@ def main():
                  "sicherheit": sicherheit,
                  "messpunkt": messpunkt, "wahrscheinlichkeit": wkeit, "quellen": quellen, "folgen": folgen,
                  "folgen_offen": folgen_offen, "klassifikation": kl, "belege": e.get("belege") or [],
+                 "historie": historie, "forschung": forschung_fuer(e, forschung),
                  "signal": {"haeuser": len(s["haeuser"]), "meldungen": len(s["treffer"]), "jung": s["jung"],
-                            "aelter": s["aelter"], "staerke": s["staerke"], "gdelt": gd}}
+                            "aelter": s["aelter"], "staerke": s["staerke"], "gdelt": gd,
+                            "archiv_faktor": archiv_faktor, "archiv_pro_tag": historie.get("pro_tag")}}
         # Läuft zu diesem Zusammenhang schon eine offene Kette, wird sie
         # fortgeschrieben statt doppelt gezählt: Startwert und Prüfdatum bleiben.
         if e["id"] in offene:
@@ -1425,6 +1650,8 @@ def main():
                                             "folgen_offen", "effekt", "vorlaeufig", "aufgenommen_am")}
                      for e in eintraege],
            "bereiche": BEREICHE, "literatur": LITERATUR, "werkzeuge": WERKZEUGE,
+           "forschung": forschung[:150], "archiv_meldungen": len(archiv_art),
+           "gdelt": {"gesperrt": _GDELT["gesperrt"], "grund": _GDELT["grund"]},
            "quellen_status": {"zusammenfassung": _laden(QUELLEN_STATUS, {}).get("zusammenfassung"),
                               "geprueft": _laden(QUELLEN_STATUS, {}).get("geprueft"),
                               "auffaellig": [q for q in (_laden(QUELLEN_STATUS, {}).get("quellen") or [])
