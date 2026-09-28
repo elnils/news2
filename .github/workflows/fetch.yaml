@@ -65,6 +65,16 @@ jobs:
                                      # Dokumente bekommen nur die Restzeit
         run: python fetch_news.py
 
+      # NEU (v16): Dieselbe Meldung aus mehreren Feeds eines Hauses nur einmal.
+      # Jede Meldung bekommt "haus" (Domain der Adresse: heise.de, reuters.com)
+      # und "uid" (feste Kennung aus der bereinigten Adresse). Kopien aus
+      # "Heise Telco"/"Heise Security" oder "Reuters Tech"/"Reuters Top"
+      # werden zusammengeführt, ihre Feeds stehen im Feld "feeds".
+      - name: Meldungen entdoppeln (gleiches Haus, gleicher Artikel)
+        continue-on-error: true
+        timeout-minutes: 2
+        run: python entdoppeln.py
+
       # NEU (v10): Anreicherung nachtragen – verteilt über mehrere Läufe.
       # Der Abruf oben reichert nur die frischen Meldungen an. Ältere
       # Bestände und die Monatsdateien unter archive/ arbeitet dieses Skript
