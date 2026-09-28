@@ -77,6 +77,18 @@ OR_KEY = os.environ.get("OPEN_ROUTER_API", "").strip()
 OR_MODEL = os.environ.get("OR_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
 GROQ_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.environ.get("KI_MODELL", "llama-3.3-70b-versatile")
+# Gemini über die OpenAI-kompatible Schnittstelle von Google – dieselbe
+# Anfrageform wie OpenRouter und Groq, nur andere Adresse und Schlüssel.
+# Secret "gemini_api" (GitHub führt es als GEMINI_API).
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+GEMINI_KEY = (os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "").strip()
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+# Ersatzmodelle, falls das erste nicht (mehr) angeboten wird
+GEMINI_ERSATZ = [m.strip() for m in os.environ.get(
+    "GEMINI_ERSATZ", "gemini-2.5-flash,gemini-flash-lite-latest,gemini-2.0-flash").split(",") if m.strip()]
+# Gemini-Flash-Modelle "denken" vor der Antwort; das kostet Tokens und Zeit.
+# Für Zusammenfassungen reicht es ohne.
+GEMINI_DENKEN = os.environ.get("GEMINI_DENKEN", "none")
 MAX_NEU = int(os.environ.get("KI_MAX", "48"))      # Meldungen je Lauf
 BATCH = int(os.environ.get("KI_BATCH", "8"))        # Meldungen je Anfrage
 # Marktlage zweimal am Handelstag: morgens nach Handelsbeginn in Europa,
@@ -90,10 +102,55 @@ KEEP_DAYS = int(os.environ.get("KI_KEEP_DAYS", "7"))
 TIMEOUT = int(os.environ.get("KI_TIMEOUT", "30"))
 OUT = "ki_meldungen.json"
 
-# Anbieter in Reihenfolge. Listen statt Tupel, weil das Modell im Lauf
-# gewechselt werden kann: [Name, URL, Schlüssel, Modell]
-ANBIETER = [a for a in [["openrouter", OR_URL, OR_KEY, OR_MODEL],
-                        ["groq", GROQ_URL, GROQ_KEY, GROQ_MODEL]] if a[2]]
+# Anbieter in Reihenfolge (KI_REIHENFOLGE). Listen statt Tupel, weil das
+# Modell im Lauf gewechselt werden kann: [Name, URL, Schlüssel, Modell].
+# Fällt einer aus – Zeitüberschreitung, Serverfehler, Drosselung, kein
+# Kontingent –, übernimmt der nächste denselben Auftrag.
+_ALLE = {"openrouter": ["openrouter", OR_URL, OR_KEY, OR_MODEL],
+         "gemini": ["gemini", GEMINI_URL, GEMINI_KEY, GEMINI_MODEL],
+         "groq": ["groq", GROQ_URL, GROQ_KEY, GROQ_MODEL]}
+REIHENFOLGE = [x.strip() for x in os.environ.get("KI_REIHENFOLGE", "openrouter,gemini,groq").split(",") if x.strip() in _ALLE]
+ANBIETER = [list(_ALLE[n]) for n in REIHENFOLGE if _ALLE[n][2]]
+# Fehler, bei denen der nächste Anbieter übernimmt
+WECHSEL_CODES = (401, 402, 403, 408, 429, 500, 502, 503, 504, 529)
+
+
+def gemini_ersatzmodell(aktuell):
+    """Nächstes Gemini-Modell aus der Ersatzliste oder None."""
+    for m in GEMINI_ERSATZ:
+        if m != aktuell and m not in _or_gesperrt:
+            _or_gesperrt.add(aktuell)
+            return m
+    return None
+
+
+def ki_urlopen(name, url, koerper, kopf, timeout):
+    """Alle KI-Anfragen laufen hier durch. Für Gemini: ohne "Denken" (spart
+    Tokens), bei Drosselung (429) einmal 15 Sekunden warten, bei einem
+    abgelehnten Parameter ohne ihn wiederholen."""
+    if name == "gemini":
+        try:
+            d = json.loads(koerper.decode("utf-8"))
+            if GEMINI_DENKEN and GEMINI_DENKEN != "aus":
+                d.setdefault("reasoning_effort", GEMINI_DENKEN)
+            koerper = json.dumps(d).encode("utf-8")
+        except ValueError:
+            pass
+        for versuch in range(3):
+            try:
+                return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
+            except HTTPError as e:
+                if e.code == 429 and versuch == 0:
+                    print("     Gemini drosselt – 15 s Pause")
+                    time.sleep(15)
+                    continue
+                if e.code == 400 and b"reasoning_effort" in koerper:
+                    d = json.loads(koerper.decode("utf-8"))
+                    d.pop("reasoning_effort", None)
+                    koerper = json.dumps(d).encode("utf-8")
+                    continue
+                raise
+    return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
 OR_MODELS_URL = "https://openrouter.ai/api/v1/models"
 # Reihenfolge der Vorlieben, wenn ein freies Modell gesucht werden muss.
 OR_VORLIEBE = ("llama-3.3", "llama-3.1", "qwen", "gemma", "mistral", "deepseek", "phi")
@@ -208,8 +265,7 @@ def frage(anbieter, a):
     if name == "openrouter":
         kopf["HTTP-Referer"] = "https://presseschau.example"   # OpenRouter möchte einen Absender sehen
         kopf["X-Title"] = "Presseschau"
-    req = Request(url, data=koerper, headers=kopf)
-    with urlopen(req, timeout=TIMEOUT) as r:
+    with ki_urlopen(name, url, koerper, kopf, TIMEOUT) as r:
         j = json.loads(r.read().decode("utf-8", "replace"))
     return (j.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
 
@@ -432,7 +488,7 @@ def schlag_frage(anbieter, gruppen, sprache, region):
     if name == "openrouter":
         kopf["HTTP-Referer"] = "https://presseschau.example"
         kopf["X-Title"] = "Presseschau"
-    with urlopen(Request(url, data=koerper, headers=kopf), timeout=max(TIMEOUT, 60)) as r:
+    with ki_urlopen(name, url, koerper, kopf, max(TIMEOUT, 60)) as r:
         j = json.loads(r.read().decode("utf-8", "replace"))
     text = (j.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
     return _schlag_lesen(text, gruppen)
@@ -534,7 +590,7 @@ def schlagzeilen_bauen(artikel, anbieter, alt_block):
         if not anbieter:
             break
         sprache = sprache_fuer(auswahl)
-        for _versuch in range(2):
+        for _versuch in range(5):
             try:
                 items = schlag_frage(anbieter[0], auswahl, sprache, region)
                 if items:
@@ -560,11 +616,20 @@ def schlagzeilen_bauen(artikel, anbieter, alt_block):
                         print(f"     Modellwechsel: {anbieter[0][3]} → {ersatz}")
                         anbieter[0][3] = ersatz
                         continue
+                if anbieter[0][0] == "gemini" and e.code == 404:
+                    ersatz = gemini_ersatzmodell(anbieter[0][3])
+                    if ersatz:
+                        print(f"     Modellwechsel: {anbieter[0][3]} → {ersatz}")
+                        anbieter[0][3] = ersatz
+                        continue
+                print(f"     {anbieter[0][0]} fällt für diesen Lauf weg – der nächste Anbieter übernimmt.")
                 anbieter.pop(0)
-                break
-            except (URLError, ValueError, KeyError) as e:
-                print(f"  ---  Schlagzeilen {region}: {type(e).__name__}: {e}")
-                break
+                continue
+            except (URLError, ValueError, KeyError, TimeoutError, OSError) as e:
+                # Zeitüberschreitung oder Verbindungsfehler: nächster Anbieter
+                print(f"  ---  Schlagzeilen {region}: {anbieter[0][0]} {type(e).__name__}: {e}")
+                anbieter.pop(0)
+                continue
         time.sleep(0.5)
     return {"stand": _stand_jetzt(), "ts": int(time.time()), "regionen": alt}
 
@@ -607,7 +672,7 @@ def frage_stapel(anbieter, meldungen):
     if name == "openrouter":
         kopf["HTTP-Referer"] = "https://presseschau.example"
         kopf["X-Title"] = "Presseschau"
-    with urlopen(Request(url, data=koerper, headers=kopf), timeout=max(TIMEOUT, 60)) as r:
+    with ki_urlopen(name, url, koerper, kopf, max(TIMEOUT, 60)) as r:
         j = json.loads(r.read().decode("utf-8", "replace"))
     text = (j.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
     roh = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
@@ -725,7 +790,7 @@ def marktlage_bauen(artikel, anbieter, alt):
                "(\"Anleger zeigten sich vorsichtig\"). Keine Aufzählung, keine Überschriften.\n\n"
                f"KURSE (Veränderung über Tag, Woche, Monat, Jahr):\n" + "\n".join(zeilen[:34]) +
                (f"\n\nMELDUNGEN DER LETZTEN 24 STUNDEN:\n{kopf}" if kopf else ""))
-    for _versuch in range(2):
+    for _versuch in range(5):
         if not anbieter:
             return alt
         name, url, key, modell = anbieter[0]
@@ -737,7 +802,7 @@ def marktlage_bauen(artikel, anbieter, alt):
             kopfz["HTTP-Referer"] = "https://presseschau.example"
             kopfz["X-Title"] = "Presseschau"
         try:
-            with urlopen(Request(url, data=koerper, headers=kopfz), timeout=max(TIMEOUT, 60)) as r:
+            with ki_urlopen(name, url, koerper, kopfz, max(TIMEOUT, 60)) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             text = ((j.get("choices") or [{}])[0].get("message", {}).get("content", "") or "").strip()
             text = re.sub(r"^#+.*$", "", text, flags=re.M).strip()
@@ -763,16 +828,21 @@ def marktlage_bauen(artikel, anbieter, alt):
                 if ersatz:
                     anbieter[0][3] = ersatz
                     continue
+            if name == "gemini" and e.code == 404:
+                ersatz = gemini_ersatzmodell(modell)
+                if ersatz:
+                    anbieter[0][3] = ersatz
+                    continue
             anbieter.pop(0)
-        except (URLError, ValueError, KeyError) as e:
-            print(f"  ---  Marktlage: {type(e).__name__}: {e}")
-            return alt
+        except (URLError, ValueError, KeyError, TimeoutError, OSError) as e:
+            print(f"  ---  Marktlage: {name} {type(e).__name__}: {e} – nächster Anbieter")
+            anbieter.pop(0)
     return alt
 
 
 def main():
     if not ANBIETER:
-        print("Weder OPEN_ROUTER_API noch GROQ_API_KEY gesetzt – ki_meldungen.json bleibt unverändert.")
+        print("Weder OPEN_ROUTER_API noch GEMINI_API noch GROQ_API_KEY gesetzt – ki_meldungen.json bleibt unverändert.")
         return 0
 
     artikel = []
@@ -813,7 +883,7 @@ def main():
     anbieter = list(ANBIETER)          # bei 401/403/429 fällt der erste weg
     stapel = [offen[k:k + BATCH] for k in range(0, len(offen), BATCH)]
     for teil in stapel:
-        for _versuch in range(2):
+        for _versuch in range(5):
             if not anbieter:
                 break
             try:
@@ -842,15 +912,24 @@ def main():
                     print("     Kein freies Modell gefunden – OpenRouter fällt weg.")
                     anbieter.pop(0)
                     continue
-                if e.code in (401, 403, 429, 402):
-                    print(f"     {anbieter[0][0]} fällt für diesen Lauf weg.")
+                if anbieter[0][0] == "gemini" and e.code == 404:
+                    ersatz = gemini_ersatzmodell(anbieter[0][3])
+                    if ersatz:
+                        print(f"     Modellwechsel: {anbieter[0][3]} → {ersatz}")
+                        anbieter[0][3] = ersatz
+                        continue
+                if e.code in WECHSEL_CODES:
+                    # Auch Serverfehler und Zeitüberschreitungen: nicht den
+                    # Stapel verwerfen, sondern den nächsten Anbieter fragen.
+                    print(f"     {anbieter[0][0]} fällt für diesen Lauf weg – der nächste übernimmt.")
                     anbieter.pop(0)
                     continue
                 break
-            except (URLError, ValueError, KeyError) as e:
-                print(f"  ---  {type(e).__name__}: {e}")
+            except (URLError, ValueError, KeyError, TimeoutError, OSError) as e:
+                print(f"  ---  {anbieter[0][0]} {type(e).__name__}: {e} – nächster Anbieter")
                 fehler += 1
-                break
+                anbieter.pop(0)
+                continue
         if not anbieter:
             print("Kein Anbieter mehr verfügbar – Rest im nächsten Lauf.")
             break

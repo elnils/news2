@@ -599,44 +599,67 @@ GROQ_PER_RUN = int(os.environ.get("GROQ_PER_RUN", "25"))
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_CACHE = "groq_cache.json"
 
-def ki_anbieter():
-    """(Name, URL, Key, Modell, Zusatzkoepfe) des aktiven Anbieters oder None."""
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+GEMINI_KEY = (os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") or "").strip()
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+_KI_AUS = set()          # Anbieter, die in diesem Lauf ausgefallen sind
+
+def ki_anbieter_liste():
+    """Alle verfügbaren Anbieter in Reihenfolge: (Name, URL, Key, Modell, Zusatz)."""
+    out = []
     if OR_KEY:
-        return ("OpenRouter", OR_URL, OR_KEY, OR_MODEL,
-                {"HTTP-Referer": OR_REFERER, "X-Title": "Presseschau"})
+        out.append(("OpenRouter", OR_URL, OR_KEY, OR_MODEL,
+                    {"HTTP-Referer": OR_REFERER, "X-Title": "Presseschau"}))
+    if GEMINI_KEY:
+        out.append(("Gemini", GEMINI_URL, GEMINI_KEY, GEMINI_MODEL, {}))
     if GROQ_KEY:
-        return ("Groq", GROQ_URL, GROQ_KEY, GROQ_MODEL, {})
-    return None
+        out.append(("Groq", GROQ_URL, GROQ_KEY, GROQ_MODEL, {}))
+    return [a for a in out if a[0] not in _KI_AUS]
+
+def ki_anbieter():
+    """Erster verfügbarer Anbieter oder None (für ältere Aufrufer)."""
+    l = ki_anbieter_liste()
+    return l[0] if l else None
 
 def groq_chat(prompt, max_tokens=320, temperature=0.2):
-    """Ein Aufruf an den aktiven Anbieter. Gibt den Text zurueck oder None."""
-    anb = ki_anbieter()
-    if not anb: return None
-    name, url, key, modell, extra = anb
-    body = json.dumps({
-        "model": modell, "temperature": temperature, "max_tokens": max_tokens,
-        "messages": [
-            {"role": "system", "content":
-             "Du bist ein praeziser Parlamentsdokumentar. Antworte knapp, sachlich und "
-             "ausschliesslich auf Deutsch. Keine Wertung, keine Ausschmueckung. "
-             "Wenn eine Angabe im Text fehlt, erfinde sie nicht."},
-            {"role": "user", "content": prompt}],
-    }).encode("utf-8")
-    for versuch in range(2):
-        try:
-            kopf = {"Authorization": "Bearer " + key,
-                    "Content-Type": "application/json", "User-Agent": UA}
-            kopf.update(extra)
-            req = Request(url, data=body, headers=kopf)
-            with urlopen(req, timeout=30) as r:
-                d = json.loads(r.read().decode("utf-8", "replace"))
-            return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
-        except HTTPError as e:
-            if e.code == 429 and versuch == 0:
-                print(f"    {name} drosselt – 20 s Pause"); time.sleep(20); continue
-            fehler_notieren(f"KI {name}", url, f"HTTP {e.code}"); return None
-        except Exception as e:
-            fehler_notieren(f"KI {name}", url, type(e).__name__); return None
+    """Ein Aufruf – fällt ein Anbieter aus (Zeitüberschreitung, Serverfehler,
+    Drosselung), übernimmt der nächste: OpenRouter, Gemini, Groq."""
+    for name, url, key, modell, extra in ki_anbieter_liste():
+        daten = {
+            "model": modell, "temperature": temperature, "max_tokens": max_tokens,
+            "messages": [
+                {"role": "system", "content":
+                 "Du bist ein praeziser Parlamentsdokumentar. Antworte knapp, sachlich und "
+                 "ausschliesslich auf Deutsch. Keine Wertung, keine Ausschmueckung. "
+                 "Wenn eine Angabe im Text fehlt, erfinde sie nicht."},
+                {"role": "user", "content": prompt}],
+        }
+        if name == "Gemini":
+            daten["reasoning_effort"] = "none"      # ohne Vorab-"Denken": schneller, spart Tokens
+        body = json.dumps(daten).encode("utf-8")
+        for versuch in range(2):
+            try:
+                kopf = {"Authorization": "Bearer " + key,
+                        "Content-Type": "application/json", "User-Agent": UA}
+                kopf.update(extra)
+                with urlopen(Request(url, data=body, headers=kopf), timeout=30) as r:
+                    d = json.loads(r.read().decode("utf-8", "replace"))
+                text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
+                if text.strip():
+                    return text.strip()
+                break
+            except HTTPError as e:
+                if e.code == 429 and versuch == 0:
+                    print(f"    {name} drosselt – 20 s Pause"); time.sleep(20); continue
+                if e.code == 400 and name == "Gemini" and b"reasoning_effort" in body:
+                    daten.pop("reasoning_effort", None); body = json.dumps(daten).encode("utf-8"); continue
+                fehler_notieren(f"KI {name}", url, f"HTTP {e.code} – nächster Anbieter")
+                _KI_AUS.add(name)
+                break
+            except Exception as e:
+                fehler_notieren(f"KI {name}", url, f"{type(e).__name__} – nächster Anbieter")
+                _KI_AUS.add(name)
+                break
     return None
 
 def enrich_groq(procs):
@@ -933,10 +956,14 @@ def fetch_speeches_dip(people, days=60):
             if not p: continue
             fs = a.get("fundstelle") or {}
             topic = ", ".join(v.get("titel", "") for v in (a.get("vorgangsbezug") or [])[:1])
+            # Art und Dokumentart mitgeben – das Frontend zeigt dann "Rede",
+            # "Frage im Plenum" oder die Drucksachenart statt "Dokument".
             p["speeches"].append({
                 "date": a.get("datum", ""), "title": topic or a.get("titel", ""),
                 "protocol": fs.get("dokumentnummer", ""), "link": fs.get("pdf_url") or "",
                 "page": fs.get("seite", ""),
+                "art": a.get("aktivitaetsart", "") or "",
+                "dokumentart": fs.get("dokumentart", "") or a.get("dokumentart", "") or "",
             })
             n += 1
         cursor = d.get("cursor")

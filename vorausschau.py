@@ -774,7 +774,7 @@ def _json_aus(text):
 
 def frage(anbieter, system, auftrag, max_tokens=900):
     """Eine Anfrage mit Modellwechsel wie in ki_zusammenfassungen."""
-    for _ in range(3):
+    for _ in range(6):
         if not anbieter:
             return None
         name, url, key, modell = anbieter[0]
@@ -786,7 +786,7 @@ def frage(anbieter, system, auftrag, max_tokens=900):
             kopf["HTTP-Referer"] = "https://presseschau.example"
             kopf["X-Title"] = "Presseschau"
         try:
-            with urlopen(Request(url, data=koerper, headers=kopf), timeout=TIMEOUT) as r:
+            with ki.ki_urlopen(name, url, koerper, kopf, TIMEOUT) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             return (j.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
         except HTTPError as e:
@@ -801,10 +801,16 @@ def frage(anbieter, system, auftrag, max_tokens=900):
                 if ersatz:
                     anbieter[0][3] = ersatz
                     continue
+            if name == "gemini" and e.code == 404:
+                ersatz = ki.gemini_ersatzmodell(modell)
+                if ersatz:
+                    anbieter[0][3] = ersatz
+                    continue
+            print(f"     {name} fällt für diesen Lauf weg – der nächste Anbieter übernimmt.")
             anbieter.pop(0)
-        except (URLError, ValueError, KeyError, TimeoutError) as e:
-            print(f"  ---  {type(e).__name__}: {e}")
-            return None
+        except (URLError, ValueError, KeyError, TimeoutError, OSError) as e:
+            print(f"  ---  {name} {type(e).__name__}: {e} – nächster Anbieter")
+            anbieter.pop(0)
     return None
 
 
