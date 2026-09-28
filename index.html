@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v52</title>
+<title>Presseschau – Entwurf v53</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -382,6 +382,14 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .vs-warum summary{cursor:pointer;color:var(--blue)}
 .vs-warum ol{margin:4px 0 0;padding-left:18px;line-height:1.5}
 .vs-klasse{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-2px 0 8px;font-size:var(--fs-xs)}
+.vs-grundlage{margin-top:6px;font-size:var(--fs-sm);line-height:1.5;padding:6px 10px;background:var(--surface2);border-radius:8px}
+.vs-faelle{margin-top:6px}
+.vs-faelle-l{display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:var(--fs-sm)}
+.vs-faelle-l>div{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:baseline}
+.vs-f-d{color:var(--muted);font-variant-numeric:tabular-nums;font-size:var(--fs-xs)}
+.vs-f-v{font-weight:700;font-variant-numeric:tabular-nums;font-size:var(--fs-xs)}
+.vs-f-v.up{color:var(--green,#15803d)}.vs-f-v.dn{color:var(--red,#be123c)}
+.vs-ta{display:flex;align-items:center;gap:10px;margin-top:4px}
 .vs-kz{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
 .vs-kz-t{border:1px solid var(--border);border-radius:10px;padding:8px 10px;cursor:pointer;font-size:var(--fs-sm)}
 .vs-kz-t .c.up{color:var(--green,#15803d)}.vs-kz-t .c.dn{color:var(--red,#be123c)}
@@ -766,7 +774,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v52</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v53</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1441,6 +1449,17 @@ const SERIE_RE=/^(auslegungssache|kurz informiert|bit-rauschen|c'?t uplink|uplin
 const DATUM_MONATE='januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember|january|february|march|may|june|july|october|december';
 const DATUM_RE=new RegExp(`\\b(\\d{1,2}\\.?\\s*(${DATUM_MONATE})|(${DATUM_MONATE})\\s+\\d{1,2}(st|nd|rd|th)?|\\d{1,2}\\.\\d{1,2}\\.(\\d{2,4})?)(,?\\s*\\d{4})?\\b`,'gi');
 const TAGES_WORT=/\b(der|die|das|tag|am|vom|von|zum|heute|news|nachrichten|überblick|ueberblick|kalenderblatt|chronik|lage|morgen|abend|briefing|update|today|in|history|on|this|day|was|geschah|wichtig|ist|the|of)\b/gi;
+/* Bilderstrecken und Tagesmischungen: drei oder mehr kurze, durch Kommas
+   getrennte Stichworte ohne Doppelpunkt – "Feldwege im Burgenlandkreis,
+   Robbe in Wellington, Taylor Swift bei den MTV Awards". */
+function istSammelmeldung(t){
+  const s=String(t||'');
+  if(/:/.test(s))return false;
+  const teile=s.split(/,\s+|\s+und\s+(?=[A-ZÄÖÜ])/).map(x=>x.trim()).filter(Boolean);
+  /* mindestens drei Stücke, davon mindestens drei echte Wortgruppen –
+     "Merz, Macron und Tusk beraten …" bleibt eine Meldung */
+  return teile.length>=3&&teile.every(x=>x.split(/\s+/).length<=9)&&teile.filter(x=>x.split(/\s+/).length>=2).length>=3;
+}
 function istDatumsMeldung(t){
   const s=String(t||'');
   if(!DATUM_RE.test(s)){DATUM_RE.lastIndex=0;return false}
@@ -1465,7 +1484,7 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||a.sendung===true;
+  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||istSammelmeldung(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 function topTauglich(a){
@@ -1650,7 +1669,24 @@ function topEntdoppeln(arr,max,proHausMax){
 /* Hausname ohne Feed-Zusatz ("Tagesschau Eil" → "tagesschau"). Die
    ausführliche Fassung steht im Datenteil; hier eine Notversion, weil das
    erste Bild gezeichnet wird, bevor dieser geladen ist. */
-function hausVon(x){return typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim()}
+/* Das Haus einer Quelle. Vorrang hat die Domain der Artikel-Adresse
+   (vom Backend als "haus" geliefert, sonst hier aus dem Link gelesen):
+   "Heise Telco" und "Heise Security" sind beide heise.de. Erst wenn die
+   Adresse nichts verrät, zählt der Feedname ohne Ressort-Zusatz. */
+const SRC2HAUS={};
+const _DOM=new Map();
+function domainAus(url){
+  const m=/^[a-z]+:\/\/([^\/?#:]+)/i.exec(url||'');if(!m)return '';
+  let h=m[1].toLowerCase();
+  if(_DOM.has(h))return _DOM.get(h);
+  let d='';
+  if(!/(^|\.)(news\.google\.com|feedproxy\.google\.com|feeds\.feedburner\.com|rss\.app|feedly\.com|flipboard\.com|msn\.com|t\.co|bit\.ly)$/.test(h)){
+    const k=h.replace(/^(www\d?|m|mobil|mobile|amp|rss|feeds?|app)\./,'');
+    if(k.includes('.')){const t=k.split('.');d=(t.length>=3&&['co','com','org','net','gov','ac','or','gv','edu'].includes(t[t.length-2])&&t[t.length-1].length===2)?t.slice(-3).join('.'):t.slice(-2).join('.')}
+  }
+  _DOM.set(h,d);return d;
+}
+function hausVon(x){return SRC2HAUS[x]||(typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim())}
 function clusterArts(a){
   if(a._cl)return a._cl;
   /* Von der KI gebildete Gruppe: deren Mitglieder sind die weiteren Quellen. */
@@ -2104,7 +2140,7 @@ const BEGRIFF_MUELL=/\.(de|com|org|net|eu|gov|int)\b|https?:|\b(metadata|metadat
 const begriffSchluessel=t=>norm(t).split(/\s+/).map(w=>w.length>=6?w.replace(/(en|em|er|es|e|s)$/,''):w).join(' ');
 /* Das Haus hinter einer Quelle: "CISA Advisories" und "CISA ICS" sind ein
    Absender. Ein Trend braucht mehrere Häuser, nicht mehrere Feeds. */
-const hausKern=src=>norm(src).split(/[\s\-–|:.]+/)[0]||norm(src);
+const hausKern=src=>SRC2HAUS[src]||norm(src).split(/[\s\-–|:.]+/)[0]||norm(src);
 function begriffTauglich(t){
   const v=String(t||'').trim();
   if(!/\s/.test(v)&&/^[a-zäöüß]/.test(v)&&!/^(eu|us|uk|un)$/.test(v))return false;
@@ -2208,6 +2244,21 @@ function renderTrends(){
   if(sortierung==='zunahme')kandidaten=kandidaten.filter(([k,v])=>v.n>=3&&v.n>vorher(k)).sort((a,b)=>wachstum(b)-wachstum(a)||b[1].n-a[1].n);
   else if(sortierung==='neu')kandidaten=kandidaten.filter(([k])=>!vorher(k)).sort((a,b)=>((b[1].h||b[1].s).size-(a[1].h||a[1].s).size)||b[1].n-a[1].n);
   else kandidaten.sort((a,b)=>mode==='topics'?b[1].n-a[1].n:(((b[1].h||b[1].s).size-(a[1].h||a[1].s).size)||(b[1].n-a[1].n)));
+  /* Zusammenhang prüfen: Ein Allerweltswort wie "Alternative" sammelt
+     Oktoberfest und US-Umfragen ein. Behalten wird ein Einzelwort nur, wenn
+     seine Meldungen etwas gemeinsam haben – einen weiteren Namen oder Ort
+     in mindestens der Hälfte, oder gemeinsame Wörter in den Schlagzeilen. */
+  if(mode!=='topics')kandidaten=kandidaten.filter(([k,v])=>{
+    if(/\s/.test(v.label.trim()))return true;
+    const arts=v.ids.map(id=>ITEMS[id]).filter(Boolean);if(arts.length<3)return true;
+    const lab=norm(v.label),z={};
+    arts.forEach(a=>new Set((a.ents||[]).map(e=>norm(e))).forEach(e=>{if(e.length>=3&&!lab.includes(e)&&!e.includes(lab))z[e]=(z[e]||0)+1}));
+    if(Object.values(z).some(n=>n>=arts.length*0.5))return true;
+    const ws=arts.map(a=>new Set([...titelWorte(a.title)].filter(w=>!lab.includes(w)&&!w.includes(lab))));
+    let paare=0,treffer=0;
+    for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){paare++;for(const w of ws[i])if(ws[j].has(w)){treffer++;break}}
+    return paare&&treffer/paare>=0.4;
+  });
   const rows=kandidaten.slice(0,mode==='topics'?14:20);
   /* Kennzahlen je Zeile – nur für die angezeigten, damit es schnell bleibt. */
   const info={};
@@ -2377,6 +2428,8 @@ function marktlageHTML(){
   return `<div class="box" style="padding:12px 14px;margin-bottom:12px">
     <div class="desk-hd" style="padding:0 0 6px"><h3>Marktlage</h3><span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>${l.stand?`<span class="note">${esc(l.stand)}</span>`:''}</div>
     ${l.absaetze.map(a=>`<p style="margin:0 0 8px;font-size:var(--fs-sm);line-height:1.55">${esc(a)}</p>`).join('')}
+    ${(l.meldungen||[]).length?`<details class="auf" style="margin-bottom:6px"><summary>Meldungen, auf die sich der Text stützt (${l.meldungen.length})</summary>${l.meldungen.map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:3px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</details>`:''}
+    ${marktAnalyseHTML()?`<details class="auf" style="margin-bottom:6px"><summary>Zahlen im Überblick</summary>${marktAnalyseHTML().replace('<div class="box" style="padding:12px 14px;margin-bottom:12px;','<div style="padding:6px 0;')}</details>`:''}
     <div class="note">Automatisch zusammengefasst aus Kursen und Meldungen. Keine Anlageempfehlung.</div>
   </div>`;
 }
@@ -2392,7 +2445,7 @@ function renderMarkets(){
       <div class="val">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}<small style="color:${d.c>=0?'var(--green)':'var(--red)'}">${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</small></div>
       <button class="btn sm ${drin?'':'primary'}" onclick="watchToggle('${m.sym}')">${drin?'Entfernen':'Hinzufügen'}</button></div>`}).join(''):'<div class="empty"><b>Nichts gefunden</b>Anderer Name oder Symbol – der Katalog im Entwurf enthält Indizes, ETFs, Energie, Zinsen und Rohstoffe.</div>'}</div>`;
   }
-  if(!q)b+=marktlageHTML()+wkTeaserHTML()+marktAnalyseHTML();
+  if(!q)b+=marktlageHTML()+wkTeaserHTML();
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
   b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
     :(MARKET_CATALOG.length?'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>':'<div class="box"><div class="empty"><b>Keine Kursdaten</b>Kurse erscheinen hier, sobald der nächste Lauf sie geholt hat.</div></div>');
@@ -3530,7 +3583,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v52 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v53 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -3665,7 +3718,7 @@ const FEED_ZUSATZ=/\s+(eil|eilmeldung|breaking|pressemitt\.?|pressemitteilungen|
 function feedDoppelEntfernen(arr){
   const erste=new Map(),out=[];
   arr.sort((a,b)=>a.date-b.date).forEach(a=>{
-    const k=hausVon(a.src)+'|'+String(a.title||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').trim();
+    const k=(a._qb||hausVon(a.src))+'|'+String(a.title||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').trim();
     const e=erste.get(k);
     if(e&&Math.abs(a.date-e.date)<=12*H){(e._feeds=e._feeds||[e.src]).push(a.src);ITEMS[a.id]=e;return}
     erste.set(k,a);out.push(a);
@@ -4413,6 +4466,8 @@ function mapArtikel(j,set){
       topics:a.topics||[],desc:entziffern(a.desc||''),terms:a.terms||[],ents:a.ents||[],image:a.image||'',
       access:a.access||''};
     o.title=titelPutzen(a.title);
+    const hs=a.haus||domainAus(a.link||'');
+    if(hs){o._qb=hs;if(!SRC2HAUS[o.src])SRC2HAUS[o.src]=hs}
     o.isDoc=istDateiauswurf(o);
     o.formular=FORMULAR_RE.test(o.title);
     o.isTicker=TICKER_RE.test(o.title)||TICKER_RE.test(String(a.desc||'').slice(0,120));
@@ -4735,6 +4790,18 @@ function vsKennzahlen(kbId,extra){
   return `<div class="vs-kz">${ms.map(m=>{const d=mkData(m,'1w'),m1=mkData(m,'1m'),up=d.c>=0;
     return `<div class="vs-kz-t" role="button" tabindex="0" onclick="openMarket('${esc(m.sym)}')"><div class="note">${esc(m.n)}</div><div><b>${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':m.unit?' <span class="note">'+esc(m.unit)+'</span>':''}</b></div><div class="c ${up?'up':'dn'}" style="font-size:var(--fs-xs)">${up?'+':'−'}${fmtNum(Math.abs(d.c),d.pp?2:1)}${d.pp?' Pkt.':' %'} <span class="note">7 T.</span></div>${sparkline(m1.s,m1.c>=0)}</div>`}).join('')}</div>`;
 }
+function datumKurz(d){const t=String(d||'').split('-');return t.length===3?`${+t[2]}.${+t[1]}.${t[0].slice(2)}`:String(d||'')}
+/* Frühere Fälle aus dem Archiv: an welchem Tag, mit welcher Schlagzeile,
+   und wie der Kurs danach lief – die Belege für oder gegen die These. */
+function vsFaelleHTML(h,titel){
+  const f=(h&&h.faelle)||[];
+  if(!f.length)return '';
+  const e=h.einheit==='%'?' Pkt.':' %';
+  return `<details class="auf vs-faelle"><summary>${titel||'Frühere Fälle aus dem Archiv'} (${f.length})</summary>
+    <div class="vs-faelle-l">${f.slice().reverse().map(x=>`<div><span class="vs-f-d">${esc(datumKurz(x.datum))}</span><span class="vs-f-t">${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a>`:esc(x.titel)} <span class="note">· ${x.haeuser} Häuser</span></span>${x.veraenderung!=null?`<span class="vs-f-v ${x.veraenderung>=0?'up':'dn'}">${x.veraenderung>=0?'+':'−'}${fmtNum(Math.abs(x.veraenderung),h.einheit==='%'?2:1)}${e}</span>`:'<span class="vs-f-v note">–</span>'}</div>`).join('')}</div>
+    ${h.geprueft?`<div class="note" style="margin-top:4px">Veränderung von ${esc((wkKurs(h.sym)||{}).n||h.sym||'')} in den ${h.tage} Handelstagen nach dem Ereignis.</div>`:''}
+  </details>`;
+}
 function vsHistorieHTML(h){
   if(!h||!h.ereignisse)return '';
   const tag=d=>String(d).split('-').reverse().slice(0,2).join('.')+'.';
@@ -4748,6 +4815,9 @@ function vsForschungHTML(f){
   if(!(f||[]).length)return '';
   return `<div class="wk-folgen"><b>Aus der Forschung</b>${f.map(x=>`<div><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a> <span class="note">– ${esc(x.institut)}, ${esc(String(x.datum||'').split('-').reverse().slice(0,2).join('.'))}.</span></div>`).join('')}</div>`;
 }
+/* Dieselbe Schlagzeile nur einmal – auch in Dateien, die vor der
+   Entdoppelung im Backend geschrieben wurden. */
+function vsEinmal(l){const g=new Set();return (l||[]).filter(m=>{const k=String(m.titel||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').trim();if(g.has(k))return false;g.add(k);return true})}
 function renderVorausschau(){
   if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
   const W=window.WK;
@@ -4763,11 +4833,12 @@ function renderVorausschau(){
     <div class="desk-hd" style="padding:0 0 6px"><h3>Vorausschau</h3><span class="note">Foresight${W.stand?' · Stand '+esc(W.stand):''}</span></div>
     ${W.tagesbild?`<p class="wk-lead">${esc(W.tagesbild)}</p>`:''}
     <div class="note">${liste.length} geprüfte ${liste.length===1?'Einschätzung':'Einschätzungen'} · ${(W.beobachtung||[]).length} unter Beobachtung · ${(W.verworfen||[]).length} verworfen${W.bilanz&&W.bilanz.geprueft?` · Bilanz ${W.bilanz.eingetreten} von ${W.bilanz.geprueft} eingetreten`:''}</div>
+    ${W.archiv_meldungen?`<div class="vs-grundlage"><b>Grundlage:</b> ${(W.aktuelle_meldungen||0).toLocaleString('de-DE')} aktuelle Meldungen · <b>${W.archiv_meldungen.toLocaleString('de-DE')} Meldungen im Archiv</b>${W.archiv_zeitraum&&W.archiv_zeitraum[0]?` (${esc(datumKurz(W.archiv_zeitraum[0]))} bis ${esc(datumKurz(W.archiv_zeitraum[1]))})`:''} · ${W.kurse_anzahl||0} Kurse${W.thesen_archiv?` · ${Object.keys(W.thesen_archiv).length} Thesen mit früheren Fällen`:''}</div>`:''}
     <div class="note" style="margin-top:4px">${esc(W.hinweis||'Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.')}</div>
   </div>`;
   if(bereiche.length>1)b+=`<div class="chips" role="group" aria-label="Bereich" style="margin:10px 0">${[['all','Alle'],...bereiche.map(x=>[x,x])].map(([k,l])=>`<button class="chip" aria-pressed="${sel===k}" onclick="S.wkBereich='${esc(k)}';render()">${esc(l)}</button>`).join('')}</div>`;
   b+=ketten.map(k=>{try{
-    const q=(k.quellen||[]).map(x=>{const a=x.id&&ITEMS[x.id];
+    const q=vsEinmal(k.quellen).map(x=>{const a=x.id&&ITEMS[x.id];
       return a?`<div class="hit" role="button" tabindex="0" onclick="openReader('${a.id}')"><span class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span></span><span class="ttl">${esc(a.title)}</span></div>`
         :`<div class="hit"><span class="meta"><span class="src">${esc(x.quelle||'')}</span><span>${esc(x.datum||'')}</span></span><span class="ttl">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.titel)}</a>`:esc(x.titel)}</span></div>`}).join('');
     const sg=k.signal||{},kl=k.klassifikation;
@@ -4783,6 +4854,7 @@ function renderVorausschau(){
       ${vsKennzahlen(k.kb_id,k.messpunkt&&k.messpunkt.sym?[k.messpunkt.sym]:[])}
       ${vsWkeitHTML(k)}
       ${vsHistorieHTML(k.historie)}
+      ${vsFaelleHTML(k.historie)}
       ${wkMessHTML(k.messpunkt)}
       ${k.eingepreist?`<div class="note" style="margin-top:4px"><b>Schon eingepreist?</b> ${esc(k.eingepreist)}</div>`:''}
       ${(k.folgen_offen||[]).length?`<div class="wk-folgen"><b>Mögliche Folgen</b>${k.folgen_offen.map(f=>`<div><span class="pill ${f.plausibilitaet==='hoch'?'green':f.plausibilitaet==='niedrig'?'grey':'blue'}">${esc(f.plausibilitaet)}</span> ${esc(f.text)}${f.begruendung?` – <span class="note">${esc(f.begruendung)}</span>`:''}</div>`).join('')}</div>`:''}
@@ -4797,7 +4869,28 @@ function renderVorausschau(){
     </div>`}catch(e){console.error('Einschätzung',k&&k.kb_id,e);return `<div class="box wk-karte"><div class="note">Einschätzung ${esc((k&&k.kb_id)||'')} ließ sich nicht darstellen (${esc(String(e.message||e))}).</div></div>`}}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
   if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
     <p class="note" style="margin-bottom:6px">Erste Anzeichen, aber noch zu dünn belegt – meist nur ein Haus.</p>
-    <div class="box">${W.beobachtung.map(o=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(o.id)}</span><span>${esc(o.bereich)}</span><span>${o.haeuser} ${o.haeuser===1?'Haus':'Häuser'}</span></div><div class="ttl" style="margin-top:3px">${esc(o.titel)}${(o.auch||[]).length?` <span class="note">· passt auch zu ${o.auch.map(x=>esc(x.id)+' '+esc(x.titel)).join(', ')}</span>`:''}</div>${o.kennzahl&&wkKurs(o.kennzahl)?(()=>{const m=wkKurs(o.kennzahl),d=mkData(m,'1w');return `<div class="note" style="margin-top:2px">${esc(m.n)}: <b>${fmtNum(d.last,m.dec)}</b> (${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),d.pp?2:1)}${d.pp?' Pkt.':' %'} in 7 Tagen)</div>`})():''}${(o.meldungen||[]).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</div>`).join('')}</div>`;
+    <div class="box">${W.beobachtung.map(o=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(o.id)}</span><span>${esc(o.bereich)}</span><span>${o.haeuser} ${o.haeuser===1?'Haus':'Häuser'}</span></div><div class="ttl" style="margin-top:3px">${esc(o.titel)}${(o.auch||[]).length?` <span class="note">· passt auch zu ${o.auch.map(x=>esc(x.id)+' '+esc(x.titel)).join(', ')}</span>`:''}</div>${o.kennzahl&&wkKurs(o.kennzahl)?(()=>{const m=wkKurs(o.kennzahl),d=mkData(m,'1w');return `<div class="note" style="margin-top:2px">${esc(m.n)}: <b>${fmtNum(d.last,m.dec)}</b> (${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),d.pp?2:1)}${d.pp?' Pkt.':' %'} in 7 Tagen)</div>`})():''}${vsEinmal(o.meldungen).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(a?a.src:m.quelle)}</div>`}).join('')}</div>`).join('')}</div>`;
+  /* ── Was das Archiv zu den Thesen sagt ── alle Zusammenhänge, nicht nur
+     die heutigen: wie oft kam der Auslöser vor, lief der Kurs danach wie
+     erwartet? So bestätigen alte Meldungen die Thesen – oder nicht. */
+  const TA=W.thesen_archiv||{};
+  const taListe=Object.entries(TA).map(([id,v])=>({id,v,e:(W.basis||[]).find(x=>x.id===id)||{titel:id}})).sort((a,b)=>(b.v.geprueft||0)-(a.v.geprueft||0)||b.v.ereignisse-a.v.ereignisse);
+  if(taListe.length){
+    const urteil=v=>{if(!v.geprueft)return ['grey','ohne Kurs'];const q=v.in_richtung/v.geprueft;return q>=0.65?['green','bestätigt']:q<=0.35?['red','widerlegt']:['amber','gemischt']};
+    b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Was das Archiv zu den Thesen sagt</h2><span class="cnt">${taListe.length} von ${(W.basis||[]).length} Zusammenhängen mit früheren Fällen</span></div>
+      <p class="note" style="margin-bottom:6px">Für jeden Zusammenhang: wie oft der Auslöser in den archivierten Meldungen vorkam (mindestens zwei Häuser am selben Tag) und wie der Kurs danach lief.</p>
+      <div class="box">${taListe.map(({id,v,e})=>{const [c,t]=urteil(v);const q=v.geprueft?Math.round(v.in_richtung/v.geprueft*100):null;
+        return `<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(id)}</span><span class="pill ${c}">${t}</span><span>${v.ereignisse} ${v.ereignisse===1?'Fall':'Fälle'}${v.letzte?`, zuletzt ${esc(datumKurz(v.letzte))}`:''}</span></div>
+          <div class="ttl" style="margin-top:3px">${esc(e.titel)}</div>
+          ${v.geprueft?`<div class="vs-ta"><div class="vs-balken" style="flex:1"><i style="width:${q}%;background:${q>=65?'var(--green,#15803d)':q<=35?'var(--red,#be123c)':'#d97706'}"></i></div><span class="note">${v.in_richtung} von ${v.geprueft} in erwarteter Richtung · Mittel ${v.mittel>=0?'+':'−'}${fmtNum(Math.abs(v.mittel),v.einheit==='%'?2:1)}${v.einheit==='%'?' Pkt.':' %'}</span></div>`:''}
+          ${vsFaelleHTML(v,'Fälle ansehen')}</div>`}).join('')}</div>`;
+  }
+  if((W.entdeckt||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Im Archiv entdeckt</h2><span class="cnt">statistisch, ungeprüft</span></div>
+    <p class="note" style="margin-bottom:6px">Themen, nach deren Häufung im Archiv ein Kurs auffällig oft in dieselbe Richtung lief – öfter, als es der Zufall erklärt (Binomialtest, p unter 0,05, mindestens fünf Fälle). Das sind Zusammenhänge in den Daten, keine belegten Ursachen: Kandidaten für neue Thesen.</p>
+    <div class="box">${W.entdeckt.map(f=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px">
+      <div class="ttl">Nach Häufungen von „${esc(f.begriff)}“ ${f.richtung>0?'stieg':'fiel'} ${esc(f.name)} in ${Math.round((f.richtung>0?f.anteil:1-f.anteil)*100)} % der Fälle</div>
+      <div class="note">${f.ereignisse} Fälle · sonst ${Math.round((f.richtung>0?f.grundrate:1-f.grundrate)*100)} % · Mittel ${f.mittel>=0?'+':'−'}${fmtNum(Math.abs(f.mittel),f.einheit==='%'?2:1)}${f.einheit==='%'?' Pkt.':' %'} in fünf Handelstagen · p = ${fmtNum(f.p,3)}${f.abgedeckt?' · von einer These schon erfasst':''}</div>
+      <div class="note">Zuletzt: ${f.daten.map(datumKurz).map(esc).join(', ')}</div></div>`).join('')}</div>`;
   const B=W.bilanz||{};
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Bilanz</h2><span class="cnt">${B.geprueft||0} geprüft · ${B.offen||0} offen</span></div>`;
   b+=B.geprueft?`<div class="box" style="padding:12px 14px">

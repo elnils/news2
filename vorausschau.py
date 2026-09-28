@@ -72,6 +72,10 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
 import ki_zusammenfassungen as ki
+try:
+    from entdoppeln import domain as _domain
+except Exception:                                   # pragma: no cover
+    _domain = lambda url: ""
 
 OUT = "vorausschau.json"
 ARCHIV = "vorausschau_archiv.json"
@@ -99,7 +103,7 @@ FORSCHUNG_QUELLEN = [
     ("EZB", "ecb.europa.eu"), ("IWF", "imf.org"), ("BIZ", "bis.org"), ("OECD", "oecd.org"),
     ("IEA", "iea.org"), ("FAO", "fao.org"), ("Bruegel", "bruegel.org"),
 ]
-BASIS_VERSION = 3
+BASIS_VERSION = 4
 KANDIDATEN = "vorausschau_kandidaten.json"
 MAX_KETTEN = int(os.environ.get("VS_MAX", "10"))
 STUNDE = int(os.environ.get("VS_STUNDE", "7"))
@@ -188,7 +192,7 @@ DEFAULT_BASIS = [
     {"id": "E5", "titel": "Hurrikan trifft Förderung im Golf von Mexiko",
      "ausloeser": "Hurrikan im Golf von Mexiko trifft Förderung oder Raffinerien",
      "stichworte": [r"hurrikan|hurricane|tropensturm|tropical storm",
-                    r"golf von mexiko|gulf of mexico|texas|louisiana|raffinerie|refiner|förderung|offshore|oil|öl|gas"],
+                    r"golf von mexiko|gulf of mexico|texas|louisiana|raffinerie|refiner|ölförderung|ölplattform|offshore|oil production|oil platform|rig"],
      "wirkung": "US-Öl und US-Gas steigen kurzfristig", "mechanismus": "Förderung und Raffinerien stehen still",
      "zeitraum": "Tage", "messpunkt": {"sym": "NG=F", "richtung": 1, "tage": 5},
      "gegenkraefte": "schnelle Wiederaufnahme, Lagerbestände", "belege": [], "fuehrt_zu": [],
@@ -206,7 +210,8 @@ DEFAULT_BASIS = [
     {"id": "E7", "titel": "Kälte- oder Hitzewelle in Europa",
      "ausloeser": "Kälte- oder Hitzewelle in Europa",
      "stichworte": [r"kältewelle|cold snap|cold wave|dauerfrost|hitzewelle|heatwave|heat wave|rekordhitze",
-                    r"europa|europe|deutschland|germany|frankreich|france|italien|italy"],
+                    r"europa|europe|deutschland|germany|frankreich|france|italien|italy",
+                    r"strom|power|electricity|gaspreis|gas price|energie|energy|kraftwerk|heizen|heating|kühlung|cooling|netz|grid"],
      "wirkung": "Gas- und Strompreise steigen", "mechanismus": "mehr Heizen oder Kühlen, weniger Kühlwasser für Kraftwerke",
      "zeitraum": "Tage bis Wochen", "messpunkt": {"sym": "TTF=F", "richtung": 1, "tage": 7},
      "gegenkraefte": "Wind- und Solarertrag, Speicher", "belege": ["dell2014"], "fuehrt_zu": [],
@@ -724,6 +729,34 @@ def _speichern(pfad, daten):
     os.replace(tmp, pfad)
 
 
+_MUSTER = {}
+
+
+def muster(g):
+    """Kurze Stichworte ("öl", "gas", "oil", "ets") nur am Wortanfang – sonst
+    trifft "öl" auch "Völker" und "gas" auch "Gastronomie". Längere Stichworte
+    dürfen auch in Zusammensetzungen stehen ("Rohölpreis")."""
+    if g in _MUSTER:
+        return _MUSTER[g]
+    if "(" in g:
+        m = re.compile(g, re.I)
+    else:
+        teile = []
+        for alt in g.split("|"):
+            kern = re.sub(r"\\[a-z]|[^a-zäöüßéèç]", "", alt.lower())
+            teile.append(("\\b" + alt) if len(kern) <= 3 and not alt.startswith("\\b") else alt)
+        try:
+            m = re.compile("|".join(teile), re.I)
+        except re.error:
+            m = re.compile(g, re.I)
+    _MUSTER[g] = m
+    return m
+
+
+def haus_von(a):
+    return a.get("haus") or _domain(a.get("link", "")) or hauskern(a.get("source", ""))
+
+
 def hauskern(src):
     return re.split(r"[\s\-–|:.]+", (src or "").lower().strip())[0] or (src or "").lower()
 
@@ -967,7 +1000,7 @@ def artikel_laden():
             continue
         # Dieselbe Meldung kommt oft über mehrere Feeds eines Hauses – als
         # Schlüssel zählen Haus und Wortlaut, nicht die ID.
-        k = (hauskern(a.get("source", "")), re.sub(r"\W+", " ", (a.get("title") or "").lower()).strip())
+        k = (haus_von(a), re.sub(r"\W+", " ", (a.get("title") or "").lower()).strip())
         if k in gesehen:
             continue
         gesehen.add(k)
@@ -986,23 +1019,26 @@ def archiv_laden():
         d = _laden(m.get("file") or f"archive/{m['month']}.json", {})
         for a in (d.get("articles") if isinstance(d, dict) else d) or []:
             if a.get("title") and a.get("date"):
-                out.append({"title": a.get("title", ""), "desc": (a.get("desc") or "")[:400],
-                            "source": a.get("source", ""), "date": str(a.get("date", ""))[:10]})
+                out.append({"title": a.get("title", ""), "desc": (a.get("desc") or "")[:300],
+                            "source": a.get("source", ""), "date": str(a.get("date", ""))[:10],
+                            "link": a.get("link", ""), "haus": haus_von(a),
+                            "ents": (a.get("ents") or [])[:6], "terms": (a.get("terms") or [])[:6]})
     return out
 
 
 def treffer_tage(eintrag, artikel):
     """Tag → Menge der Häuser, die an dem Tag über den Auslöser berichteten."""
-    muster = [re.compile(g, re.I) for g in eintrag.get("stichworte") or []]
-    if not muster:
+    muster_l = [muster(g) for g in eintrag.get("stichworte") or []]
+    if not muster_l:
         return {}
     aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
     tage = {}
     for a in artikel:
         titel = a["title"]
         text = titel + " " + a.get("desc", "")
-        if all(m.search(text) for m in muster) and any(m.search(titel) for m in muster) and not (aus and aus.search(text)):
-            tage.setdefault(a["date"], set()).add(hauskern(a["source"]))
+        if all(m.search(text) for m in muster_l) and any(m.search(titel) for m in muster_l) and not (aus and aus.search(text)):
+            t = tage.setdefault(a["date"], {"haeuser": set(), "titel": titel, "link": a.get("link", "")})
+            t["haeuser"].add(a["haus"])
     return tage
 
 
@@ -1023,13 +1059,16 @@ def historie_fuer(eintrag, archiv_art, kurse, heute):
     Ereignisstudie aus dem eigenen Archiv."""
     tage = treffer_tage(eintrag, archiv_art)
     ereignisse = []
-    for d in sorted(t for t, h in tage.items() if len(h) >= MIN_HAEUSER and t < heute):
+    for d in sorted(t for t, h in tage.items() if len(h["haeuser"]) >= MIN_HAEUSER and t < heute):
         if not ereignisse or (datetime.strptime(d, "%Y-%m-%d") - datetime.strptime(ereignisse[-1], "%Y-%m-%d")).days > 5:
             ereignisse.append(d)
     # Grundlinie der Berichterstattung: Treffer pro Tag in den letzten 60 Tagen
     grenze = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=60)).strftime("%Y-%m-%d")
-    pro_tag = sum(len(h) for t, h in tage.items() if grenze <= t < heute) / 60
-    out = {"ereignisse": len(ereignisse), "daten": ereignisse[-6:], "pro_tag": round(pro_tag, 2)}
+    pro_tag = sum(len(h["haeuser"]) for t, h in tage.items() if grenze <= t < heute) / 60
+    faelle = [{"datum": d, "titel": tage[d]["titel"], "link": tage[d]["link"], "haeuser": len(tage[d]["haeuser"])}
+              for d in ereignisse]
+    out = {"ereignisse": len(ereignisse), "daten": ereignisse[-6:], "pro_tag": round(pro_tag, 2),
+           "letzte": ereignisse[-1] if ereignisse else None, "faelle": faelle[-8:]}
     mp = eintrag.get("messpunkt") or {}
     sym = mp.get("sym") or ((mp.get("wahl") or [None])[0])
     richtung = mp.get("richtung") if mp.get("richtung") in (1, -1) else None
@@ -1046,11 +1085,120 @@ def historie_fuer(eintrag, archiv_art, kurse, heute):
             continue
         v = (r[i1] - r[i0]) if w["unit"] == "%" else (r[i1] - r[i0]) / r[i0] * 100
         reaktionen.append({"datum": d, "veraenderung": round(v, 2)})
+        for f in out["faelle"]:
+            if f["datum"] == d:
+                f["veraenderung"] = round(v, 2)
     if reaktionen:
         k = sum(1 for x in reaktionen if x["veraenderung"] * richtung > 0)
         out.update({"geprueft": len(reaktionen), "in_richtung": k, "sym": sym, "einheit": w["unit"],
                     "mittel": round(sum(x["veraenderung"] for x in reaktionen) / len(reaktionen), 2),
                     "tage": h, "beispiele": reaktionen[-5:]})
+    return out
+
+
+# ─────────────────────────────────────────────────────────────
+# ENTDECKEN: Muster im Archiv, die noch keine These sind
+#
+# Für jeden häufigen Begriff (Namen, Orte, Sachbegriffe) die Tage, an denen
+# er ungewöhnlich breit berichtet wurde (mindestens drei Häuser und deutlich
+# über seinem Durchschnitt). Danach: Wie liefen wichtige Kurse in den fünf
+# Handelstagen danach – öfter in eine Richtung, als es die Grundrate
+# erwarten lässt? Nur, was bei mindestens fünf Ereignissen statistisch
+# auffällt (Binomialtest, p < 0,05), kommt in die Liste. Das sind
+# Korrelationen, keine Ursachen – Kandidaten zum Prüfen.
+# ─────────────────────────────────────────────────────────────
+ENTDECKEN_SYMS = ["BZ=F", "TTF=F", "GC=F", "^GDAXI", "^STOXX50E", "DE10Y", "EURUSD=X", "ZW=F", "CC=F", "SMH",
+                  "DFEN.DE", "HG=F", "KC=F", "EUA"]
+
+
+def _binom_p(k, n, p):
+    """Zweiseitiger Binomialtest (exakt)."""
+    if n == 0 or not 0 < p < 1:
+        return 1.0
+    dichte = [math.comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(n + 1)]
+    grenze = dichte[k] * (1 + 1e-9)
+    return min(1.0, sum(d for d in dichte if d <= grenze))
+
+
+def entdecken(archiv_art, kurse, heute, basis):
+    if len(archiv_art) < 2000:
+        return []
+    tage_begriff = {}
+    for a in archiv_art:
+        for b in set(list(a.get("ents") or []) + list(a.get("terms") or [])):
+            k = re.sub(r"\s+", " ", str(b).strip())
+            if len(k) < 4 or len(k) > 40:
+                continue
+            tage_begriff.setdefault(k, {}).setdefault(a["date"], set()).add(a["haus"])
+    alle_tage = sorted({a["date"] for a in archiv_art})
+    if len(alle_tage) < 30:
+        return []
+    abgedeckt = [[muster(g) for g in e.get("stichworte") or []] for e in basis]
+    kandidaten = []
+    for begriff, tage in tage_begriff.items():
+        aktiv = len(tage)
+        if aktiv < 10 or aktiv > 0.6 * len(alle_tage):
+            continue
+        werte = [len(tage.get(t, ())) for t in alle_tage]
+        mw = sum(werte) / len(werte)
+        sd = math.sqrt(sum((w - mw) ** 2 for w in werte) / len(werte)) or 1
+        spitzen = []
+        for t in alle_tage:
+            n = len(tage.get(t, ()))
+            if n >= 3 and n >= mw + 2 * sd and t < heute:
+                if not spitzen or (datetime.strptime(t, "%Y-%m-%d") - datetime.strptime(spitzen[-1], "%Y-%m-%d")).days > 5:
+                    spitzen.append(t)
+        if len(spitzen) >= 5:
+            kandidaten.append((begriff, spitzen))
+    funde = []
+    for begriff, spitzen in kandidaten:
+        for sym in ENTDECKEN_SYMS:
+            w = kurse.get(sym)
+            if not w:
+                continue
+            r = [x for x in ((w.get("series") or {}).get("1j") or []) if x is not None]
+            veraend = []
+            for d in spitzen:
+                i0 = len(r) - 1 - _werktage(d, heute)
+                if i0 < 0 or i0 + 5 > len(r) - 1 or not r[i0]:
+                    continue
+                veraend.append((r[i0 + 5] - r[i0]) if w["unit"] == "%" else (r[i0 + 5] - r[i0]) / r[i0] * 100)
+            if len(veraend) < 5:
+                continue
+            hoch = sum(1 for v in veraend if v > 0)
+            base = grundrate_h(w, 5, 1)
+            if base is None:
+                continue
+            p = _binom_p(hoch, len(veraend), base)
+            anteil = hoch / len(veraend)
+            if p < 0.05 and abs(anteil - base) >= 0.25:
+                richtung = 1 if anteil > base else -1
+                funde.append({"begriff": begriff, "sym": sym, "name": w["n"], "ereignisse": len(veraend),
+                              "richtung": richtung, "anteil": round(anteil, 2), "grundrate": round(base, 2),
+                              "p": round(p, 4), "mittel": round(sum(veraend) / len(veraend), 2), "einheit": w["unit"],
+                              "daten": spitzen[-5:],
+                              "abgedeckt": any(m and any(x.search(begriff) for x in m) for m in abgedeckt)})
+    funde.sort(key=lambda f: (f["abgedeckt"], f["p"]))
+    # je Begriff nur der deutlichste Kurs
+    gesehen, out = set(), []
+    for f in funde:
+        if f["begriff"] in gesehen:
+            continue
+        gesehen.add(f["begriff"])
+        out.append(f)
+    print(f"  Entdecken: {len(kandidaten)} Begriffe mit mindestens fünf Spitzen, {len(out)} auffällige Muster")
+    return out[:8]
+
+
+def archiv_bilanz(eintraege, archiv_art, kurse, heute):
+    """Für JEDEN Zusammenhang, nicht nur die heutigen: Wie oft kam der
+    Auslöser im Archiv vor, und bestätigte der Kurs danach die These?"""
+    out = {}
+    for e in eintraege:
+        h = historie_fuer(e, archiv_art, kurse, heute)
+        if h.get("ereignisse"):
+            out[e["id"]] = {k: h.get(k) for k in ("ereignisse", "letzte", "geprueft", "in_richtung", "mittel",
+                                                  "tage", "sym", "einheit", "faelle")}
     return out
 
 
@@ -1100,40 +1248,50 @@ def forschung_holen(heute):
 def forschung_fuer(eintrag, forschung):
     """Forschungstitel sind kurz: Es reicht, wenn zwei Stichwortgruppen (bei
     einem Eintrag mit nur einer Gruppe: diese) im Titel vorkommen."""
-    muster = [re.compile(g, re.I) for g in eintrag.get("stichworte") or []]
-    if not muster:
+    muster_l = [muster(g) for g in eintrag.get("stichworte") or []]
+    if not muster_l:
         return []
-    noetig = min(2, len(muster))
-    return [f for f in forschung if sum(1 for m in muster if m.search(f["titel"])) >= noetig][:4]
+    noetig = min(2, len(muster_l))
+    return [f for f in forschung if sum(1 for m in muster_l if m.search(f["titel"])) >= noetig][:4]
 
 
 def signal_fuer(eintrag, artikel):
-    muster = [re.compile(g, re.I) for g in eintrag.get("stichworte") or []]
-    if not muster:
+    muster_l = [muster(g) for g in eintrag.get("stichworte") or []]
+    if not muster_l:
         return None
     aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
-    treffer = []
+    treffer, im_titel = [], {}
     for a in artikel:
         titel = a.get("title") or ""
         text = titel + " " + (a.get("desc") or "")[:400]
-        if not all(m.search(text) for m in muster):
+        if not all(m.search(text) for m in muster_l):
             continue
-        if not any(m.search(titel) for m in muster):
+        n_titel = sum(1 for m in muster_l if m.search(titel))
+        if not n_titel:
             continue                                    # mindestens ein Begriff in der Schlagzeile
         if aus and aus.search(text):
             continue
         treffer.append(a)
+        im_titel[id(a)] = n_titel
     if not treffer:
         return None
-    haeuser = {hauskern(a.get("source", "")) for a in treffer}
+    haeuser = {haus_von(a) for a in treffer}
     jung = [a for a in treffer if ki.alter_stunden(a.get("date", "")) <= 24]
     cl = max(int(a.get("cluster") or 1) for a in treffer)
     staerke = ("stark" if len(haeuser) >= 3 or (len(haeuser) >= MIN_HAEUSER and cl >= 3)
                else "mittel" if len(haeuser) >= MIN_HAEUSER else "schwach")
+    if staerke == "schwach":
+        # Unter Beobachtung nur, wenn die Schlagzeile selbst den Auslöser
+        # nennt: mindestens zwei Stichwortgruppen im Titel. Sonst landen dort
+        # "Hitzewellen bedrohen Fischerei" bei "Hitzewelle und Energie".
+        # Bei drei Gruppen müssen alle drei in der Schlagzeile stehen.
+        noetig = min(3, len(muster_l))
+        treffer = [a for a in treffer if im_titel[id(a)] >= noetig]
+        if not treffer:
+            return None
     treffer.sort(key=lambda a: (int(a.get("cluster") or 1), a.get("date", "")), reverse=True)
     return {"treffer": treffer, "haeuser": sorted(haeuser), "jung": len(jung),
             "aelter": len(treffer) - len(jung), "cluster": cl, "staerke": staerke}
-
 
 _GDELT = {"letzte": 0.0, "gesperrt": False, "grund": ""}
 
@@ -1473,7 +1631,17 @@ def main():
                  "_version": BASIS_VERSION, "eintraege": DEFAULT_BASIS}
         _speichern(BASIS, basis)
         print(f"  {BASIS} angelegt ({len(DEFAULT_BASIS)} Einträge).")
-    elif int(basis.get("_version") or 1) < BASIS_VERSION:
+    if int(basis.get("_version") or 1) < 4:
+        # Version 4: E5 und E7 geschärft – nur übernehmen, wenn du sie nicht
+        # selbst geändert hast (dann stehen dort noch die alten Stichworte)
+        vorgabe = {e["id"]: e for e in DEFAULT_BASIS}
+        alt_e5 = "golf von mexiko|gulf of mexico|texas|louisiana|raffinerie|refiner|förderung|offshore|oil|öl|gas"
+        for e in basis["eintraege"]:
+            if e["id"] == "E5" and alt_e5 in (e.get("stichworte") or []):
+                e["stichworte"] = vorgabe["E5"]["stichworte"]
+            if e["id"] == "E7" and len(e.get("stichworte") or []) == 2:
+                e["stichworte"] = vorgabe["E7"]["stichworte"]
+    if int(basis.get("_version") or 1) < BASIS_VERSION:
         # Einmalig neue Einträge der Vorgabe ergänzen (etwa die hybriden
         # Bedrohungen). Gelöschte Einträge kommen danach nie wieder.
         da = {e["id"] for e in basis["eintraege"]}
@@ -1633,6 +1801,8 @@ def main():
               + (f", p={round(wkeit['p']*100)} % gegen Grundrate {round(wkeit['grundrate']*100)} %" if wkeit else "") + ")")
         time.sleep(0.4)
 
+    thesen_archiv = archiv_bilanz(eintraege, archiv_art, kurse, heute) if archiv_art else {}
+    entdeckt = entdecken(archiv_art, kurse, heute, eintraege) if archiv_art else []
     vorschlaege = vorschlaege_schreiben(anbieter, artikel, eintraege, kurse) if anbieter else []
     neu_aufgenommen, kandidaten = kandidaten_fortschreiben(vorschlaege, basis, heute, kurse)
     for v in vorschlaege:
@@ -1651,6 +1821,9 @@ def main():
                      for e in eintraege],
            "bereiche": BEREICHE, "literatur": LITERATUR, "werkzeuge": WERKZEUGE,
            "forschung": forschung[:150], "archiv_meldungen": len(archiv_art),
+           "archiv_zeitraum": [min((a["date"] for a in archiv_art), default=None), max((a["date"] for a in archiv_art), default=None)],
+           "aktuelle_meldungen": len(artikel), "kurse_anzahl": len(kurse),
+           "thesen_archiv": thesen_archiv, "entdeckt": entdeckt,
            "gdelt": {"gesperrt": _GDELT["gesperrt"], "grund": _GDELT["grund"]},
            "quellen_status": {"zusammenfassung": _laden(QUELLEN_STATUS, {}).get("zusammenfassung"),
                               "geprueft": _laden(QUELLEN_STATUS, {}).get("geprueft"),

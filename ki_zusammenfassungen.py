@@ -718,7 +718,8 @@ def marktlage_bauen(artikel, anbieter, alt):
                "(zusammen höchstens 900 Zeichen).\n"
                "Absatz 1: Aktien – was bewegte sich, in welche Richtung, wie breit.\n"
                "Absatz 2: Zinsen, Währungen, Energie und Rohstoffe.\n"
-               "Absatz 3 (nur wenn die Meldungen es hergeben): was die Nachrichtenlage dazu sagt.\n\n"
+               "Absatz 3: was die Nachrichtenlage dazu sagt – welche Meldungen die Bewegungen erklären "
+               "könnten (nur, wenn eine Meldung es hergibt) und welche Termine anstehen.\n\n"
                "REGELN: Zahlen ausschließlich aus der Tabelle, gerundet wie dort. Ursachen nur, wenn eine "
                "der Meldungen sie nennt – sonst keine. Keine Empfehlung, keine Prognose, keine Floskeln "
                "(\"Anleger zeigten sich vorsichtig\"). Keine Aufzählung, keine Überschriften.\n\n"
@@ -744,8 +745,12 @@ def marktlage_bauen(artikel, anbieter, alt):
             if not absaetze:
                 return alt
             print(f"  Marktlage: {len(absaetze)} Absätze ({name})")
+            # Die Meldungen, auf die sich der Text stützt – die App zeigt sie
+            # aufklappbar unter der Marktlage.
+            belege = [{"id": a.get("id"), "titel": a.get("title", ""), "quelle": a.get("source", ""),
+                       "url": a.get("link", "")} for a in meldungen[:15]]
             return {"absaetze": absaetze, "stand": _stand_jetzt(), "ts": int(time.time()),
-                    "kurse": stand_kurse, "via": name, "modell": modell}
+                    "kurse": stand_kurse, "via": name, "modell": modell, "meldungen": belege}
         except HTTPError as e:
             leib = ""
             try:
