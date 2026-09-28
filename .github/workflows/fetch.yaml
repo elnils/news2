@@ -269,7 +269,8 @@ jobs:
                    people_cache.json landtage_cache.json groq_cache.json ai.json access.json \
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
-                   vorausschau.json vorausschau_archiv.json vorausschau_basis.json quellen_status.json; do
+                   vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
+                   quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
