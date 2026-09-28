@@ -1,7 +1,12 @@
 name: RSS Feeds holen
 on:
+  # Zeiten in UTC. Deutsche Zeit = UTC+2 im Sommer, UTC+1 im Winter.
+  # Morgenlauf 03:00 UTC (5 Uhr Sommerzeit): ausgiebiger, mit Vorausschau
+  # und Quellenprüfung. Tagsüber alle zwei Stunden bis 21:00 UTC (23 Uhr).
+  # Nachts Pause. Hinweis: GitHub startet geplante Läufe oft 5–30 Minuten später.
   schedule:
-    - cron: '*/25 * * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 5-21/2 * * *'
   workflow_dispatch:
 
 # Nie zwei Läufe gleichzeitig – sonst blockieren sie sich beim Commit
@@ -12,7 +17,15 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 25          # harte Obergrenze für den gesamten Job
+    # Harte Obergrenze für den ganzen Job. Vorher 25 Minuten – zu knapp für alle
+    # Schritte: Der Job wurde abgebrochen, BEVOR er committen konnte, und neue
+    # Meldungen erschienen nur, wenn ein Lauf zufällig kurz war.
+    # Tagsüber reichen rund 40 Minuten, der Morgenlauf braucht mehr. Die
+    # Meldungen werden ohnehin nach dem KI-Schritt schon veröffentlicht.
+    timeout-minutes: 90
+    env:
+      # Im Morgenlauf bekommen die Skripte mehr Zeit und größere Portionen.
+      MORGENLAUF: ${{ github.event.schedule == '0 3 * * *' && '1' || '0' }}
     permissions:
       contents: write
     steps:
@@ -39,9 +52,9 @@ jobs:
       # personen je Meldung sowie die Feeds von BVerwG, BAG, BSG, BFH und EuG.
       # Keine neue Abhängigkeit, kein neues Secret.
       - name: Feeds holen (News, EU, Bundestag, Bundesländer, USA, Dokumente)
-        timeout-minutes: 16          # Reserve über dem Budget des Skripts
+        timeout-minutes: 22          # Reserve über dem Budget des Skripts
         env:
-          NEWS_BUDGET_MIN: '8'       # Skript beendet sich selbst nach 8 Minuten
+          NEWS_BUDGET_MIN: ${{ github.event.schedule == '0 3 * * *' && '14' || '8' }}   # morgens ausgiebiger
           FEED_WORKERS: '8'          # parallele Abrufe
           FEED_TIMEOUT: '10'         # Sekunden je Feed
           FEED_FALLBACK: '1'         # gescheiterte Feeds über Nachrichtensuche nachholen
@@ -102,20 +115,37 @@ jobs:
       # und Satz schreiben. Alle zwei Stunden, je Lauf hoechstens drei Regionen.
       - name: KI-Zusammenfassungen, Top-Auswahl und Marktlage
         continue-on-error: true
-        timeout-minutes: 9
+        timeout-minutes: 12
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          KI_MAX: '48'                 # Meldungen je Lauf, die eine Zusammenfassung bekommen
+          KI_MAX: ${{ github.event.schedule == '0 3 * * *' && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
           KI_BATCH: '8'                # Meldungen je Anfrage (48 Meldungen = 6 Anfragen)
           KI_KEEP_DAYS: '7'
           KI_SCHLAG_N: '10'            # Ereignisse je Region
           KI_SCHLAG_KANDIDATEN: '30'   # so viele Gruppen sieht das Modell zur Auswahl
-          KI_SCHLAG_MIN: '120'         # alle zwei Stunden neu zusammenstellen
-          KI_SCHLAG_REGIONEN: '3'      # Regionen je Lauf (6 Regionen = 2 Laeufe)
+          KI_SCHLAG_MIN: '100'         # in jedem Lauf (alle zwei Stunden) neu zusammenstellen
+          KI_SCHLAG_REGIONEN: '6'      # alle Regionen je Lauf – die Läufe liegen jetzt zwei Stunden auseinander
           KI_MARKT_ZEITEN: '9,16'      # Marktlage zweimal je Handelstag (Uhr, deutsche Zeit)
         run: python ki_zusammenfassungen.py
+
+      # NEU (v15): Meldungen sofort veröffentlichen – nicht erst, wenn auch
+      # Verzeichnis, Vorausschau und Protokolle fertig sind.
+      - name: Zwischenstand veröffentlichen (Meldungen, KI, Märkte)
+        if: always()
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in articles.json eu_articles.json bundestag_articles.json laender_articles.json \
+                   us_articles.json documents.json ai.json markets.json ki_meldungen.json; do
+            [ -e "$f" ] && git add "$f"
+          done
+          [ -d archive ] && git add archive/ || true
+          git diff --cached --quiet && { echo "Nichts Neues."; exit 0; }
+          git commit -m "chore: Meldungen [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push || { git fetch origin main && git rebase -X ours origin/main && git push; } || echo "Zwischenstand nicht gepusht – der Schlussschritt versucht es erneut."
 
 
       # NEU (v14): Quellenprüfung – einmal am Tag. Prüft jede Kursquelle auf
@@ -136,16 +166,17 @@ jobs:
       # Übernimmt beim ersten Lauf eine vorhandene wirkungsketten_basis.json.
       - name: Vorausschau (einmal täglich)
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          VS_STUNDE: '7'          # ab dieser Stunde (deutsche Zeit) der erste Lauf des Tages
+          VS_STUNDE: '5'          # im Morgenlauf (5 Uhr deutscher Zeit) – danach steht sie für den Tag
           VS_MAX: '10'            # höchstens so viele Zusammenhänge prüfen
           VS_MIN_HAEUSER: '2'     # so viele Häuser braucht ein Signal mindestens
           VS_FENSTER_H: '72'      # Meldungen der letzten 72 Stunden
-          VS_GDELT: '1'           # weltweite Berichterstattung als zweites Signal
+          VS_GDELT: '1'           # weltweite Berichterstattung als zweites Signal (Ersatz: eigenes Archiv)
+          VS_ARCHIV_MONATE: '12'  # so viele Monate aus archive/ für frühere Ereignisse
         run: python vorausschau.py
 
       # Verzeichnis, DIP, Kalender, Newsletter.
@@ -163,13 +194,13 @@ jobs:
       # Weil das zusätzliche Abrufe sind, bekommt der Schritt mehr Luft:
       # 14 Minuten Obergrenze, 11 Minuten Eigenbudget.
       - name: Verzeichnis, DIP, Abstimmungen & Kalender
-        timeout-minutes: 14
+        timeout-minutes: 20
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           TAGESLAGE_FEED: ${{ secrets.TAGESLAGE_FEED }}
-          TIME_BUDGET_MIN: '11'     # Skript beendet sich selbst nach 11 Minuten
+          TIME_BUDGET_MIN: ${{ github.event.schedule == '0 3 * * *' && '16' || '11' }}   # morgens mehr Zeit
           LANDTAGE_PER_RUN: '6'     # 16 Landtage in 3 Läufen statt 4
-          POLLS_PER_RUN: '12'       # namentliche Abstimmungen je Lauf (je ~630 Stimmen)
+          POLLS_PER_RUN: ${{ github.event.schedule == '0 3 * * *' && '30' || '12' }}   # namentliche Abstimmungen je Lauf
           VOTES_BUDGET_SEC: '150'   # eigenes Zeitfenster dafür, läuft direkt nach dem Bundestag
           VOTES_WAHLPERIODEN: '2'   # laufende + vorige; die vorige erst, wenn die laufende komplett ist
           POLLS_MAX: '80'           # so viele Abstimmungen der Wahlperiode insgesamt
@@ -185,12 +216,8 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_PER_RUN: '25'        # Vorgänge je Lauf
         run: |
-          MIN=$(date -u +%M)
-          if [ "$MIN" -lt 25 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            python fetch_directory.py
-          else
-            echo "Verzeichnis übersprungen (läuft im ersten Lauf jeder Stunde)"
-          fi
+          # Läuft jetzt in jedem Lauf – die Läufe liegen zwei Stunden auseinander.
+          python fetch_directory.py
 
       # Sicherheitsnetz: Konfliktmarker aus früheren Läufen entfernen und
       # kaputte Dateien gar nicht erst committen.
@@ -224,7 +251,7 @@ jobs:
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           WAHLPERIODE: '21'
-          PROTO_PER_RUN: '5'
+          PROTO_PER_RUN: ${{ github.event.schedule == '0 3 * * *' && '12' || '5' }}
           PROTO_BUDGET_MIN: '3'
         run: python3 fetch_protokolle.py
 
@@ -235,12 +262,12 @@ jobs:
       # plenum_cache.json. Bricht nie den uebrigen Ablauf ab.
       - name: Abstimmungen per Handzeichen (Plenarprotokolle)
         continue-on-error: true
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           WAHLPERIODE: '21'
-          PLENUM_PER_RUN: '6'        # Protokolle je Lauf
-          PLENUM_BUDGET_MIN: '3'
+          PLENUM_PER_RUN: ${{ github.event.schedule == '0 3 * * *' && '15' || '6' }}   # Protokolle je Lauf
+          PLENUM_BUDGET_MIN: ${{ github.event.schedule == '0 3 * * *' && '8' || '3' }}
           WAHLPERIODEN: '21,20,19'   # aktuelle zuerst; ältere erst, wenn die neuere vollständig ist
           # Koalition und Fraktionen stehen je Wahlperiode im Skript (WP_INFO).
           # Nach einem Regierungswechsel lässt sich die laufende übersteuern:
@@ -270,6 +297,7 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
+                   vorausschau_forschung.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
