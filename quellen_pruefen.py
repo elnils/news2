@@ -52,6 +52,7 @@ ERWARTUNG = {
     "^TNX": ("USD", "", (0.3, 10)), "EURUSD=X": ("USD", "", (0.8, 1.6)), "EURCNY=X": ("CNY", "", (5.5, 10)),
     "ZW=F": ("USX", "Wheat", (250, 1500)), "ZC=F": ("USX", "Corn", (200, 1000)),
     "CC=F": ("USD", "Cocoa", (1000, 20000)), "KC=F": ("USX", "Coffee", (60, 800)), "SB=F": ("USX", "Sugar", (5, 50)),
+    "OJ=F": ("USX", "Orange", (50, 900)),
     "SMH": ("USD", "Semiconductor", (50, 2000)), "HACK": ("USD", "Cyber", (10, 300)),
     "REMX": ("USD", "Rare Earth", (5, 300)), "JETS": ("USD", "Jets", (5, 200)),
     "EXV5.DE": ("EUR", "Automobiles", (10, 200)), "EXV7.DE": ("EUR", "Chemicals", (30, 400)),
@@ -148,17 +149,23 @@ def pegel_pruefen():
 
 
 def gdelt_pruefen():
-    url = "https://api.gdeltproject.org/api/v2/doc/doc?" + urlencode(
-        {"query": "oil price", "mode": "timelinevolraw", "timespan": "3d", "format": "json"})
-    try:
-        with urlopen(Request(url, headers=UA), timeout=TIMEOUT) as r:
-            j = json.loads(r.read().decode("utf-8", "replace"))
-        n = len(((j.get("timeline") or [{}])[0].get("data") or []))
-        return eintrag("GDELT DOC 2.0", "Nachrichtenvolumen", "GDELT", "ok" if n else "warnung",
-                       f"{n} Zeitpunkte geliefert" if n else "Antwort ohne Zeitreihe")
-    except (HTTPError, URLError, ValueError, TimeoutError) as e:
-        return eintrag("GDELT DOC 2.0", "Nachrichtenvolumen", "GDELT", "warnung",
-                       f"nicht erreichbar ({type(e).__name__}) – die Vorausschau läuft ohne zweites Signal")
+    pfad = "/api/v2/doc/doc?" + urlencode({"query": "oil price", "mode": "timelinevolraw", "timespan": "3d", "format": "json"})
+    grund = ""
+    for versuch, basis in enumerate(("https://api.gdeltproject.org", "http://api.gdeltproject.org")):
+        try:
+            if versuch:
+                time.sleep(6)                     # GDELT drosselt schnelle Folgeanfragen
+            with urlopen(Request(basis + pfad, headers=UA), timeout=35) as r:
+                j = json.loads(r.read().decode("utf-8", "replace"))
+            n = len(((j.get("timeline") or [{}])[0].get("data") or []))
+            return eintrag("GDELT DOC 2.0", "Nachrichtenvolumen", "GDELT", "ok" if n else "warnung",
+                           (f"{n} Zeitpunkte geliefert" if n else "Antwort ohne Zeitreihe") + (" (über http)" if versuch else ""))
+        except HTTPError as e:
+            grund = f"HTTP {e.code}"
+        except (URLError, ValueError, TimeoutError) as e:
+            grund = f"{type(e).__name__}: {getattr(e, 'reason', e)}"
+    return eintrag("GDELT DOC 2.0", "Nachrichtenvolumen", "GDELT", "warnung",
+                   f"nicht erreichbar ({grund}) – die Vorausschau läuft ohne zweites Signal")
 
 
 def main():

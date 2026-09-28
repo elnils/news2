@@ -34,6 +34,7 @@ GRUPPEN = {
         ("CC=F", "Kakao", "USD/t", 0),
         ("KC=F", "Kaffee", "USc/lb", 2),
         ("SB=F", "Zucker", "USc/lb", 2),
+        ("OJ=F", "Orangensaft", "USc/lb", 2),
     ],
     "Branchen und Themen": [
         ("SMH", "VanEck Semiconductor", "USD", 2),
@@ -83,6 +84,19 @@ def wert_holen(sym, name, unit, dec):
             "s": serien.get("1m") or serien.get("1j") or [], "series": serien}
 
 
+def aktueller_pegel():
+    for basis in ("https://www.pegelonline.wsv.de", "https://www.pegelstaende.de"):
+        try:
+            url = f"{basis}/webservices/rest-api/v2/stations/KAUB/W/currentmeasurement.json"
+            with urlopen(Request(url, headers=UA), timeout=TIMEOUT) as r:
+                v = json.loads(r.read().decode("utf-8", "replace")).get("value")
+            if isinstance(v, (int, float)) and 0 <= v <= 1500:
+                return v
+        except (HTTPError, URLError, ValueError, TimeoutError):
+            continue
+    return None
+
+
 def pegel_kaub():
     """Pegelonline: Wasserstand Kaub der letzten 30 Tage (Viertelstundenwerte).
     Die Schnittstelle ist auch unter pegelstaende.de erreichbar – die zweite
@@ -98,10 +112,17 @@ def pegel_kaub():
             fehler = e
     if daten is None:
         raise fehler or URLError("Pegelonline nicht erreichbar")
-    werte = [(d.get("timestamp", ""), d.get("value")) for d in daten if d.get("value") is not None]
+    # Nach Zeit sortieren und Unplausibles verwerfen: Einzelne Messungen
+    # kommen als Platzhalter (etwa -2) – ein Pegel unter 0 oder über 15 m
+    # ist am Rhein bei Kaub kein echter Wert.
+    werte = sorted((d.get("timestamp", ""), d.get("value")) for d in daten
+                   if isinstance(d.get("value"), (int, float)) and 0 <= d.get("value") <= 1500)
     if not werte:
         return None
     alle = [v for _, v in werte]
+    aktuell = aktueller_pegel()
+    if aktuell is not None:
+        alle.append(aktuell)
     tage = {}
     for ts, v in werte:
         tage.setdefault(ts[:10], []).append(v)

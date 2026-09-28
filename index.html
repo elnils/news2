@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v49</title>
+<title>Presseschau – Entwurf v50</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -397,6 +397,9 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 @media (max-width:560px){.wk-zwei{grid-template-columns:1fr}}
 .wk-folgen{margin-top:8px;font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px}
 .wk-quellen{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
+.wk-quellen>summary,.auf>summary{cursor:pointer;color:var(--blue);font-size:var(--fs-sm);padding:2px 0;list-style:none}
+.wk-quellen>summary::before,.auf>summary::before{content:'▸ ';display:inline-block;transition:transform .15s}
+.wk-quellen[open]>summary::before,.auf[open]>summary::before{transform:rotate(90deg)}
 .trend2{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
 .trend2:last-child{border-bottom:0}
 .trend-auf{background:var(--surface2);border-bottom:1px solid var(--border);padding-bottom:4px}
@@ -756,7 +759,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v49</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v50</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -2092,6 +2095,7 @@ const begriffSchluessel=t=>norm(t).split(/\s+/).map(w=>w.length>=6?w.replace(/(e
 const hausKern=src=>norm(src).split(/[\s\-–|:.]+/)[0]||norm(src);
 function begriffTauglich(t){
   const v=String(t||'').trim();
+  if(!/\s/.test(v)&&/^[a-zäöüß]/.test(v)&&!/^(eu|us|uk|un)$/.test(v))return false;
   if(v.length<4||v.length>32)return false;
   if(v.split(/\s+/).length>3)return false;
   if(BEGRIFF_MUELL.test(v))return false;
@@ -2115,10 +2119,20 @@ function trendRows(mode,von,bis){
            Trump", "Staatsbesuch Xi Jinpings"), gehört er zu "Personen & Orte"
            und nicht zu den Sachfragen. */
         const ents=(a.ents||[]).map(e=>norm(e)).filter(e=>e.length>=4);
+        const volltext=(a.title||'')+' '+(a.desc||'');
         [...new Set(a.terms.map(t=>String(t).trim()))].filter(t=>t.length>=5&&begriffTauglich(t)).forEach(t=>{
           const low=norm(t);
           if(ents.some(e=>low.includes(e)))return;
-          add('t:'+begriffSchluessel(t),t.charAt(0).toUpperCase()+t.slice(1),a);
+          /* Ohne Hauptwort ("wirtschaftlichen", "ausgesperrte") ist ein
+             Begriff ein Fragment. Das folgende Hauptwort aus Schlagzeile oder
+             Vorspann wird ergänzt; findet sich keins, fällt er weg. */
+          let label=t;
+          if(!/(^|\s)[A-ZÄÖÜ]/.test(t)||/^[a-zäöüß]+(en|er|es|em|e)$/.test(t)){
+            const m=volltext.match(new RegExp(escRe(t)+'\\s+([A-ZÄÖÜ][a-zäöüß-]{3,})','i'));
+            if(!m)return;
+            label=t+' '+m[1];
+          }
+          add('t:'+begriffSchluessel(label),label.charAt(0).toUpperCase()+label.slice(1),a);
         });
       }
       else{const txt=a._txt||(a._txt=norm(a.title+' '+a.desc));ISSUES.forEach(i=>{if(i.kw.some(k=>txt.includes(k)))add(i.id,i.name,a)})}}
@@ -2536,15 +2550,20 @@ function renderVotes(){
   const wps=[...new Set(VOTES.map(v=>v.wp).filter(Boolean))].sort((a,b)=>b-a);
   window.ABLIST=list.map(v=>v.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Abstimmungen im Bundestag</h2><span class="cnt">${list.length}${VOTES.length!==list.length?' von '+VOTES.length:''}</span><div class="tools">${lsearch('ab','Abstimmungen durchsuchen …')}${copyBtn(ABLIST,'Abstimmungen')}</div></div>`;
-  h+=`<div class="filters"><div class="chips" role="group" aria-label="Art" style="margin-bottom:6px">${[['all','Alle'],['nam','Namentlich'],['hand','Per Handzeichen']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteArt||'all')===k}" onclick="S.voteArt='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>(k==='nam')===!!v.abstimmung.namentlich).length}</span>`}</button>`).join('')}</div>`;
-  if(wps.length>1)h+=`<div class="chips" role="group" aria-label="Wahlperiode" style="margin-bottom:6px"><button class="chip" aria-pressed="${!S.voteWp||S.voteWp==='all'}" onclick="S.voteWp='all';render()">Alle Wahlperioden</button>${wps.map(w=>`<button class="chip" aria-pressed="${String(S.voteWp)===String(w)}" onclick="S.voteWp='${w}';render()">${w}. WP <span class="n">${VOTES.filter(v=>v.wp===w).length}</span></button>`).join('')}</div>`;
-  h+=`<div class="chips" role="group" aria-label="Ergebnis">${[['all','Alle'],['angenommen','Angenommen'],['abgelehnt','Abgelehnt']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteErg||'all')===k}" onclick="S.voteErg='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>v.ergebnis===k).length}</span>`}</button>`).join('')}</div></div>`;
+  h+=`<div class="filters"><div class="chips" role="group" aria-label="Art" style="margin-bottom:8px">${[['all','Alle'],['nam','Namentlich'],['hand','Per Handzeichen']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteArt||'all')===k}" onclick="S.voteArt='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>(k==='nam')===!!v.abstimmung.namentlich).length}</span>`}</button>`).join('')}</div>`;
+  /* Wahlperiode und Ergebnis als Auswahlfelder in einer Zeile – vorher drei
+     Chipzeilen übereinander. */
+  h+=`<div class="bar" style="gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    ${wps.length>1?`<select class="sel" aria-label="Wahlperiode" onchange="S.voteWp=this.value;render()" style="width:auto"><option value="all">Alle Wahlperioden</option>${wps.map(w=>`<option value="${w}" ${String(S.voteWp)===String(w)?'selected':''}>${w}. Wahlperiode (${VOTES.filter(v=>v.wp===w).length})</option>`).join('')}</select>`:''}
+    <select class="sel" aria-label="Ergebnis" onchange="S.voteErg=this.value;render()" style="width:auto">${[['all','Alle Ergebnisse'],['angenommen','Angenommen'],['abgelehnt','Abgelehnt']].map(([k,l])=>`<option value="${k}" ${(S.voteErg||'all')===k?'selected':''}>${l}${k==='all'?'':' ('+VOTES.filter(v=>v.ergebnis===k).length+')'}</option>`).join('')}</select>
+  </div></div>`;
   h+=`<div class="box">${list.length?list.slice(0,150).map(v=>{
     const z=v.abstimmung,ab=z.ja+z.nein+z.enthalten||1;
     return `<div class="proc" role="button" tabindex="0" style="cursor:pointer" onclick="openReader('${v.id}',ABLIST)" onkeydown="rowKey(event,'${v.id}')">
-      <div class="bar"><b>${esc(v.title)}</b><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span>${v.wp&&v.wp!==WP_AKTUELL?`<span class="pill grey">${v.wp}. WP</span>`:''}${v.thema?`<span class="pill grey">${esc(v.thema)}</span>`:''}<span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
+      <div><b style="font-size:var(--fs-md);line-height:1.3">${esc(v.title)}</b></div>
+      <div class="meta" style="margin-top:4px"><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span><span>${[vorlagenArt(v),v.thema&&!/beschlussempfehlung/i.test(v.thema)?v.thema:'',z.rechnerisch?'Handzeichen':'namentlich',v.wp&&v.wp!==WP_AKTUELL?v.wp+'. WP':''].filter(Boolean).map(esc).join(' · ')}</span><span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
       <div class="sitz" style="padding:6px 0 0;border:0"><div class="balken" style="height:12px">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/ab*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte"></span></div></div>
-      <div class="meta" style="margin-top:6px">${z.rechnerisch?`<span class="pill grey">Handzeichen</span>${(z.seiten.dafuer||[]).length?`<span>dafür: ${esc(z.seiten.dafuer.join(', '))}</span>`:''}${(z.seiten.dagegen||[]).length?`<span>dagegen: ${esc(z.seiten.dagegen.join(', '))}</span>`:''}${(z.seiten.enthalten||[]).length?`<span>Enthaltung: ${esc(z.seiten.enthalten.join(', '))}</span>`:''}`:`<span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}`}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
+      <div class="meta" style="margin-top:6px">${z.rechnerisch?`${(z.seiten.dafuer||[]).length?`<span>dafür: ${esc(z.seiten.dafuer.join(', '))}</span>`:''}${(z.seiten.dagegen||[]).length?`<span>dagegen: ${esc(z.seiten.dagegen.join(', '))}</span>`:''}${(z.seiten.enthalten||[]).length?`<span>Enthaltung: ${esc(z.seiten.enthalten.join(', '))}</span>`:''}`:`<span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}`}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
   h+=`<p class="note" style="margin-top:10px">Namentliche Abstimmungen: abgeordnetenwatch.de, mit jeder einzelnen Stimme. Abstimmungen per Handzeichen: aus den Plenarprotokollen gelesen – dort steht nur das Votum der Fraktionen; die Stimmenzahlen sind aus den Fraktionsstärken hochgerechnet.</p>`;
   return h;
 }
@@ -2669,7 +2688,7 @@ function abstimmungHTML(ab){
         const mehrheit=y.ja>=y.nein&&y.ja>=y.enthalten?'ja':y.nein>=y.enthalten?'nein':'enthalten';
         return `<div class="abst"><span style="display:flex;align-items:center;gap:6px"><i class="stimme" style="background:${fraktionsFarbe(name)}"></i>${esc(name)}</span>${stimmBalken(y,g2)}<span class="wert">${stimmPunkt(mehrheit)} ${ab.rechnerisch?STIMM_LABEL[mehrheit]:`${y.ja}/${y.enthalten}/${y.nein}`}</span></div>`}).join('')}
         <div class="note" style="margin-top:6px">${ab.rechnerisch?'Je Fraktion das Votum laut Plenarprotokoll.':'Je Fraktion: Zustimmungen / Enthaltungen / Ablehnungen.'}</div></div>`:''}
-      ${ab.beschluss?`<div class="note" style="margin-top:10px"><b>Beschlusstext</b><br>${esc(ab.beschluss)}</div>`:''}
+      ${ab.beschluss?`<details class="auf" style="margin-top:10px"><summary>Wortlaut im Protokoll</summary><div class="note" style="margin-top:4px">${esc(beschlussKurz(ab.beschluss))}</div></details>`:''}
     </div>`;
 }
 /* Reden einer Person im Plenum – mit dem, worüber danach abgestimmt
@@ -2690,14 +2709,14 @@ function redenHTML(x){
   const r=x.reden||[];
   if(!r.length)return '';
   return `<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Reden im Plenum</h2><span class="cnt">${r.length}</span></div>
-    <div class="box">${r.slice(0,8).map(e=>{
+    <div class="box">${(()=>{const zeilen=r.slice(0,8).map(e=>{
       /* Fragen in Befragung und Fragestunde führen zu keiner Abstimmung –
          dort keine Verknüpfung, auch wenn im selben Punkt später abgestimmt
          wurde. Gleiche Abstimmungsergebnisse stehen einmal da. */
       const frage=/frage|intervention/i.test(e.art||'');
       const folgen=frage?[]:(e.abstimmungen||[]).map(id=>ITEMS[id]).filter(Boolean);
       const chips=[];const gesehen=new Set();
-      folgen.forEach(v=>{const t=(v.title||'').replace(/^(Gesetz|Antrag|Beschlussempfehlung)\s+(zur|zum|zu|der|des|über)\s+/i,'');
+      folgen.forEach(v=>{const t=(v.title||'').replace(/^Abstimmung zu /i,'');
         const l=`${v.thema?v.thema+': ':''}${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}`;const k=l+'|'+t;
         if(gesehen.has(k))return;gesehen.add(k);chips.push({v,l,t})});
       const link=e.link||protokollLink(e.sitzung);
@@ -2706,8 +2725,18 @@ function redenHTML(x){
         <div class="meta"><span class="pill ${frage?'grey':'blue'}">${esc(art)}</span>${e.top?`<span>${esc(e.top)}</span>`:''}<span>${esc(e.datum||'')}</span>${e.zeichen?`<span>${Math.max(1,Math.round(e.zeichen/900))} Min.</span>`:''}${link?`<a href="${esc(link)}" target="_blank" rel="noopener">Protokoll ${esc(e.sitzung||'')}</a>`:''}</div>
         ${e.betreff?`<div class="ttl" style="margin-top:4px">${esc(e.betreff)}</div>`:''}
         ${e.auszug?`<div class="note" style="margin-top:4px;line-height:1.45">„${esc(e.auszug)}“</div>`:''}
-        ${chips.length?`<div class="meta" style="margin-top:6px">${chips.map(({v,l,t})=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs);text-align:left" onclick="openReader('${v.id}')" title="${esc(v.title||'')}">${esc(l)}${chips.length>1&&t?` · ${esc(t.slice(0,40))}${t.length>40?'…':''}`:''}</button>`).join('')}</div>`:''}
-      </div>`}).join('')}</div>
+        ${chips.length?(()=>{
+          /* Bis zu zwei Abstimmungen als Knopf; mehr (etwa bei Sammel-
+             abstimmungen ohne Aussprache) zusammengefasst und aufklappbar. */
+          const knopf=({v,l,t})=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs);text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="openReader('${v.id}')" title="${esc(v.title||'')}">${esc(l)}${t?` · ${esc(t.slice(0,48))}${t.length>48?'…':''}`:''}</button>`;
+          if(chips.length<=2)return `<div class="meta" style="margin-top:6px">${chips.map(knopf).join('')}</div>`;
+          const an=chips.filter(c=>c.v.ergebnis==='angenommen').length;
+          return `<details class="auf" style="margin-top:6px"><summary>Danach abgestimmt: ${chips.length} Vorlagen (${an} angenommen, ${chips.length-an} abgelehnt)</summary><div class="meta" style="margin-top:4px;flex-direction:column;align-items:flex-start">${chips.map(knopf).join('')}</div></details>`;
+        })():''}
+      </div>`});
+      /* Die ersten drei Reden offen, weitere hinter "weitere Reden". */
+      return zeilen.slice(0,3).join('')+(zeilen.length>3?`<details class="auf" style="padding:6px 14px"><summary>${zeilen.length-3} weitere Reden</summary>${zeilen.slice(3).join('')}</details>`:'');
+    })()}</div>
     ${r.length>8?`<div class="note" style="margin-top:6px">${r.length-8} weitere Reden in den letzten Monaten.</div>`:''}`;
 }
 /* Die Debatte vor einer Abstimmung: wer gesprochen hat, in Reihenfolge. */
@@ -2747,10 +2776,12 @@ function stimmverhaltenHTML(x){
         <div class="grow"><b style="font-size:var(--fs-md)">${teilgenommen} von ${v.length}</b><div class="note">Stimme abgegeben</div>
           <div class="fr" style="margin-top:6px">${['ja','enthalten','nein','abwesend'].filter(k=>z[k]).map(k=>`<span><i style="background:${STIMM_FARBE[k]};width:9px;height:9px;border-radius:3px;display:inline-block"></i> <b>${z[k]}</b> ${STIMM_LABEL[k]}</span>`).join(' ')}</div></div>
       </div>
-      <div class="box list" style="margin-top:10px">${v.slice(0,15).map(e=>{const a=stimmArt(e.entscheidung||e.vote||e.stimme);
+      <details class="auf" style="margin-top:10px"><summary>Einzelne Abstimmungen anzeigen</summary>
+      <div class="box list" style="margin-top:6px">${v.slice(0,15).map(e=>{const a=stimmArt(e.entscheidung||e.vote||e.stimme);
         return `<div class="rul" style="cursor:default"><div><div class="ttl">${esc(e.titel||e.title)}</div>
           <div class="meta">${stimmPunkt(a)}<span>${STIMM_LABEL[a]}</span>${e.thema?`<span class="pill grey">${esc(e.thema)}</span>`:''}${e.datum?`<span>${esc(e.datum)}</span>`:''}${e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener">Öffnen</a>`:''}</div></div><span></span></div>`}).join('')}</div>
       ${v.length>15?`<div class="note" style="margin-top:6px">${v.length-15} weitere Abstimmungen im Bestand.</div>`:''}
+      </details>
     </div>`;
 }
 function parlGruppe(x){const p=String(x.parl||'').toLowerCase();const o=norm(x.org||'');
@@ -3458,7 +3489,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v49 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v50 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -4065,6 +4096,37 @@ function redenZuordnen(j){
   PEOPLE.forEach(p=>{if(p.reden)p.reden.sort((a,b)=>String(b.datum).localeCompare(String(a.datum)))});
   LOADLOG.push({f:'Reden im Plenum',ok:true,n});
 }
+/* Wortlaut ab dem Beginn der Abstimmung – der gespeicherte Ausschnitt
+   beginnt sonst mitten im Satz ("Abgeordneter und der Fraktion …"). */
+function beschlussKurz(t){
+  const s=String(t||'').replace(/\s+/g,' ').trim();
+  const m=s.search(/(Wir kommen (jetzt |nun )?zur Abstimmung|Abstimmung über|Ich bitte diejenigen|Wer stimmt|Dritte Beratung)/);
+  if(m>0)return s.slice(m);
+  const p=s.search(/[.?!]\s+[A-ZÄÖÜ]/);
+  return p>0&&p<200?s.slice(p+2):s;
+}
+/* Titel der Vorlage aus dem Protokolltext: "Entwurfs eines Gesetzes zur …",
+   "Antrag der Fraktion … – Stärkung der …", "Antrag … mit dem Titel „…“". */
+function vorlagenTitel(t){
+  const s=String(t||'').replace(/\s+/g,' ');
+  let m=s.match(/Entwurfs? eines (Gesetzes (?:zur|zum|über|für|zu|der|des) [^.;]{8,160})/i);
+  if(m)return m[1].replace(/^Gesetzes/,'Gesetz').replace(/\s+(Drucksache|auf Drucksache).*$/i,'').trim();
+  m=s.match(/mit dem Titel\s*[„"»]([^“"«]{8,160})/i);
+  if(m)return m[1].trim();
+  m=s.match(/(?:Antrags?|Entschließungsantrags?)[^–]{0,260}?Fraktion(?:en)?\s+(?:der\s+|von\s+)?[A-ZÄÖÜ][\w\/ .-]{0,40}?\s+[–-]\s+([A-ZÄÖÜ][^.;]{8,160})/);
+  if(m)return m[1].replace(/\s+(Drucksache|auf Drucksache).*$/i,'').trim();
+  return '';
+}
+/* Welche Art von Vorlage? Steht in der Liste statt drei Chips. */
+function vorlagenArt(v){
+  const t=((v.title||'')+' '+((v.abstimmung||{}).beschluss||'')).toLowerCase();
+  if(/entschließungsantrag/.test(t))return 'Entschließungsantrag';
+  if(/gesetz/.test(v.title||'')||/entwurfs? eines gesetzes|gesetzentwurf/.test(t))return 'Gesetz';
+  if(/verordnung/.test(t))return 'Verordnung';
+  if(/antrag/.test(t))return 'Antrag';
+  if(/beschlussempfehlung|sammelübersicht/.test(t))return 'Beschlussempfehlung';
+  return '';
+}
 function mapPlenum(j){
   const roh=(j&&j.abstimmungen)||[];
   return roh.map((v,i)=>{
@@ -4074,6 +4136,14 @@ function mapPlenum(j){
       (v[seite]||[]).forEach(f=>{const n=sitzeDerFraktion(f,v.wahlperiode,v.datum);fr[f]=fr[f]||{ja:0,nein:0,enthalten:0,abwesend:0};fr[f][art]+=n;z[art]+=n});
     });
     let titel=String(v.gegenstand||'').replace(/^(den|die|das)\s+/i,'').replace(/^von der Bundesregierung eingebrachten\s+/i,'');
+    /* "Abstimmung zu Drucksache …" sagt niemandem etwas. Erst im Protokoll-
+       text nach dem Titel der Vorlage suchen, dann beim zugehörigen
+       Gesetzgebungsvorgang (über die Drucksache). */
+    if(!titel||/^abstimmung\b/i.test(titel)||/^beschlussempfehlung des ausschusses/i.test(titel)){
+      const ausText=vorlagenTitel(v.text||'');
+      const vf=(v.drucksachen||[]).length?PROCS.find(p=>(p._drs||[]).some(d=>v.drucksachen.includes(d))):null;
+      titel=ausText||(vf&&vf.title)||titel;
+    }
     /* "Antrag der Fraktion X auf Drucksache 21/1234 mit dem Titel „…“"
        → "… (Antrag der X)". Der Titel des Papiers ist, was man
        wiedererkennt. */
@@ -4614,7 +4684,7 @@ function renderVorausschau(){
         :`<div class="hit"><span class="meta"><span class="src">${esc(x.quelle||'')}</span><span>${esc(x.datum||'')}</span></span><span class="ttl">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.titel)}</a>`:esc(x.titel)}</span></div>`}).join('');
     const sg=k.signal||{},kl=k.klassifikation;
     return `<div class="box wk-karte">
-      <div class="meta"><span class="pill grey">${esc(k.bereich)}</span><span class="pill ${k.sicherheit==='hoch'?'green':k.sicherheit==='niedrig'?'amber':'blue'}">Prüfung: ${esc(k.sicherheit)}</span>${k.fortgeschrieben_seit?`<span class="note">seit ${esc(String(k.fortgeschrieben_seit).split('-').reverse().slice(0,2).join('.'))}. beobachtet</span>`:''}<span class="note">${esc(k.kb_id)}</span></div>
+      <div class="meta"><span class="pill grey">${esc(k.bereich)}</span>${k.vorlaeufig?'<span class="pill amber" title="Automatisch aufgenommen, weil an mehreren Tagen vorgeschlagen – bitte in vorausschau_basis.json prüfen">vorläufig</span>':''}<span class="pill ${k.sicherheit==='hoch'?'green':k.sicherheit==='niedrig'?'amber':'blue'}">Prüfung: ${esc(k.sicherheit)}</span>${k.fortgeschrieben_seit?`<span class="note">seit ${esc(String(k.fortgeschrieben_seit).split('-').reverse().slice(0,2).join('.'))}. beobachtet</span>`:''}<span class="note">${esc(k.kb_id)}</span></div>
       <h3 class="wk-titel">${esc(k.titel)}</h3>
       ${kl?`<div class="vs-klasse">${[['Art',kl.art],['Ziel',kl.ziel],['Zuschreibung',kl.zuschreibung],['Akteur',kl.akteur]].filter(x=>x[1]).map(([n,v])=>`<span><span class="note">${n}</span> <b>${esc(v)}</b></span>`).join('')}</div>`:''}
       <ol class="wk-kette">
@@ -4631,7 +4701,7 @@ function renderVorausschau(){
         ${(k.gegenkraefte||[]).length?`<div><b>Gegenkräfte</b><ul>${k.gegenkraefte.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}</div>`:''}
       ${(k.folgen||[]).length?`<div class="wk-folgen"><b>Folgen zweiter Ordnung</b>${k.folgen.map(f=>`<div><span class="pill grey">${esc(f.id)}</span> ${esc(f.titel)}${f.text?` – <span class="note">${esc(f.text)}</span>`:''}</div>`).join('')}</div>`:''}
       <div class="note" style="margin-top:8px">Signal: ${sg.haeuser||0} Häuser · ${sg.meldungen||0} Meldungen, ${sg.jung||0} aus den letzten 24 Stunden${sg.gdelt&&sg.gdelt.faktor?` · weltweit ${sg.gdelt.faktor>=1?'×'+fmtNum(sg.gdelt.faktor,1):'rückläufig'} (GDELT)`:''}${(k.belege||[]).length?` · Belege: ${k.belege.map(kurzLit).map(esc).join('; ')}`:''}</div>
-      ${q?`<div class="wk-quellen">${q}</div>`:''}
+      ${q?`<details class="wk-quellen"><summary>${(k.quellen||[]).length} ${(k.quellen||[]).length===1?'Meldung':'Meldungen'} dazu</summary>${q}</details>`:''}
       <div class="bar" style="margin-top:8px"><button class="btn sm quiet" onclick="wkMonitor('${esc(k.kb_id)}')">Als Monitor beobachten</button></div>
     </div>`}catch(e){console.error('Einschätzung',k&&k.kb_id,e);return `<div class="box wk-karte"><div class="note">Einschätzung ${esc((k&&k.kb_id)||'')} ließ sich nicht darstellen (${esc(String(e.message||e))}).</div></div>`}}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
   if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
@@ -4646,8 +4716,9 @@ function renderVorausschau(){
       <div class="list" style="margin-top:8px">${(B.liste||[]).slice(0,12).map(k=>`<div class="rul" style="cursor:default"><div><div class="ttl">${esc(k.titel)}</div><div class="meta"><span class="pill ${k.ergebnis==='eingetreten'?'green':k.ergebnis==='gegenläufig'?'red':'grey'}">${esc(k.ergebnis)}</span>${(k.wahrscheinlichkeit||{}).p!=null?`<span>geschätzt ${Math.round(k.wahrscheinlichkeit.p*100)} %</span>`:''}<span>${esc((k.messpunkt||{}).name||'')}</span>${k.veraenderung!=null?`<span>${k.veraenderung>=0?'+':''}${fmtNum(k.veraenderung,2)}${(k.messpunkt||{}).einheit==='%'?' Pkt.':' %'}</span>`:''}<span>${esc(k.geprueft_am||'')}</span></div></div><span></span></div>`).join('')}</div>
     </div>`:`<p class="note">Noch keine Einschätzung hat ihr Prüfdatum erreicht. Die Bilanz füllt sich mit der Zeit und zeigt dann, welche Zusammenhänge tragen und ob die Wahrscheinlichkeiten stimmen.</p>`;
   if((W.vorschlaege||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Vorschläge für neue Zusammenhänge</h2><span class="cnt">ungeprüft</span></div>
-    <p class="note" style="margin-bottom:6px">Breit berichtete Themen, die kein Eintrag der Wissensbasis abdeckt. Werden erst nach deiner Prüfung in vorausschau_basis.json übernommen.</p>
-    <div class="box">${W.vorschlaege.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="ttl">${esc(v.ausloeser)} → ${esc(v.wirkung)}</div><div class="note">${esc(v.mechanismus||'')}${v.zeitraum?' · '+esc(v.zeitraum):''}${v.messpunkt?' · Messpunkt '+esc(v.messpunkt)+' '+esc(v.richtung||''):''}</div>${v.begruendung?`<div class="note">${esc(v.begruendung)}</div>`:''}</div>`).join('')}</div>`;
+    <p class="note" style="margin-bottom:6px">Breit berichtete Themen, die kein Eintrag der Wissensbasis abdeckt. Taucht ein Vorschlag an drei Tagen binnen zwei Wochen auf, wird er vorläufig aufgenommen – mit schwacher Wirkung und gekennzeichnet. Bestätigen, schärfen oder löschen in vorausschau_basis.json.</p>
+    <div class="box">${W.vorschlaege.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="ttl">${esc(v.ausloeser)} → ${esc(v.wirkung)}${v.gesehen_an_tagen?` <span class="note">· an ${v.gesehen_an_tagen} von 3 nötigen Tagen</span>`:''}</div><div class="note">${esc(v.mechanismus||'')}${v.zeitraum?' · '+esc(v.zeitraum):''}${v.messpunkt?' · Messpunkt '+esc(v.messpunkt)+' '+esc(v.richtung||''):''}</div>${v.begruendung?`<div class="note">${esc(v.begruendung)}</div>`:''}</div>`).join('')}</div>`;
+  if((W.neu_aufgenommen||[]).length)b+=`<p class="note" style="margin-top:12px"><b>Heute vorläufig aufgenommen:</b> ${W.neu_aufgenommen.map(e=>`${esc(e.id)} ${esc(e.titel)}`).join(' · ')}</p>`;
   if((W.verworfen||[]).length)b+=`<p class="note" style="margin-top:12px"><b>Verworfen:</b> ${W.verworfen.map(v=>`${esc(v.id)} ${esc(v.titel)}${v.grund?` (${esc(v.grund)})`:''}`).join(' · ')}</p>`;
   /* Datenquellen: was die Quellenprüfung gefunden hat */
   const QS=W.quellen_status||{};const z=QS.zusammenfassung||(typeof QS.ok==='number'?QS:null);
@@ -4657,7 +4728,7 @@ function renderVorausschau(){
   const nachB={};(W.basis||[]).forEach(e=>{const n=(W.bereiche||{})[e.id[0]]||'Weitere';(nachB[n]=nachB[n]||[]).push(e)});
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Wissensbasis</h2><span class="cnt">${(W.basis||[]).length} Zusammenhänge</span><div class="tools"><button class="btn sm quiet" aria-expanded="${!!auf}" onclick="S.wkBasisAuf=${auf?'false':'true'};render()">${auf?'Zuklappen':'Aufklappen'}</button></div></div>`;
   if(auf)b+=Object.entries(nachB).map(([n,l])=>`<div class="box" style="margin-bottom:8px"><div class="desk-hd" style="padding:10px 14px 4px"><h3>${esc(n)}</h3></div>${l.map(e=>{const mp=e.messpunkt;const mt=!mp?'kein Kurs – offene Folgen':(mp.wahl?mp.wahl.join(' / '):((wkKurs(mp.sym)||{}).n||mp.sym))+(mp.richtung===1?' ↑':mp.richtung===-1?' ↓':' ↕')+` in ${mp.tage} Handelstagen`;
-      return `<div class="rul" style="cursor:default;display:block;padding:8px 14px"><div class="ttl"><span class="pill grey">${esc(e.id)}</span> ${esc(e.ausloeser)}</div><div class="note">${esc(e.wirkung)} – ${esc(e.mechanismus)} · ${esc(e.zeitraum)}${e.effekt?` · Stärke ${esc(e.effekt)}`:''}</div><div class="note">Messpunkt: ${esc(mt)} · Gegenkräfte: ${esc(e.gegenkraefte||'')}${(e.belege||[]).length?' · '+e.belege.map(kurzLit).map(esc).join('; '):''}</div>${(e.folgen_offen||[]).length?`<div class="note">Mögliche Folgen: ${e.folgen_offen.map(esc).join(' · ')}</div>`:''}</div>`}).join('')}</div>`).join('');
+      return `<div class="rul" style="cursor:default;display:block;padding:8px 14px"><div class="ttl"><span class="pill grey">${esc(e.id)}</span>${e.vorlaeufig?` <span class="pill amber">vorläufig seit ${esc(e.aufgenommen_am||'')}</span>`:''} ${esc(e.ausloeser)}</div><div class="note">${esc(e.wirkung)} – ${esc(e.mechanismus)} · ${esc(e.zeitraum)}${e.effekt?` · Stärke ${esc(e.effekt)}`:''}</div><div class="note">Messpunkt: ${esc(mt)} · Gegenkräfte: ${esc(e.gegenkraefte||'')}${(e.belege||[]).length?' · '+e.belege.map(kurzLit).map(esc).join('; '):''}</div>${(e.folgen_offen||[]).length?`<div class="note">Mögliche Folgen: ${e.folgen_offen.map(esc).join(' · ')}</div>`:''}</div>`}).join('')}</div>`).join('');
   const litB={};(W.literatur||[]).forEach(l=>{(litB[l.bereich]=litB[l.bereich]||[]).push(l)});
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Literatur und Werkzeuge</h2><span class="cnt">${(W.literatur||[]).length}</span></div>
     <div class="box" style="padding:10px 14px">${Object.entries(litB).map(([n,l])=>`<div style="margin-bottom:10px"><b style="font-size:var(--fs-sm)">${esc(n)}</b>${l.map(x=>`<div class="note" style="margin-top:3px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.text)}</a>${x.wofuer?` – ${esc(x.wofuer)}`:''}</div>`).join('')}</div>`).join('')}

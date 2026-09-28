@@ -65,7 +65,8 @@ BASIS = "vorausschau_basis.json"
 ALT = {"vorausschau_basis.json": "wirkungsketten_basis.json",
        "vorausschau_archiv.json": "wirkungsketten_archiv.json"}   # Übernahme aus der Vorversion
 QUELLEN_STATUS = "quellen_status.json"
-BASIS_VERSION = 2
+BASIS_VERSION = 3
+KANDIDATEN = "vorausschau_kandidaten.json"
 MAX_KETTEN = int(os.environ.get("VS_MAX", "10"))
 STUNDE = int(os.environ.get("VS_STUNDE", "7"))
 FORCE = os.environ.get("VS_FORCE", "") == "1"
@@ -96,7 +97,7 @@ except Exception:                                   # pragma: no cover
 # fuehrt_zu   Zusammenhänge, die als Folge zweiter Ordnung genannt werden dürfen
 # gdelt       englische Suchanfrage für die weltweite Berichterstattung
 # ─────────────────────────────────────────────────────────────
-BEREICHE = {"E": "Energie und Geopolitik", "K": "Konflikte und Sicherheit", "H": "Handel und Lieferketten",
+BEREICHE = {"V": "Vorläufig aufgenommen", "E": "Energie und Geopolitik", "K": "Konflikte und Sicherheit", "H": "Handel und Lieferketten",
             "L": "Landwirtschaft und Lebensmittel", "G": "Geldpolitik und Konjunktur",
             "T": "Technologie, Energiewende, Natur, Gesundheit", "S": "Hybride Bedrohungen"}
 
@@ -457,6 +458,76 @@ DEFAULT_BASIS = [
      "messpunkt": {"sym": "EXH5.DE", "richtung": -1, "tage": 10},
      "gegenkraefte": "Rückversicherung", "belege": ["dell2014"], "fuehrt_zu": [],
      "gdelt": "(wildfire OR storm OR flood) (damage OR insured losses) billion"},
+    # ── Verbraucherpreise und Vorleistungen (Version 3) ──
+    {"id": "L8", "titel": "Milch- und Butterpreise bewegen sich",
+     "ausloeser": "Erzeuger- oder Abgabepreise für Milch, Butter oder Käse ändern sich deutlich",
+     "stichworte": [r"milch|milk|butter|käse|cheese|molkerei|dairy|milchbauern",
+                    r"preis|price|teurer|billiger|erzeugerpreis|abgabepreis|kontrakt|steig|fällt|sinkt|senk|erhöh"],
+     "wirkung": "Preise für Milchprodukte im Handel folgen", "mechanismus": "Molkereien geben Rohstoffpreise über Kontrakte an den Handel weiter",
+     "zeitraum": "1–3 Monate", "messpunkt": None, "effekt": "mittel",
+     "gegenkraefte": "langfristige Kontrakte, Wettbewerb im Handel", "belege": ["ferrucci2012"], "fuehrt_zu": ["G1"],
+     "folgen_offen": ["Verbraucherpreise für Butter, Käse und Milch ändern sich nach ein bis drei Monaten",
+                      "Einkommen der Milchbauern ändern sich; Proteste oder Hofaufgaben",
+                      "Handelsketten verhandeln Kontrakte neu",
+                      "Nahrungsmittelinflation verändert sich"],
+     "gdelt": "(milk OR butter OR dairy) prices Europe"},
+    {"id": "L9", "titel": "Düngemittel werden knapp oder teuer",
+     "ausloeser": "Knappheit oder starker Preisanstieg bei Düngemitteln",
+     "stichworte": [r"dünger|düngemittel|fertili[sz]er|ammoniak|ammonia|harnstoff|urea|stickstoff",
+                    r"preis|price|teurer|knapp|shortage|produktion|stopp|gedrosselt|drossel|exportverbot"],
+     "wirkung": "Höhere Kosten der Landwirte, später geringere Erträge und höhere Lebensmittelpreise",
+     "mechanismus": "Dünger entsteht aus Erdgas; teurer Dünger wird sparsamer eingesetzt", "zeitraum": "eine Saison",
+     "messpunkt": {"sym": "ZC=F", "richtung": 1, "tage": 40}, "effekt": "schwach",
+     "gegenkraefte": "Lagerbestände, sinkender Gaspreis", "belege": [], "fuehrt_zu": ["L1"],
+     "folgen_offen": ["Landwirte düngen weniger, Erträge der nächsten Ernte sinken",
+                      "Lebensmittelpreise steigen mit Verzögerung",
+                      "Forderungen nach Hilfen für die Landwirtschaft"],
+     "gdelt": "fertilizer (prices OR shortage)"},
+    {"id": "L10", "titel": "Orangenernte fällt schwach aus",
+     "ausloeser": "Schwache Orangenernte (Brasilien, Florida) durch Wetter oder Krankheit",
+     "stichworte": [r"orange|orangensaft|orange juice", r"ernte|harvest|hurrikan|hurricane|krankheit|greening|dürre|drought|frost"],
+     "wirkung": "Orangensaftpreis steigt; Saft wird im Handel teurer", "mechanismus": "wenige Anbaugebiete, lange Nachwachszeit der Bäume",
+     "zeitraum": "Wochen bis Monate", "messpunkt": {"sym": "OJ=F", "richtung": 1, "tage": 20}, "effekt": "mittel",
+     "gegenkraefte": "Nachfragerückgang", "belege": [], "fuehrt_zu": [],
+     "gdelt": "orange (harvest OR crop) (Brazil OR Florida)"},
+    {"id": "L11", "titel": "Olivenöl wird knapp",
+     "ausloeser": "Schwache Olivenernte im Mittelmeerraum",
+     "stichworte": [r"olive|olivenöl|olive oil", r"ernte|harvest|dürre|drought|hitze|heat|preis|price"],
+     "wirkung": "Olivenöl wird im Handel teurer", "mechanismus": "Spanien liefert einen großen Teil der Welternte",
+     "zeitraum": "Monate", "messpunkt": None, "effekt": "mittel",
+     "gegenkraefte": "gute Ernte im Folgejahr", "belege": [], "fuehrt_zu": ["G1"],
+     "folgen_offen": ["Verbraucherpreise für Olivenöl steigen", "Umstieg auf andere Speiseöle", "Mehr Betrug mit gestrecktem Öl"],
+     "gdelt": "\"olive oil\" (harvest OR prices) Spain"},
+    {"id": "E9", "titel": "Energiepreise für Haushalte ändern sich",
+     "ausloeser": "Strom- oder Gaspreise für Haushalte, Netzentgelte oder Umlagen ändern sich",
+     "stichworte": [r"strompreis|gaspreis|netzentgelt|stromtarif|gastarif|energiepreise|grundversorg|umlage",
+                    r"haushalt|verbraucher|kunden|anbieter|erhöh|senk|teurer|billiger|steig|sink"],
+     "wirkung": "Energiekomponente der Inflation bewegt sich", "mechanismus": "Tarife folgen Beschaffungskosten und Abgaben mit Verzögerung",
+     "zeitraum": "1–3 Monate", "messpunkt": None, "effekt": "mittel",
+     "gegenkraefte": "Preisgarantien, Entlastungen", "belege": [], "fuehrt_zu": ["G1"],
+     "folgen_offen": ["Inflationsrate: Energiekomponente ändert sich", "Politische Debatte über Entlastungen",
+                      "Mehr Wechsel des Anbieters", "Nachfrage nach Wärmepumpen und Solaranlagen ändert sich"],
+     "gdelt": "(electricity OR gas) prices households Germany"},
+    {"id": "G8", "titel": "Hoher Tarifabschluss oder Mindestlohn",
+     "ausloeser": "Tarifabschluss oder Mindestlohnerhöhung mit deutlichem Plus",
+     "stichworte": [r"tarifabschluss|tarifeinigung|tarifeinig|mindestlohn|lohnerhöhung|wage deal|minimum wage",
+                    r"prozent|percent|euro|erhöh|einig|beschl|agree"],
+     "wirkung": "Dienstleistungspreise steigen mit Verzögerung", "mechanismus": "Löhne sind der größte Kostenblock bei Dienstleistungen",
+     "zeitraum": "Monate", "messpunkt": None, "effekt": "schwach",
+     "gegenkraefte": "Produktivitätsgewinne, schwache Nachfrage", "belege": [], "fuehrt_zu": ["G1", "G2"],
+     "folgen_offen": ["Dienstleistungspreise steigen mit Verzögerung", "Kaufkraft der Beschäftigten steigt",
+                      "Kostendruck in lohnintensiven Branchen", "Notenbank achtet stärker auf die Lohnentwicklung"],
+     "gdelt": "(\"wage deal\" OR \"minimum wage\") Germany"},
+    {"id": "H7", "titel": "Frachtraten steigen stark",
+     "ausloeser": "Container- oder Frachtraten steigen stark",
+     "stichworte": [r"frachtrate|containerrate|freight rate|container rate|frachtkosten|shipping cost|transportkosten",
+                    r"steig|rise|jump|surge|verdoppel|höchst|record|explodier"],
+     "wirkung": "Importpreise steigen nach ein bis drei Monaten", "mechanismus": "Transportkosten fließen in die Einstandspreise des Handels",
+     "zeitraum": "1–3 Monate", "messpunkt": None, "effekt": "mittel",
+     "gegenkraefte": "neue Schiffskapazitäten", "belege": ["benigno2022"], "fuehrt_zu": ["G1"],
+     "folgen_offen": ["Importpreise steigen nach ein bis drei Monaten", "Lieferzeiten verlängern sich",
+                      "Einzelhandel erhöht Preise für Importwaren"],
+     "gdelt": "(\"freight rates\" OR \"container rates\") surge"},
     # ── Hybride Bedrohungen ──
     # folgen_offen: mögliche Folgen, auch ohne Kurs. Die KI wählt daraus aus und
     # begründet es mit den Meldungen; eigene Folgen darf sie nicht erfinden.
@@ -886,11 +957,26 @@ def gdelt_volumen(anfrage):
     """Weltweite Berichterstattung: letzte zwei Tage gegen die fünf davor."""
     if not GDELT or not anfrage:
         return None
-    url = "https://api.gdeltproject.org/api/v2/doc/doc?" + urlencode(
+    pfad = "/api/v2/doc/doc?" + urlencode(
         {"query": anfrage, "mode": "timelinevolraw", "timespan": "7d", "format": "json"})
+    j, grund = None, ""
+    # GDELT antwortet oft langsam und drosselt schnelle Folgeanfragen: zwei
+    # Versuche mit Pause, dazu die unverschlüsselte Adresse als Ausweichweg.
+    for versuch, basis in enumerate(("https://api.gdeltproject.org", "http://api.gdeltproject.org")):
+        try:
+            if versuch:
+                time.sleep(6)
+            with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (Presseschau)"}), timeout=35) as r:
+                j = json.loads(r.read().decode("utf-8", "replace"))
+            break
+        except HTTPError as e:
+            grund = f"HTTP {e.code}"
+        except (URLError, ValueError, TimeoutError) as e:
+            grund = f"{type(e).__name__}: {getattr(e, 'reason', e)}"
+    if j is None:
+        print(f"  GDELT nicht erreichbar ({grund}) – ohne zweites Signal weiter.")
+        return None
     try:
-        with urlopen(Request(url, headers={"User-Agent": "Presseschau/1.0"}), timeout=20) as r:
-            j = json.loads(r.read().decode("utf-8", "replace"))
         daten = ((j.get("timeline") or [{}])[0].get("data") or [])
         werte = [float(d.get("value") or 0) for d in daten]
         if len(werte) < 24:
@@ -904,7 +990,7 @@ def gdelt_volumen(anfrage):
         vorher = sum(tage[:-2]) / max(1, len(tage) - 2)
         return {"faktor": round(neu / vorher, 2) if vorher else None, "artikel_2tage": int(sum(tage[-2:]))}
     except Exception as e:
-        print(f"  GDELT nicht erreichbar ({type(e).__name__}) – ohne zweites Signal weiter.")
+        print(f"  GDELT-Antwort nicht lesbar ({type(e).__name__}) – ohne zweites Signal weiter.")
         return None
 
 
@@ -1028,10 +1114,74 @@ Schlage höchstens DREI neue Wirkungszusammenhänge vor, die für Märkte oder P
 relevant sind – nur, wenn ein bekannter, in der Wirtschaftsforschung belegter Mechanismus dahinter steht.
 Lieber keiner als ein spekulativer. Messpunkt nur aus dieser Liste: {verfuegbar}
 
+Für jeden Vorschlag auch Stichworte zum Wiederfinden in Meldungen: zwei Gruppen, je eine Zeile mit
+Alternativen, getrennt durch |, deutsch und englisch, kleingeschrieben (etwa "milch|milk|butter" und
+"preis|price|teurer").
+
 Antworte NUR mit JSON: [{{"thema": "…", "ausloeser": "…", "wirkung": "…", "mechanismus": "…",
-"zeitraum": "…", "messpunkt": "Kürzel oder leer", "richtung": "+ oder −", "begruendung": "ein Satz"}}]"""
+"zeitraum": "…", "messpunkt": "Kürzel oder leer", "richtung": "+ oder −", "begruendung": "ein Satz",
+"stichworte": ["…|…", "…|…"], "folgen_offen": ["…"]}}]"""
     d = _json_aus(frage(anbieter, SYSTEM_WK, auftrag, max_tokens=700))
     return [x for x in (d or []) if isinstance(x, dict) and x.get("ausloeser")][:3]
+
+
+def kandidaten_fortschreiben(vorschlaege, basis, heute, kurse):
+    """Wiederkehrende Signale ohne eigenes Zutun berücksichtigen: Taucht ein
+    vorgeschlagener Zusammenhang an drei verschiedenen Tagen binnen zwei
+    Wochen auf, wird er VORLÄUFIG in die Wissensbasis aufgenommen – mit
+    schwacher Wirkung und sichtbar als "vorläufig". Du kannst ihn danach
+    schärfen, bestätigen (Feld "vorlaeufig" entfernen) oder löschen."""
+    kand = _laden(KANDIDATEN, {})
+    aufgenommen = []
+    grenze = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=14)).strftime("%Y-%m-%d")
+    for v in vorschlaege:
+        schluessel = " ".join(re.findall(r"[a-zäöüß]{4,}", (v.get("thema") or v.get("ausloeser") or "").lower())[:4])
+        if not schluessel:
+            continue
+        k = kand.setdefault(schluessel, {"tage": [], "vorschlag": v})
+        if heute not in k["tage"]:
+            k["tage"].append(heute)
+        k["tage"] = [t for t in k["tage"] if t >= grenze]
+        k["vorschlag"] = v
+    ids = {e["id"] for e in basis["eintraege"]}
+    for schluessel, k in list(kand.items()):
+        if not k["tage"]:
+            del kand[schluessel]
+            continue
+        if len(k["tage"]) < 3 or k.get("aufgenommen"):
+            continue
+        v = k["vorschlag"]
+        gruppen = []
+        for g in (v.get("stichworte") or [])[:3]:
+            try:
+                re.compile(str(g))
+                if str(g).strip():
+                    gruppen.append(str(g).strip().lower())
+            except re.error:
+                pass
+        if len(gruppen) < 2:
+            continue                                    # ohne zwei Stichwortgruppen zu ungenau
+        n = 1
+        while f"V{n}" in ids:
+            n += 1
+        sym = v.get("messpunkt") if v.get("messpunkt") in kurse else None
+        richtung = 1 if str(v.get("richtung", "")).strip().startswith("+") else (-1 if str(v.get("richtung", ""))[:1] in "-−" else None)
+        eintrag = {"id": f"V{n}", "vorlaeufig": True, "titel": str(v.get("thema") or v["ausloeser"])[:80],
+                   "ausloeser": v["ausloeser"], "stichworte": gruppen, "wirkung": v.get("wirkung", ""),
+                   "mechanismus": v.get("mechanismus", ""), "zeitraum": v.get("zeitraum", "") or "offen",
+                   "messpunkt": {"sym": sym, "richtung": richtung, "tage": 20} if sym and richtung else None,
+                   "effekt": "schwach", "gegenkraefte": "", "belege": [], "fuehrt_zu": [],
+                   "folgen_offen": [str(x)[:160] for x in (v.get("folgen_offen") or [])][:4],
+                   "aufgenommen_am": heute, "gesehen_an": k["tage"]}
+        basis["eintraege"].append(eintrag)
+        ids.add(eintrag["id"])
+        k["aufgenommen"] = eintrag["id"]
+        aufgenommen.append(eintrag)
+        print(f"  Vorläufig aufgenommen: {eintrag['id']} {eintrag['titel']} (an {len(k['tage'])} Tagen vorgeschlagen)")
+    _speichern(KANDIDATEN, kand)
+    if aufgenommen:
+        _speichern(BASIS, basis)
+    return aufgenommen, kand
 
 
 def tagesbild_schreiben(anbieter, ketten):
@@ -1231,7 +1381,8 @@ def main():
         kl = d.get("klassifikation") if isinstance(d.get("klassifikation"), dict) and e["id"].startswith("S") else None
         if kl:
             kl = {k: str(kl.get(k, ""))[:60] for k in ("art", "ziel", "zuschreibung", "akteur")}
-        kette = {"id": f"vs-{heute}-{e['id']}", "kb_id": e["id"], "bereich": BEREICHE.get(e["id"][0], ""),
+        kette = {"id": f"vs-{heute}-{e['id']}", "kb_id": e["id"], "vorlaeufig": bool(e.get("vorlaeufig")),
+                 "bereich": BEREICHE.get(e["id"][0], "Vorläufig aufgenommen" if e["id"].startswith("V") else ""),
                  "datum": heute, "titel": str(d.get("titel") or e["titel"])[:120],
                  "ereignis": str(d.get("ereignis", ""))[:500], "mechanismus": str(d.get("mechanismus", ""))[:500],
                  "wirkung": str(d.get("wirkung") or e["wirkung"])[:300], "zeitraum": e["zeitraum"],
@@ -1258,15 +1409,20 @@ def main():
         time.sleep(0.4)
 
     vorschlaege = vorschlaege_schreiben(anbieter, artikel, eintraege, kurse) if anbieter else []
+    neu_aufgenommen, kandidaten = kandidaten_fortschreiben(vorschlaege, basis, heute, kurse)
+    for v in vorschlaege:
+        schl = " ".join(re.findall(r"[a-zäöüß]{4,}", (v.get("thema") or v.get("ausloeser") or "").lower())[:4])
+        v["gesehen_an_tagen"] = len((kandidaten.get(schl) or {}).get("tage") or [])
     tagesbild = tagesbild_schreiben(anbieter, ketten) if anbieter else ""
 
     out = {"updated": datetime.now(timezone.utc).isoformat(), "datum": heute,
            "stand": jetzt.strftime("%d.%m.%Y, %H:%M Uhr"), "tagesbild": tagesbild,
            "einschaetzungen": ketten, "beobachtung": beobachtung, "verworfen": verworfen,
-           "vorschlaege": vorschlaege, "bilanz": bilanz(archiv),
+           "vorschlaege": vorschlaege, "neu_aufgenommen": [{"id": e["id"], "titel": e["titel"]} for e in neu_aufgenommen],
+           "bilanz": bilanz(archiv),
            "basis": [{k: e.get(k) for k in ("id", "titel", "ausloeser", "wirkung", "mechanismus", "zeitraum",
                                             "messpunkt", "gegenkraefte", "belege", "fuehrt_zu", "stichworte",
-                                            "folgen_offen", "effekt")}
+                                            "folgen_offen", "effekt", "vorlaeufig", "aufgenommen_am")}
                      for e in eintraege],
            "bereiche": BEREICHE, "literatur": LITERATUR, "werkzeuge": WERKZEUGE,
            "quellen_status": {"zusammenfassung": _laden(QUELLEN_STATUS, {}).get("zusammenfassung"),
