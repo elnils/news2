@@ -130,7 +130,10 @@ jobs:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           KI_MAX: ${{ github.event.schedule == '0 3 * * *' && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
+          KI_REIHENFOLGE: 'openrouter,gemini,groq'   # fällt einer aus, übernimmt der nächste
+          GEMINI_MODEL: 'gemini-flash-latest'
           KI_BATCH: '8'                # Meldungen je Anfrage (48 Meldungen = 6 Anfragen)
           KI_KEEP_DAYS: '7'
           KI_SCHLAG_N: '10'            # Ereignisse je Region
@@ -181,6 +184,7 @@ jobs:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           VS_STUNDE: '5'          # im Morgenlauf (5 Uhr deutscher Zeit) – danach steht sie für den Tag
           VS_MAX: '10'            # höchstens so viele Zusammenhänge prüfen
           VS_MIN_HAEUSER: '2'     # so viele Häuser braucht ein Signal mindestens
@@ -224,6 +228,7 @@ jobs:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           GROQ_PER_RUN: '25'        # Vorgänge je Lauf
         run: |
           # Läuft jetzt in jedem Lauf – die Läufe liegen zwei Stunden auseinander.
