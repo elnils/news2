@@ -50,7 +50,7 @@ PARAM_WEG = re.compile(r"^(utm_\w+|wt_\w+|wt\.mc_id|at_\w+|ref|refsrc|src|source
 # Zweite Ebene unter Länderdomains: bbc.co.uk, abc.net.au
 ZWEITE_EBENE = {"co", "com", "org", "net", "gov", "ac", "or", "gv", "edu"}
 FEED_ZUSATZ = re.compile(r"\s+(eil|eilmeldung|breaking|politik|politics|wirtschaft|economy|inland|ausland|"
-                         r"news|aktuell|digital|netz|tech|technology|technik|telco|security|developer|"
+                         r"news|aktuell|digital|netz|tech|technology|technik|telco|telko|security|developer|ix|"
                          r"science|wissenschaft|wissen|health|gesundheit|sport|sports|kultur|culture|"
                          r"panorama|reise|auto|karriere|meinung|opinion|video|live|top|top ?news|"
                          r"schlagzeilen|rss|feed|world|international|europe|europa|asia|china|uk|business|"
@@ -107,9 +107,16 @@ def haus_von(a):
     return NAME_ZU_DOMAIN.get(n) or n or "unbekannt"
 
 
+KUERZEL = re.compile(r"^\s*(ROUNDUP(\s*\d+)?|WDH|KORREKTUR|UPDATE(\s*\d+)?|EILMELDUNG|BREAKING|FLASH|"
+                     r"IM FOKUS|AKTIE IM FOKUS|dpa-AFX-Überblick|ANALYSE-FLASH|INTERVIEW|PRESSESTIMME)\s*[:/]\s*", re.I)
+
+
 def titel_schluessel(t):
-    t = re.sub(r"\s+[-–|]\s+[^-–|]{2,40}$", "", t or "")          # " - tagesschau.de" am Ende
-    return re.sub(r"[^a-z0-9äöüß]+", " ", t.lower()).strip()
+    t = KUERZEL.sub("", t or "")                                      # "ROUNDUP:", "WDH:" am Anfang
+    t = re.sub(r"\s+[-–|]\s+[^-–|]{2,40}$", "", t)                  # " - tagesschau.de" am Ende
+    # Umschrift wie im Frontend: "Neutralitaet" = "Neutralität"
+    t = t.lower().replace("ä", "a").replace("ö", "o").replace("ü", "u").replace("ae", "a").replace("oe", "o").replace("ue", "u")
+    return re.sub(r"[^a-z0-9ß]+", " ", t).strip()
 
 
 def zeit(a):

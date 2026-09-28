@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau</title>
+<title>Presseschau – Entwurf v54</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -382,6 +382,16 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .vs-warum summary{cursor:pointer;color:var(--blue)}
 .vs-warum ol{margin:4px 0 0;padding-left:18px;line-height:1.5}
 .vs-klasse{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-2px 0 8px;font-size:var(--fs-xs)}
+.pdf-ov{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.pdf-ov[hidden]{display:none}
+.pdf-kopf{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pdf-titel{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdf-tools{display:flex;gap:6px;margin-left:auto}
+.pdf-seiten{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--surface2);padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.pdf-seite{position:relative;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);min-height:200px;max-width:100%}
+.pdf-seite canvas{display:block;max-width:none}
+.pdf-nr{position:absolute;right:6px;bottom:4px;font-size:11px;color:#666;background:rgba(255,255,255,.8);padding:0 4px;border-radius:4px}
+.pdf-rahmen{width:100%;height:100%;min-height:70vh;border:0;background:#fff}
 .vs-grundlage{margin-top:6px;font-size:var(--fs-sm);line-height:1.5;padding:6px 10px;background:var(--surface2);border-radius:8px}
 .vs-faelle{margin-top:6px}
 .vs-faelle-l{display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:var(--fs-sm)}
@@ -774,7 +784,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v53</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v54</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1487,9 +1497,14 @@ function istRauschen(a){
   return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||istSammelmeldung(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
+/* Pressedienst des Bundestags: Kleine Anfragen und Antworten ("Linke
+   stellt Fragen zum Thema Migräne") sind Parlamentsbetrieb, keine
+   Top-Nachricht – sie stehen unter Verfahren und Dokumente. */
+const ANFRAGE_RE=/\b(stellt|stellen) fragen\b|\bfragt nach\b|\berkundig(t|en) sich\b|\bwill(st)? wissen\b|\bwollen wissen\b|\bkleine anfrage\b|\bantwort der bundesregierung\b|^(antwort|anfrage) (zu|zum|zur)\b|\bfragen zu(m|r)?\b/i;
 function topTauglich(a){
   const t=a.title||'';
   if(a.herkunft==='think')return false;
+  if(ANFRAGE_RE.test(t)&&/bundestag|hib|deutscher bundestag/i.test((a.src||'')+' '+(a._qb||'')))return false;
   if(a.isDoc)return false;   /* PDF-Auswürfe und Gesetzestexte aus Dokumentenportalen */
   if(a.isTicker)return false; /* Liveticker und Newsblogs sind Sammelseiten */
   if(a.isPodcast)return false;
@@ -1582,7 +1597,7 @@ function fadenNamen(a){
    schreibt jeden Tag mehrfach über "Sachsen-Anhalt", ein Hauptstadtbüro
    über "Bundestag". Nur Personen und seltene Einzelereignisse binden. */
 const ORT_ENT=/^(berlin|hamburg|münchen|munchen|köln|koln|frankfurt|stuttgart|düsseldorf|dusseldorf|dresden|leipzig|hannover|bremen|brüssel|brussel|straßburg|strassburg|karlsruhe|luxemburg|washington|peking|beijing|moskau|moscow|kiew|kyiv|london|paris|rom|wien|new york|gaza|israel|iran|ukraine|russland|russia|china|usa|us|eu|europa|europe|nato|uno?|deutschland|germany|frankreich|france|italien|italy|polen|poland|spanien|spain|türkei|turkei|turkey|kanada|canada|japan|indien|india|bayern|baden-württemberg|baden wurttemberg|nordrhein-westfalen|nordrhein westfalen|niedersachsen|hessen|sachsen|sachsen-anhalt|sachsen anhalt|thüringen|thuringen|brandenburg|mecklenburg-vorpommern|mecklenburg vorpommern|schleswig-holstein|schleswig holstein|rheinland-pfalz|rheinland pfalz|saarland|bundestag|bundesrat|bundesregierung|landtag|kabinett|koalition|regierung|opposition|polizei|bundeswehr|weißes haus|weisses haus|white house|kreml|kremlin|kommission)$/i;
-function dubNah(a,b){
+function dubNah(a,b,opt){
   if(Math.abs(a.date-b.date)>36*H)return false;
   /* "vor der Landtagswahl" und "nach der Landtagswahl" sind zwei Meldungen. */
   const zb=t=>({vor:/\b(vor|bis zur?)\s+(der|dem|den|die|das)\b/i.test(t),nach:/\bnach\s+(der|dem|den)\b/i.test(t)});
@@ -1605,7 +1620,7 @@ function dubNah(a,b){
   const fa=fadenNamen(a),fb=fadenNamen(b);
   let fadenGem=0;const namensWorte=new Set();
   for(const k of fa)if(fb.has(k)){fadenGem++;titelWorte(k.slice(2)).forEach(w=>namensWorte.add(w))}
-  if(fadenGem&&nah24){
+  if(fadenGem&&nah24&&!(opt&&opt.ohneFaden)){
     if(gleichesHaus)return true;
     let frei=0;for(const w of A)if(B.has(w)&&!namensWorte.has(w))frei++;
     if(frei+komp>=1)return true;
@@ -1635,7 +1650,12 @@ function dubNah(a,b){
 const SPORT_RE=/\b(bundesliga|bundestrainer\w*|nationalmannschaft|nationalelf|dfb(-\w+)?|champions league|europa league|wm-qualifikation|em-qualifikation|länderspiel\w*|olympi\w+|davis[- ]cup|formel 1|grand slam|wimbledon|tour de france|handball-\w+|biathlon|torjäger|auftaktsieg|trainerwechsel)\b/i;
 const istSport=a=>(a.topics||[]).some(t=>/^sport/i.test(t))||SPORT_RE.test(a.title||'');
 function topEntdoppeln(arr,max,proHausMax){
-  if(typeof IDX==='undefined'||!IDX||!IDX.ready)return arr.slice(0,max);
+  /* Beim allerersten Bild sind die Prüffunktionen (späterer Skriptteil)
+     noch nicht geladen – dann ungeprüft, das nächste Bild entdoppelt. */
+  if(typeof titelWorte!=='function'||typeof dubNah!=='function')return arr.slice(0,max);
+  /* Entdoppelt wird sonst immer: Die Titelprüfung braucht das Verzeichnis nicht.
+     Vorher kam die Liste ungeprüft, solange es noch lud – dann stand
+     "Papst fordert Dialog über KI" auf Platz 1 und 5. */
   const grenze=proHausMax||Math.max(2,Math.ceil(max/4));
   const sportGrenze=2;
   let sport=0;
@@ -1685,6 +1705,14 @@ function domainAus(url){
     if(k.includes('.')){const t=k.split('.');d=(t.length>=3&&['co','com','org','net','gov','ac','or','gv','edu'].includes(t[t.length-2])&&t[t.length-1].length===2)?t.slice(-3).join('.'):t.slice(-2).join('.')}
   }
   _DOM.set(h,d);return d;
+}
+/* Meldungen ohne verwertbare Adresse (etwa über die Google-News-Suche
+   nachgeholt) bekommen das Haus, das derselbe Feedname anderswo mit echter
+   Adresse hat: "Heise" → heise.de wie "Heise Telko". */
+function hausNamenLernen(arts){
+  const name2dom={};
+  arts.forEach(a=>{if(a._qb)name2dom[quellBasis(a.src)]=name2dom[quellBasis(a.src)]||a._qb});
+  arts.forEach(a=>{if(!a._qb){const d=name2dom[quellBasis(a.src)];if(d){a._qb=d;if(!SRC2HAUS[a.src])SRC2HAUS[a.src]=d}}});
 }
 function hausVon(x){return SRC2HAUS[x]||(typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim())}
 function clusterArts(a){
@@ -2064,7 +2092,7 @@ function kiThemenVerschneiden(){
 function renderStories(){
   const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date);window.STORYLIST=list.map(s=>s.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools">${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
-  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${[...new Set(s.arts.map(id=>(ITEMS[id]||{}).src).filter(Boolean))].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')}<span class="pill blue">${s.arts.length} Quellen</span>${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
+  h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${(()=>{const h=new Map();s.arts.map(id=>ITEMS[id]).filter(Boolean).forEach(a=>{const k=a._qb||hausVon(a.src);if(!h.has(k))h.set(k,a.src)});return [...h.values()].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')+`<span class="pill blue">${h.size} ${h.size===1?'Haus':'Häuser'}</span>`})()}${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
 const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['vorausschau','Vorausschau']];
@@ -3427,7 +3455,7 @@ function openReader(id,list){
   if(!g('sheet-reader').classList.contains('open'))openSheet('reader');
 }
 function renderReaderFooter(){const x=ITEMS[S.reader];if(!x)return;const m=MARKS.has(x.id);const ai=(x.kind==='article'||x.kind==='story'||x.kind==='doc');
-  g('reader-ft').innerHTML=`${x.kind==='person'&&x.email?`<a class="btn primary" href="mailto:${esc(x.email)}"><svg class="i" style="width:16px;height:16px"><use href="#i-mail"/></svg>E-Mail</a>`:''}<a class="btn ${x.kind==='person'&&x.email?'':'primary'}" href="${x.link}" target="_blank" rel="noopener"><svg class="i" style="width:16px;height:16px"><use href="#i-open"/></svg>Öffnen</a><button class="btn" aria-pressed="${m}" onclick="toggleMark('${x.id}')"><svg class="i" style="width:16px;height:16px;${m?'fill:currentColor':''}"><use href="#i-star"/></svg>${m?'Gemerkt':'Merken'}</button><button class="btn" onclick="copyText(lineFor(ITEMS['${x.id}'],'full'),'Link kopiert')"><svg class="i" style="width:16px;height:16px"><use href="#i-copy"/></svg>Link</button>${ai?`<button class="btn" onclick="aiSummarize('${x.id}')"><svg class="i" style="width:16px;height:16px"><use href="#i-spark"/></svg>${AI[x.id]?'Zusammenfassung':'KI'}</button>`:''}`}
+  g('reader-ft').innerHTML=`${x.kind==='person'&&x.email?`<a class="btn primary" href="mailto:${esc(x.email)}"><svg class="i" style="width:16px;height:16px"><use href="#i-mail"/></svg>E-Mail</a>`:''}<a class="btn ${x.kind==='person'&&x.email?'':'primary'}" href="${x.link}" target="_blank" rel="noopener"><svg class="i" style="width:16px;height:16px"><use href="#i-open"/></svg>${istPdf(x.link)?'PDF lesen':'Öffnen'}</a><button class="btn" aria-pressed="${m}" onclick="toggleMark('${x.id}')"><svg class="i" style="width:16px;height:16px;${m?'fill:currentColor':''}"><use href="#i-star"/></svg>${m?'Gemerkt':'Merken'}</button><button class="btn" onclick="copyText(lineFor(ITEMS['${x.id}'],'full'),'Link kopiert')"><svg class="i" style="width:16px;height:16px"><use href="#i-copy"/></svg>Link</button>${ai?`<button class="btn" onclick="aiSummarize('${x.id}')"><svg class="i" style="width:16px;height:16px"><use href="#i-spark"/></svg>${AI[x.id]?'Zusammenfassung':'KI'}</button>`:''}`}
 function readerNav(d){const i=S.readerList.indexOf(S.reader);const n=S.readerList[i+d];if(n)openReader(n)}
 async function aiSummarize(id){const x=ITEMS[id];const box=g('ai-box');if(!box)return;box.hidden=false;const out=box.querySelector('.txt');
   const fertig=(AI[id]||{}).ki;
@@ -3583,7 +3611,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v53 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v54 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -3710,7 +3738,7 @@ const QUELL_SUFFIX=/\s*[–|-]\s*(n-?tv\.de|tagesschau\.de|welt|die welt|faz\.ne
 /* Ressort- und Feed-Zusätze hinter dem Namen des Hauses: "Reuters Tech",
    "Reuters Business" und "Reuters Top" sind EIN Haus. Vorher zählten sie
    als drei und ergaben "Dieselbe Meldung bei 2 Häusern" mit zweimal Reuters. */
-const FEED_ZUSATZ=/\s+(eil|eilmeldung|breaking|pressemitt\.?|pressemitteilungen|politik|politics|wirtschaft|economy|inland|ausland|news|aktuell|digital|netz|tech|technology|technik|science|wissenschaft|wissen|health|gesundheit|sport|sports|kultur|culture|entertainment|lifestyle|panorama|reise|travel|auto|karriere|meinung|opinion|video|live|top|top ?news|top ?stories|schlagzeilen|rss|feed|world|international|europe|europa|asia|asien|china|africa|americas|middle ?east|uk|business|markets|finance|us|eu)\s*$/i;
+const FEED_ZUSATZ=/\s+(eil|eilmeldung|breaking|pressemitt\.?|pressemitteilungen|politik|politics|wirtschaft|economy|inland|ausland|news|aktuell|digital|netz|tech|technology|technik|telko|telco|security|developer|ix|science|wissenschaft|wissen|health|gesundheit|sport|sports|kultur|culture|entertainment|lifestyle|panorama|reise|travel|auto|karriere|meinung|opinion|video|live|top|top ?news|top ?stories|schlagzeilen|rss|feed|world|international|europe|europa|asia|asien|china|africa|americas|middle ?east|uk|business|markets|finance|us|eu)\s*$/i;
 /* Dieselbe Meldung über mehrere Feeds eines Hauses (Reuters Tech, Business,
    Top): nur die erste bleibt in der Liste, die übrigen Feeds stehen an ihr
    (a._feeds). Die IDs der Kopien zeigen auf die bleibende Meldung, damit
@@ -3730,9 +3758,13 @@ function quellBasis(s){
   for(let i=0;i<3;i++)q=q.replace(FEED_ZUSATZ,'').trim();
   return q.toLowerCase().replace(/[.\-–]+$/,'').trim();
 }
+/* Agentur- und Redaktionskürzel am Anfang: "ROUNDUP:", "ROUNDUP 2/",
+   "WDH:", "KORREKTUR:", "dpa-AFX-Überblick:" – Arbeitsvermerke, keine
+   Schlagzeile. */
+const TITEL_KUERZEL=/^\s*(ROUNDUP(\s*\d+)?|WDH|KORREKTUR|UPDATE(\s*\d+)?|EILMELDUNG|BREAKING|FLASH|IM FOKUS|AKTIE IM FOKUS|dpa-AFX-Überblick|dpa-AFX-Börsentag auf einen Blick|ANALYSE-FLASH|INTERVIEW|PRESSESTIMME)\s*[:\/]\s*/i;
 function titelPutzen(t){
   let s=entziffern(t);
-  for(let i=0;i<2;i++)s=s.replace(QUELL_SUFFIX,'');
+  for(let i=0;i<2;i++)s=s.replace(QUELL_SUFFIX,'').replace(TITEL_KUERZEL,'');
   return s.trim();
 }
 /* Liveticker und Newsblogs sind Sammelseiten, keine einzelne Meldung: Sie
@@ -3840,8 +3872,12 @@ const UEBER={canada:'kanada',canadian:'kanada',russia:'russland',russian:'russla
   football:'fussball',coach:'trainer',goal:'tor',wins:'sieg',victory:'sieg'};
 const kanon=w=>UEBER[w]||w;
 const kanonSatz=s=>String(s).split(/\s+/).map(kanon).join(' ');
+/* Agenturen und manche Feeds schreiben ohne Umlaute: "Neutralitaet",
+   "Aussenminister". glatt() macht aus ä bereits a – hier wird ae zu a usw.,
+   damit beide Schreibweisen gleich zählen. */
+const umschrift=w=>w.replace(/ae/g,'a').replace(/oe/g,'o').replace(/ue/g,'u');
 function titelWorte(t){
-  return new Set((glatt(t).match(/[a-z]{3,}/g)||[]).map(kanon).filter(w=>w.length>=4&&!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
+  return new Set((glatt(t).match(/[a-z]{3,}/g)||[]).map(w=>kanon(umschrift(w))).filter(w=>w.length>=4&&!WORT_STOP.has(w)&&!TERM_STOP.has(w)));
 }
 function titelAehnlich(A,B){
   if(!A.size||!B.size)return {q:0,n:0};
@@ -3849,6 +3885,18 @@ function titelAehnlich(A,B){
   /* Anteil am kürzeren Titel UND absolute Zahl – ein einziges gemeinsames
      Wort kann bei kurzen Schlagzeilen sonst 50 % ergeben. */
   return {q:gem/Math.min(A.size,B.size),n:gem};
+}
+/* Gemeinsame Namen zweier Meldungen, Varianten derselben Person nur
+   einmal ("Wüst" und "Hendrik Wüst" sind EIN Name), dazu die Wörter, die
+   zu diesen Namen gehören. Zwei Meldungen über Wüst – Türkei-Reise und
+   AfD-Interview – teilen einen Namen, aber kein Thema. */
+function namenVergleich(sa,sb,twa,twb){
+  const gem=[...sa].filter(x=>x.startsWith('e:')&&sb.has(x)).map(x=>x.slice(2)).sort((a,b)=>b.length-a.length);
+  const eins=[];for(const n of gem)if(!eins.some(e=>e.includes(n)||n.includes(e)))eins.push(n);
+  const nw=new Set();eins.forEach(n=>titelWorte(n).forEach(w=>nw.add(w)));
+  gem.forEach(n=>titelWorte(n).forEach(w=>nw.add(w)));
+  let frei=0;for(const w of twa)if(twb.has(w)&&!nw.has(w))frei++;
+  return {namen:eins.length,frei};
 }
 function baueStories(arts){
   const kandidaten=arts.filter(a=>a.ago<=72&&!a.isDoc&&!a.isTicker&&!a.isPodcast).sort((a,b)=>b.date-a.date);
@@ -3895,7 +3943,8 @@ function baueStories(arts){
          Kosovo/Hague und Tagesschau/Thaci/Kosovo teilen zwei von drei (0,67). */
       const namenQuote=namenGem/Math.max(1,eigennamen.length+namenLeit-namenGem);
       const verschiedeneLeute=eigennamen.length>=1&&namenLeit>=1&&namenQuote<0.5&&!gleicherTitel&&sim<0.9;
-      const passt=!verschiedeneLeute&&(gleicherTitel||(sim>=0.62&&gemWorte>=3)||(sim>=0.5&&gemWorte>=2&&belege>=2)||(gemWorte>=1&&namenGem>=2&&Math.abs(leit.date-a.date)<=12*H));
+      const nv=namenGem>=2?namenVergleich(s,leit._selten,tw,leit._tw):{namen:0,frei:0};
+      const passt=!verschiedeneLeute&&(gleicherTitel||(sim>=0.62&&gemWorte>=3)||(sim>=0.5&&gemWorte>=2&&belege>=2)||(nv.namen>=2&&gemWorte>=1&&Math.abs(leit.date-a.date)<=12*H));
       const score=sim+(belege*0.1);
       if(passt&&score>best){ziel=gr;best=score}
     }
@@ -3942,9 +3991,31 @@ function baueStories(arts){
       const nA=[...sa].filter(x=>x.startsWith('e:')).length,nB=[...lb._selten].filter(x=>x.startsWith('e:')).length;
       const namenQuote=namenGem/Math.max(1,nA+nB-namenGem);
       const verschiedeneLeute=nA>=1&&nB>=1&&namenQuote<0.5&&sim<0.9;
-      if(!verschiedeneLeute&&((sim>=0.62&&gem>=3)||(sim>=0.5&&gem>=2&&belege>=2)||(gem>=1&&namenGem>=2&&Math.abs(la.date-lb.date)<=12*H))){
+      const nv=namenGem>=2?namenVergleich(sa,lb._selten,la._tw,lb._tw):{namen:0,frei:0};
+      if(!verschiedeneLeute&&((sim>=0.62&&gem>=3)||(sim>=0.5&&gem>=2&&belege>=2)||(nv.namen>=2&&gem>=1&&Math.abs(la.date-lb.date)<=12*H))){
         A.arts.push(...B.arts);B.arts=[];ziel[j]=i;
       }
+    }
+  }
+  /* Dritter Durchgang: doppelte Themenlagen. Zwei Gruppen zum selben
+     Ereignis, deren Schlagzeilen sich im Wortlaut unterscheiden ("Schweizer
+     lehnen strengere Auslegung von Neutralität ab" / "Schweizer stimmen
+     gegen striktere Neutralitaet"), werden über dieselbe Prüfung wie in der
+     Top-Liste zusammengeführt – ohne den "Faden"-Weg, der für die Top-Liste
+     auch verwandte Meldungen bündelt. Verglichen wird nur, was einen
+     Wortstamm teilt. */
+  const mehr=[];gruppen.forEach((g,i)=>{if(g.arts.length&&g.leit._tw&&g.leit._tw.size>=2)mehr.push(i)});
+  const stammIdx={};
+  mehr.forEach(i=>{for(const w of gruppen[i].leit._tw){const st=w.slice(0,5);(stammIdx[st]=stammIdx[st]||[]).push(i)}});
+  for(const i of mehr){
+    const A=gruppen[i];if(!A.arts.length)continue;
+    const zaehl=new Map();
+    for(const w of A.leit._tw){const l=stammIdx[w.slice(0,5)]||[];if(l.length>60)continue;for(const j of l)if(j>i)zaehl.set(j,(zaehl.get(j)||0)+1)}
+    const kand=[...zaehl].filter(([j,n])=>n>=2).map(([j])=>j);
+    for(const j of kand){
+      const B=gruppen[j];if(!B.arts.length)continue;
+      if(Math.abs(A.leit.date-B.leit.date)>36*H)continue;
+      if(dubNah(A.leit,B.leit,{ohneFaden:true})){A.arts.push(...B.arts);B.arts=[]}
     }
   }
   const gebuendelt=gruppen
@@ -4501,8 +4572,10 @@ async function laden(){
   window.LADESTART=window.LADESTART||performance.now();
   sicher('Stand',()=>{const st=[n,e,b,la,us].filter(Boolean).map(j=>new Date(j.updated).getTime()).filter(t=>!isNaN(t));window.META_STAND=st.length?Math.max(...st):null});
   sicher('Nachrichten',()=>{
-    ARTICLES.push(...feedDoppelEntfernen([...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
-                  ...mapArtikel(la,'laender'),...mapArtikel(us,'us')]));
+    const alleArt=[...mapArtikel(n,'news'),...mapArtikel(e,'eu'),...mapArtikel(b,'bt'),
+                  ...mapArtikel(la,'laender'),...mapArtikel(us,'us')];
+    hausNamenLernen(alleArt);
+    ARTICLES.push(...feedDoppelEntfernen(alleArt));
     /* Abkürzungen bleiben Abkürzungen: "eu" ist nicht "Eu". */
     const KURZ={eu:'EU',us:'USA',usa:'USA',ki:'KI',it:'IT',nato:'NATO',un:'UN',uk:'UK',oecd:'OECD',bund:'Bund'};
     ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=KURZ[String(t).toLowerCase()]||String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
@@ -4818,6 +4891,79 @@ function vsForschungHTML(f){
 /* Dieselbe Schlagzeile nur einmal – auch in Dateien, die vor der
    Entdoppelung im Backend geschrieben wurden. */
 function vsEinmal(l){const g=new Set();return (l||[]).filter(m=>{const k=String(m.titel||'').toLowerCase().replace(/[^a-z0-9äöüß]+/g,' ').trim();if(g.has(k))return false;g.add(k);return true})}
+/* ── PDF direkt in der App lesen ─────────────────────────────────────
+   pdf.js (Mozilla) wird erst beim ersten Öffnen geladen. Jede Seite wird
+   gezeichnet, sobald sie ins Bild scrollt. Dateien aus dem eigenen Repo
+   (docs_files/) gehen immer; fremde Server nur, wenn sie das Einbetten
+   erlauben (CORS) – sonst zeigt der Leser die Datei im eingebauten
+   Browser-Anzeiger oder bietet das Öffnen außerhalb an. */
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let _pdfjs=null;
+function pdfjsLaden(){
+  if(_pdfjs)return _pdfjs;
+  _pdfjs=new Promise((ok,fehl)=>{
+    const sc=document.createElement('script');sc.src=PDFJS_URL;sc.async=true;
+    sc.onload=()=>{try{window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER;ok(window.pdfjsLib)}catch(e){fehl(e)}};
+    sc.onerror=()=>{_pdfjs=null;fehl(new Error('pdf.js nicht ladbar'))};
+    document.head.appendChild(sc);
+  });
+  return _pdfjs;
+}
+const PDF={doc:null,zoom:1,url:'',beob:null};
+function istPdf(url){return /\.pdf($|[?#])/i.test(String(url||''))}
+async function pdfOeffnen(url,titel){
+  let ov=g('pdf-ov');
+  if(!ov){ov=document.createElement('div');ov.id='pdf-ov';ov.className='pdf-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');document.body.appendChild(ov)}
+  PDF.url=url;PDF.zoom=1;
+  ov.innerHTML=`<div class="pdf-kopf"><b class="pdf-titel">${esc(titel||url.split('/').pop())}</b><span class="note" id="pdf-info">wird geladen …</span>
+    <div class="pdf-tools"><button class="btn sm quiet" onclick="pdfZoom(-0.2)" aria-label="Verkleinern">−</button><button class="btn sm quiet" onclick="pdfZoom(0.2)" aria-label="Vergrößern">+</button>
+    <a class="btn sm quiet" href="${esc(url)}" target="_blank" rel="noopener" data-extern="1">Extern</a><button class="btn sm" onclick="pdfSchliessen()" aria-label="Schließen">✕</button></div></div>
+    <div class="pdf-seiten" id="pdf-seiten"></div>`;
+  ov.hidden=false;document.body.style.overflow='hidden';
+  try{
+    const lib=await Promise.race([pdfjsLaden(),new Promise((_,f)=>setTimeout(()=>f(new Error('Zeitüberschreitung')),12000))]);
+    PDF.doc=await lib.getDocument({url,withCredentials:false}).promise;
+    g('pdf-info').textContent=`${PDF.doc.numPages} ${PDF.doc.numPages===1?'Seite':'Seiten'}`;
+    pdfSeitenAnlegen();
+  }catch(e){
+    /* Fremder Server ohne Einbett-Erlaubnis: Browser-Anzeiger im Rahmen */
+    g('pdf-info').textContent='Direktes Laden nicht erlaubt – Anzeige über den Browser';
+    g('pdf-seiten').innerHTML=`<iframe class="pdf-rahmen" src="${esc(url)}" title="${esc(titel||'PDF')}"></iframe>
+      <p class="note" style="padding:10px">Zeigt dein Gerät hier nur die erste Seite oder nichts, öffne die Datei über „Extern".</p>`;
+  }
+}
+function pdfSeitenAnlegen(){
+  const box=g('pdf-seiten');if(!box||!PDF.doc)return;
+  box.innerHTML=Array.from({length:PDF.doc.numPages},(_,i)=>`<div class="pdf-seite" data-n="${i+1}"><canvas></canvas><span class="pdf-nr">${i+1}</span></div>`).join('');
+  if(PDF.beob)PDF.beob.disconnect();
+  PDF.beob=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)pdfSeiteZeichnen(e.target)}),{root:box,rootMargin:'400px 0px'});
+  box.querySelectorAll('.pdf-seite').forEach(el=>PDF.beob.observe(el));
+}
+async function pdfSeiteZeichnen(el){
+  if(el.dataset.fertig===String(PDF.zoom))return;
+  el.dataset.fertig=String(PDF.zoom);
+  const seite=await PDF.doc.getPage(+el.dataset.n);
+  const breite=Math.min(g('pdf-seiten').clientWidth-16,1100);
+  const v0=seite.getViewport({scale:1});
+  const skala=breite/v0.width*PDF.zoom,dpr=window.devicePixelRatio||1;
+  const v=seite.getViewport({scale:skala*dpr});
+  const c=el.querySelector('canvas');c.width=v.width;c.height=v.height;
+  c.style.width=(v.width/dpr)+'px';c.style.height=(v.height/dpr)+'px';
+  await seite.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
+}
+function pdfZoom(d){PDF.zoom=Math.min(3,Math.max(0.6,+(PDF.zoom+d).toFixed(1)));document.querySelectorAll('#pdf-seiten .pdf-seite').forEach(el=>{if(el.getBoundingClientRect().top<innerHeight*2)pdfSeiteZeichnen(el)})}
+function pdfSchliessen(){const ov=g('pdf-ov');if(ov){ov.hidden=true;ov.innerHTML=''}document.body.style.overflow='';if(PDF.beob)PDF.beob.disconnect();PDF.doc=null}
+/* Jeder Link auf eine PDF öffnet den Leser – außer "Extern" und bei
+   gedrückter Taste (neuer Tab wie gewohnt). */
+document.addEventListener('click',ev=>{
+  const a=ev.target.closest&&ev.target.closest('a[href]');
+  if(!a||a.dataset.extern||ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.button!==0)return;
+  if(!istPdf(a.getAttribute('href')))return;
+  ev.preventDefault();
+  pdfOeffnen(a.href,(a.textContent||'').trim().slice(0,120));
+},true);
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&g('pdf-ov')&&!g('pdf-ov').hidden)pdfSchliessen()});
 function renderVorausschau(){
   if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
   const W=window.WK;
