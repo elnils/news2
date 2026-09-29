@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v63</title>
+<title>Presseschau – Entwurf v64</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -838,7 +838,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v63</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v64</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1376,7 +1376,9 @@ const textOf=x=>norm([x.title,x.desc,x.src,x.name,x.role,x.org,x.sum,x.type,x.ci
 const hasQ=(x,q)=>!q||textOf(x).includes(norm(q));
 const matchQ=x=>hasQ(x,S.q);
 const matchLQ=(k,x)=>hasQ(x,S.lq[k]);
-const srcHTML=a=>`<span class="src ${SRC_KIND[a.src]||''}">${esc(a.src)}</span>`;
+/* Feed-Zusätze wie "Eil" sind ein Kanal, keine Quelle – angezeigt wird das Haus. */
+const srcName=src=>String(src||'').replace(/\s+(eil|eilmeldung|breaking|top|live)$/i,'');
+const srcHTML=a=>`<span class="src ${SRC_KIND[a.src]||''}">${esc(srcName(a.src))}</span>`;
 /* ZUGANG: frei oder hinter der Bezahlschranke?
    Die Einstufung gehört pro ARTIKEL, nicht pro Haus – FT, NYT, Zeit, SZ und
    Spiegel veröffentlichen täglich beides. Jede Liste "diese Quelle ist Abo"
@@ -1818,7 +1820,13 @@ function clusterArts(a){
   if(a._kiGruppe&&a._kiGruppe.length>1){
     const eigen=a._qb||(a._qb=hausVon(a.src));
     const seen=new Set([eigen]);
-    return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;if(!gleicheSache(a,x))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
+    /* Die KI hat diese Meldungen als ein Ereignis gebündelt – oft in anderen
+       Worten oder Sprachen. Ausgeschlossen wird nur, was gar nichts teilt:
+       kein Wort, keinen Namen, keinen Ort. */
+    const teilt=x=>{const A=dubWorte(a),B=dubWorte(x);for(const w of A)if(B.has(w))return true;
+      if(kompositumTreffer(A,B))return true;
+      return hartGemeinsam(a._hart||(a._hart=hartSignale(a)),x._hart||(x._hart=hartSignale(x)))>=1};
+    return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;if(typeof dubWorte==='function'&&!teilt(x))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
   }
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
   /* Gezählt werden HÄUSER, nicht Beiträge: der eigene Beitrag und weitere
@@ -1904,11 +1912,19 @@ function topAuswahl(base,win){
   const rechnen=base.filter(a=>a.ago<=win&&topTauglich(a)&&inHauptRegion(a)).sort((a,b)=>topScore(b)-topScore(a));
   const block=kiBlockFuer(S.region);
   if(!block)return topEntdoppeln(entdoppeln(rechnen),10);
-  const zeilen=[];
+  const zeilen=[],hausZahl={};
   block.gruppen.forEach(g=>{
     const arts=g.ids.map(id=>ITEMS[id]).filter(a=>a&&a.kind!=='story'&&a.ago<=win&&!istRauschen(a));
     if(!arts.length)return;
-    const lead=arts.find(a=>a.id===g.lead)||arts[0];
+    /* Leitmeldung: bevorzugt ein Haus, das in der Liste noch nicht vorkommt,
+       dann eine reguläre Meldung vor der Eilmeldung (mehr Text) – sonst stand
+       fast jede Zeile unter "Tagesschau Eil". */
+    const h=a=>a._qb||(a._qb=hausVon(a.src));
+    const eil=a=>a.priority==='eil'||/\beil\b/i.test(a.src||'');
+    const kiLead=arts.find(a=>a.id===g.lead)||arts[0];
+    const lead=arts.slice().sort((x,y)=>((hausZahl[h(x)]||0)-(hausZahl[h(y)]||0))||(eil(x)-eil(y))||((y.desc||'').length-(x.desc||'').length)||(x===kiLead?-1:y===kiLead?1:0))[0];
+    hausZahl[h(lead)]=(hausZahl[h(lead)]||0)+1;
+    if(lead!==kiLead&&(window.KISCHLAG||{})[kiLead.id]&&!(window.KISCHLAG||{})[lead.id])KISCHLAG[lead.id]=KISCHLAG[kiLead.id];
     lead._kiGruppe=arts;lead._cl=null;
     if(!zeilen.includes(lead))zeilen.push(lead);
   });
@@ -1918,11 +1934,14 @@ function topAuswahl(base,win){
   /* Frische Meldungen nur, wenn sie wirklich gewichtig sind: mehrere
      Quellen oder Eilmeldung. Sonst verdrängt jede neue Kurzmeldung die
      kuratierte Auswahl. */
-  const gewichtig=frisch.filter(a=>(a.cluster||1)>=3||a.priority==='eil'||/\beil\b/i.test(a.src));
+  /* Eilmeldungen nur vorab, wenn schon ein zweites Haus berichtet – eine
+     einzelne Eilmeldung allein verdrängt sonst die kuratierte Auswahl. */
+  const gewichtig=frisch.filter(a=>(a.cluster||1)>=3||((a.priority==='eil'||/\beil\b/i.test(a.src))&&(a.cluster||1)>=2));
   /* Hat der KI-Block weniger als zehn Ereignisse, füllt das Rechenverfahren
      auf – hinten angestellt und gegen alle Gruppen geprüft. */
   const rest=rechnen.filter(a=>!kiIds.has(a.id)&&!gewichtig.includes(a));
-  return topEntdoppeln(entdoppeln([...gewichtig.slice(0,3),...zeilen,...rest]),10,4);
+  /* Höchstens drei Top-Meldungen je Haus (vorher vier). */
+  return topEntdoppeln(entdoppeln([...gewichtig.slice(0,2),...zeilen,...rest]),10,3);
 }
 function renderTop(){
   const base=newsBase();
@@ -2148,7 +2167,9 @@ function listByTime(arr,listName){
 }
 function quellenPill(a){
   const cl=a.kind==='article'?clusterArts(a):[];
-  if(!cl.length)return '';
+  /* Eine Quelle ausdrücklich zeigen – sonst bleibt offen, ob nur ein Haus
+     berichtet oder die Anzeige fehlt. */
+  if(!cl.length)return a.kind==='article'?`<span class="pill grey" title="Bisher berichtet nur dieses Haus">1 Quelle</span>`:'';
   const auf=S.openSrc===a.id;
   return `<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`;
 }
@@ -3892,7 +3913,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v63 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v64 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
