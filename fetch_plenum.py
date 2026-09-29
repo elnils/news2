@@ -316,8 +316,17 @@ def abstimmungen_aus_text(text, datum="", sitzung="", wp=None):
         if (not gegenstand or not drs) and out and _stufe(kern) == "Schlussabstimmung":
             gegenstand = gegenstand or out[-1]["gegenstand"]
             drs = drs or list(out[-1]["drucksachen"])
+        # Was empfahl der Ausschuss? "Angenommen" heißt bei einer Beschluss-
+        # empfehlung, die Ablehnung empfiehlt: Die Vorlage ist ABGELEHNT.
+        emp = ""
+        em = re.search(r"empfiehlt[^.]{0,500}?(abzulehnen|ablehnen|anzunehmen|annehmen|für erledigt zu erklären|erledigt)",
+                       kern, re.I)
+        if em:
+            w = em.group(1).lower()
+            emp = "Ablehnung" if "ableh" in w or "abzuleh" in w else ("Erledigung" if "erledigt" in w else "Annahme")
         out.append({
             "id": f"pl-{sitzung.replace('/', '-')}-{len(out)+1}" if sitzung else f"pl-{len(out)+1}",
+            "empfehlung": emp,
             "datum": datum, "sitzung": sitzung, "wahlperiode": wp, "stufe": _stufe(kern),
             "gegenstand": gegenstand[:260], "drucksachen": drs[:6],
             "ergebnis": ergebnis, "dafuer": dafuer, "dagegen": dagegen, "enthalten": enthalten,
@@ -332,9 +341,9 @@ def abstimmungen_aus_text(text, datum="", sitzung="", wp=None):
 # ─────────────────────────────────────────────────────────────
 # "Ich rufe den Tagesordnungspunkt 5 auf:", "Ich rufe die Tagesordnungs-
 # punkte 12 a bis 12 c auf:", "Zusatzpunkt 3"
-TOP_RE = re.compile(r"(?:Ich\s+rufe|rufe\s+ich)\s+(?:jetzt\s+|nun\s+|nunmehr\s+|noch\s+)?(?:den\s+|die\s+)?"
+TOP_RE = re.compile(r"(?:Ich\s+rufe|rufe\s+ich|Wir\s+kommen\s+(?:jetzt\s+|nun\s+)?zu(?:m)?|kommen\s+wir\s+(?:jetzt\s+|nun\s+)?zu(?:m)?)\s+(?:jetzt\s+|nun\s+|nunmehr\s+|noch\s+|auf\s+)?(?:den\s+|die\s+)?"
                     r"(Tagesordnungspunkte?|Zusatzpunkte?)\s+([0-9]+\s*[a-z]?(?:\s*(?:bis|und)\s*[0-9]*\s*[a-z]?)?)"
-                    r"\s+(?:sowie\s+[^:]{0,120}?\s+)?auf\s*:?", re.I)
+                    r"(?:\s+(?:sowie\s+[^:]{0,120}?\s+)?auf\s*:?|\s*:)", re.I)
 # Kopfzeile einer Rede, allein auf der Zeile:
 #   "Dr. Erika Mustermann (SPD):"  "Max Mustermann, Bundesminister der Finanzen:"
 #   "Britta Haßelmann (BÜNDNIS 90/DIE GRÜNEN):"
@@ -478,19 +487,31 @@ def sitzung_auswerten(text, datum="", sitzung=""):
                 continue
             if len(koerper.strip()) < 200:
                 continue                   # Zwischenfrage, Geschäftsordnung, Kurzbeitrag
+            # Befragung der Bundesregierung und Fragestunde: das sind Fragen,
+            # keine Reden – und sie führen zu keiner Abstimmung.
+            auszug = _auszug(koerper)
+            frage = bool(re.search(r"befragung|fragestunde|aktuelle\s+stunde\s+–?\s*frage", betreff or "", re.I)
+                         or re.match(r"^(?:eine|meine|die)?\s*(?:nach|zusatz)?frage\b", auszug, re.I))
             reden.append({
                 "id": f"rd-{sitzung.replace('/', '-')}-{len(reden) + 1}" if sitzung else f"rd-{len(reden) + 1}",
                 "datum": datum, "sitzung": sitzung, "name": name,
                 "fraktion": _fraktion(m.group(2)) if m.group(2) else "",
                 "rolle": re.sub(r"\s+", " ", m.group(3) or "").strip(),
-                "top": top, "betreff": betreff, "auszug": _auszug(koerper),
+                "art": "Frage" if frage else "Rede",
+                "top": top, "betreff": betreff, "auszug": auszug,
                 "zeichen": len(re.sub(r"\s+", " ", koerper)),
-                "abstimmungen": [f["id"] for f in funde],
+                "abstimmungen": [] if frage else [f["id"] for f in funde],
             })
             vorige = reden[-1]
         # Debatte an die Abstimmungen haengen
-        redner = [{"name": r["name"], "fraktion": r["fraktion"] or r["rolle"], "id": r["id"]}
-                  for r in reden if r["top"] == top and r["sitzung"] == sitzung and r["abstimmungen"] == [f["id"] for f in funde]]
+        # Ohne erkannten Tagesordnungspunkt ist die Debatte nicht abgrenzbar –
+        # dann lieber keine als die halbe Sitzung (vorher: 140 "Reden").
+        redner = [] if not top else [
+            {"name": r["name"], "fraktion": r["fraktion"] or r["rolle"], "id": r["id"]}
+            for r in reden if r["top"] == top and r["sitzung"] == sitzung and r.get("art") != "Frage"
+            and r["abstimmungen"] == [f["id"] for f in funde]]
+        if len(redner) > 40:
+            redner = []
         for f in funde:
             f["redner"] = redner
     return abst, reden
@@ -499,6 +520,65 @@ def sitzung_auswerten(text, datum="", sitzung=""):
 # ─────────────────────────────────────────────────────────────
 # HOLEN
 # ─────────────────────────────────────────────────────────────
+DIP_DRS = "https://search.dip.bundestag.de/api/v1/drucksache"
+DRS_PRO_LAUF = int(os.environ.get("PLENUM_DRS_PRO_LAUF", "80"))
+
+
+def drucksache_info(nr, cache):
+    """Titel, Typ und Vorgang einer Drucksache aus DIP – einmal geholt,
+    danach aus dem Zwischenspeicher. "21/7966" wird so zu "Stärkung der
+    Arzneimittelversorgung …" statt "Abstimmung zu Drucksache 21/7966"."""
+    ablage = cache.setdefault("drucksachen", {})
+    if nr in ablage:
+        return ablage[nr]
+    params = {"f.dokumentnummer": nr, "f.zuordnung": "BT", "format": "json", "apikey": KEY}
+    try:
+        req = Request(DIP_DRS + "?" + urlencode(params), headers={"Accept": "application/json"})
+        with urlopen(req, timeout=TIMEOUT) as r:
+            d = json.loads(r.read().decode("utf-8", "replace"))
+    except (HTTPError, URLError, ValueError, TimeoutError):
+        return None
+    doks = d.get("documents") or []
+    if not doks:
+        ablage[nr] = {}
+        return ablage[nr]
+    x = doks[0]
+    vb = (x.get("vorgangsbezug") or [{}])[0] or {}
+    ablage[nr] = {"titel": (x.get("titel") or "")[:300], "typ": x.get("drucksachetyp") or "",
+                  "vorgang": (vb.get("titel") or "")[:300], "vorgangstyp": vb.get("vorgangstyp") or "",
+                  "vorgang_id": vb.get("id")}
+    return ablage[nr]
+
+
+def vorlagen_ergaenzen(liste, cache):
+    """Für Abstimmungen ohne erkennbaren Gegenstand den Titel der Vorlage
+    aus DIP nachtragen. Begrenzt je Lauf; der Rest folgt im nächsten."""
+    geholt = 0
+    for a in liste:
+        if a.get("vorlage") is not None or not a.get("drucksachen"):
+            continue
+        g = (a.get("gegenstand") or "").strip()
+        if g and not re.match(r"^(abstimmung|beschlussempfehlung des|den gesetzentwurf|den antrag|die beschlussempfehlung)", g, re.I) and len(g) > 25:
+            a["vorlage"] = ""
+            continue
+        info = None
+        for nr in a["drucksachen"][:3]:
+            neu = nr not in (cache.get("drucksachen") or {})
+            if neu and geholt >= DRS_PRO_LAUF:
+                break
+            info = drucksache_info(nr, cache)
+            if neu:
+                geholt += 1
+                time.sleep(0.2)
+            if info and (info.get("vorgang") or info.get("titel")):
+                break
+        if info is None:
+            continue
+        a["vorlage"] = (info or {}).get("vorgang") or (info or {}).get("titel") or ""
+        a["vorlage_typ"] = (info or {}).get("vorgangstyp") or (info or {}).get("typ") or ""
+    print(f"  Vorlagentitel: {geholt} Drucksachen bei DIP nachgeschlagen")
+
+
 def dip_seite(cursor=None, bis=None, wp=None):
     params = {"f.zuordnung": "BT", "f.wahlperiode": wp or WP, "format": "json", "apikey": KEY}
     if cursor:
@@ -604,6 +684,7 @@ def main():
     aeltestes = (stand.get(str(WP)) or {}).get("aeltestes", "")
 
     liste = sorted(bestand.values(), key=lambda a: (a.get("datum", ""), a.get("id", "")), reverse=True)
+    vorlagen_ergaenzen(liste, cache)
     grenze = datetime.now(timezone.utc).date().toordinal() - REDEN_TAGE
     def jung(r):
         try:
@@ -625,7 +706,8 @@ def main():
                       "Stimmenzahlen gibt es dafür nicht.",
            "abstimmungen": liste,
            "reden": reden_liste}
-    for pfad, inhalt in ((OUT, out), (CACHE, {"fertig": sorted(fertig), "aeltestes": aeltestes, "wp": stand})):
+    for pfad, inhalt in ((OUT, out), (CACHE, {"fertig": sorted(fertig), "aeltestes": aeltestes, "wp": stand,
+                                               "drucksachen": cache.get("drucksachen") or {}})):
         tmp = pfad + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(inhalt, fh, ensure_ascii=False, separators=(",", ":"))

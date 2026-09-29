@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v54</title>
+<title>Presseschau – Entwurf v56</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -382,6 +382,19 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 .vs-warum summary{cursor:pointer;color:var(--blue)}
 .vs-warum ol{margin:4px 0 0;padding-left:18px;line-height:1.5}
 .vs-klasse{display:flex;flex-wrap:wrap;gap:4px 12px;margin:-2px 0 8px;font-size:var(--fs-xs)}
+.rd-bild{display:block;width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin:0 0 10px;background:var(--surface2)}
+@media (min-width:700px){.rd-bild{float:right;width:220px;max-height:150px;margin:0 0 10px 14px}}
+.wahl-was{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:var(--fs-sm);color:var(--text2)}
+.wahl-was b{color:var(--text)}
+/* Android und Touch allgemein: Tippflächen mindestens 44 px, kein grauer
+   Tipp-Blitz, Scrollen ohne Nachfedern in Fenstern, Höhe nach sichtbarem
+   Bildschirm (Adressleiste) statt 100vh. */
+@media (pointer:coarse){.chip,.btn,.icon-btn,.seg button{min-height:44px}.btn.sm{min-height:40px}}
+html{-webkit-tap-highlight-color:transparent}
+.sheet .panel,.pdf-seiten{overscroll-behavior:contain}
+@supports (height:100dvh){.sheet .panel{max-height:100dvh}.pdf-ov{height:100dvh}}
+.ab-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:5px}
+.ab-zeile .note{font-size:var(--fs-xs)}
 .pdf-ov{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 .pdf-ov[hidden]{display:none}
 .pdf-kopf{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
@@ -784,7 +797,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v54</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v56</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1365,7 +1378,11 @@ const copyBtn=(ids,label)=>`<button class="btn sm cp" onclick="copyList(${J(ids)
 function toast(msg){const t=g('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1900)}
 function rowKey(e,id){if(e.key==='Enter'||e.key===' '){e.preventDefault();openReader(id)}}
 function lsearch(key,ph){const v=S.lq[key]||'';return `<div class="lsearch"><svg class="i"><use href="#i-search"/></svg><input id="lq-${key}" value="${esc(v)}" placeholder="${ph}" aria-label="${ph}" oninput="setLQ('${key}',this.value)">${v?`<button class="x" onclick="setLQ('${key}','')" aria-label="Leeren">×</button>`:''}</div>`}
-function setLQ(k,v){S.lq[k]=v;S.focus='lq-'+k;render()}
+/* Neu gezeichnet wird erst, wenn eine Viertelsekunde nichts getippt wurde –
+   vorher lief bei jedem Buchstaben die ganze Ansicht durch, im Archiv mit
+   Zehntausenden Meldungen. Leeren wirkt sofort. */
+let _lqUhr=null;
+function setLQ(k,v){S.lq[k]=v;S.focus='lq-'+k;clearTimeout(_lqUhr);if(!v){render();return}_lqUhr=setTimeout(render,k==='ar'?300:200)}
 function secHd(key,title,cnt,tools,foldable=true){
   const open=!S.fold[key];
   const head=foldable
@@ -1385,7 +1402,7 @@ function go(ws,tab){
   const w=WS.find(x=>x.id===ws)||WS[0];S.ws=w.id;
   if(w.tabs.length){const erlaubt=t=>w.tabs.some(x=>x[0]===t)||(w.versteckt||[]).includes(t);if(tab&&erlaubt(tab))S.tab[w.id]=tab;if(!erlaubt(S.tab[w.id]))S.tab[w.id]=w.tabs[0][0]}
   store.set('tab',S.tab);S.lq={};S.calDay=null;S.shown=40;
-  const hash='#'+w.id+(w.tabs.length?'/'+S.tab[w.id]:'');if(location.hash!==hash)history.replaceState(null,'',hash);
+  const hash='#'+w.id+(w.tabs.length?'/'+S.tab[w.id]:'');if(location.hash!==hash)history.replaceState(history.state,'',hash);
   render();window.scrollTo({top:0});
 }
 function fromHash(){const [ws,tab]=location.hash.replace('#','').split('/');go(ws||PREF.start||'news',tab)}
@@ -1661,6 +1678,12 @@ function topEntdoppeln(arr,max,proHausMax){
   let sport=0;
   const out=[],zaehler={};
   const passt=a=>!out.some(b=>dubNah(a,b));
+  /* Meldungen, über die mindestens zwei Häuser berichten, kommen zuerst –
+     eine Top-Meldung aus nur einer Quelle ist selten wirklich eine. Einzel-
+     meldungen füllen danach auf (Eilmeldungen zählen wie zwei Häuser). */
+  const haeuser=a=>{try{return 1+new Set(clusterArts(a).map(x=>x._qb||hausVon(x.src))).size}catch(e){return 2}};
+  const breit=arr.filter(a=>a.priority==='eil'||haeuser(a)>=2);
+  if(breit.length>=Math.min(max,6))arr=[...breit,...arr.filter(a=>!breit.includes(a))];
   /* Erster Durchgang mit Hausgrenze: sonst füllt ein einziges Fachmedium
      die halbe Liste, wie zuletzt vier Heise-Meldungen von acht Plätzen. */
   for(const a of arr){
@@ -1944,11 +1967,20 @@ function chartZeiger(m,s,range){
   box.onmousemove=e=>show(e.clientX);box.onmouseleave=hide;
   box.ontouchstart=box.ontouchmove=e=>{show(e.touches[0].clientX)};box.ontouchend=hide;
 }
+const MARKT_WERBUNG_RE=/^\s*(anzeige|werbung|sponsored|advertorial|promotion)\b|reduziert bei amazon|\bdeal[s]? des tages\b|gutschein|rabattcode|jetzt (günstig|reduziert)|\bwow\b|wochenrückblick/i;
+const MARKT_BEGRIFFE={'BZ=F':['ölpreis','ölpreise','rohöl','opec','oil price','crude'],'CL=F':['wti','ölpreis','rohöl','crude'],'TTF=F':['gaspreis','gaspreise','erdgas','lng','gas price'],
+  'NG=F':['henry hub','erdgas','natural gas'],'GC=F':['goldpreis','gold price'],'HG=F':['kupferpreis','kupfer','copper'],'^GDAXI':['dax','deutsche börse'],'^GSPC':['s&p 500','wall street'],
+  'EURUSD=X':['euro','dollar','devisen'],'DE10Y':['bundesanleihe','bundesanleihen','rendite','renditen'],'^TNX':['treasury','treasuries','us-anleihen'],'ZW=F':['weizen','wheat','getreide'],
+  'CC=F':['kakao','cocoa'],'KC=F':['kaffee','coffee'],'SB=F':['zucker','sugar'],'EUA':['co2-preis','emissionshandel','zertifikate'],'SMH':['halbleiter','chip','chips','nvidia'],'DFEN.DE':['rüstung','rüstungsaktien','rheinmetall']};
 function openMarket(sym){
   const m=MARKET_BY_SYM[sym];if(!m)return;S.mkSym=sym;
   const d=mkData(m,S.mkRange),up=d.c>=0,drin=watchlist().includes(sym);
   const s=d.s,min=Math.min(...s),max=Math.max(...s);
-  const rel=ARTICLES.filter(a=>a.ago<=72&&norm(a.title+' '+a.desc).match(new RegExp(norm(m.n.split(' ')[0]),'i'))).slice(0,3);
+  /* Ganze Wörter statt Teilstücken – "Brent" traf vorher "Sabrent" in einer
+     Amazon-Anzeige. Dazu Begriffe je Wert und kein Rauschen, keine Werbung. */
+  const woerter=[norm(m.n.split(/[\s(]/)[0]),...(MARKT_BEGRIFFE[m.sym]||[])].filter(w=>w&&w.length>=3);
+  const mre=new RegExp('(^|[^a-zäöüß0-9])('+woerter.map(escRe).join('|')+')([^a-zäöüß0-9]|$)','i');
+  const rel=nurEinmal(ohneRauschen(ARTICLES.filter(a=>a.ago<=72&&!MARKT_WERBUNG_RE.test(a.title)&&!(typeof WERBUNG_RE!=='undefined'&&WERBUNG_RE.test(a.title))&&mre.test(norm(a.title+' '+(a.desc||'')))))).sort((a,b)=>b.date-a.date).slice(0,4);
   const alle=nurEinmal(ohneRauschen(ARTICLES.filter(a=>a.ago<=48&&a.topics.some(t=>['energie','finanzen','wirtschaft','handel'].includes(t))))).slice(0,4);
   const news=rel.length?rel:alle;window.MKDLIST=news.map(a=>a.id);
   g('mkd-h').textContent=m.n;
@@ -2287,6 +2319,19 @@ function renderTrends(){
     for(let i=0;i<ws.length;i++)for(let j=i+1;j<ws.length;j++){paare++;for(const w of ws[i])if(ws[j].has(w)){treffer++;break}}
     return paare&&treffer/paare>=0.4;
   });
+  /* Zwei Begriffe, die dieselben Meldungen tragen ("14. Testflug · SpaceX"
+     und "SpaceX's Starship"), sind ein Thema: die schwächere Zeile geht in
+     der stärkeren auf und steht dort als "auch". */
+  if(mode!=='topics'){
+    const behalten=[];
+    for(const kv of kandidaten){
+      const ids=new Set(kv[1].ids);
+      const ziel=behalten.find(([k2,v2])=>{let n=0;for(const id of v2.ids)if(ids.has(id))n++;return n>=Math.min(ids.size,v2.ids.length)*0.6});
+      if(ziel){(ziel[1]._auch=ziel[1]._auch||[]).push(kv[1].label);continue}
+      behalten.push(kv);
+    }
+    kandidaten=behalten;
+  }
   const rows=kandidaten.slice(0,mode==='topics'?14:20);
   /* Kennzahlen je Zeile – nur für die angezeigten, damit es schnell bleibt. */
   const info={};
@@ -2335,7 +2380,7 @@ function renderTrends(){
     const cls=!pn?'new':d>=2?'up':d<=-2?'dn':'eq';
     const sel=S.trendPick===k;
     return `<div class="trend2" role="button" tabindex="0" aria-pressed="${sel}" style="${sel?'background:var(--blue-lt)':''}" onclick="S.trendPick=${sel?'null':`'${k}'`};render()" onkeydown="if(event.key==='Enter'){S.trendPick=${sel?'null':`'${k}'`};render()}">
-      <div class="kopf"><span><b>${esc(v.label)}</b>${I.qual?` <span class="trend-q">· ${esc(I.qual)}</span>`:''}</span><span class="mv ${cls}">${mv}</span></div>
+      <div class="kopf"><span><b>${esc(v.label)}</b>${I.qual?` <span class="trend-q">· ${esc(I.qual)}</span>`:''}${(v._auch||[]).length?` <span class="trend-q" style="font-weight:400">(auch: ${v._auch.slice(0,2).map(esc).join(', ')})</span>`:''}</span><span class="mv ${cls}">${mv}</span></div>
       <div class="zahlen"><span class="spark-w" title="Meldungen im Zeitraum: links vor ${S.win===24?'24 Stunden':S.win===72?'drei Tagen':'sieben Tagen'}, rechts jetzt">${trendVerlauf(I.arts,S.win)}<span class="spark-l"><span>${S.win===24?'−24 h':S.win===72?'−3 T':'−7 T'}</span><span>jetzt</span></span></span><span class="note">${v.n} ${v.n===1?'Meldung':'Meldungen'} · ${(v.h||v.s).size} Häuser${I.reg.length?' · '+I.reg.join(' · '):''}</span></div>
       ${I.leit&&mode!=='topics'?`<div class="leit"><span class="trend-lbl">Worum es geht</span> ${esc(I.satz)}</div>`:''}
       ${I.zweit&&mode!=='topics'?`<div class="einord"><span class="trend-lbl">Auch</span> ${esc(I.zweit.title)} <span class="note">– ${esc(I.zweit.src)}</span></div>`:''}
@@ -2482,10 +2527,17 @@ function renderMarkets(){
   b+=`<p class="note" style="margin-top:12px">${typeof DEMO!=='undefined'&&DEMO?'Kurse sind hier erzeugte Beispielwerte. ':'Tagesschlusskurse, verzögert – zur Einordnung, nicht zum Handel.'}</p>`;
   return h+body('mkr',b);
 }
+const _archGrund={key:'',list:[]};
 function renderArchive(){
   if(typeof archivLaden==='function')archivLaden();
   const pool=typeof archivPool==='function'?archivPool():ARTICLES.filter(a=>a.ago>48);
-  const list=entdoppeln(ohneRauschen(pool.filter(a=>a.ago<=S.archRange*24&&inRegion(a)&&matchLQ('ar',a)&&(S.herkunft==='all'||a.herkunft===S.herkunft))).sort((a,b)=>b.date-a.date));
+  /* Die Grundmenge (Zeitraum, Region, Herkunft, ohne Rauschen, entdoppelt)
+     ändert sich beim Tippen nicht – sie wird einmal gebildet und gemerkt;
+     die Suche filtert nur noch diese Liste. */
+  const gkey=[pool.length,S.archRange,S.region,S.herkunft,PREF.rauschen,PREF.dedupe].join('|');
+  if(_archGrund.key!==gkey){_archGrund.key=gkey;_archGrund.list=entdoppeln(ohneRauschen(pool.filter(a=>a.ago<=S.archRange*24&&inRegion(a)&&(S.herkunft==='all'||a.herkunft===S.herkunft))).sort((a,b)=>b.date-a.date))}
+  const q=norm(S.lq.ar||'').trim();
+  const list=q?_archGrund.list.filter(a=>(a._such||(a._such=norm(a.title+' '+a.src+' '+(a.desc||'').slice(0,300)))).includes(q)):_archGrund.list;
   window.ARCHLIST=list.map(a=>a.id);
   const stand=typeof ARCH!=='undefined'&&ARCH.monate?`${ARCH.geladen.size} von ${ARCH.monate.length} Monaten geladen`:'';
   let h=`<div class="bar" style="margin-bottom:10px"><button class="btn sm quiet" onclick="go('news','top')">← Zurück zu den Nachrichten</button></div>`;
@@ -2683,7 +2735,8 @@ function renderVotes(){
     const z=v.abstimmung,ab=z.ja+z.nein+z.enthalten||1;
     return `<div class="proc" role="button" tabindex="0" style="cursor:pointer" onclick="openReader('${v.id}',ABLIST)" onkeydown="rowKey(event,'${v.id}')">
       <div><b style="font-size:var(--fs-md);line-height:1.3">${esc(v.title)}</b></div>
-      <div class="meta" style="margin-top:4px"><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span><span>${[vorlagenArt(v),v.thema&&!/beschlussempfehlung/i.test(v.thema)?v.thema:'',z.rechnerisch?'Handzeichen':'namentlich',v.wp&&v.wp!==WP_AKTUELL?v.wp+'. WP':''].filter(Boolean).map(esc).join(' · ')}</span><span class="note">${esc(z.datum||fmtAgo(v.date))}</span></div>
+      ${(()=>{const w=v.wirkung||{text:v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt',an:v.ergebnis==='angenommen'};
+        return `<div class="ab-zeile"><span class="pill ${w.an===false?'red':w.an===null?'grey':'green'}">${esc(w.text)}</span><span class="note">${[w.zusatz||(v.thema&&!/beschlussempfehlung/i.test(v.thema)?v.thema:''),z.rechnerisch?'Handzeichen':'namentlich',datumKurz(z.datum)||fmtAgo(v.date),v.wp&&v.wp!==WP_AKTUELL?v.wp+'. WP':''].filter(Boolean).map(esc).join(' · ')}</span></div>`})()}
       <div class="sitz" style="padding:6px 0 0;border:0"><div class="balken" style="height:12px">${['ja','enthalten','nein'].map(k=>z[k]?`<i style="width:${(z[k]/ab*100).toFixed(2)}%;background:${STIMM_FARBE[k]}" title="${STIMM_LABEL[k]}: ${z[k]}"></i>`:'').join('')}<span class="mitte"></span></div></div>
       <div class="meta" style="margin-top:6px">${z.rechnerisch?`${(z.seiten.dafuer||[]).length?`<span>dafür: ${esc(z.seiten.dafuer.join(', '))}</span>`:''}${(z.seiten.dagegen||[]).length?`<span>dagegen: ${esc(z.seiten.dagegen.join(', '))}</span>`:''}${(z.seiten.enthalten||[]).length?`<span>Enthaltung: ${esc(z.seiten.enthalten.join(', '))}</span>`:''}`:`<span>${z.ja} Ja</span><span>${z.enthalten} Enthaltungen</span><span>${z.nein} Nein</span>${z.abwesend?`<span>${z.abwesend} nicht abgegeben</span>`:''}`}</div></div>`}).join(''):`<div class="empty"><b>Keine Abstimmungen</b>${VOTES.length?'Anderer Filter oder kürzerer Suchbegriff.':'Sobald der Lauf <code>votes.json</code> erzeugt hat, stehen die namentlichen Abstimmungen hier.'}</div>`}${list.length>150?`<div class="more"><span class="note">150 von ${list.length} angezeigt</span></div>`:''}</div>`;
   h+=`<p class="note" style="margin-top:10px">Namentliche Abstimmungen: abgeordnetenwatch.de, mit jeder einzelnen Stimme. Abstimmungen per Handzeichen: aus den Plenarprotokollen gelesen – dort steht nur das Votum der Fraktionen; die Stimmenzahlen sind aus den Fraktionsstärken hochgerechnet.</p>`;
@@ -2750,6 +2803,7 @@ function renderElections(){
     const sitze=e.parlament?sitzAnteile(e.kammer):null;
     return `<div class="box" style="padding:14px 16px;margin-bottom:10px;cursor:pointer" role="button" tabindex="0" onclick="openReader('${e.id}',WAHLLIST)" onkeydown="rowKey(event,'${e.id}')">
       <div class="bar"><b style="font-size:var(--fs-md)">${esc(e.title)}</b><span class="pill blue">in ${days} Tagen</span><span class="note">${fmtDay(e.date)}</span>${e.parlament?'':'<span class="pill grey">keine Volkswahl</span>'}</div>
+      <div class="wahl-was">${e.gremium?`<span><b>Gewählt wird:</b> ${esc(e.gremium)}</span>`:''}${e.wer?`<span><b>Es wählen:</b> ${esc(e.wer)}</span>`:''}${e.ort?`<span><b>Wo:</b> ${esc(e.ort)}</span>`:''}</div>
       ${e.parlament?'':'<p class="note" style="margin-top:6px">Gewählt wird nicht an der Urne, sondern von der Bundesversammlung – Parteiumfragen sagen darüber wenig aus.</p>'}
       ${e.polls?`<div style="margin-top:10px"><div class="meta" style="margin-bottom:4px"><span>Umfrage</span>${e.quelle?`<span>${esc(e.quelle)}</span>`:''}${e.stand?`<span>Stand ${esc(e.stand)}</span>`:''}${sitze?'<span>Strich: heutige Sitze</span>':''}${typeof DEMO!=='undefined'&&DEMO?'<span class="pill amber">Beispielwerte</span>':''}</div>${e.polls.map(([n,v,c])=>{
         const jetzt=sitze?sitze[fraktionKanon(n)]:null;
@@ -2839,7 +2893,7 @@ function redenHTML(x){
       const folgen=frage?[]:(e.abstimmungen||[]).map(id=>ITEMS[id]).filter(Boolean);
       const chips=[];const gesehen=new Set();
       folgen.forEach(v=>{const t=(v.title||'').replace(/^Abstimmung zu /i,'');
-        const l=`${v.thema?v.thema+': ':''}${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}`;const k=l+'|'+t;
+        const l=(v.wirkung&&v.wirkung.text)||`${v.thema?v.thema+': ':''}${v.ergebnis==='angenommen'?'angenommen':'abgelehnt'}`;const k=l+'|'+t;
         if(gesehen.has(k))return;gesehen.add(k);chips.push({v,l,t})});
       const link=e.link||protokollLink(e.sitzung);
       const art=e.art||'Rede';
@@ -2851,9 +2905,9 @@ function redenHTML(x){
           /* Bis zu zwei Abstimmungen als Knopf; mehr (etwa bei Sammel-
              abstimmungen ohne Aussprache) zusammengefasst und aufklappbar. */
           const knopf=({v,l,t})=>`<button class="chip" style="min-height:26px;padding:1px 10px;font-size:var(--fs-xs);text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="openReader('${v.id}')" title="${esc(v.title||'')}">${esc(l)}${t?` · ${esc(t.slice(0,48))}${t.length>48?'…':''}`:''}</button>`;
-          if(chips.length<=2)return `<div class="meta" style="margin-top:6px">${chips.map(knopf).join('')}</div>`;
+          if(chips.length<=2)return `<div class="meta" style="margin-top:6px"><span class="note">Abstimmung danach:</span>${chips.map(knopf).join('')}</div>`;
           const an=chips.filter(c=>c.v.ergebnis==='angenommen').length;
-          return `<details class="auf" style="margin-top:6px"><summary>Danach abgestimmt: ${chips.length} Vorlagen (${an} angenommen, ${chips.length-an} abgelehnt)</summary><div class="meta" style="margin-top:4px;flex-direction:column;align-items:flex-start">${chips.map(knopf).join('')}</div></details>`;
+          return `<details class="auf" style="margin-top:6px"><summary>Im Anschluss an diese Debatte stimmte der Bundestag über ${chips.length} Vorlagen ab (${an} angenommen, ${chips.length-an} abgelehnt) – anzeigen</summary><div class="meta" style="margin-top:4px;flex-direction:column;align-items:flex-start">${chips.map(knopf).join('')}</div></details>`;
         })():''}
       </div>`});
       /* Die ersten drei Reden offen, weitere hinter "weitere Reden". */
@@ -3315,8 +3369,19 @@ function clearMarks(quiet){MARKS.clear();store.set('marks',[]);updateMarks();ren
 
 /* ───────────────────────────── Sheets & Reader ───────────────────────────── */
 let lastFocus=null;
-function openSheet(name){lastFocus=document.activeElement;if(name==='marks')renderMarks();if(name==='account')renderAccount();if(name==='settings')renderSettings();const s=g('sheet-'+name);s.classList.add('open');document.body.style.overflow='hidden';s.querySelector('.panel').focus()}
-function closeSheet(name){g('sheet-'+name).classList.remove('open');if(!document.querySelector('.sheet.open'))document.body.style.overflow='';if(name==='reader'){S.reader=null;document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'))}lastFocus&&lastFocus.focus&&lastFocus.focus()}
+/* Android (und Wischgeste am iPhone): "Zurück" schließt das offene Fenster
+   oder den PDF-Leser, statt die Seite zu verlassen. Dafür bekommt jedes
+   geöffnete Fenster einen eigenen Verlaufseintrag. */
+let _zurueckIgnorieren=false;
+function _verlaufAuf(art){if(!(history.state&&history.state.presseschau)){try{history.pushState({presseschau:art},'',location.hash)}catch(e){}}}
+function _verlaufZu(){if(history.state&&history.state.presseschau){_zurueckIgnorieren=true;history.back()}}
+window.addEventListener('popstate',()=>{
+  if(_zurueckIgnorieren){_zurueckIgnorieren=false;return}
+  const pdf=g('pdf-ov');if(pdf&&!pdf.hidden){pdfSchliessen(true);return}
+  const offen=document.querySelector('.sheet.open');if(offen)closeSheet(offen.id.replace('sheet-',''),true);
+});
+function openSheet(name){_verlaufAuf('sheet');lastFocus=document.activeElement;if(name==='marks')renderMarks();if(name==='account')renderAccount();if(name==='settings')renderSettings();const s=g('sheet-'+name);s.classList.add('open');document.body.style.overflow='hidden';s.querySelector('.panel').focus()}
+function closeSheet(name,vomZurueck){g('sheet-'+name).classList.remove('open');if(!vomZurueck&&!document.querySelector('.sheet.open'))_verlaufZu();if(!document.querySelector('.sheet.open'))document.body.style.overflow='';if(name==='reader'){S.reader=null;document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'))}lastFocus&&lastFocus.focus&&lastFocus.focus()}
 function openReader(id,list){
   const x=ITEMS[id];if(!x)return;
   /* Inline-Modus: Meldungen klappen in der Liste auf, statt ein Fenster zu öffnen.
@@ -3449,6 +3514,9 @@ function openReader(id,list){
     b=`<div class="meta"><span class="src">${esc(x.org)}</span></div><h3 class="reader-title">${esc(x.name)}</h3><div class="sec-hd" style="margin:12px 0 4px"><h2 style="font-size:var(--fs-md)">Mitglieder im Verzeichnis</h2><span class="cnt">${x.members.filter(id=>ITEMS[id]).length}</span></div><div class="box">${x.members.map(id=>ITEMS[id]).filter(Boolean).map(p=>`<div class="person" role="button" tabindex="0" onclick="openReader('${p.id}')" onkeydown="rowKey(event,'${p.id}')"><span class="tile" style="background:${p.color}">${initials(p.name)}</span><div><div class="nm">${esc(p.name)}</div><div class="role">${esc(p.role)}</div></div><span></span></div>`).join('')}</div>`;
   }
   if(x.kind==='article'){window.READERSRC=clusterArts(x).map(y=>y.id);window.READERREL=verwandt(x).map(y=>y.id)}
+  /* Bild der Meldung klein oben – lädt nur, wenn vorhanden, und
+     verschwindet still, wenn der Server es nicht herausgibt. */
+  if(x.kind==='article'&&x.image&&/^https?:/.test(x.image))b=`<img class="rd-bild" src="${esc(x.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`+b;
   g('reader-body').innerHTML=b;g('reader-body').scrollTop=0;renderReaderFooter();
   const i=S.readerList.indexOf(id);g('reader-prev').disabled=i<=0;g('reader-next').disabled=i<0||i>=S.readerList.length-1;
   document.querySelectorAll('.row.active,.card.active').forEach(r=>r.classList.remove('active'));document.querySelectorAll(`#page [data-id="${id}"]`).forEach(r=>r.classList.add('active'));
@@ -3611,7 +3679,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v54 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v56 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -4287,6 +4355,23 @@ function beschlussKurz(t){
   const p=s.search(/[.?!]\s+[A-ZÄÖÜ]/);
   return p>0&&p<200?s.slice(p+2):s;
 }
+function empfehlungAus(t){
+  const m=String(t||'').match(/empfiehlt[^.]{0,500}?(abzulehnen|ablehnen|anzunehmen|annehmen|für erledigt zu erklären|erledigt)/i);
+  if(!m)return '';const w=m[1].toLowerCase();
+  return /ableh|abzuleh/.test(w)?'Ablehnung':/erledigt/.test(w)?'Erledigung':'Annahme';
+}
+/* Klartext: "Antrag abgelehnt", "Gesetz beschlossen", "Beschlussempfehlung
+   angenommen". Grün, wenn die Vorlage angenommen wurde, rot, wenn nicht. */
+function wirkungVon(ergebnis,empf,vtyp,stufe){
+  const vorlage=vtyp&&!/beschlussempfehlung/i.test(vtyp)?vtyp.replace(/^Gesetzgebung$/,'Gesetzentwurf'):'';
+  if(empf==='Ablehnung'){
+    if(ergebnis==='angenommen')return {text:(vorlage||'Vorlage')+' abgelehnt',an:false,zusatz:'Beschlussempfehlung (Ablehnung) angenommen'};
+    return {text:(vorlage||'Vorlage')+' nicht abgelehnt',an:true,zusatz:'Beschlussempfehlung (Ablehnung) abgelehnt'};
+  }
+  if(empf==='Erledigung')return {text:(vorlage||'Vorlage')+' für erledigt erklärt',an:null,zusatz:'Beschlussempfehlung angenommen'};
+  if(/gesetz/i.test(vorlage)&&/schluss/i.test(stufe))return {text:ergebnis==='angenommen'?'Gesetz beschlossen':'Gesetz abgelehnt',an:ergebnis==='angenommen',zusatz:'Schlussabstimmung'};
+  return {text:(vorlage||(empf==='Annahme'?'Vorlage':'Vorlage'))+' '+(ergebnis==='angenommen'?'angenommen':'abgelehnt'),an:ergebnis==='angenommen',zusatz:empf==='Annahme'?'Beschlussempfehlung (Annahme)':''};
+}
 /* Titel der Vorlage aus dem Protokolltext: "Entwurfs eines Gesetzes zur …",
    "Antrag der Fraktion … – Stärkung der …", "Antrag … mit dem Titel „…“". */
 function vorlagenTitel(t){
@@ -4321,6 +4406,7 @@ function mapPlenum(j){
     /* "Abstimmung zu Drucksache …" sagt niemandem etwas. Erst im Protokoll-
        text nach dem Titel der Vorlage suchen, dann beim zugehörigen
        Gesetzgebungsvorgang (über die Drucksache). */
+    if(v.vorlage&&(!titel||/^(abstimmung|beschlussempfehlung des|gesetzentwurf$|antrag$)/i.test(titel)||titel.length<26))titel=v.vorlage;
     if(!titel||/^abstimmung\b/i.test(titel)||/^beschlussempfehlung des ausschusses/i.test(titel)){
       const ausText=vorlagenTitel(v.text||'');
       const vf=(v.drucksachen||[]).length?PROCS.find(p=>(p._drs||[]).some(d=>v.drucksachen.includes(d))):null;
@@ -4335,7 +4421,12 @@ function mapPlenum(j){
     else titel=titel.replace(/\s+auf\s+Drucksachen?\s+[\d\/,\s und]+/i,' ').trim();
     titel=titel?titel.charAt(0).toUpperCase()+titel.slice(1):('Abstimmung'+((v.drucksachen||[]).length?' zu Drucksache '+v.drucksachen[0]:''));
     const ergebnis=v.ergebnis||(z.ja>z.nein?'angenommen':'abgelehnt');
-    return {id:String(v.id||('pl'+i)),kind:'vote',title:titel,date:t,ago:(NOW-t)/H,src:'Bundestag',
+    /* Was bedeutet das Ergebnis für die Vorlage? Eine angenommene Beschluss-
+       empfehlung, die Ablehnung empfiehlt, heißt: Antrag ABGELEHNT. */
+    const empf=v.empfehlung||empfehlungAus(v.text||'');
+    const vtyp=v.vorlage_typ||(/entschließungsantrag/i.test(v.text||'')?'Entschließungsantrag':/gesetzentwurf|entwurf eines gesetzes/i.test((v.text||'')+' '+titel)?'Gesetzentwurf':/antrag/i.test(v.text||'')?'Antrag':'');
+    const wirkung=wirkungVon(ergebnis,empf,vtyp,v.stufe||'');
+    return {id:String(v.id||('pl'+i)),kind:'vote',title:titel,empfehlung:empf,wirkung,vtyp,date:t,ago:(NOW-t)/H,src:'Bundestag',
       link:v.link||'#',regions:['de'],topics:[],thema:v.stufe||'',desc:'',ergebnis,drucksachen:v.drucksachen||[],
       wp:+v.wahlperiode||+(String(v.sitzung||'').split('/')[0])||WP_AKTUELL,
       abstimmung:{datum:v.datum||'',namentlich:false,rechnerisch:true,wp:+v.wahlperiode||0,ja:z.ja,nein:z.nein,enthalten:z.enthalten,abwesend:0,
@@ -4386,6 +4477,30 @@ function fraktionKanon(name){
   if(/freie wähler|\bfw\b/.test(t))return 'fw';
   return t.replace(/[^a-z0-9]/g,'');
 }
+/* Was wird gewählt, wo, und wer wählt? Aus Art und Region der Wahl – und
+   für den Bund aus dem Kalender (die Bundesversammlung ist keine Volkswahl).
+   Statt "Deutschland" steht dann "Wahl des Bundespräsidenten". */
+const LAENDER=['Baden-Württemberg','Bayern','Berlin','Brandenburg','Bremen','Hamburg','Hessen','Mecklenburg-Vorpommern','Niedersachsen','Nordrhein-Westfalen','Rheinland-Pfalz','Saarland','Sachsen','Sachsen-Anhalt','Schleswig-Holstein','Thüringen'];
+const BUNDESVERSAMMLUNG_TERMINE=['2027-01-30'];
+function wahlBeschreiben(e,parlament){
+  const typ=String(e.type||'').trim(),reg=String(e.region||'').trim(),t=norm(typ+' '+reg);
+  const datum=String(e.date||'').slice(0,10);
+  const bund=/^(deutschland|bund|bundesrepublik|germany)?$/i.test(norm(reg))||/^deutschland$/i.test(reg);
+  if(!parlament||/bundespräsident|bundesprasident|bundesversammlung/.test(t)||(bund&&!typ&&BUNDESVERSAMMLUNG_TERMINE.includes(datum)))
+    return {art:'Bundespräsidentenwahl',titel:'Wahl des Bundespräsidenten',gremium:'Bundespräsident oder Bundespräsidentin',wer:'Bundesversammlung: alle Bundestagsabgeordneten und ebenso viele Delegierte der Länder',ort:'Berlin'};
+  if(/bundestag/.test(t)||(bund&&/parlament|wahl$/.test(norm(typ))))
+    return {art:'Bundestagswahl',titel:'Bundestagswahl',gremium:'Deutscher Bundestag',wer:'Wahlberechtigte in ganz Deutschland',ort:'Deutschland'};
+  if(/europa/.test(t))return {art:'Europawahl',titel:'Europawahl',gremium:'Europäisches Parlament (96 Sitze für Deutschland)',wer:'Wahlberechtigte in der EU',ort:reg||'EU'};
+  const land=LAENDER.slice().sort((x,y)=>y.length-x.length).find(l=>norm(reg).includes(norm(l))||norm(typ).includes(norm(l)));
+  if(land&&/kommunal|gemeinde|kreistag|stadtrat|oberbürgermeister|oberburgermeister|bürgermeister|landrat/.test(t))
+    return {art:typ||'Kommunalwahl',titel:`${typ||'Kommunalwahl'} in ${reg||land}`,gremium:typ||'Kommunale Vertretungen',wer:`Wahlberechtigte in ${reg||land}`,ort:reg||land};
+  if(land){
+    const organ=land==='Berlin'?'Abgeordnetenhaus von Berlin':land==='Hamburg'||land==='Bremen'?`Bürgerschaft ${land}`:`Landtag ${land}`;
+    return {art:'Landtagswahl',titel:`${land==='Berlin'?'Abgeordnetenhauswahl':land==='Hamburg'||land==='Bremen'?'Bürgerschaftswahl':'Landtagswahl'} in ${land}`,gremium:organ,wer:`Wahlberechtigte in ${land}`,ort:land};
+  }
+  if(/präsident|prasident|president/.test(t))return {art:'Präsidentschaftswahl',titel:`Präsidentschaftswahl in ${reg}`,gremium:'Staatsoberhaupt',wer:`Wahlberechtigte in ${reg}`,ort:reg};
+  return {art:typ||'Parlamentswahl',titel:`${typ||'Parlamentswahl'}${reg?' in '+reg:''}`,gremium:typ&&!/wahl$/i.test(typ)?typ:'Parlament',wer:reg?`Wahlberechtigte in ${reg}`:'',ort:reg};
+}
 function mapWahlen(el){
   const wahlen=(el.elections||[]).filter(e=>e.status!=='past').sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,12);
   return wahlen.map(e=>{
@@ -4398,7 +4513,9 @@ function mapWahlen(el){
     const parlament=!/bundespräsident|bundesprasident|bundesversammlung|staatsoberhaupt/.test(art);
     const kammer=!parlament?'':/bundestag/.test(art)?'bt':/europa/.test(art)?'ep':
       (LAND_CODE[norm(e.region||'')]?'lt-'+LAND_CODE[norm(e.region||'')]:'');
-    return {id:'wahl-'+(e.id||e.region_id),kind:'election',title:(e.region||'')+(e.type?' · '+e.type:''),region:e.region||'',typ:e.type||'',
+    const w=wahlBeschreiben(e,parlament);
+    return {id:'wahl-'+(e.id||e.region_id),kind:'election',title:w.titel,region:e.region||'',typ:e.type||'',
+      gremium:w.gremium,wer:w.wer,ort:w.ort,art:w.art,
       date:new Date(e.date).getTime(),polls:parteien,parlament,kammer,
       quelle:umfrage&&umfrage.institute?umfrage.institute:'',stand:umfrage&&umfrage.date?umfrage.date:'',link:e.link||e.url||'#',src:e.type||'Wahl',regions:['de']};
   });
@@ -4920,7 +5037,7 @@ async function pdfOeffnen(url,titel){
     <div class="pdf-tools"><button class="btn sm quiet" onclick="pdfZoom(-0.2)" aria-label="Verkleinern">−</button><button class="btn sm quiet" onclick="pdfZoom(0.2)" aria-label="Vergrößern">+</button>
     <a class="btn sm quiet" href="${esc(url)}" target="_blank" rel="noopener" data-extern="1">Extern</a><button class="btn sm" onclick="pdfSchliessen()" aria-label="Schließen">✕</button></div></div>
     <div class="pdf-seiten" id="pdf-seiten"></div>`;
-  ov.hidden=false;document.body.style.overflow='hidden';
+  ov.hidden=false;document.body.style.overflow='hidden';_verlaufAuf('pdf');
   try{
     const lib=await Promise.race([pdfjsLaden(),new Promise((_,f)=>setTimeout(()=>f(new Error('Zeitüberschreitung')),12000))]);
     PDF.doc=await lib.getDocument({url,withCredentials:false}).promise;
@@ -4928,9 +5045,15 @@ async function pdfOeffnen(url,titel){
     pdfSeitenAnlegen();
   }catch(e){
     /* Fremder Server ohne Einbett-Erlaubnis: Browser-Anzeiger im Rahmen */
-    g('pdf-info').textContent='Direktes Laden nicht erlaubt – Anzeige über den Browser';
-    g('pdf-seiten').innerHTML=`<iframe class="pdf-rahmen" src="${esc(url)}" title="${esc(titel||'PDF')}"></iframe>
-      <p class="note" style="padding:10px">Zeigt dein Gerät hier nur die erste Seite oder nichts, öffne die Datei über „Extern".</p>`;
+    /* Der Server erlaubt das direkte Einlesen nicht (so bei den meisten
+       Bundestags- und Behörden-PDFs). Dann zeigt der Dokumentenanzeiger von
+       Google die öffentliche Datei an – alle Seiten, auch auf dem iPhone.
+       Nur für öffentliche Dateien; Dateien aus dem eigenen Repo laufen
+       immer direkt über pdf.js. */
+    const gv='https://docs.google.com/gview?embedded=true&url='+encodeURIComponent(url);
+    g('pdf-info').textContent='Anzeige über den Google-Dokumentenanzeiger';
+    g('pdf-seiten').innerHTML=`<iframe class="pdf-rahmen" src="${esc(gv)}" title="${esc(titel||'PDF')}"></iframe>
+      <p class="note" style="padding:10px">Bleibt die Anzeige leer, lädt der Anzeiger noch oder die Datei ist zu groß – dann über „Extern" öffnen.</p>`;
   }
 }
 function pdfSeitenAnlegen(){
@@ -4953,7 +5076,7 @@ async function pdfSeiteZeichnen(el){
   await seite.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
 }
 function pdfZoom(d){PDF.zoom=Math.min(3,Math.max(0.6,+(PDF.zoom+d).toFixed(1)));document.querySelectorAll('#pdf-seiten .pdf-seite').forEach(el=>{if(el.getBoundingClientRect().top<innerHeight*2)pdfSeiteZeichnen(el)})}
-function pdfSchliessen(){const ov=g('pdf-ov');if(ov){ov.hidden=true;ov.innerHTML=''}document.body.style.overflow='';if(PDF.beob)PDF.beob.disconnect();PDF.doc=null}
+function pdfSchliessen(vomZurueck){if(!vomZurueck&&!document.querySelector('.sheet.open'))_verlaufZu();const ov=g('pdf-ov');if(ov){ov.hidden=true;ov.innerHTML=''}document.body.style.overflow='';if(PDF.beob)PDF.beob.disconnect();PDF.doc=null}
 /* Jeder Link auf eine PDF öffnet den Leser – außer "Extern" und bei
    gedrückter Taste (neuer Tab wie gewohnt). */
 document.addEventListener('click',ev=>{

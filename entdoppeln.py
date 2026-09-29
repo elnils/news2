@@ -36,6 +36,7 @@ import sys
 from datetime import datetime
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
+GESEHEN = "gesehen.json"          # uid → wann zuerst gesehen (14 Tage)
 DATEIEN = ["articles.json", "eu_articles.json", "bundestag_articles.json",
            "laender_articles.json", "us_articles.json"]
 FENSTER_S = 12 * 3600
@@ -95,6 +96,9 @@ NAME_ZU_DOMAIN = {}      # aus allen Meldungen mit echter Adresse gelernt: "tage
 
 
 def haus_von(a):
+    # Schon gesetzt (etwa von quellen_ergaenzen.py für Google-News-Ersatz)?
+    if a.get("haus") and "." in str(a["haus"]):
+        return a["haus"]
     d = domain(a.get("link", ""))
     if d:
         return d
@@ -119,6 +123,13 @@ def titel_schluessel(t):
     return re.sub(r"[^a-z0-9ß]+", " ", t).strip()
 
 
+def _ts(iso):
+    try:
+        return datetime.fromisoformat(str(iso).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
+
+
 def zeit(a):
     try:
         return datetime.fromisoformat(str(a.get("date", "")).replace("Z", "+00:00")).timestamp()
@@ -127,6 +138,17 @@ def zeit(a):
 
 
 def main():
+    # ZEITSTEMPEL: Manche Feeds liefern kein Datum; dann setzt der Abruf die
+    # Abrufzeit ein – und dieselbe Meldung von gestern früh steht bei jedem
+    # Lauf wieder als "gerade eben" da. Deshalb wird je Meldung (uid) der
+    # erste Zeitpunkt gemerkt, zu dem sie auftauchte. Kommt sie später mit
+    # jüngerem Datum wieder, gilt der erste.
+    try:
+        gesehen = json.load(open(GESEHEN, encoding="utf-8"))
+    except (OSError, ValueError):
+        gesehen = {}
+    jetzt = datetime.now().astimezone().timestamp()
+    korrigiert = 0
     nach_uid, nach_titel = {}, {}
     gesamt_vorher = gesamt_nachher = 0
     # Erst lernen, welcher Feedname zu welcher Domain gehört
@@ -158,6 +180,18 @@ def main():
             tkey = titel_schluessel(a.get("title", ""))
             uid = hashlib.sha1((sauber or (haus + "|" + tkey)).encode("utf-8")).hexdigest()[:14]
             a["haus"], a["uid"] = haus, uid
+            erst = gesehen.get(uid)
+            t = zeit(a)
+            if erst:
+                erst_t = datetime.fromisoformat(erst).timestamp()
+                if t > erst_t + 3600:                       # neu datiert: den ersten Zeitpunkt nehmen
+                    a["date"] = erst
+                    a["datum_korrigiert"] = True
+                    korrigiert += 1
+            else:
+                gesehen[uid] = a.get("date") if t else datetime.fromtimestamp(jetzt).astimezone().isoformat()
+                if not t:
+                    a["date"] = gesehen[uid]
             erste = nach_uid.get(uid)
             if erste is None and tkey:
                 kand = nach_titel.get((haus, tkey))
@@ -187,6 +221,13 @@ def main():
             json.dump(daten, fh, ensure_ascii=False, separators=(",", ":"))
         os.replace(tmp, datei)
         print(f"  {datei}: {len(arts)} → {len(bleiben)}")
+    grenze = jetzt - 14 * 86400
+    gesehen = {k: v for k, v in gesehen.items() if _ts(v) >= grenze}
+    tmp = GESEHEN + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(gesehen, fh, separators=(",", ":"))
+    os.replace(tmp, GESEHEN)
+    print(f"  Zeitstempel: {korrigiert} neu datierte Meldungen auf den ersten Zeitpunkt zurückgesetzt")
     print(f"→ entdoppelt: {gesamt_vorher} → {gesamt_nachher} Meldungen "
           f"({gesamt_vorher - gesamt_nachher} Kopien aus weiteren Feeds desselben Hauses)")
     return 0
