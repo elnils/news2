@@ -94,7 +94,7 @@ GEMINI_KEY = (os.environ.get("GEMINI_API") or os.environ.get("GEMINI_API_KEY") o
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 # Ersatzmodelle, falls das erste nicht (mehr) angeboten wird
 GEMINI_ERSATZ = [m.strip() for m in os.environ.get(
-    "GEMINI_ERSATZ", "gemini-2.5-flash,gemini-flash-lite-latest,gemini-2.0-flash").split(",") if m.strip()]
+    "GEMINI_ERSATZ", "gemini-flash-lite-latest").split(",") if m.strip()]
 # Gemini-Flash-Modelle "denken" vor der Antwort; das kostet Tokens und Zeit.
 # Für Zusammenfassungen reicht es ohne.
 GEMINI_DENKEN = os.environ.get("GEMINI_DENKEN", "none")
@@ -118,7 +118,7 @@ OUT = "ki_meldungen.json"
 _ALLE = {"openrouter": ["openrouter", OR_URL, OR_KEY, OR_MODEL],
          "gemini": ["gemini", GEMINI_URL, GEMINI_KEY, GEMINI_MODEL],
          "groq": ["groq", GROQ_URL, GROQ_KEY, GROQ_MODEL]}
-REIHENFOLGE = [x.strip() for x in os.environ.get("KI_REIHENFOLGE", "openrouter,gemini,groq").split(",") if x.strip() in _ALLE]
+REIHENFOLGE = [x.strip() for x in os.environ.get("KI_REIHENFOLGE", "gemini,groq,openrouter").split(",") if x.strip() in _ALLE]
 ANBIETER = [list(_ALLE[n]) for n in REIHENFOLGE if _ALLE[n][2]]
 # Fehler, bei denen der nächste Anbieter übernimmt
 WECHSEL_CODES = (401, 402, 403, 408, 429, 500, 502, 503, 504, 529)
@@ -133,19 +133,101 @@ def gemini_ersatzmodell(aktuell):
     return None
 
 
+# ── Takt je Anbieter ──────────────────────────────────────────────────
+# Die freien Stufen begrenzen Anfragen je Minute: Gemini etwa 10, OpenRouter
+# 20, Groq 30. Statt in die Sperre zu laufen (HTTP 429) und dann zu warten,
+# hält das Skript von vornherein Abstand zwischen zwei Anfragen.
+ABSTAND = {"gemini": float(os.environ.get("KI_ABSTAND_GEMINI", "6.5")),
+           "openrouter": float(os.environ.get("KI_ABSTAND_OPENROUTER", "3.5")),
+           "groq": float(os.environ.get("KI_ABSTAND_GROQ", "2.2"))}
+_zuletzt = {}
+_gemini_erschoepft = set()      # Modelle mit aufgebrauchtem Tageskontingent
+_gemini_liste = None
+
+
+def _takt(name):
+    warte = ABSTAND.get(name, 0) - (time.time() - _zuletzt.get(name, 0))
+    if warte > 0:
+        time.sleep(warte)
+    _zuletzt[name] = time.time()
+
+
+def _fehlertext(e):
+    """Fehlerantwort lesen – und für den Aufrufer wieder bereitlegen."""
+    import io as _io
+    try:
+        daten = e.read()
+    except Exception:
+        daten = b""
+    try:
+        e.fp = e.file = _io.BytesIO(daten)
+    except Exception:
+        pass
+    return daten.decode("utf-8", "replace")
+
+
+def _wartezeit(text):
+    """Wie lange laut Anbieter warten? None = Tageskontingent erschöpft
+    (Warten hilft nicht), sonst Sekunden (mindestens 20, höchstens 65)."""
+    if re.search(r"per ?day|PerDay|daily|requests per day|RPD|quota.*day", text, re.I):
+        return None
+    m = (re.search(r'"retryDelay"\s*:\s*"([\d.]+)s"', text)
+         or re.search(r"retry (?:in|after)\s*([\d.]+)\s*s", text, re.I)
+         or re.search(r"try again in\s*([\d.]+)\s*s", text, re.I))
+    return min(65.0, max(20.0, float(m.group(1)) if m else 30.0))
+
+
+def gemini_modelle():
+    """Welche Gemini-Modelle bietet Google diesem Schlüssel gerade an? Aus der
+    Modellliste statt fester Versionsnummern – "gemini-2.5-flash" gab es
+    zuletzt schon nicht mehr (HTTP 404). Bevorzugt die Aliase, die immer auf
+    das aktuelle Modell zeigen; "flash-lite" hat ein eigenes Kontingent."""
+    global _gemini_liste
+    if _gemini_liste is not None:
+        return _gemini_liste
+    namen = []
+    try:
+        req = Request(GEMINI_URL.replace("/chat/completions", "/models"),
+                      headers={"Authorization": f"Bearer {GEMINI_KEY}", "User-Agent": KI_KENNUNG})
+        with urlopen(req, timeout=20) as r:
+            daten = json.loads(r.read().decode("utf-8", "replace"))
+        for m in daten.get("data") or []:
+            mid = str(m.get("id", "")).replace("models/", "")
+            if "flash" in mid and not re.search(r"image|tts|audio|live|embed|vision|exp|preview|thinking", mid):
+                namen.append(mid)
+    except Exception as e:
+        print(f"  Gemini-Modellliste nicht abrufbar ({type(e).__name__}) – nehme die Aliase")
+    def rang(m):
+        v = re.findall(r"(\d+(?:\.\d+)?)", m)
+        return (0 if m.endswith("-latest") else 1, "lite" in m, -float(v[0]) if v else 0)
+    namen = sorted(set(namen), key=rang)
+    reihe = [GEMINI_MODEL, "gemini-flash-lite-latest"] + [m for m in namen if m not in (GEMINI_MODEL, "gemini-flash-lite-latest")]
+    _gemini_liste = [m for i, m in enumerate(reihe) if m and m not in reihe[:i]][:5]
+    print(f"  Gemini-Modelle in Reihenfolge: {', '.join(_gemini_liste)}")
+    return _gemini_liste
+
+
 def ki_urlopen(name, url, koerper, kopf, timeout):
     """Alle KI-Anfragen laufen hier durch.
     – Eigene Kennung (sonst sperrt Cloudflare vor Groq mit 403).
-    – Überlastung und Serverfehler (429, 500, 502, 503, 504): bis zu zweimal
-      warten und wiederholen (4 und 12 Sekunden), bevor der Anbieter wegfällt.
-    – Gemini: danach noch mit den Ersatzmodellen versuchen; ohne "Denken".
+    – Takt je Anbieter, damit die Minutengrenzen gar nicht erst greifen.
+    – HTTP 429: so lange warten, wie der Anbieter angibt (20–65 s), einmal;
+      ist das TAGESkontingent erschöpft, sofort weiter.
+    – Serverfehler (500, 502, 503, 504): zweimal kurz warten und wiederholen.
+    – Gemini: danach die weiteren Modelle aus der Modellliste; ohne "Denken".
     – OpenRouter 402 (kein Guthaben): auf das freie Modell ausweichen."""
     kopf = dict(kopf)
     kopf.setdefault("User-Agent", KI_KENNUNG)
+
+    def senden(k):
+        _takt(name)
+        return urlopen(Request(url, data=k, headers=kopf), timeout=timeout)
+
     if name != "gemini":
-        for versuch in range(3):
+        gewartet = False
+        for versuch in range(4):
             try:
-                return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
+                return senden(koerper)
             except HTTPError as e:
                 if e.code == 402 and name == "openrouter":
                     d = json.loads(koerper.decode("utf-8"))
@@ -154,52 +236,68 @@ def ki_urlopen(name, url, koerper, kopf, timeout):
                         koerper = json.dumps(d).encode("utf-8")
                         print(f"     OpenRouter 402 – weiter mit {d['model']}")
                         continue
-                if e.code in (429, 500, 502, 503, 504) and versuch < 2:
+                if e.code == 429 and not gewartet:
+                    w = _wartezeit(_fehlertext(e))
+                    if w is None:
+                        print(f"     {name}: Tageskontingent erschöpft – nächster Anbieter")
+                        raise
+                    print(f"     {name} HTTP 429 – {int(w)} s warten, wie vom Anbieter verlangt")
+                    time.sleep(w)
+                    gewartet = True
+                    continue
+                if e.code in (500, 502, 503, 504) and versuch < 2:
                     pause = (4, 12)[versuch]
                     print(f"     {name} HTTP {e.code} – {pause} s warten und erneut versuchen")
                     time.sleep(pause)
                     continue
                 raise
-    if name == "gemini":
-        try:
-            d = json.loads(koerper.decode("utf-8"))
-            if GEMINI_DENKEN and GEMINI_DENKEN != "aus":
-                d.setdefault("reasoning_effort", GEMINI_DENKEN)
-            koerper = json.dumps(d).encode("utf-8")
-        except ValueError:
-            pass
-        modelle = [json.loads(koerper.decode("utf-8")).get("model")] + [m for m in GEMINI_ERSATZ]
-        gesehen = set()
-        letzter = None
-        for modell in modelle:
-            if not modell or modell in gesehen:
-                continue
-            gesehen.add(modell)
-            d = json.loads(koerper.decode("utf-8"))
-            d["model"] = modell
-            koerper = json.dumps(d).encode("utf-8")
-            for versuch in range(3):
-                try:
-                    return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
-                except HTTPError as e:
-                    letzter = e
-                    if e.code == 400 and b"reasoning_effort" in koerper:
-                        d = json.loads(koerper.decode("utf-8"))
-                        d.pop("reasoning_effort", None)
-                        koerper = json.dumps(d).encode("utf-8")
-                        continue
-                    if e.code in (429, 500, 502, 503, 504) and versuch < 2:
-                        pause = (5, 15)[versuch]
-                        print(f"     Gemini {modell} HTTP {e.code} – {pause} s warten")
-                        time.sleep(pause)
-                        continue
-                    if e.code in (404, 429, 500, 502, 503, 504):
-                        print(f"     Gemini {modell} nicht verfügbar (HTTP {e.code}) – nächstes Modell")
+    # ── Gemini ──
+    letzter = None
+    for modell in [json.loads(koerper.decode("utf-8")).get("model")] + gemini_modelle():
+        if not modell or modell in _gemini_erschoepft:
+            continue
+        d = json.loads(koerper.decode("utf-8"))
+        d["model"] = modell
+        if GEMINI_DENKEN and GEMINI_DENKEN != "aus":
+            d.setdefault("reasoning_effort", GEMINI_DENKEN)
+        k = json.dumps(d).encode("utf-8")
+        gewartet = False
+        for versuch in range(4):
+            try:
+                return senden(k)
+            except HTTPError as e:
+                letzter = e
+                if e.code == 400 and b"reasoning_effort" in k:
+                    d.pop("reasoning_effort", None)
+                    k = json.dumps(d).encode("utf-8")
+                    continue
+                if e.code == 429:
+                    w = _wartezeit(_fehlertext(e))
+                    if w is None:
+                        print(f"     Gemini {modell}: Tageskontingent erschöpft – nächstes Modell")
+                        _gemini_erschoepft.add(modell)
                         break
-                    raise
-        if letzter is not None:
-            raise letzter
-    return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
+                    if not gewartet:
+                        print(f"     Gemini {modell} HTTP 429 – {int(w)} s warten, wie von Google verlangt")
+                        time.sleep(w)
+                        gewartet = True
+                        continue
+                    print(f"     Gemini {modell} weiter gedrosselt – nächstes Modell")
+                    break
+                if e.code in (500, 502, 503, 504) and versuch < 2:
+                    pause = (5, 15)[versuch]
+                    print(f"     Gemini {modell} HTTP {e.code} – {pause} s warten")
+                    time.sleep(pause)
+                    continue
+                if e.code in (404, 500, 502, 503, 504):
+                    print(f"     Gemini {modell} nicht verfügbar (HTTP {e.code}) – nächstes Modell")
+                    _gemini_erschoepft.add(modell)
+                    break
+                raise
+    if letzter is not None:
+        raise letzter
+    raise URLError("kein Gemini-Modell verfügbar")
+
 OR_MODELS_URL = "https://openrouter.ai/api/v1/models"
 # Reihenfolge der Vorlieben, wenn ein freies Modell gesucht werden muss.
 OR_VORLIEBE = ("llama-3.3", "llama-3.1", "qwen", "gemma", "mistral", "deepseek", "phi")
@@ -772,8 +870,13 @@ def _markt_tabelle():
     except Exception:
         return [], ""
     zeilen = []
+    # Je Gruppe höchstens sechs Werte, Einzelaktien nicht – sonst füllen die
+    # Indizes die Tabelle, und Zinsen, Devisen, Energie fehlen ("in den
+    # Kurslisten nicht enthalten", obwohl sie da sind).
     for gr in mk.get("groups") or []:
-        for i in gr.get("items") or []:
+        if gr.get("grp") == "Aktien":
+            continue
+        for i in (gr.get("items") or [])[:6]:
             reihen = i.get("series") or {}
             last = i.get("last")
             if last is None and i.get("s"):
@@ -825,25 +928,43 @@ def marktlage_bauen(artikel, anbieter, alt):
                       or any(t in ("finanzen", "wirtschaft", "energie", "handel") for t in (a.get("topics") or [])))
                  and not RAUSCH_RE.search(a.get("title") or "")]
     meldungen.sort(key=lambda a: (wichtig(a), a.get("date", "")), reverse=True)
-    kopf = "\n".join(f"- ({a.get('source', '')}) {a.get('title', '')}" for a in meldungen[:15])
+    # Belege: Meldungen der letzten 24 Stunden – bevorzugt FAZ, SZ, Handelsblatt,
+    # Reuters – und frische Research-Veröffentlichungen (Deutsche Bank Research,
+    # ING, Commerzbank …) aus vorausschau_forschung.json. Nummeriert, damit
+    # jeder Stichsatz auf seine Quelle zeigen kann.
+    bevorzugt = re.compile(r"faz|frankfurter|süddeutsche|sueddeutsche|\bsz\b|handelsblatt|reuters|bloomberg|financial times|\bft\b|wirtschaftswoche", re.I)
+    meldungen.sort(key=lambda a: (bool(bevorzugt.search(a.get("source") or "")), wichtig(a), a.get("date", "")), reverse=True)
+    belegliste = [{"id": a.get("id"), "titel": a.get("title", ""), "quelle": a.get("source", ""), "url": a.get("link", "")}
+                  for a in meldungen[:14]]
+    try:
+        forschung = json.load(open("vorausschau_forschung.json", encoding="utf-8")).get("eintraege") or []
+    except Exception:
+        forschung = []
+    grenze_f = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
+    for f in forschung:
+        if (f.get("datum") or "") >= grenze_f and MARKT_THEMEN.search(f.get("titel") or ""):
+            belegliste.append({"id": None, "titel": f.get("titel", ""), "quelle": f.get("institut", ""), "url": f.get("link", "")})
+        if len(belegliste) >= 20:
+            break
+    kopf = "\n".join(f"[{n}] ({b['quelle']}) {b['titel']}" for n, b in enumerate(belegliste, 1))
     heute = datetime.now(timezone.utc).strftime("%d.%m.%Y")
     auftrag = (f"Heute ist der {heute}, deine Trainingsdaten sind veraltet.\n\n"
-               "Schreibe die Lage an den Finanzmärkten in zwei bis drei kurzen Absätzen auf Deutsch "
-               "(zusammen höchstens 900 Zeichen).\n"
-               "Absatz 1: Aktien – was bewegte sich, in welche Richtung, wie breit.\n"
-               "Absatz 2: Zinsen, Währungen, Energie und Rohstoffe.\n"
-               "Absatz 3: was die Nachrichtenlage dazu sagt – welche Meldungen die Bewegungen erklären "
-               "könnten (nur, wenn eine Meldung es hergibt) und welche Termine anstehen.\n\n"
-               "REGELN: Zahlen ausschließlich aus der Tabelle, gerundet wie dort. Ursachen nur, wenn eine "
-               "der Meldungen sie nennt – sonst keine. Keine Empfehlung, keine Prognose, keine Floskeln "
-               "(\"Anleger zeigten sich vorsichtig\"). Keine Aufzählung, keine Überschriften.\n\n"
-               f"KURSE (Veränderung über Tag, Woche, Monat, Jahr):\n" + "\n".join(zeilen[:34]) +
-               (f"\n\nMELDUNGEN DER LETZTEN 24 STUNDEN:\n{kopf}" if kopf else ""))
+               "Fasse die Lage an den Finanzmärkten in 5 bis 8 STICHSÄTZEN auf Deutsch zusammen – je "
+               "höchstens 140 Zeichen, Telegrammstil, das Wichtigste vorn. Reihenfolge: Aktien, Zinsen, "
+               "Devisen, Energie, Rohstoffe, dann was die Meldungen dazu sagen.\n"
+               "Beispiel: \"DAX +0,6 % auf 25.518 – breit getragen, TecDAX vorn (+1,1 %)\"\n"
+               "Beispiel: \"Brent −1,8 % auf 64,20 USD – OPEC signalisiert höhere Förderung [3]\"\n\n"
+               "REGELN: Zahlen nur aus der Tabelle. Eine Ursache nur, wenn eine nummerierte Meldung oder "
+               "Research-Veröffentlichung sie nennt – dann deren Nummer als \"quelle\". Keine Empfehlung, "
+               "keine Prognose, keine Floskeln.\n"
+               "Antworte NUR mit JSON: {\"punkte\": [{\"text\": \"…\", \"quelle\": 3}, {\"text\": \"…\"}]}\n\n"
+               f"KURSE (Veränderung über Tag, Woche, Monat, Jahr):\n" + "\n".join(zeilen[:48]) +
+               (f"\n\nMELDUNGEN UND RESEARCH (nummeriert):\n{kopf}" if kopf else ""))
     for _versuch in range(5):
         if not anbieter:
             return alt
         name, url, key, modell = anbieter[0]
-        koerper = json.dumps({"model": modell, "temperature": 0.2, "max_tokens": 500,
+        koerper = json.dumps({"model": modell, "temperature": 0.2, "max_tokens": 700,
                               "messages": [{"role": "system", "content": SYSTEM},
                                            {"role": "user", "content": auftrag}]}).encode("utf-8")
         kopfz = {"Content-Type": "application/json", "Authorization": f"Bearer {key}"}
@@ -854,17 +975,33 @@ def marktlage_bauen(artikel, anbieter, alt):
             with ki_urlopen(name, url, koerper, kopfz, max(TIMEOUT, 60)) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             text = ((j.get("choices") or [{}])[0].get("message", {}).get("content", "") or "").strip()
-            text = re.sub(r"^#+.*$", "", text, flags=re.M).strip()
-            absaetze = [a.strip() for a in re.split(r"\n\s*\n", text) if len(a.strip()) >= 35][:3]
-            if not absaetze:
+            punkte = []
+            m = re.search(r"\{.*\}", text, re.S)
+            if m:
+                try:
+                    for p in (json.loads(m.group(0)).get("punkte") or [])[:8]:
+                        t = str(p.get("text") or "").strip()
+                        if len(t) < 12:
+                            continue
+                        eintrag = {"text": re.sub(r"\s*\[\d+\]\s*", " ", t).strip()[:200]}
+                        try:
+                            nr = int(p.get("quelle"))
+                            if 1 <= nr <= len(belegliste):
+                                eintrag["beleg"] = belegliste[nr - 1]
+                        except (TypeError, ValueError):
+                            pass
+                        punkte.append(eintrag)
+                except ValueError:
+                    punkte = []
+            if not punkte:
+                # Rückfall: Zeilen als Stichsätze
+                punkte = [{"text": z.strip(" -•*")[:200]} for z in text.splitlines() if len(z.strip()) >= 20][:8]
+            if not punkte:
                 return alt
-            print(f"  Marktlage: {len(absaetze)} Absätze ({name})")
-            # Die Meldungen, auf die sich der Text stützt – die App zeigt sie
-            # aufklappbar unter der Marktlage.
-            belege = [{"id": a.get("id"), "titel": a.get("title", ""), "quelle": a.get("source", ""),
-                       "url": a.get("link", "")} for a in meldungen[:15]]
-            return {"absaetze": absaetze, "stand": _stand_jetzt(), "ts": int(time.time()),
-                    "kurse": stand_kurse, "via": name, "modell": modell, "meldungen": belege}
+            print(f"  Marktlage: {len(punkte)} Stichsätze, {sum(1 for p in punkte if p.get('beleg'))} mit Beleg ({name})")
+            return {"punkte": punkte, "absaetze": [p["text"] for p in punkte], "stand": _stand_jetzt(),
+                    "ts": int(time.time()), "kurse": stand_kurse, "via": name, "modell": modell,
+                    "meldungen": belegliste}
         except HTTPError as e:
             leib = ""
             try:

@@ -131,6 +131,11 @@ def bewerten(liste):
         alt = {}
     if not FMP_KEY:
         print("  Bewertung: kein FMP_API_KEY hinterlegt – nur Kurse.")
+        if not os.path.exists(BEWERTUNG):
+            # Leere, gültige Datei – sonst meldet die App "noch nicht eingerichtet".
+            with open(BEWERTUNG, "w", encoding="utf-8") as fh:
+                json.dump({"datum": None, "quelle": "Financial Modeling Prep", "werte": {},
+                           "hinweis": "Ohne FMP_API_KEY – Bewertung folgt, sobald der Schlüssel hinterlegt ist."}, fh)
         return
     if alt.get("datum") == heute and os.environ.get("AKTIEN_FORCE") != "1":
         print("  Bewertung: heute schon aktualisiert.")

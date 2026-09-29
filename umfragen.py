@@ -38,19 +38,33 @@ def main():
     parlamente = d.get("Parliaments") or {}
     parteien = d.get("Parties") or {}
     institute = d.get("Institutes") or {}
-    neueste = {}
+    je_parlament = {}
     for sid, u in (d.get("Surveys") or {}).items():
-        pid = str(u.get("Parliament_ID"))
-        if pid not in neueste or (u.get("Date") or "") > (neueste[pid].get("Date") or ""):
-            neueste[pid] = u
-    out = {}
-    for pid, u in neueste.items():
-        p = parlamente.get(pid) or {}
-        werte = {}
+        je_parlament.setdefault(str(u.get("Parliament_ID")), []).append(u)
+
+    def werte_von(u):
+        w = {}
         for partei_id, wert in (u.get("Results") or {}).items():
             name = (parteien.get(str(partei_id)) or {}).get("Shortcut") or f"Partei {partei_id}"
-            werte[name] = round(float(wert), 1)
+            w[name] = round(float(wert), 1)
+        return w
+
+    out = {}
+    for pid, liste in je_parlament.items():
+        liste.sort(key=lambda u: u.get("Date") or "", reverse=True)
+        u = liste[0]
+        # Vorige Umfrage zum Vergleich: bevorzugt dasselbe Institut – sonst
+        # misst man Unterschiede zwischen Instituten statt einer Veränderung.
+        vorige = next((x for x in liste[1:] if x.get("Institute_ID") == u.get("Institute_ID")), None) \
+            or (liste[1] if len(liste) > 1 else None)
+        p = parlamente.get(pid) or {}
+        werte = werte_von(u)
+        vorher = None
+        if vorige:
+            vorher = {"datum": vorige.get("Date") or "", "parteien": werte_von(vorige),
+                      "institut": (institute.get(str(vorige.get("Institute_ID"))) or {}).get("Name") or ""}
         out[p.get("Name") or pid] = {
+            "vorher": vorher,
             "parlament": p.get("Name") or "", "kurz": p.get("Shortcut") or "", "wahl": p.get("Election") or "",
             "institut": (institute.get(str(u.get("Institute_ID"))) or {}).get("Name") or "",
             "datum": u.get("Date") or "", "befragte": u.get("Surveyed_Persons"),

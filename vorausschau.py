@@ -753,6 +753,28 @@ def muster(g):
     return m
 
 
+# Falsche Freunde: Wörter, in denen ein Stichwort steckt, ohne dass es gemeint
+# ist – "Oliver" bei Olivenöl, "Gastgeber" bei Gas, "Sabrent" bei Brent.
+# Sie werden vor dem Vergleich aus dem Text genommen.
+FALSCHE_FREUNDE = re.compile(r"\b(oliver|olivia|olivier|olivera|gastgeber\w*|gastronom\w*|gäste\w*|gastspiel\w*|"
+                             r"gastfreund\w*|brentano|sabrent|völker\w*|böller\w*|ölgemälde\w*)\b", re.I)
+
+# Wirtschaftlicher Bezug: Ein früherer Fall zählt nur, wenn die Meldung von
+# Preisen, Märkten, Mengen, Schäden oder Lieferungen spricht. Sonst landen
+# "Autowrack bei Niedrigwasser entdeckt" oder "Weltkriegsbombe bei der
+# Kartoffelernte" in der Bilanz – Ereignisse ohne Folge für Kurse.
+WIRTSCHAFT_RE = re.compile(r"\b(preis\w*|kosten|teurer|billiger|verteuer\w*|markt|märkte|börse\w*|aktie\w*|kurs\w*|"
+                           r"ausfall|ausfälle|einbruch|einbrechen|bricht|prozent|tonnen|milliard\w*|million\w*|umsatz\w*|"
+                           r"schaden|schäden|lieferung\w*|lieferkette\w*|versorgung\w*|knapp\w*|mangel|engpass\w*|"
+                           r"export\w*|import\w*|produktion|förderung|fördermenge\w*|zoll|zölle|sanktion\w*|inflation|"
+                           r"rendite\w*|anleihe\w*|zins\w*|wirtschaft\w*|unternehm\w*|industrie\w*|konjunktur\w*|"
+                           r"fracht\w*|schifffahrt|binnenschiff\w*|fähre\w*|transport\w*|lager\w*|reserve\w*|"
+                           r"price\w*|cost\w*|market\w*|shares?|stocks?|supply|shortage|output|tariff\w*|"
+                           r"ölanlage\w*|gasanlage\w*|raffinerie\w*|pipeline\w*|terminal\w*|kraftwerk\w*|förderanlage\w*|ölfeld\w*|"
+                           r"refinery|oilfield|facility|plant|"
+                           r"economy|economic|billion|million|percent|exports?|imports?)\b|%|€|\$", re.I)
+
+
 def haus_von(a):
     return a.get("haus") or _domain(a.get("link", "")) or hauskern(a.get("source", ""))
 
@@ -934,12 +956,22 @@ def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv, hist
     else:
         warum.append(f"Grundrate {round(p0*100)} %: so oft lief {w['n']} über {h_kb} Handelstage ohnehin in diese Richtung")
     effekt = EFFEKT.get(eintrag.get("effekt") or EFFEKT_VORGABE.get(eintrag["id"], "mittel"), 0.6)
-    belege = min(1.0, max(0.0, (sig["haeuser_n"] - 1) / 4))
+    ev = sig.get("evidenz")
+    if ev:
+        # Evidenzindex aus Breite, Überraschung, Dynamik, Dokumenten, Research, Sprachen
+        belege = max(0.05, min(1.0, ev["index"] * 1.4))
+        t = ev["teile"]
+        warum.append(f"Evidenzindex {_dez(ev['index'], 2, False)}: Breite {_dez(t['breite'], 2, False)} ({ev['haeuser']} Häuser), "
+                     f"Überraschung {_dez(t['ueberraschung'], 2, False)} (sonst {_dez(ev['lambda'], 1, False)} Häuser/Tag, "
+                     f"p = {ev['p_poisson']:.1e}), Dynamik {_dez(t['dynamik'], 2, False)}, Dokumente {ev['n_dokumente']}, "
+                     f"Research {_dez(t['research'], 1, False)}, Sprachen {'/'.join(ev['sprachen'])}")
+    else:
+        belege = min(1.0, max(0.0, (sig["haeuser_n"] - 1) / 4))
     gd = (sig.get("gdelt") or {}).get("faktor")
     af = sig.get("archiv_faktor")
     if gd and gd >= 1.5:
         belege = min(1.0, belege + 0.2)
-    elif af and af >= 3:
+    elif af and af >= 3 and not ev:
         # Ohne GDELT: Ausschlag gegenüber der eigenen Grundlinie im Archiv
         belege = min(1.0, belege + 0.2)
     sich = {"hoch": 1.0, "mittel": 0.75, "niedrig": 0.45}.get(sicherheit, 0.75)
@@ -1040,9 +1072,15 @@ def treffer_tage(eintrag, artikel):
     aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
     tage = {}
     for a in artikel:
-        titel = a["title"]
-        text = titel + " " + a.get("desc", "")
-        if all(m.search(text) for m in muster_l) and any(m.search(titel) for m in muster_l) and not (aus and aus.search(text)):
+        titel = FALSCHE_FREUNDE.sub(" ", a["title"])
+        text = titel + " " + FALSCHE_FREUNDE.sub(" ", a.get("desc", ""))
+        if not WIRTSCHAFT_RE.search(text):
+            continue
+        # Archiv: alle Stichwortgruppen (bis drei) in der SCHLAGZEILE – sonst
+        # zählen Fußballberichte mit "Kartoffel" im Vorspann oder "NIH-Budget
+        # für Verteidigungsforschung" als frühere Fälle und verfälschen die Bilanz.
+        noetig = min(3, len(muster_l))
+        if sum(1 for m in muster_l if m.search(titel)) >= noetig and all(m.search(text) for m in muster_l) and not (aus and aus.search(text)):
             t = tage.setdefault(a["date"], {"haeuser": set(), "titel": titel, "link": a.get("link", "")})
             t["haeuser"].add(a["haus"])
     return tage
@@ -1100,6 +1138,110 @@ def historie_fuer(eintrag, archiv_art, kurse, heute):
                     "mittel": round(sum(x["veraenderung"] for x in reaktionen) / len(reaktionen), 2),
                     "tage": h, "beispiele": reaktionen[-5:]})
     return out
+
+
+# ─────────────────────────────────────────────────────────────
+# EVIDENZ: alle Datenquellen in einer nachvollziehbaren Zahl
+#
+# Sechs Bausteine, jeder zwischen 0 und 1:
+#   Breite        – wie viele Häuser berichten (1 Haus = 0, 5+ Häuser = 1)
+#   Überraschung  – wie ungewöhnlich ist die heutige Berichterstattung gegen
+#                   die eigene Grundlinie im Archiv? Poisson-Test: bei
+#                   üblicherweise λ Häusern pro Tag – wie wahrscheinlich sind
+#                   heute k oder mehr? p < 0,0001 = 1, p = 0,5 = 0.
+#   Dynamik       – nimmt die Berichterstattung zu? Meldungen der letzten
+#                   12 Stunden gegen die 36 davor, je Stunde gerechnet.
+#   Dokumente     – befassen sich Parlament, Regierung oder Gerichte damit?
+#                   Drucksachen, Urteile, gelesene Dokumente der letzten 21 Tage.
+#   Research      – passende Veröffentlichungen von Banken und Instituten.
+#   Sprachen      – berichten deutsch- und englischsprachige Häuser?
+# Gewichtet zu einem Index (0–1), der den "Belege"-Faktor der
+# Wahrscheinlichkeit ersetzt. Jeder Baustein steht mit Zahl in der App.
+# ─────────────────────────────────────────────────────────────
+EVIDENZ_GEWICHTE = {"breite": 0.33, "ueberraschung": 0.25, "dynamik": 0.12, "dokumente": 0.15,
+                    "research": 0.10, "sprachen": 0.05}
+_EN_RE = re.compile(r"\b(the|and|of|to|for|with|after|over|says|will|is|are)\b", re.I)
+
+
+def poisson_ab(k, lam):
+    """P(X ≥ k) für X ~ Poisson(λ)."""
+    lam = max(lam, 0.05)
+    if k <= 0:
+        return 1.0
+    term, summe = math.exp(-lam), 0.0
+    for i in range(k):
+        summe += term
+        term *= lam / (i + 1)
+    return max(0.0, min(1.0, 1.0 - summe))
+
+
+def _zeit(a):
+    try:
+        return datetime.fromisoformat(str(a.get("date", "")).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
+
+
+_DOKS = None
+
+
+def dokumente_laden():
+    """Drucksachen, Urteile und gelesene Dokumente der letzten 21 Tage."""
+    global _DOKS
+    if _DOKS is not None:
+        return _DOKS
+    grenze = time.time() - 21 * 86400
+    out = []
+    for d in (_laden("documents.json", {}).get("documents") or []):
+        if _zeit(d) >= grenze:
+            out.append({"titel": d.get("title", ""), "text": d.get("title", "") + " " + (d.get("desc") or ""),
+                        "quelle": d.get("source", ""), "link": d.get("link", ""), "datum": str(d.get("date", ""))[:10]})
+    for k, v in ((_laden("dokumente_text.json", {}).get("dokumente")) or {}).items():
+        if v.get("titel") and str(v.get("stand", "")) >= datetime.fromtimestamp(grenze, timezone.utc).isoformat():
+            out.append({"titel": v["titel"], "text": v["titel"] + " " + (v.get("kurz") or "") + " " + (v.get("leitsatz") or ""),
+                        "quelle": "Gericht" if v.get("gericht") else "Dokument", "link": v.get("link", ""),
+                        "datum": str(v.get("stand", ""))[:10]})
+    for datei in ("articles.json",):
+        for a in (_laden(datei, {}).get("articles") or []):
+            if re.search(r"bundesgerichtshof|bundesverfassungsgericht|bundesfinanzhof|bverwg|\bBGH\b|\bBVerfG\b|curia",
+                         (a.get("source") or "") + " " + (a.get("link") or ""), re.I) and _zeit(a) >= grenze:
+                out.append({"titel": a.get("title", ""), "text": a.get("title", "") + " " + (a.get("desc") or ""),
+                            "quelle": a.get("source", ""), "link": a.get("link", ""), "datum": str(a.get("date", ""))[:10]})
+    _DOKS = out
+    return out
+
+
+def evidenz_fuer(eintrag, s, historie, forschung_treffer):
+    """Die sechs Bausteine und der gewichtete Index."""
+    treffer = s["treffer"]
+    k = len(s["haeuser"])
+    breite = min(1.0, max(0.0, (k - 1) / 4))
+    # Überraschung gegen die Archiv-Grundlinie (Häuser pro Tag)
+    lam = (historie or {}).get("pro_tag") or 0.0
+    lam = lam if lam > 0 else 0.3          # nie gesehen: sehr niedrige Grundlinie annehmen
+    p = poisson_ab(k, lam)
+    ueberr = min(1.0, max(0.0, -math.log10(max(p, 1e-9)) / 4))
+    # Dynamik: letzte 12 Stunden gegen die 36 davor
+    jetzt_ts = time.time()
+    n12 = sum(1 for a in treffer if jetzt_ts - _zeit(a) <= 12 * 3600)
+    n36 = sum(1 for a in treffer if 12 * 3600 < jetzt_ts - _zeit(a) <= 48 * 3600)
+    rate = (n12 / 12) / ((n36 + 0.5) / 36)
+    dynamik = max(-1.0, min(1.0, math.log2(max(rate, 1e-3)) / 3))
+    # Dokumente: mindestens zwei Stichwortgruppen (bzw. alle bei einer)
+    muster_l = [muster(g) for g in eintrag.get("stichworte") or []]
+    noetig = min(2, len(muster_l)) if muster_l else 99
+    doks = [d for d in dokumente_laden() if sum(1 for m in muster_l if m.search(d["text"])) >= noetig]
+    dok = min(1.0, len(doks) / 3)
+    research = min(1.0, len(forschung_treffer or []) / 2)
+    sprachen = {("en" if len(_EN_RE.findall(a.get("title") or "")) >= 2 else "de") for a in treffer}
+    spr = 1.0 if len(sprachen) >= 2 else 0.0
+    teile = {"breite": breite, "ueberraschung": ueberr, "dynamik": max(0.0, dynamik), "dokumente": dok,
+             "research": research, "sprachen": spr}
+    index = sum(EVIDENZ_GEWICHTE[x] * v for x, v in teile.items())
+    return {"index": round(index, 3), "teile": {x: round(v, 3) for x, v in teile.items()},
+            "haeuser": k, "lambda": round(lam, 2), "p_poisson": p, "n12": n12, "n36": n36,
+            "dynamik_roh": round(dynamik, 2), "dokumente": doks[:3], "n_dokumente": len(doks),
+            "sprachen": sorted(sprachen)}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1268,8 +1410,8 @@ def signal_fuer(eintrag, artikel):
     aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
     treffer, im_titel = [], {}
     for a in artikel:
-        titel = a.get("title") or ""
-        text = titel + " " + (a.get("desc") or "")[:400]
+        titel = FALSCHE_FREUNDE.sub(" ", a.get("title") or "")
+        text = titel + " " + FALSCHE_FREUNDE.sub(" ", (a.get("desc") or "")[:400])
         if not all(m.search(text) for m in muster_l):
             continue
         n_titel = sum(1 for m in muster_l if m.search(titel))
@@ -1623,9 +1765,17 @@ def main():
     heute = jetzt.strftime("%Y-%m-%d")
     alt = _laden(OUT, {})
     if not FORCE:
-        if alt.get("datum") == heute:
-            print("Vorausschau: heute schon erstellt – nichts zu tun.")
+        # "Heute erledigt" gilt nur, wenn die KI dabei auch geantwortet hat.
+        # Ein Stand ohne eine einzige geprüfte Einschätzung und ohne Verworfenes
+        # entstand bei einem Anbieterausfall – dann wird neu erstellt.
+        gueltig = alt.get("ki_ok") is True or (
+            "ki_ok" not in alt and (alt.get("einschaetzungen") or alt.get("verworfen")))
+        if alt.get("datum") == heute and gueltig:
+            print("Vorausschau: heute schon erstellt – nichts zu tun. (Neu erzwingen: Workflow von Hand starten "
+                  "mit \"Vorausschau neu erstellen\" oder VS_FORCE=1.)")
             return 0
+        if alt.get("datum") == heute:
+            print("Vorausschau: heutiger Stand entstand ohne KI-Antwort – wird neu erstellt.")
         if jetzt.hour < STUNDE:
             print(f"Vorausschau: vor {STUNDE} Uhr – später.")
             return 0
@@ -1745,6 +1895,7 @@ def main():
         # Ausschlag gegenüber der Grundlinie; bei sehr seltenen Auslösern
         # gedeckelt, damit "100-mal so viel" nicht falsche Genauigkeit vortäuscht
         archiv_faktor = min(20.0, round(heute_n / historie["pro_tag"], 1)) if historie.get("pro_tag") else None
+        ev = evidenz_fuer(e, s, historie, forschung_fuer(e, forschung))
         if sym and richtung in (1, -1):
             w = kurse.get(sym)
             kal = math.ceil(int(mp.get("tage", 5)) * 7 / 5)
@@ -1756,7 +1907,8 @@ def main():
             gestoert = (status.get(sym) or {}).get("status") == "fehler"
             if w and not gestoert:
                 wkeit = wahrscheinlichkeit(e, w, int(mp.get("tage", 5)), richtung,
-                                           {"haeuser_n": len(s["haeuser"]), "gdelt": gd, "archiv_faktor": archiv_faktor},
+                                           {"haeuser_n": len(s["haeuser"]), "gdelt": gd, "archiv_faktor": archiv_faktor,
+                                            "evidenz": ev},
                                            sicherheit, archiv, historie)
             elif gestoert:
                 messpunkt["hinweis"] = "Kursquelle laut Quellenprüfung gestört – keine Wahrscheinlichkeit gerechnet"
@@ -1789,7 +1941,7 @@ def main():
                  "sicherheit": sicherheit,
                  "messpunkt": messpunkt, "wahrscheinlichkeit": wkeit, "quellen": quellen, "folgen": folgen,
                  "folgen_offen": folgen_offen, "klassifikation": kl, "belege": e.get("belege") or [],
-                 "historie": historie, "forschung": forschung_fuer(e, forschung),
+                 "historie": historie, "forschung": forschung_fuer(e, forschung), "evidenz": ev,
                  "signal": {"haeuser": len(s["haeuser"]), "meldungen": len(s["treffer"]), "jung": s["jung"],
                             "aelter": s["aelter"], "staerke": s["staerke"], "gdelt": gd,
                             "archiv_faktor": archiv_faktor, "archiv_pro_tag": historie.get("pro_tag")}}
@@ -1844,7 +1996,9 @@ def main():
            "modell": {"effekt": EFFEKT, "horizonte": HORIZONTE,
                       "text": "p = logistisch(logit(Grundrate) + Stärke × Belege × Sicherheit × Eingepreist); "
                               "nach drei Prüfungen verrechnet mit der beobachteten Trefferquote (8 Pseudobeobachtungen)."},
-           "hinweis": "Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung."}
+           "hinweis": "Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.",
+           # Hat die KI geantwortet? Nur dann gilt der Tag als erledigt.
+           "ki_ok": bool(ketten or verworfen or not kandidaten)}
     _speichern(OUT, out)
     _speichern(ARCHIV, archiv[-500:])
     print(f"→ {OUT}: {len(ketten)} Einschätzungen, {len(verworfen)} verworfen, {len(beobachtung)} unter Beobachtung, "
