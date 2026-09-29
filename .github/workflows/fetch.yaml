@@ -12,7 +12,23 @@ on:
     - cron: '13 3 * * *'
     - cron: '43 3 * * *'
     - cron: '13 5-21/2 * * *'
+  # Von Hand starten (Actions → Workflow → "Run workflow"): Dort lassen sich
+  # Vorausschau und Quellenprüfung neu erzwingen, auch wenn sie heute schon
+  # gelaufen sind – etwa nach einem fehlerhaften Lauf.
   workflow_dispatch:
+    inputs:
+      vorausschau_neu:
+        description: 'Vorausschau neu erstellen (auch wenn heute schon gelaufen)'
+        type: boolean
+        default: true
+      quellen_neu:
+        description: 'Quellenprüfung neu ausführen'
+        type: boolean
+        default: false
+      morgenlauf:
+        description: 'Als Morgenlauf ausführen (mehr Zeit, größere Portionen)'
+        type: boolean
+        default: false
 
 # Nie zwei Läufe gleichzeitig – sonst blockieren sie sich beim Commit
 concurrency:
@@ -30,7 +46,7 @@ jobs:
     timeout-minutes: 90
     env:
       # Im Morgenlauf bekommen die Skripte mehr Zeit und größere Portionen.
-      MORGENLAUF: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '1' || '0' }}
+      MORGENLAUF: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *' || inputs.morgenlauf) && '1' || '0' }}
     permissions:
       contents: write
     steps:
@@ -59,7 +75,7 @@ jobs:
       - name: Feeds holen (News, EU, Bundestag, Bundesländer, USA, Dokumente)
         timeout-minutes: 22          # Reserve über dem Budget des Skripts
         env:
-          NEWS_BUDGET_MIN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '14' || '8' }}   # morgens ausgiebiger
+          NEWS_BUDGET_MIN: ${{ env.MORGENLAUF == '1' && '14' || '8' }}   # morgens ausgiebiger
           FEED_WORKERS: '8'          # parallele Abrufe
           FEED_TIMEOUT: '10'         # Sekunden je Feed
           FEED_FALLBACK: '1'         # gescheiterte Feeds über Nachrichtensuche nachholen
@@ -78,6 +94,13 @@ jobs:
       # NEU (v17): Fehlende seriöse Häuser (AP, Reuters, NYT, FAZ, SZ, FT …)
       # automatisch über die Google-News-Suche je Website ergänzen, wenn ihr
       # Feed in 24 Stunden weniger als drei Meldungen geliefert hat.
+      # NEU (v18): Neueste Wahlumfrage je Parlament aus DAWUM, mit richtigen
+      # Parteinamen (in Landtagsumfragen fehlte sonst die CDU).
+      - name: Umfragen (DAWUM)
+        continue-on-error: true
+        timeout-minutes: 2
+        run: python umfragen.py
+
       - name: Pflichtquellen ergänzen
         continue-on-error: true
         timeout-minutes: 5
@@ -140,6 +163,15 @@ jobs:
       # Ereignisse zusammen wie die Tageslage: doppelte Berichte buendeln
       # (auch ueber Sprachgrenzen), nach Nachrichtenwert waehlen, Schlagzeile
       # und Satz schreiben. Alle zwei Stunden, je Lauf hoechstens drei Regionen.
+      # NEU (v20): Einzelaktien (Kurse jeder Lauf) und – mit FMP_API_KEY –
+      # die Bewertung gegen den eigenen KGV-Schnitt (einmal am Tag).
+      - name: Aktien und Bewertung
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: python aktien.py
+
       - name: KI-Zusammenfassungen, Top-Auswahl und Marktlage
         continue-on-error: true
         timeout-minutes: 12
@@ -148,8 +180,11 @@ jobs:
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'   # nur freie Modelle – kein Guthabenverbrauch
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
-          KI_MAX: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
-          KI_REIHENFOLGE: 'openrouter,gemini,groq'   # fällt einer aus, übernimmt der nächste
+          KI_MAX: ${{ env.MORGENLAUF == '1' && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
+          # Reihenfolge nach Kontingent der freien Stufen: Gemini (beste Qualität,
+          # im Takt von 6,5 s), Groq (großzügigstes Tageskontingent), zuletzt
+          # OpenRouter (ohne gekauftes Guthaben nur 50 freie Anfragen am Tag).
+          KI_REIHENFOLGE: 'gemini,groq,openrouter'
           GEMINI_MODEL: 'gemini-flash-latest'
           KI_BATCH: '8'                # Meldungen je Anfrage (48 Meldungen = 6 Anfragen)
           KI_KEEP_DAYS: '7'
@@ -178,6 +213,24 @@ jobs:
           git push || { git fetch origin main && git rebase -X ours origin/main && git push; } || echo "Zwischenstand nicht gepusht – der Schlussschritt versucht es erneut."
 
 
+      # NEU (v19): Gerichtsentscheidungen und Bundestags-PDFs lesen – Leitsatz,
+      # Tenor und eine KI-Kurzfassung statt "IV ZR 259/25, Entscheidung vom …".
+      # Gespeichert wird nur ein Auszug, keine PDFs.
+      - name: Dokumente lesen (Urteile, Drucksachen)
+        continue-on-error: true
+        timeout-minutes: 14
+        env:
+          GEMINI_API: ${{ secrets.GEMINI_API }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
+          KI_REIHENFOLGE: 'gemini,groq,openrouter'
+          DOK_PRO_LAUF: ${{ env.MORGENLAUF == '1' && '50' || '20' }}
+          DOK_BUDGET_SEC: ${{ env.MORGENLAUF == '1' && '600' || '300' }}
+        run: |
+          pip install --quiet pypdf || echo "pypdf nicht installierbar – PDFs werden übersprungen"
+          python dokumente_lesen.py
+
       # NEU (v14): Quellenprüfung – einmal am Tag. Prüft jede Kursquelle auf
       # Erreichbarkeit, richtiges Kürzel (Währung, Name), Aktualität und
       # plausible Werte, dazu Pegelonline und GDELT. Ergebnis in
@@ -186,6 +239,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 4
         env:
+          QP_FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.quellen_neu) && '1' || '0' }}
           QP_TIMEOUT: '15'
           QP_PAUSE: '0.3'
         run: python quellen_pruefen.py
@@ -203,6 +257,7 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           VS_STUNDE: '5'          # im Morgenlauf (5 Uhr deutscher Zeit) – danach steht sie für den Tag
+          VS_FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.vorausschau_neu) && '1' || '0' }}
           VS_MAX: '10'            # höchstens so viele Zusammenhänge prüfen
           VS_MIN_HAEUSER: '2'     # so viele Häuser braucht ein Signal mindestens
           VS_FENSTER_H: '72'      # Meldungen der letzten 72 Stunden
@@ -229,9 +284,9 @@ jobs:
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           TAGESLAGE_FEED: ${{ secrets.TAGESLAGE_FEED }}
-          TIME_BUDGET_MIN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '16' || '11' }}   # morgens mehr Zeit
+          TIME_BUDGET_MIN: ${{ env.MORGENLAUF == '1' && '16' || '11' }}   # morgens mehr Zeit
           LANDTAGE_PER_RUN: '6'     # 16 Landtage in 3 Läufen statt 4
-          POLLS_PER_RUN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '30' || '12' }}   # namentliche Abstimmungen je Lauf
+          POLLS_PER_RUN: ${{ env.MORGENLAUF == '1' && '30' || '12' }}   # namentliche Abstimmungen je Lauf
           VOTES_BUDGET_SEC: '150'   # eigenes Zeitfenster dafür, läuft direkt nach dem Bundestag
           VOTES_WAHLPERIODEN: '2'   # laufende + vorige; die vorige erst, wenn die laufende komplett ist
           POLLS_MAX: '80'           # so viele Abstimmungen der Wahlperiode insgesamt
@@ -283,7 +338,7 @@ jobs:
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           WAHLPERIODE: '21'
-          PROTO_PER_RUN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '12' || '5' }}
+          PROTO_PER_RUN: ${{ env.MORGENLAUF == '1' && '12' || '5' }}
           PROTO_BUDGET_MIN: '3'
         run: python3 fetch_protokolle.py
 
@@ -298,8 +353,8 @@ jobs:
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
           WAHLPERIODE: '21'
-          PLENUM_PER_RUN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '15' || '6' }}   # Protokolle je Lauf
-          PLENUM_BUDGET_MIN: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '8' || '3' }}
+          PLENUM_PER_RUN: ${{ env.MORGENLAUF == '1' && '15' || '6' }}   # Protokolle je Lauf
+          PLENUM_BUDGET_MIN: ${{ env.MORGENLAUF == '1' && '8' || '3' }}
           WAHLPERIODEN: '21,20,19'   # aktuelle zuerst; ältere erst, wenn die neuere vollständig ist
           # Koalition und Fraktionen stehen je Wahlperiode im Skript (WP_INFO).
           # Nach einem Regierungswechsel lässt sich die laufende übersteuern:
@@ -329,7 +384,7 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done

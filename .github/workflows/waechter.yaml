@@ -1,0 +1,74 @@
+# Wächter für den Presseschau-Abruf
+#
+# GitHub startet geplante Läufe unzuverlässig: bei Last fallen sie aus, und
+# nach 60 Tagen ohne Aktivität schaltet GitHub geplante Workflows ab. Dieser
+# kleine Workflow schaut alle 30 Minuten (tagsüber) nach:
+#   – Ist der Abruf-Workflow ("RSS Feeds holen") abgeschaltet? → wieder ein.
+#   – Gibt es ihn doppelt (fetch.yml UND fetch.yaml)? → Warnung im Protokoll.
+#   – Lief er seit mehr als 150 Minuten nicht und läuft gerade keiner? → starten.
+# Ein Start per workflow_dispatch mit dem eingebauten Token ist ausdrücklich
+# erlaubt; dafür braucht es nur die Berechtigung "actions: write".
+# Laufzeit je Prüfung: wenige Sekunden.
+
+name: Wächter (Abruf im Takt halten)
+
+on:
+  schedule:
+    - cron: '7,37 3-21 * * *'       # UTC: 5–23 Uhr deutscher Sommerzeit
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Abruf prüfen und bei Bedarf starten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NAME: 'RSS Feeds holen'
+          MAX_ALTER_MIN: '150'
+        run: |
+          set -euo pipefail
+          liste=$(gh api "repos/$REPO/actions/workflows" --paginate \
+                  --jq ".workflows[] | select(.name==\"$NAME\") | \"\(.id) \(.state) \(.path)\"")
+          if [ -z "$liste" ]; then
+            echo "::error::Kein Workflow namens '$NAME' gefunden."
+            exit 1
+          fi
+          echo "Gefunden:"; echo "$liste"
+          if [ "$(echo "$liste" | wc -l)" -gt 1 ]; then
+            echo "::warning::Es gibt '$NAME' mehrfach (siehe Pfade oben). Die Läufe brechen sich gegenseitig ab – bitte die ältere Datei in .github/workflows löschen."
+          fi
+          id=$(echo "$liste" | head -1 | cut -d' ' -f1)
+          zustand=$(echo "$liste" | head -1 | cut -d' ' -f2)
+          if [ "$zustand" != "active" ]; then
+            echo "::warning::Workflow war '$zustand' – wird wieder eingeschaltet."
+            gh api -X PUT "repos/$REPO/actions/workflows/$id/enable"
+          fi
+          aktiv=$(gh api "repos/$REPO/actions/workflows/$id/runs?per_page=10" \
+                  --jq '[.workflow_runs[] | select(.status=="in_progress" or .status=="queued" or .status=="pending" or .status=="waiting")] | length')
+          if [ "$aktiv" -gt 0 ]; then
+            echo "Ein Lauf ist gerade aktiv oder wartet – nichts zu tun."
+            exit 0
+          fi
+          letzter=$(gh api "repos/$REPO/actions/workflows/$id/runs?per_page=1" --jq '.workflow_runs[0].created_at // empty')
+          alter=99999
+          if [ -n "$letzter" ]; then
+            alter=$(( ( $(date +%s) - $(date -d "$letzter" +%s) ) / 60 ))
+          fi
+          echo "Letzter Lauf vor $alter Minuten (${letzter:-nie})."
+          if [ "$alter" -lt "$MAX_ALTER_MIN" ]; then
+            echo "Alles im Takt."
+            exit 0
+          fi
+          # Morgens (3–4 Uhr UTC) als Morgenlauf starten, sonst als normalen Lauf.
+          stunde=$(date -u +%H)
+          morgen=false
+          if [ "$stunde" = "03" ] || [ "$stunde" = "04" ]; then morgen=true; fi
+          echo "::warning::Seit $alter Minuten kein Lauf – starte jetzt (Morgenlauf: $morgen)."
+          gh workflow run "$id" --repo "$REPO" -f vorausschau_neu=false -f quellen_neu=false -f morgenlauf=$morgen
