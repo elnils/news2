@@ -145,7 +145,7 @@ jobs:
         timeout-minutes: 12
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
-          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'   # nur freie Modelle – kein Guthabenverbrauch
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           KI_MAX: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *') && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
@@ -199,7 +199,7 @@ jobs:
         timeout-minutes: 12
         env:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
-          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct'
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'   # nur freie Modelle – kein Guthabenverbrauch
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
           VS_STUNDE: '5'          # im Morgenlauf (5 Uhr deutscher Zeit) – danach steht sie für den Tag
