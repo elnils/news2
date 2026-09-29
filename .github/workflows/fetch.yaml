@@ -213,6 +213,18 @@ jobs:
           git push || { git fetch origin main && git rebase -X ours origin/main && git push; } || echo "Zwischenstand nicht gepusht – der Schlussschritt versucht es erneut."
 
 
+      # NEU (v21): Weitere Newsletter-Feeds als normale Einträge im
+      # Newsletter-Bereich (RSS oder Atom). Öffentliche Feeds (Deutsche Bank
+      # Research) stehen im Skript; private Feeds wie Kill the Newsletter
+      # gehören ins Secret NEWSLETTER_FEEDS (mehrere mit Komma), weil jeder
+      # mit der Adresse den Newsletter lesen kann.
+      - name: Newsletter-Feeds (DB Research, Kill the Newsletter …)
+        continue-on-error: true
+        timeout-minutes: 3
+        env:
+          NEWSLETTER_FEEDS: ${{ secrets.NEWSLETTER_FEEDS }}
+        run: python newsletter.py
+
       # NEU (v19): Gerichtsentscheidungen und Bundestags-PDFs lesen – Leitsatz,
       # Tenor und eine KI-Kurzfassung statt "IV ZR 259/25, Entscheidung vom …".
       # Gespeichert wird nur ein Auszug, keine PDFs.
@@ -230,6 +242,20 @@ jobs:
         run: |
           pip install --quiet pypdf || echo "pypdf nicht installierbar – PDFs werden übersprungen"
           python dokumente_lesen.py
+
+      # NEU (v22): Ressort-Briefings (Energie & Klima, Technik & Digitales,
+      # Cyber & KI, Handel & Wirtschaft, Inneres & Sicherheit, Weltpolitik,
+      # Verteidigung). Auswahl jeden Lauf, die KI-Lage einmal am Morgen.
+      - name: Ressort-Briefings
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          GEMINI_API: ${{ secrets.GEMINI_API }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
+          KI_REIHENFOLGE: 'gemini,groq,openrouter'
+        run: python briefings.py
 
       # NEU (v14): Quellenprüfung – einmal am Tag. Prüft jede Kursquelle auf
       # Erreichbarkeit, richtiges Kürzel (Währung, Name), Aktualität und
@@ -384,7 +410,7 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json newsletter_eigene.json briefings.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
