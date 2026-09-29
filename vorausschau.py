@@ -1809,6 +1809,12 @@ def main():
 
     thesen_archiv = archiv_bilanz(eintraege, archiv_art, kurse, heute) if archiv_art else {}
     entdeckt = entdecken(archiv_art, kurse, heute, eintraege) if archiv_art else []
+    # Keine einzige KI-Antwort, obwohl es etwas zu prüfen gab: Dann nicht
+    # speichern und NICHT als erledigt vermerken – der nächste Lauf versucht
+    # es erneut. Vorher stand dann für den ganzen Tag eine leere Vorausschau.
+    if kandidaten and not ketten and not verworfen and not anbieter:
+        print("  Kein KI-Anbieter hat geantwortet – Vorausschau bleibt beim alten Stand; nächster Lauf versucht es erneut.")
+        return 0
     vorschlaege = vorschlaege_schreiben(anbieter, artikel, eintraege, kurse) if anbieter else []
     neu_aufgenommen, kandidaten = kandidaten_fortschreiben(vorschlaege, basis, heute, kurse)
     for v in vorschlaege:

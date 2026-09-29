@@ -75,6 +75,15 @@ OR_URL = "https://openrouter.ai/api/v1/chat/completions"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 OR_KEY = os.environ.get("OPEN_ROUTER_API", "").strip()
 OR_MODEL = os.environ.get("OR_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+# Nur freie Modelle: Ein Modellname ohne ":free" kostet Guthaben – so war
+# es im Workflow eingetragen, und das Guthaben war aufgebraucht (HTTP 402).
+# Mit OR_NUR_FREI=0 lassen sich bezahlte Modelle bewusst zulassen.
+if os.environ.get("OR_NUR_FREI", "1") != "0" and not OR_MODEL.endswith(":free"):
+    print(f"Hinweis: {OR_MODEL} ist kein freies Modell – verwendet wird {OR_MODEL}:free")
+    OR_MODEL = OR_MODEL + ":free"
+# Eigene Kennung für alle KI-Anfragen. Die Standardkennung von Python
+# ("Python-urllib") sperrt Cloudflare vor Groq mit HTTP 403.
+KI_KENNUNG = "Mozilla/5.0 (compatible; Presseschau/1.0; +https://github.com)"
 GROQ_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.environ.get("KI_MODELL", "llama-3.3-70b-versatile")
 # Gemini über die OpenAI-kompatible Schnittstelle von Google – dieselbe
@@ -125,9 +134,32 @@ def gemini_ersatzmodell(aktuell):
 
 
 def ki_urlopen(name, url, koerper, kopf, timeout):
-    """Alle KI-Anfragen laufen hier durch. Für Gemini: ohne "Denken" (spart
-    Tokens), bei Drosselung (429) einmal 15 Sekunden warten, bei einem
-    abgelehnten Parameter ohne ihn wiederholen."""
+    """Alle KI-Anfragen laufen hier durch.
+    – Eigene Kennung (sonst sperrt Cloudflare vor Groq mit 403).
+    – Überlastung und Serverfehler (429, 500, 502, 503, 504): bis zu zweimal
+      warten und wiederholen (4 und 12 Sekunden), bevor der Anbieter wegfällt.
+    – Gemini: danach noch mit den Ersatzmodellen versuchen; ohne "Denken".
+    – OpenRouter 402 (kein Guthaben): auf das freie Modell ausweichen."""
+    kopf = dict(kopf)
+    kopf.setdefault("User-Agent", KI_KENNUNG)
+    if name != "gemini":
+        for versuch in range(3):
+            try:
+                return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
+            except HTTPError as e:
+                if e.code == 402 and name == "openrouter":
+                    d = json.loads(koerper.decode("utf-8"))
+                    if not str(d.get("model", "")).endswith(":free"):
+                        d["model"] = str(d.get("model", "")) + ":free"
+                        koerper = json.dumps(d).encode("utf-8")
+                        print(f"     OpenRouter 402 – weiter mit {d['model']}")
+                        continue
+                if e.code in (429, 500, 502, 503, 504) and versuch < 2:
+                    pause = (4, 12)[versuch]
+                    print(f"     {name} HTTP {e.code} – {pause} s warten und erneut versuchen")
+                    time.sleep(pause)
+                    continue
+                raise
     if name == "gemini":
         try:
             d = json.loads(koerper.decode("utf-8"))
@@ -136,20 +168,37 @@ def ki_urlopen(name, url, koerper, kopf, timeout):
             koerper = json.dumps(d).encode("utf-8")
         except ValueError:
             pass
-        for versuch in range(3):
-            try:
-                return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
-            except HTTPError as e:
-                if e.code == 429 and versuch == 0:
-                    print("     Gemini drosselt – 15 s Pause")
-                    time.sleep(15)
-                    continue
-                if e.code == 400 and b"reasoning_effort" in koerper:
-                    d = json.loads(koerper.decode("utf-8"))
-                    d.pop("reasoning_effort", None)
-                    koerper = json.dumps(d).encode("utf-8")
-                    continue
-                raise
+        modelle = [json.loads(koerper.decode("utf-8")).get("model")] + [m for m in GEMINI_ERSATZ]
+        gesehen = set()
+        letzter = None
+        for modell in modelle:
+            if not modell or modell in gesehen:
+                continue
+            gesehen.add(modell)
+            d = json.loads(koerper.decode("utf-8"))
+            d["model"] = modell
+            koerper = json.dumps(d).encode("utf-8")
+            for versuch in range(3):
+                try:
+                    return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
+                except HTTPError as e:
+                    letzter = e
+                    if e.code == 400 and b"reasoning_effort" in koerper:
+                        d = json.loads(koerper.decode("utf-8"))
+                        d.pop("reasoning_effort", None)
+                        koerper = json.dumps(d).encode("utf-8")
+                        continue
+                    if e.code in (429, 500, 502, 503, 504) and versuch < 2:
+                        pause = (5, 15)[versuch]
+                        print(f"     Gemini {modell} HTTP {e.code} – {pause} s warten")
+                        time.sleep(pause)
+                        continue
+                    if e.code in (404, 429, 500, 502, 503, 504):
+                        print(f"     Gemini {modell} nicht verfügbar (HTTP {e.code}) – nächstes Modell")
+                        break
+                    raise
+        if letzter is not None:
+            raise letzter
     return urlopen(Request(url, data=koerper, headers=kopf), timeout=timeout)
 OR_MODELS_URL = "https://openrouter.ai/api/v1/models"
 # Reihenfolge der Vorlieben, wenn ein freies Modell gesucht werden muss.
