@@ -59,6 +59,10 @@ PFLICHT = {
         ("Handelsblatt", "handelsblatt.com", "de"), ("WELT", "welt.de", "de"),
         ("Deutschlandfunk", "deutschlandfunk.de", "de"), ("ZDF heute", "zdfheute.de", "de"),
         ("Tagesspiegel", "tagesspiegel.de", "de"), ("Reuters", "reuters.com", "en"),
+        # China und Asien: seriöse Häuser mit eigener China-Berichterstattung
+        ("South China Morning Post", "scmp.com", "en"), ("Caixin Global", "caixinglobal.com", "en"),
+        ("Nikkei Asia", "nikkei.com", "en"), ("The Diplomat", "thediplomat.com", "en"),
+        ("MERICS", "merics.org", "de"),
     ],
     "eu_articles.json": [
         ("Politico Europe", "politico.eu", "en"), ("Euractiv", "euractiv.com", "en"),

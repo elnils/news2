@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v56</title>
+<title>Presseschau – Entwurf v60</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -115,6 +115,23 @@ svg.i{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-
 .chip[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--bg)}
 .chip .n{font-size:11px;font-weight:700;opacity:.65}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.chips.wrap{flex-wrap:wrap;overflow-x:visible}
+.chips.zwei{max-height:92px;overflow:hidden}
+.seg.spalten button{min-width:34px}
+@media (max-width:899px){.seg.spalten{display:none}}
+@media (min-width:900px){
+  .paper.sp-1{grid-template-columns:1fr}
+  /* Ein Artikel je Zeile: Bild links über die ganze Höhe, Text rechts */
+  .paper.sp-1 .card{display:grid;grid-template-columns:240px 1fr;column-gap:18px;align-items:start}
+  .paper.sp-1 .card>.bild,.paper.sp-1 .card>.mono{grid-column:1;grid-row:1 / span 5;width:100%;height:150px;object-fit:cover;margin:0}
+  .paper.sp-1 .card>:not(.bild):not(.mono){grid-column:2}
+  .paper.sp-2{grid-template-columns:repeat(2,1fr)}
+  .paper.sp-3{grid-template-columns:repeat(3,1fr)}
+  .paper.sp-4{grid-template-columns:repeat(4,1fr)}
+  .desk.einzeln{display:block}
+  .desk.als-zeitung{display:block}
+  .desk.als-zeitung .desk-sec{margin-bottom:14px}
+}
 .chips::-webkit-scrollbar{display:none}
 .sel{appearance:none;-webkit-appearance:none;min-height:32px;padding:4px 28px 4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23737b91' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;color:var(--text2);font-size:var(--fs-sm);font-weight:600;cursor:pointer}
 .pill{display:inline-flex;align-items:center;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:700;line-height:1.5;white-space:nowrap}
@@ -393,6 +410,10 @@ body.teasers .row .teaser,.teasers-on .row .teaser{display:block}
 html{-webkit-tap-highlight-color:transparent}
 .sheet .panel,.pdf-seiten{overscroll-behavior:contain}
 @supports (height:100dvh){.sheet .panel{max-height:100dvh}.pdf-ov{height:100dvh}}
+.dok-kern{margin:10px 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-sm)}
+.tech-sig{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.bew{display:flex;gap:14px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-sm);line-height:1.45}
+.bew-zahl{font-size:30px;font-weight:800;letter-spacing:-.02em;min-width:86px;font-variant-numeric:tabular-nums}
 .ab-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:5px}
 .ab-zeile .note{font-size:var(--fs-xs)}
 .pdf-ov{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
@@ -797,7 +818,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v56</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v60</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1666,6 +1687,10 @@ function dubNah(a,b,opt){
    Sport sucht, findet ihn im Ressort. */
 const SPORT_RE=/\b(bundesliga|bundestrainer\w*|nationalmannschaft|nationalelf|dfb(-\w+)?|champions league|europa league|wm-qualifikation|em-qualifikation|länderspiel\w*|olympi\w+|davis[- ]cup|formel 1|grand slam|wimbledon|tour de france|handball-\w+|biathlon|torjäger|auftaktsieg|trainerwechsel)\b/i;
 const istSport=a=>(a.topics||[]).some(t=>/^sport/i.test(t))||SPORT_RE.test(a.title||'');
+/* Volksfeste und Brauchtum ("Oktoberfest", "Wiesn", "Erntedank") sind keine
+   Top-Nachricht – außer bei außergewöhnlicher Breite (fünf Häuser). */
+const BRAUCH_RE=/\b(oktoberfest|wiesn|volksfest|kirmes|cannstatter wasen|karneval|fasching|schützenfest|erntedank\w*|weihnachtsmarkt\w*|brauchtum|trachten\w*|bierzelt|maßkrug|dirndl)\b/i;
+function nurBreitGenug(a,n){try{return 1+new Set(clusterArts(a).map(x=>x._qb||hausVon(x.src))).size>=n}catch(e){return false}}
 function topEntdoppeln(arr,max,proHausMax){
   /* Beim allerersten Bild sind die Prüffunktionen (späterer Skriptteil)
      noch nicht geladen – dann ungeprüft, das nächste Bild entdoppelt. */
@@ -1689,8 +1714,9 @@ function topEntdoppeln(arr,max,proHausMax){
   for(const a of arr){
     const haus=a._qb||(a._qb=hausVon(a.src));
     if((zaehler[haus]||0)>=grenze)continue;
+    if(BRAUCH_RE.test(a.title||'')&&!nurBreitGenug(a,5))continue;
     const sp=istSport(a);
-    if(sp&&sport>=sportGrenze)continue;
+    if(sp&&(sport>=sportGrenze||!nurBreitGenug(a,3)))continue;
     if(!passt(a))continue;
     out.push(a);zaehler[haus]=(zaehler[haus]||0)+1;if(sp)sport++;
     if(out.length>=max)break;
@@ -1700,6 +1726,8 @@ function topEntdoppeln(arr,max,proHausMax){
     for(const a of arr){
       if(out.includes(a))continue;
       if(!passt(a))continue;
+      /* Volksfeste auch beim Auffüllen nicht – lieber eine kürzere Liste */
+      if(typeof BRAUCH_RE!=='undefined'&&BRAUCH_RE.test(a.title||'')&&!nurBreitGenug(a,5))continue;
       out.push(a);
       if(out.length>=max)break;
     }
@@ -1738,18 +1766,35 @@ function hausNamenLernen(arts){
   arts.forEach(a=>{if(!a._qb){const d=name2dom[quellBasis(a.src)];if(d){a._qb=d;if(!SRC2HAUS[a.src])SRC2HAUS[a.src]=d}}});
 }
 function hausVon(x){return SRC2HAUS[x]||(typeof quellBasis==='function'?quellBasis(x):String(x||'').toLowerCase().trim())}
+/* Meldet b wirklich dieselbe Sache wie a? Themenlagen und KI-Gruppen fassen
+   manchmal Verwandtes zusammen – als "weitere Quelle" zählt aber nur, was
+   dieselbe Nachricht bringt: nahezu gleiche Schlagzeile, oder zwei gemeinsame
+   Wörter, oder ein gemeinsamer Name/Ort plus ein gemeinsames Wort. */
+function gleicheSache(a,b){
+  if(typeof dubNah!=='function'||typeof titelWorte!=='function')return true;
+  /* Billige Prüfungen zuerst (zwischengespeicherte Wortmengen), die teure
+     Dublettenprüfung nur, wenn es knapp ist – läuft beim Laden für jede
+     Meldung. */
+  const A=dubWorte(a),B=dubWorte(b);
+  let n=0;for(const w of A)if(B.has(w)){n++;if(n>=2)return true}
+  const gem=hartGemeinsam(a._hart||(a._hart=hartSignale(a)),b._hart||(b._hart=hartSignale(b)));
+  if((gem>=1&&n>=1)||gem>=3)return true;
+  const komp=kompositumTreffer(A,B);
+  if(n+komp>=2||(gem>=1&&komp>=1))return true;
+  return dubNah(a,b,{ohneFaden:true});
+}
 function clusterArts(a){
   if(a._cl)return a._cl;
   /* Von der KI gebildete Gruppe: deren Mitglieder sind die weiteren Quellen. */
   if(a._kiGruppe&&a._kiGruppe.length>1){
     const eigen=a._qb||(a._qb=hausVon(a.src));
     const seen=new Set([eigen]);
-    return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
+    return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;if(!gleicheSache(a,x))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
   }
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
   /* Gezählt werden HÄUSER, nicht Beiträge: der eigene Beitrag und weitere
      Beiträge desselben Hauses fallen heraus, sonst zählt Tagesschau doppelt. */
-  let arr=st?st.arts.map(id=>ITEMS[id]).filter(x=>x&&x.id!==a.id&&(x._qb||hausVon(x.src))!==(a._qb||(a._qb=hausVon(a.src)))):[];
+  let arr=st?st.arts.map(id=>ITEMS[id]).filter(x=>x&&x.id!==a.id&&(x._qb||hausVon(x.src))!==(a._qb||(a._qb=hausVon(a.src)))&&gleicheSache(a,x)):[];
   if(!arr.length&&typeof IDX!=='undefined'){
     /* Keine Themenlage: Meldungen anderer Quellen mit fast gleicher Schlagzeile – aus dem Index, nicht per Suche. */
     const k=a._nt||(a._nt=normTitel(a.title));
@@ -1872,6 +1917,7 @@ function renderTop(){
   const srcs=[...new Set(base.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
   h+=secHd('alle','Alle Meldungen',all.length+' · letzte 48 Std.',`
     <div class="vmode" role="group" aria-label="Darstellung"><button class="icon-btn" aria-pressed="${S.view==='list'}" aria-label="Liste" title="Liste" onclick="setView('list')"><svg class="i"><use href="#i-list"/></svg></button><button class="icon-btn" aria-pressed="${S.view==='paper'}" aria-label="Zeitung" title="Zeitung" onclick="setView('paper')"><svg class="i"><use href="#i-grid"/></svg></button></div>
+    ${S.view==='paper'?spaltenWahlHTML():''}
     <div class="seg" role="group" aria-label="Sortierung"><button aria-pressed="${S.sort==='new'}" onclick="S.sort='new';render()">Neueste</button><button aria-pressed="${S.sort==='rel'}" onclick="S.sort='rel';render()">Relevanz</button></div>
     ${S.view==='list'?`<button class="btn sm" aria-pressed="${document.body.classList.contains('teasers')}" onclick="toggleTeasers()">Mit Teaser</button>`:''}${copyBtn(ALLLIST,'Liste')}`);
   let hAll=`<div class="filters"><div class="bar">${lsearch('all','Meldungen durchsuchen …')}<select class="sel" aria-label="Herkunft" onchange="S.herkunft=this.value;render()">${HERKUENFTE.map(([k,l])=>`<option value="${k}" ${S.herkunft===k?'selected':''}>${l}</option>`).join('')}</select><select class="sel" aria-label="Quelle" onchange="S.src=this.value;render()"><option value="all">Alle Quellen</option>${srcs.map(s=>`<option ${S.src===s?'selected':''}>${esc(s)}</option>`).join('')}</select></div>
@@ -1941,12 +1987,13 @@ function tileHTML(m,range){
     <div class="c ${up?'up':'dn'}">${up?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</div>
     ${sparkline(d.s,up)}</div>`;
 }
-function bigChart(s,up){
-  const w=320,h=150,min=Math.min(...s),max=Math.max(...s),sp=(max-min)||1;
+function bigChart(s,up,linien){
+  const zusatz=(linien||[]).flatMap(l=>l.werte.filter(v=>v!=null));
+  const w=320,h=150,min=Math.min(...s,...zusatz),max=Math.max(...s,...zusatz),sp=(max-min)||1;
   const pt=(v,i)=>`${(i/(s.length-1)*w).toFixed(1)},${(h-12-((v-min)/sp)*(h-28)).toFixed(1)}`;
   const line=s.map(pt).join(' ');
   const col=up?'var(--green)':'var(--red)';
-  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${h} ${line} ${w},${h}" fill="${col}" opacity=".10"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/><line id="mk-cursor" x1="0" x2="0" y1="0" y2="${h}" stroke="var(--text2)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle id="mk-dot" r="4" fill="${col}" style="display:none"/></svg><div id="mk-tip" class="mk-tip" hidden></div>`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${h} ${line} ${w},${h}" fill="${col}" opacity=".10"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>${(linien||[]).map(l=>{const p=l.werte.map((v,i)=>v==null?null:pt(v,i)).filter(Boolean).join(' ');return p?`<polyline points="${p}" fill="none" stroke="${l.farbe}" stroke-width="1.4" stroke-dasharray="${l.strich||''}" opacity=".95"/>`:''}).join('')}<line id="mk-cursor" x1="0" x2="0" y1="0" y2="${h}" stroke="var(--text2)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/><circle id="mk-dot" r="4" fill="${col}" style="display:none"/></svg><div id="mk-tip" class="mk-tip" hidden></div>`;
 }
 /* Zeiger über dem Kursverlauf: Maus oder Finger zeigt Wert und Zeitpunkt. */
 function chartZeiger(m,s,range){
@@ -1972,6 +2019,64 @@ const MARKT_BEGRIFFE={'BZ=F':['ölpreis','ölpreise','rohöl','opec','oil price'
   'NG=F':['henry hub','erdgas','natural gas'],'GC=F':['goldpreis','gold price'],'HG=F':['kupferpreis','kupfer','copper'],'^GDAXI':['dax','deutsche börse'],'^GSPC':['s&p 500','wall street'],
   'EURUSD=X':['euro','dollar','devisen'],'DE10Y':['bundesanleihe','bundesanleihen','rendite','renditen'],'^TNX':['treasury','treasuries','us-anleihen'],'ZW=F':['weizen','wheat','getreide'],
   'CC=F':['kakao','cocoa'],'KC=F':['kaffee','coffee'],'SB=F':['zucker','sugar'],'EUA':['co2-preis','emissionshandel','zertifikate'],'SMH':['halbleiter','chip','chips','nvidia'],'DFEN.DE':['rüstung','rüstungsaktien','rheinmetall']};
+/* ── Technische Lage aus der Tagesreihe (1 Jahr) ────────────────────────
+   Gleitende Durchschnitte über 50 und 200 Handelstage, ihre Kreuzungen
+   ("Golden Cross": die kurze Linie steigt über die lange; "Death Cross":
+   sie fällt darunter), RSI über 14 Tage, Abstand zum Jahreshoch und die Lage
+   im Fünfjahresband. Beschreibend, keine Empfehlung. */
+function gleitend(r,n){return r.map((_,i)=>i+1<n?null:r.slice(i+1-n,i+1).reduce((a,b)=>a+b,0)/n)}
+function technik(m){
+  const r=((m.series||{})['1j']||[]).filter(v=>v!=null);
+  if(r.length<60)return null;
+  const s50=gleitend(r,50),s200=r.length>=200?gleitend(r,200):null;
+  const last=r[r.length-1],out={s50,s200,signale:[]};
+  const pct=(a,b)=>(a/b-1)*100;
+  if(s200){
+    const d=pct(last,s200[s200.length-1]);
+    out.signale.push({t:`${d>=0?'Über':'Unter'} der 200-Tage-Linie (${d>=0?'+':'−'}${fmtNum(Math.abs(d),1)} %)`,art:d>=0?'gut':'schlecht'});
+    /* Letzte Kreuzung im verfügbaren Zeitraum: frisch (bis 30 Tage) als
+       Signal, älter als Zustand ("seit …"). */
+    let gefunden=false;
+    for(let i=r.length-1;i>=200;i--){
+      const jetzt=s50[i]-s200[i],vorher=s50[i-1]-s200[i-1];
+      if(vorher!=null&&jetzt*vorher<0){const tage=r.length-1-i;gefunden=true;
+        out.signale.push({t:tage<=30?(jetzt>0?`Golden Cross vor ${tage} ${tage===1?'Tag':'Tagen'}`:`Death Cross vor ${tage} ${tage===1?'Tag':'Tagen'}`):(jetzt>0?`Golden Cross – 50 über 200 seit ${tage} Tagen`:`Death Cross – 50 unter 200 seit ${tage} Tagen`),art:jetzt>0?'gut':'schlecht'});break}
+    }
+    if(!gefunden){const j=s50[s50.length-1]-s200[s200.length-1];out.signale.push({t:j>0?'50-Tage-Linie über 200-Tage-Linie':'50-Tage-Linie unter 200-Tage-Linie',art:j>0?'gut':'schlecht'})}
+  }
+  const d50=pct(last,s50[s50.length-1]);
+  out.signale.push({t:`${d50>=0?'Über':'Unter'} der 50-Tage-Linie (${d50>=0?'+':'−'}${fmtNum(Math.abs(d50),1)} %)`,art:d50>=0?'gut':'schlecht'});
+  if(r.length>15){let auf=0,ab=0;for(let i=r.length-14;i<r.length;i++){const x=r[i]-r[i-1];if(x>0)auf+=x;else ab-=x}
+    const rsi=ab===0?100:100-100/(1+auf/ab);out.rsi=rsi;
+    if(rsi>=70)out.signale.push({t:`RSI ${Math.round(rsi)} – überkauft`,art:'warn'});
+    else if(rsi<=30)out.signale.push({t:`RSI ${Math.round(rsi)} – überverkauft`,art:'warn'});}
+  const hoch=Math.max(...r),tief=Math.min(...r);
+  out.abHoch=pct(last,hoch);
+  if(out.abHoch<=-10)out.signale.push({t:`${fmtNum(Math.abs(out.abHoch),1)} % unter dem Jahreshoch`,art:'schlecht'});
+  else if(out.abHoch>=-2)out.signale.push({t:'Nahe am Jahreshoch',art:'gut'});
+  if(pct(last,tief)<=3)out.signale.push({t:'Nahe am Jahrestief',art:'schlecht'});
+  const f=((m.series||{}).max||[]).filter(v=>v!=null);
+  if(f.length>=50){const unter=f.filter(v=>v<last).length;out.lage5j=unter/f.length*100}
+  return out;
+}
+function technikHTML(m){
+  const t=technik(m);if(!t)return '';
+  return `<div class="sec-hd" style="margin:14px 0 4px"><h2 style="font-size:var(--fs-md)">Technische Lage</h2><span class="cnt">aus dem Kursverlauf eines Jahres</span></div>
+    <div class="tech-sig">${t.signale.map(x=>`<span class="pill ${x.art==='gut'?'green':x.art==='schlecht'?'red':'amber'}">${esc(x.t)}</span>`).join('')}</div>
+    <div class="mkd-stats">${t.rsi!=null?`<div><b>${Math.round(t.rsi)}</b><span>RSI (14 Tage)</span></div>`:''}<div><b>${t.abHoch>=0?'+':'−'}${fmtNum(Math.abs(t.abHoch),1)} %</b><span>zum Jahreshoch</span></div>${t.lage5j!=null?`<div><b>${Math.round(t.lage5j)} %</b><span>Lage im 5-Jahres-Band</span></div>`:''}</div>
+    <p class="note" style="margin-top:4px">Im Jahreschart: <span style="color:#f59e0b">– – 50-Tage-Linie</span> · <span style="color:#8b5cf6">— 200-Tage-Linie</span>. Beschreibt den Kursverlauf; keine Anlageempfehlung.</p>`;
+}
+/* Bewertung (Financial Modeling Prep): KGV gegen den eigenen Fünfjahresschnitt. */
+function bewertungHTML(m){
+  const b=(window.BEWERTUNG||{})[m.sym];if(!b||b.abweichung==null)return '';
+  const guenstig=b.abweichung<0;
+  return `<div class="sec-hd" style="margin:14px 0 4px"><h2 style="font-size:var(--fs-md)">Bewertung</h2><span class="cnt">gemessen an der eigenen Geschichte</span></div>
+    <div class="bew">
+      <div class="bew-zahl" style="color:${guenstig?'var(--green)':'var(--red)'}">${b.abweichung>0?'+':'−'}${fmtNum(Math.abs(b.abweichung),0)} %</div>
+      <div><b>${guenstig?'Günstiger':'Teurer'} als der eigene KGV-Schnitt.</b><br><span class="note">KGV heute ${fmtNum(b.kgv,1)} · Schnitt der letzten ${b.jahre} Geschäftsjahre ${fmtNum(b.kgv_schnitt_5j,1)}${b.fair_gewinn?` · fairer Wert nach Gewinn ${fmtNum(b.fair_gewinn,2)}`:''}${b.fair_cashflow?` · nach Cashflow ${fmtNum(b.fair_cashflow,2)}`:''}</span></div>
+    </div>
+    <p class="note" style="margin-top:4px">Fairer Wert = Gewinn (bzw. freier Cashflow) je Aktie × durchschnittliche Bewertung der letzten Jahre. Quelle: Financial Modeling Prep, Stand ${esc(b.stand||'')}. Keine Anlageempfehlung.</p>`;
+}
 function openMarket(sym){
   const m=MARKET_BY_SYM[sym];if(!m)return;S.mkSym=sym;
   const d=mkData(m,S.mkRange),up=d.c>=0,drin=watchlist().includes(sym);
@@ -1987,8 +2092,11 @@ function openMarket(sym){
   g('mkd-body').innerHTML=`<div class="meta"><span class="src">${esc(m.grp)}</span><span>${esc(m.sym)}</span>${m.unit?`<span>${esc(m.unit)}</span>`:''}</div>
     <div class="mkd-head"><span class="mkd-v">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}</span><span class="mkd-c" style="color:${up?'var(--green)':'var(--red)'}">${up?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</span><span class="note">${MARKET_RANGES.find(r=>r[0]===S.mkRange)[1]}</span></div>
     <div class="seg" role="group" aria-label="Zeitraum">${MARKET_RANGES.map(([k,l])=>`<button aria-pressed="${S.mkRange===k}" onclick="S.mkRange='${k}';store.set('mkrange','${k}');openMarket('${sym}');render()">${l}</button>`).join('')}</div>
-    <div class="mkd-chart">${bigChart(s,up)}</div>
+    <div class="mkd-chart">${(()=>{if(S.mkRange!=='1j')return bigChart(s,up);const t=technik(m);if(!t||s.length!==((m.series||{})['1j']||[]).filter(v=>v!=null).length)return bigChart(s,up);
+      return bigChart(s,up,[{werte:t.s50,farbe:'#f59e0b',strich:'4 3'},...(t.s200?[{werte:t.s200,farbe:'#8b5cf6'}]:[])])})()}</div>
     <div class="mkd-stats"><div><b>${fmtNum(max,m.dec)}</b><span>Höchstwert</span></div><div><b>${fmtNum(min,m.dec)}</b><span>Tiefstwert</span></div><div><b>${fmtNum(s.reduce((x,y)=>x+y,0)/s.length,m.dec)}</b><span>Durchschnitt</span></div>${MARKET_RANGES.map(([k,l])=>k===S.mkRange?'':`<div><b style="color:${mkData(m,k).c>=0?'var(--green)':'var(--red)'}">${mkData(m,k).c>=0?'+':'−'}${fmtNum(Math.abs(mkData(m,k).c),2)}${mkData(m,k).pp?'':' %'}</b><span>${l}</span></div>`).join('')}</div>
+    ${bewertungHTML(m)}
+    ${technikHTML(m)}
     <div class="sec-hd" style="margin:14px 0 4px"><h2 style="font-size:var(--fs-md)">Meldungen dazu</h2></div>
     <div class="box list">${news.length?news.map(a=>rowHTML(a,'MKDLIST',true)).join(''):'<div class="empty">Keine passenden Meldungen.</div>'}</div>
     ${typeof DEMO!=='undefined'&&DEMO?'<p class="note" style="margin-top:10px">Beispielwerte.</p>':''}`;
@@ -2038,9 +2146,16 @@ function rowHTML(a,listName,small){
     <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${a.gericht?`<span class="pill grey">${esc(a.az)}</span>`:''}${small?'':`<span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span>`}</div>
     <div class="ttl" ${small?'style="font-size:var(--fs-sm)"':''}>${esc(a.title)}</div>${small?'':`<div class="teaser">${esc(a.desc)}</div>`}${starHTML(a.id)}${quellenListe(a)}${inlineHTML(a)}</div>`;
 }
+/* Spalten der Zeitungsansicht: automatisch, oder am Desktop fest 1 (ein
+   Artikel je Zeile, Bild links), 2, 3 oder 4. Am Handy immer eine. */
+function spaltenWahlHTML(){
+  const sp=String(store.get('spalten','auto'));
+  return `<div class="seg spalten" role="group" aria-label="Spalten">${[['auto','Auto'],['1','1'],['2','2'],['3','3'],['4','4']].map(([k,l])=>`<button aria-pressed="${sp===k}" title="${k==='auto'?'Spalten nach Breite':k==='1'?'Ein Artikel je Zeile':k+' Spalten'}" onclick="store.set('spalten','${k}');render()">${l}</button>`).join('')}</div>`;
+}
 function paperHTML(arr,listName){
   if(!arr.length)return '<div class="box"><div class="empty"><b>Nichts gefunden</b>Andere Region, anderes Ressort oder Suchbegriff kürzen.</div></div>';
-  return `<div class="paper">${arr.map(a=>`<div class="card ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">${a.image?`<img class="bild" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mono',style:'background-color:${HERKUNFT_COLOR[a.herkunft]||'#4a5168'}',textContent:'${monoInit(a.src)}'}))">`:`<div class="mono" style="background-color:${HERKUNFT_COLOR[a.herkunft]||'#4a5168'}">${monoInit(a.src)}</div>`}<div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}${zugangPill(a)}</div><div class="ttl">${esc(a.title)}</div><div class="teaser">${esc(a.desc)}</div><div class="meta"><span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span></div>${starHTML(a.id)}</div>`).join('')}</div>`;
+  const sp=String(store.get('spalten','auto'));
+  return `<div class="paper${sp!=='auto'?' sp-'+sp:''}">${arr.map(a=>`<div class="card ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">${a.image?`<img class="bild" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mono',style:'background-color:${HERKUNFT_COLOR[a.herkunft]||'#4a5168'}',textContent:'${monoInit(a.src)}'}))">`:`<div class="mono" style="background-color:${HERKUNFT_COLOR[a.herkunft]||'#4a5168'}">${monoInit(a.src)}</div>`}<div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${a.cluster>1?`<span class="pill blue">${a.cluster} Quellen</span>`:''}${zugangPill(a)}</div><div class="ttl">${esc(a.title)}</div><div class="teaser">${esc(a.desc)}</div><div class="meta"><span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span></div>${starHTML(a.id)}</div>`).join('')}</div>`;
 }
 function toggleTeasers(){setPref('teasers',!document.body.classList.contains('teasers'))}
 
@@ -2061,11 +2176,14 @@ function renderDesk(){
   let h=secHd('desk','Ressorts',`${base.length} Meldungen · ${keys.length} Ressorts`,
     `<div class="seg" role="group" aria-label="Zeitraum"><button aria-pressed="${win===24}" onclick="S.deskWin=24;render()">24 Std.</button><button aria-pressed="${win===48}" onclick="S.deskWin=48;render()">48 Std.</button></div>${copyBtn(base.map(a=>a.id),'Ressorts')}`);
   let b=`<div class="filters"><div class="bar">${lsearch('dk','In allen Ressorts suchen …')}</div>
-    <div class="chips" role="navigation" aria-label="Zum Ressort springen">${keys.map(k=>`<a class="chip" href="#desk-${k}" onclick="event.preventDefault();const el=g('desk-${k}');el&&el.scrollIntoView({behavior:'smooth',block:'start'})">${deskLabel(k)} <span class="n">${nach[k].length}</span></a>`).join('')}</div></div>`;
+    <div class="chips wrap" role="group" aria-label="Ressort"><button class="chip" aria-pressed="${!S.deskNur||!nach[S.deskNur]}" onclick="S.deskNur=null;render()">Alle Ressorts</button>${keys.map(k=>`<button class="chip" aria-pressed="${S.deskNur===k}" onclick="S.deskNur='${k}';S.deskOpen=S.deskOpen||{};S.deskOpen['${k}']=true;render();scrollTo({top:0})">${deskLabel(k)} <span class="n">${nach[k].length}</span></button>`).join('')}</div>
+    <div class="bar" style="margin-top:6px"><div class="vmode" role="group" aria-label="Darstellung"><button class="icon-btn" aria-pressed="${(S.deskView||'list')==='list'}" aria-label="Liste" title="Liste" onclick="S.deskView='list';render()"><svg class="i"><use href="#i-list"/></svg></button><button class="icon-btn" aria-pressed="${S.deskView==='paper'}" aria-label="Zeitung" title="Zeitung" onclick="S.deskView='paper';render()"><svg class="i"><use href="#i-grid"/></svg></button></div>${S.deskView==='paper'?spaltenWahlHTML():''}</div></div>`;
+  /* Ein Ressort gewählt: nur dieses, vollständig – statt zur Stelle zu scrollen. */
+  const zeigeKeys=S.deskNur&&nach[S.deskNur]?[S.deskNur]:keys;
   window.DESKLIST={};
-  b+=`<div class="desk">${keys.map(k=>{const arts=nach[k];const suche=!!(S.lq.dk||'').trim();const auf=suche||(S.deskOpen&&S.deskOpen[k]);const zeigen=arts.slice(0,auf?200:8);window.DESKLIST[k]=arts.map(a=>a.id);
+  b+=`<div class="desk${zeigeKeys.length===1?' einzeln':''}${S.deskView==='paper'?' als-zeitung':''}">${zeigeKeys.map(k=>{const arts=nach[k];const suche=!!(S.lq.dk||'').trim();const auf=suche||(S.deskOpen&&S.deskOpen[k]);const zeigen=arts.slice(0,auf?200:8);window.DESKLIST[k]=arts.map(a=>a.id);
     return `<section class="box desk-sec" id="desk-${k}"><div class="desk-hd"><h3>${deskLabel(k)}</h3><span class="cnt">${arts.length}${suche?' Treffer':''}</span><button class="btn sm quiet" onclick="go('news','top');setTopic('${k}')">Alle</button></div>
-      <div class="desk-list">${zeigen.map(a=>`<div class="desk-row" role="button" tabindex="0" onclick="openReader('${a.id}',DESKLIST['${k}'])" onkeydown="rowKey(event,'${a.id}')"><div class="dr-in"><div class="ttl">${esc(a.title)}</div><div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${AI[a.id]?'<span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>':''}</div></div>${starHTML(a.id)}${quellenListe(a)}${inlineHTML(a)}</div>`).join('')}</div>
+      ${S.deskView==='paper'?paperHTML(zeigen,`DESKLIST['${k}']`):''}<div class="desk-list"${S.deskView==='paper'?' hidden':''}>${zeigen.map(a=>`<div class="desk-row" role="button" tabindex="0" onclick="openReader('${a.id}',DESKLIST['${k}'])" onkeydown="rowKey(event,'${a.id}')"><div class="dr-in"><div class="ttl">${esc(a.title)}</div><div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${AI[a.id]?'<span class="pill" style="background:#ede9fe;color:#6d28d9">KI</span>':''}</div></div>${starHTML(a.id)}${quellenListe(a)}${inlineHTML(a)}</div>`).join('')}</div>
       ${arts.length>8&&!suche?`<div class="desk-more"><button class="btn sm quiet" onclick="S.deskOpen=S.deskOpen||{};S.deskOpen['${k}']=!S.deskOpen['${k}'];render()">${auf?'Weniger zeigen':`${Math.min(arts.length,60)-8} weitere zeigen`}</button></div>`:''}</section>`}).join('')||'<div class="box"><div class="empty"><b>Keine Meldungen</b>Anderer Zeitraum, andere Region oder kürzerer Suchbegriff.</div></div>'}</div>`;
   return h+body('desk',b);
 }
@@ -2121,9 +2239,17 @@ function kiThemenVerschneiden(){
   }));
   if(neu||verschnitten)LOADLOG.push({f:'Themenlagen mit KI',ok:true,n:neu+verschnitten});
 }
+/* Sortierung der Themenlagen: meiste Quellen, neueste, im Kommen (die
+   meisten neuen Meldungen in den letzten sechs Stunden, gemessen an allen). */
+function storyFrisch(s){let n=0;for(const id of s.arts){const a=ITEMS[id];if(a&&a.ago<=6)n++}return n}
 function renderStories(){
-  const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort((a,b)=>b.arts.length-a.arts.length||b.date-a.date);window.STORYLIST=list.map(s=>s.id);
-  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools">${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
+  const sort=S.storySort||'quellen';
+  const list=STORIES.filter(s=>inRegion(s)&&matchLQ('st',s)).sort(
+    sort==='neu'?(a,b)=>b.date-a.date:
+    sort==='kommen'?(a,b)=>(storyFrisch(b)/Math.sqrt(b.arts.length)-storyFrisch(a)/Math.sqrt(a.arts.length))||storyFrisch(b)-storyFrisch(a)||b.date-a.date:
+    (a,b)=>b.arts.length-a.arts.length||b.date-a.date);
+  window.STORYLIST=list.map(s=>s.id);
+  let h=`<div class="sec-hd" style="margin-top:4px"><h2>Stories</h2><span class="cnt">${list.length} · Meldungen, die mehrere Quellen aufgreifen</span><div class="tools"><div class="seg" role="group" aria-label="Sortierung">${[['quellen','Meiste Quellen'],['neu','Neueste'],['kommen','Im Kommen']].map(([k,l])=>`<button aria-pressed="${sort===k}" onclick="S.storySort='${k}';render()">${l}</button>`).join('')}</div>${lsearch('st','Stories durchsuchen …')}${copyBtn(STORYLIST,'Stories')}</div></div>`;
   h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${(()=>{const h=new Map();s.arts.map(id=>ITEMS[id]).filter(Boolean).forEach(a=>{const k=a._qb||hausVon(a.src);if(!h.has(k))h.set(k,a.src)});return [...h.values()].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')+`<span class="pill blue">${h.size} ${h.size===1?'Haus':'Häuser'}</span>`})()}${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
@@ -2752,11 +2878,24 @@ function renderDocs(){
   h+=`<div class="filters"><div class="bar">${lsearch('dc','Dokumente durchsuchen – Titel, Nummer, Art …')}
     <select class="sel" aria-label="Art" onchange="S.docType=this.value;render()"><option value="all">Alle Arten</option>${arten.map(t=>`<option ${S.docType===t?'selected':''}>${esc(t)}</option>`).join('')}</select>
     ${haeuser.length>1?`<select class="sel" aria-label="Herkunft" onchange="S.docHaus=this.value;render()"><option value="all">Alle Häuser</option>${haeuser.map(t=>`<option ${S.docHaus===t?'selected':''}>${esc(t)}</option>`).join('')}</select>`:''}</div>
-    <div class="chips">${arten.slice(0,10).map(t=>`<button class="chip" aria-pressed="${S.docType===t}" onclick="S.docType='${esc(t)}';render()">${esc(t)} <span class="n">${DOCS.filter(d=>d._art===t).length}</span></button>`).join('')}</div></div>`;
+    <div class="chips wrap zwei">${arten.slice().sort((a,b)=>DOCS.filter(d=>d._art===b).length-DOCS.filter(d=>d._art===a).length).slice(0,10).map(t=>`<button class="chip" aria-pressed="${S.docType===t}" onclick="S.docType='${esc(t)}';render()">${esc(t)} <span class="n">${DOCS.filter(d=>d._art===t).length}</span></button>`).join('')}</div></div>`;
   h+=`<div class="scrollbox main box" style="padding:0"><div class="box list">${list.slice(0,300).map(d=>`<div class="row" role="button" tabindex="0" onclick="openReader('${d.id}',DOCLIST)" onkeydown="rowKey(event,'${d.id}')"><div class="meta">${srcHTML(d)}<span class="pill blue">${esc(d._art)}</span>${d._haus&&d._haus!==d.src?`<span class="pill grey">${esc(d._haus)}</span>`:''}<span>${fmtAgo(d.date)}</span></div><div class="ttl">${esc(d.title)}</div>${d.desc?`<div class="teaser" style="display:block">${esc(d.desc)}</div>`:''}${starHTML(d.id)}</div>`).join('')||'<div class="empty"><b>Kein Dokument</b>Drucksachen, Anfragen, Protokolle und Tagesordnungen erscheinen hier mit dem nächsten Lauf.</div>'}${list.length>300?`<div class="more"><span class="note">300 von ${list.length} angezeigt – Suche eingrenzen</span></div>`:''}</div>`;
   return h;
 }
-function eventsFiltered(){return EVENTS.filter(e=>matchLQ('ev',e)&&(!S.calDay||sameDay(e.date,S.calDay))).sort((a,b)=>a.date-b.date)}
+/* Art eines Termins – aus Quelle und Titel. */
+function terminArt(e){
+  if(e._art)return e._art;
+  const t=norm((e.src||'')+' '+(e.title||''));
+  return e._art=/plenum|plenarsitzung|sitzungswoche|tagesordnung|bundestag.*sitzung|sitzung.*bundestag/.test(t)?'Plenum':
+    /ausschuss|anhörung|anhorung|hearing|committee/.test(t)?'Ausschuss':
+    /bundesrat/.test(t)?'Bundesrat':
+    /gericht|urteil|verkündung|verkundung|verhandlung|bgh|bverfg|eugh/.test(t)?'Gericht':
+    /europäisch|europaisch|\beu\b|kommission|rat der eu|europarl|coreper/.test(t)?'EU':
+    /wahl|abstimmung|referendum/.test(t)?'Wahl':
+    /pressekonferenz|regierungspressekonferenz|pk\b|briefing/.test(t)?'Pressetermin':
+    /kabinett|bundesregierung|minister/.test(t)?'Regierung':'Weitere';
+}
+function eventsFiltered(){return EVENTS.filter(e=>matchLQ('ev',e)&&(!S.calDay||sameDay(e.date,S.calDay))&&(!S.evArt||S.evArt==='all'||terminArt(e)===S.evArt)&&(!S.evNurGemerkt||MARKS.has(e.id))).sort((a,b)=>a.date-b.date)}
 function renderEvents(){
   const list=eventsFiltered();window.EVLIST=list.map(e=>e.id);const marked=EVENTS.filter(e=>MARKS.has(e.id));
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Termine</h2><span class="cnt">${list.length} · Ortszeit</span><div class="tools"><div class="seg" role="group" aria-label="Ansicht"><button aria-pressed="${S.calMode==='list'}" onclick="S.calMode='list';render()">Liste</button><button aria-pressed="${S.calMode==='month'}" onclick="S.calMode='month';render()">Monat</button></div></div></div>`;
@@ -2765,6 +2904,8 @@ function renderEvents(){
     ${marked.length?`<button class="btn sm" onclick="exportICS(${J(marked.map(e=>e.id))},'gemerkte-termine.ics')"><svg class="i" style="width:15px;height:15px"><use href="#i-star"/></svg>${marked.length} gemerkte als .ics</button>`:''}
     <button class="btn sm" onclick="copyText('https://demo.presseschau.example/calendar.ics','Abo-Adresse kopiert – in Google (Weitere Kalender → Per URL) oder Apple (Ablage → Neues Kalenderabonnement) einfügen')">Abonnieren</button>
     ${copyBtn(EVLIST,'Termine')}</div></div>`;
+  const evArten=[...new Set(EVENTS.map(terminArt))].sort((a,b)=>EVENTS.filter(e=>terminArt(e)===b).length-EVENTS.filter(e=>terminArt(e)===a).length);
+  h+=`<div class="chips wrap" role="group" aria-label="Art des Termins" style="margin-bottom:8px"><button class="chip" aria-pressed="${!S.evArt||S.evArt==='all'}" onclick="S.evArt='all';render()">Alle</button>${evArten.map(a=>`<button class="chip" aria-pressed="${S.evArt===a}" onclick="S.evArt='${a}';render()">${a} <span class="n">${EVENTS.filter(e=>terminArt(e)===a).length}</span></button>`).join('')}<button class="chip" aria-pressed="${!!S.evNurGemerkt}" onclick="S.evNurGemerkt=!S.evNurGemerkt;render()">★ Nur gemerkte</button></div>`;
   if(S.calMode==='month')h+=monthHTML();
   if(S.calDay)h+=`<div class="bar" style="margin:8px 0"><span class="pill blue">${fmtDay(S.calDay)}</span><button class="btn sm quiet" onclick="S.calDay=null;render()">Alle Tage</button></div>`;
   const days=[...new Set(list.map(e=>new Date(e.date).toDateString()))];
@@ -3001,8 +3142,11 @@ const FRAKTION_KURZ=[
   [/\blinke\b.*(europ|gue)|the left|gue\/ngl/i,'Die Linke (EP)'],
   [/fraktionslos|non-attached|non attached/i,'Fraktionslos'],
 ];
+/* Steht als Fraktion nur eine Kennnummer (alter Datenstand), lieber
+   "ohne Zuordnung" als eine Zahl im Halbkreis. */
+function fraktionSauber(f){return /^\s*\d+\s*$/.test(String(f||''))?'ohne Zuordnung':f}
 function kurzFraktion(name){
-  const n=String(name||'').trim();
+  const n=String(fraktionSauber(name)||'').trim();
   if(n.length<=18)return n;
   const t=FRAKTION_KURZ.find(([re])=>re.test(n));
   if(t)return t[1];
@@ -3396,7 +3540,7 @@ function openReader(id,list){
   const tags=`<div class="reader-tags">${(x.topics||[]).map(t=>`<button class="chip" onclick="closeSheet('reader');clearSearch(true);go('news','top');setTopic('${t}')">${TOPICS[t]||t}</button>`).join('')}${(x.regions||[]).map(r=>`<span class="pill ${r==='eu'?'eu':'grey'}">${REGION_NAME[r]}</span>`).join('')}</div>`;
   const aiBox=`<div id="ai-box" hidden class="ai"><div class="hd"><svg class="i" style="width:15px;height:15px;color:#7c3aed"><use href="#i-spark"/></svg>KI-Zusammenfassung<span class="note" style="margin-left:auto;font-size:11px">Groq</span></div><div class="txt"></div></div>`;
   if(x.kind==='article'||x.kind==='doc'){
-    b=`<div class="meta">${srcHTML(x)}${x.kind==='doc'?`<span class="pill blue">${esc(x._art||dokArt(x))}</span>${(x._haus||dokHaus(x))&&(x._haus||dokHaus(x))!==x.src?`<span class="pill grey">${esc(x._haus||dokHaus(x))}</span>`:''}`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${tags}${aiBox}
+    b=`<div class="meta">${srcHTML(x)}${x.kind==='doc'?`<span class="pill blue">${esc(x._art||dokArt(x))}</span>${(x._haus||dokHaus(x))&&(x._haus||dokHaus(x))!==x.src?`<span class="pill grey">${esc(x._haus||dokHaus(x))}</span>`:''}`:''}${x.az?`<span class="pill grey">${esc(x.az)}</span>`:''}<span>${fmtAgo(x.date)}</span>${x.cluster>1?`<span class="pill blue">${x.cluster} Quellen</span>`:''}${x.paid?'<span>Abo</span>':''}</div><h3 class="reader-title">${esc(x.title)}</h3>${x.ls?`<div class="quote" style="margin:0 0 8px"><b>Leitsatz.</b> ${esc(x.ls)}</div>`:''}<div class="reader-text">${esc(x.desc||'')}</div>${x._dok?dokKernHTML(x):''}${tags}${aiBox}
       ${(x.kind==='article'&&clusterArts(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Dieselbe Meldung bei</h2><span class="cnt">${clusterArts(x).length} ${clusterArts(x).length===1?'Haus':'Häusern'}</span></div><div class="box list scrollbox">${clusterArts(x).map(y=>rowHTML(y,'READERSRC',true)).join('')}</div>`:''}
       ${(x.kind==='article'&&verwandt(x).length)?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Zum Thema</h2><span class="cnt">andere Meldungen, gleiche Sache</span></div><div class="box list scrollbox">${verwandt(x).map(y=>rowHTML(y,'READERREL',true)).join('')}</div>`:''}
       ${story?`<div class="box" style="margin-top:18px;padding:12px 14px"><div class="meta" style="margin-bottom:4px"><span class="pill blue">${story.arts.length} Quellen</span><span>Teil einer Story</span></div><b>${esc(story.title)}</b><div class="note" style="margin-top:4px">${esc(story.sum)}</div><button class="btn sm" style="margin-top:8px" onclick="openReader('${story.id}')">Story öffnen</button></div>`:''}
@@ -3679,14 +3823,14 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v56 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v60 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
   laender:'laender_articles.json', us:'us_articles.json',
   docs:'documents.json', people:'people.json', newsletters:'newsletters.json',
   dip:'dip.json', elections:'elections.json', markets:'markets.json', ki:'ki_meldungen.json',
-  votes:'votes.json', plenum:'plenum_votes.json',
+  votes:'votes.json', plenum:'plenum_votes.json', umfragen:'umfragen.json', doktext:'dokumente_text.json', bewertung:'bewertung.json',
 };
 const KERN = ['articles.json','eu_articles.json','bundestag_articles.json'];
 
@@ -4455,7 +4599,7 @@ function abstimmungenZuordnen(){
 }
 /* ── Wahlen aus elections.json ────────────────────────────────────── */
 const PARTEI_FARBE={'CDU':'#1f2937','CSU':'#1f2937','CDU/CSU':'#1f2937','SPD':'#c81e1e','GRÜNE':'#15803d','Grüne':'#15803d','B90/Grüne':'#15803d',
-  'FDP':'#ca8a04','AfD':'#0ea5e9','LINKE':'#a21caf','Die Linke':'#a21caf','BSW':'#7c3aed','FW':'#0891b2','SSW':'#0891b2','Sonstige':'#94a3b8'};
+  'FDP':'#ca8a04','AfD':'#0ea5e9','LINKE':'#a21caf','Die Linke':'#a21caf','Linke':'#a21caf','BSW':'#7c3aed','FW':'#0891b2','Freie Wähler':'#0891b2','SSW':'#0891b2','Volt':'#502379','Tierschutzpartei':'#0f766e','Sonstige':'#94a3b8'};
 /* Welches Parlament wählt da eigentlich? Nur wenn das klar ist, lässt
    sich die Umfrage mit der heutigen Sitzverteilung vergleichen. */
 const LAND_CODE={'baden-wurttemberg':'bw','baden-württemberg':'bw',bayern:'by',berlin:'be',brandenburg:'bb',bremen:'hb',
@@ -4501,11 +4645,23 @@ function wahlBeschreiben(e,parlament){
   if(/präsident|prasident|president/.test(t))return {art:'Präsidentschaftswahl',titel:`Präsidentschaftswahl in ${reg}`,gremium:'Staatsoberhaupt',wer:`Wahlberechtigte in ${reg}`,ort:reg};
   return {art:typ||'Parlamentswahl',titel:`${typ||'Parlamentswahl'}${reg?' in '+reg:''}`,gremium:typ&&!/wahl$/i.test(typ)?typ:'Parlament',wer:reg?`Wahlberechtigte in ${reg}`:'',ort:reg};
 }
+/* Neueste Umfrage aus DAWUM zum Parlament der Wahl – mit richtigen
+   Parteinamen. Vorrang vor den alten Wahldaten, in denen bei Landtagswahlen
+   die CDU unter "Sonstige" verschwand. */
+function dawumFuer(e){
+  const U=window.UMFRAGEN;if(!U)return null;
+  const t=norm((e.type||'')+' '+(e.region||''));
+  const name=/bundestag/.test(t)||(/^deutschland$/i.test(e.region||'')&&!/präsident|versammlung/.test(t))?'Bundestag':/europa/.test(t)?'Europäisches Parlament':
+    (LAENDER.slice().sort((x,y)=>y.length-x.length).find(l=>norm(e.region||'').includes(norm(l)))||'');
+  const k=Object.keys(U).find(x=>norm(x)===norm(name))||Object.keys(U).find(x=>name&&norm(x).includes(norm(name)));
+  if(!k)return null;const u=U[k];
+  return {parties:u.parteien,institute:u.institut+' (Daten: DAWUM)',date:u.datum};
+}
 function mapWahlen(el){
   const wahlen=(el.elections||[]).filter(e=>e.status!=='past').sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,12);
   return wahlen.map(e=>{
-    const umfrage=(el.polls||{})[e.region_id];
-    const parteien=umfrage&&umfrage.parties?Object.entries(umfrage.parties).sort((a,b)=>b[1]-a[1]).slice(0,7)
+    const umfrage=dawumFuer(e)||(el.polls||{})[e.region_id];
+    const parteien=umfrage&&umfrage.parties?Object.entries(umfrage.parties).sort((a,b)=>(a[0]==='Sonstige')-(b[0]==='Sonstige')||b[1]-a[1]).slice(0,8)
       .map(([n,v])=>[n,v,PARTEI_FARBE[n]||farbeFuer(n)]):null;
     const art=norm((e.type||'')+' '+(e.region||''));
     /* Bundespräsident und Bundesversammlung sind keine Volkswahl: kein
@@ -4672,8 +4828,11 @@ async function laden(){
   leeren();render();
   zeigeLadebalken('Lade Daten …');
   const [n,e,b]=await Promise.all([hole(DATEIEN.news),hole(DATEIEN.eu),hole(DATEIEN.bt)]);
-  const [la,us,dc,pp,nl,dip,el,mk,ki,vo,pl]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
-    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki),hole(DATEIEN.votes),hole(DATEIEN.plenum)]);
+  const [la,us,dc,pp,nl,dip,el,mk,ki,vo,pl,uf,dt,bw]=await Promise.all([hole(DATEIEN.laender),hole(DATEIEN.us),hole(DATEIEN.docs),
+    hole(DATEIEN.people),hole(DATEIEN.newsletters),hole(DATEIEN.dip),hole(DATEIEN.elections),hole(DATEIEN.markets),hole(DATEIEN.ki),hole(DATEIEN.votes),hole(DATEIEN.plenum),hole(DATEIEN.umfragen),hole(DATEIEN.doktext),hole(DATEIEN.bewertung)]);
+  window.BEWERTUNG=(bw&&bw.werte)||{};
+  window.UMFRAGEN=(uf&&uf.parlamente)||null;
+  window.DOKTEXT=(dt&&dt.dokumente)||{};
 
   /* Jeder Abschnitt einzeln abgesichert: scheitert einer (unerwartetes Feld
      in genau einer Meldung, einem Termin, einer Person …), fallen die
@@ -4782,6 +4941,27 @@ async function laden(){
       if(a.ls&&norm(a.ls)===norm(betreff))a.ls='';
       if(!a.ls){const s=(d||'').split(/(?<=[.!?])\s+/)[0];if(s&&s.length>40&&norm(s)!==norm(betreff))a.ls=s.slice(0,320)}
     });
+  });
+  /* Inhalt aus den im Backend gelesenen Dokumenten (dokumente_lesen.py):
+     Statt "IV ZR 259/25, Entscheidung vom …" steht dann, worum es geht,
+     dazu Leitsatz, Tenor und Ergebnis. Gilt für Urteile und Drucksachen. */
+  sicher('Dokumenttexte',()=>{
+    const T=window.DOKTEXT||{};if(!Object.keys(T).length)return;
+    const nachLink={};Object.values(T).forEach(v=>{if(v.link)nachLink[v.link]=v});
+    const leer=t=>!t||t.length<30||/^(?:[\w\s./-]{3,25},\s*)?(entscheidung|urteil|beschluss)\s*(vom|detail|\d)|^[IVXLC\d]{1,5}\s?[A-Z]{1,4}\s?\d{1,4}\/\d{2}\b|^entscheidung detail$|^drucksache\s/i.test(t.trim());
+    const anwenden=a=>{
+      const v=T[a.id]||nachLink[a.link];if(!v||v.fehler)return;
+      a._dok=v;
+      if(v.titel){
+        if(leer(a.title)){const az=a.az||((a.title||'').match(/[IVXLC\d]{1,5}\s?[A-Z]{1,4}\s?\d{1,4}\/\d{2}/)||[])[0];a.title=v.titel+(az?` (${az})`:'')}
+        if(!a.betreff||/^\s*$/.test(a.betreff)||(a.az&&a.betreff.includes(a.az)))a.betreff=v.titel;
+        a.titelKurz=v.titel;
+      }
+      if(v.leitsatz&&!a.ls)a.ls=v.leitsatz.replace(/^(?:[A-ZÄÖÜ][\w-]*\s+)?(?:§|Art\.)[^\n]{0,40}?(?=[A-ZÄÖÜ][a-zäöüß])/,'').slice(0,500);
+      if(v.kurz&&(!a.desc||a.desc.length<60||leer(a.desc)))a.desc=v.kurz;
+    };
+    ARTICLES.forEach(anwenden);
+    DOCS.forEach(anwenden);
   });
   await luft();
   /* Themenlagen sind der teuerste Schritt (bei 10.000 Meldungen rund eine
@@ -5087,6 +5267,17 @@ document.addEventListener('click',ev=>{
   pdfOeffnen(a.href,(a.textContent||'').trim().slice(0,120));
 },true);
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&g('pdf-ov')&&!g('pdf-ov').hidden)pdfSchliessen()});
+/* Kern eines gelesenen Dokuments: Ergebnis, worum es geht, Tenor, Auszug. */
+function dokKernHTML(x){
+  const v=x._dok;if(!v)return '';
+  return `<div class="dok-kern">
+    ${v.ergebnis?`<div class="meta"><span class="pill ${/zurückgewiesen|abgewiesen|verworfen|unzulässig|erfolglos/i.test(v.ergebnis)?'grey':'blue'}">${esc(v.ergebnis)}</span>${v.seiten?`<span class="note">${v.seiten} Seiten</span>`:''}</div>`:''}
+    ${v.kurz&&v.kurz!==x.desc?`<p style="margin:6px 0"><b>Worum es geht:</b> ${esc(v.kurz)}</p>`:''}
+    ${v.tenor?`<div class="quote" style="margin:6px 0"><b>Tenor.</b> ${esc(v.tenor)}</div>`:''}
+    ${v.auszug?`<details class="auf"><summary>Auszug aus dem Dokument</summary><p class="note" style="margin-top:4px;line-height:1.5">${esc(v.auszug)}</p></details>`:''}
+    <div class="note" style="margin-top:4px">Aus dem Originaldokument gelesen${v.titel?'; Titel und Kurzfassung von der KI':''}.</div>
+  </div>`;
+}
 function renderVorausschau(){
   if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
   const W=window.WK;
