@@ -8,16 +8,14 @@ on:
   # Minute 13 statt 0 (so fiel der Morgenlauf um 5 Uhr aus). Der zweite
   # Morgentermin um 3:43 UTC fängt einen ausgefallenen ersten auf; Vorausschau
   # und Quellenprüfung laufen trotzdem nur einmal am Tag.
-  # Alle 25 Minuten (Minute 4, 29, 54 – nicht zur vollen Stunde, da lässt
-  # GitHub bei Last Läufe ausfallen). Nachts (0–5 Uhr deutscher Zeit) prüft
-  # der Job "zeitfenster" und überspringt den Lauf in Sekunden.
-  # SCHNELLLAUF jedes Mal: Meldungen, Pflichtquellen, Entdoppeln, Archiv,
-  #   Märkte, KI-Zusammenfassungen, Veröffentlichen – rund 10–15 Minuten.
-  # VOLLLAUF alle zwei Stunden (wenn der letzte Volllauf ≥ 110 Minuten her ist),
-  #   dazu Aktien, Dokumente, Briefings, Vorausschau, Wahlen, Verzeichnis,
-  #   Plenarprotokolle. Der erste Volllauf ab 5 Uhr ist der Morgenlauf.
+  # TAKTGEBER ist cron-job.org: Er startet den Workflow alle 25 Minuten über
+  # die GitHub-API (workflow_dispatch mit takt=true) – pünktlich, anders als
+  # der GitHub-Zeitplaner, der Läufe verschiebt oder ausfallen lässt.
+  # Der Zeitplan hier ist nur noch ein Rückfall alle zwei Stunden, falls
+  # cron-job.org ausfällt. Nachtruhe (0–5 Uhr) und Schnell-/Volllauf regelt
+  # der Job "zeitfenster" – für beide Auslöser gleich.
   schedule:
-    - cron: '4,29,54 * * * *'
+    - cron: '41 */2 * * *'
   workflow_dispatch:
     inputs:
       vorausschau_neu:
@@ -30,6 +28,10 @@ on:
         default: false
       morgenlauf:
         description: 'Als Morgenlauf ausführen (mehr Zeit, größere Portionen)'
+        type: boolean
+        default: false
+      takt:
+        description: 'Aufruf vom Taktgeber (cron-job.org) – wie ein geplanter Lauf behandeln'
         type: boolean
         default: false
 
@@ -57,6 +59,7 @@ jobs:
           EREIGNIS: ${{ github.event_name }}
           ZEITPLAN: ${{ github.event.schedule }}
           MORGEN_HAND: ${{ inputs.morgenlauf }}
+          TAKT: ${{ inputs.takt }}
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
@@ -66,7 +69,8 @@ jobs:
           [ -z "$stand" ] && stand=0
           alter=$(( ( $(date +%s) - stand ) / 60 ))
           laufen=false; voll=false; morgen=0
-          if [ "$EREIGNIS" != "schedule" ]; then
+          if [ "$EREIGNIS" != "schedule" ] && [ "$TAKT" != "true" ]; then
+            # von Hand oder vom Wächter: immer, und immer als Volllauf
             laufen=true; voll=true
             [ "$MORGEN_HAND" = "true" ] && morgen=1
           elif [ "$stunde" -ge 5 ]; then
@@ -77,7 +81,7 @@ jobs:
               [ "$stunde" -eq 5 ] && morgen=1
             fi
           fi
-          echo "Deutsche Zeit: $(TZ=Europe/Berlin date '+%H:%M') · letzter Volllauf vor $alter Min. → laufen=$laufen, voll=$voll, Morgenlauf=$morgen"
+          echo "Deutsche Zeit: $(TZ=Europe/Berlin date '+%H:%M') · Auslöser: $EREIGNIS$([ "$TAKT" = "true" ] && echo ' (Taktgeber)') · letzter Volllauf vor $alter Min. → laufen=$laufen, voll=$voll, Morgenlauf=$morgen"
           echo "laufen=$laufen" >> "$GITHUB_OUTPUT"
           echo "voll=$voll" >> "$GITHUB_OUTPUT"
           echo "morgen=$morgen" >> "$GITHUB_OUTPUT"
@@ -216,6 +220,13 @@ jobs:
       # Ereignisse zusammen wie die Tageslage: doppelte Berichte buendeln
       # (auch ueber Sprachgrenzen), nach Nachrichtenwert waehlen, Schlagzeile
       # und Satz schreiben. Alle zwei Stunden, je Lauf hoechstens drei Regionen.
+      # NEU (v24): Marktwerte täglich archivieren (markets_archive/JJJJ-MM.json)
+      # – Grundlage für spätere Auswertungen über Jahre.
+      - name: Marktwerte archivieren
+        continue-on-error: true
+        timeout-minutes: 2
+        run: if [ -f maerkte_archivieren.py ]; then python maerkte_archivieren.py; else echo "maerkte_archivieren.py fehlt im Repo – Schritt übersprungen"; fi
+
       # NEU (v20): Einzelaktien (Kurse jeder Lauf) und – mit FMP_API_KEY –
       # die Bewertung gegen den eigenen KGV-Schnitt (einmal am Tag).
       - name: Aktien und Bewertung
@@ -260,6 +271,7 @@ jobs:
             [ -e "$f" ] && git add "$f"
           done
           [ -d archive ] && git add archive/ || true
+          [ -d markets_archive ] && git add markets_archive/ || true
           git diff --cached --quiet && { echo "Nichts Neues."; exit 0; }
           git commit -m "chore: Meldungen [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push || { git fetch origin main && git rebase -X ours origin/main && git push; } || echo "Zwischenstand nicht gepusht – der Schlussschritt versucht es erneut."
@@ -337,6 +349,26 @@ jobs:
       # Verzeichnis, DIP, Kalender, Newsletter.
       # Läuft nur im ersten Lauf jeder Stunde und hat ein eigenes Zeitbudget:
       # Was nicht hineinpasst (Landtage, MEP-Details, Profilfotos), macht der nächste Lauf.
+      # NEU (v25): Deep Dives zu 3–4 aktuellen Debatten – einmal am Tag im ersten
+      # Volllauf ab 12 Uhr (dann haben sich die Debatten des Tages entfaltet). Meldungen, Archivverlauf, Reden, Abstimmungen,
+      # Dokumente, amtliche Statistik (Eurostat, EZB), Kurse, GDELT; jede Zahl
+      # gegen die Quellen geprüft.
+      - name: Deep Dives (aktuelle Debatten)
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          GEMINI_API: ${{ secrets.GEMINI_API }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
+          KI_REIHENFOLGE: 'gemini,groq,openrouter'
+          DD_ANZAHL: '4'
+          DD_STUNDE: '12'         # frühestens ab 12 Uhr deutscher Zeit
+          DD_TAGE: '7'            # Deep Dives der Vortage bleiben sieben Tage lesbar
+          DD_FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.vorausschau_neu && inputs.takt != true) && '1' || '0' }}
+        run: if [ -f deepdive.py ]; then python deepdive.py; else echo "deepdive.py fehlt im Repo – Schritt übersprungen"; fi
+
       - name: Wahlen (Termine, Umfragen, Ergebnisse)
         if: env.VOLL == 'true'
         timeout-minutes: 6
@@ -460,12 +492,13 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
           [ -d archive ] && git add archive/ && echo "  + archive/" || true
+          [ -d markets_archive ] && git add markets_archive/ && echo "  + markets_archive/" || true
           [ -d protokolle ] && git add protokolle/ && echo "  + protokolle/" || true
 
           if git diff --cached --quiet; then
