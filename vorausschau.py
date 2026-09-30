@@ -1760,6 +1760,17 @@ def bilanz(archiv):
 # ─────────────────────────────────────────────────────────────
 # ABLAUF
 # ─────────────────────────────────────────────────────────────
+# Zeitbudget: Der Workflow-Schritt hat eine harte Grenze. Wird sie erreicht,
+# bricht GitHub ab und NICHTS wird gespeichert. Deshalb hört das Skript
+# vorher auf und speichert, was es bis dahin geprüft hat.
+BUDGET_SEC = int(os.environ.get("VS_BUDGET_SEC", "600"))
+_START = time.time()
+
+
+def budget_rest():
+    return BUDGET_SEC - (time.time() - _START)
+
+
 def main():
     jetzt = datetime.now(BERLIN)
     heute = jetzt.strftime("%Y-%m-%d")
@@ -1862,9 +1873,14 @@ def main():
     anbieter = [list(a) for a in ki.ANBIETER]
     ketten, verworfen = [], []
     offene = {k["kb_id"]: k for k in archiv if not k.get("ergebnis")}
+    unvollstaendig = False
     for e, s in kandidaten:
         if not anbieter:
             print("  Kein Anbieter mehr verfügbar.")
+            break
+        if budget_rest() < BUDGET_SEC * 0.35:
+            print(f"  Zeitbudget knapp – {e['id']} und folgende im nächsten Lauf.")
+            unvollstaendig = True
             break
         d, meldungen = kette_schreiben(anbieter, e, s, kurse, nach_id)
         if not isinstance(d, dict):
@@ -1959,8 +1975,18 @@ def main():
               + (f", p={round(wkeit['p']*100)} % gegen Grundrate {round(wkeit['grundrate']*100)} %" if wkeit else "") + ")")
         time.sleep(0.4)
 
-    thesen_archiv = archiv_bilanz(eintraege, archiv_art, kurse, heute) if archiv_art else {}
-    entdeckt = entdecken(archiv_art, kurse, heute, eintraege) if archiv_art else []
+    # Archiv-Bilanz und Entdecken sind rechenintensiv – nur mit Zeit übrig,
+    # sonst bleibt der Stand vom Vortag stehen.
+    if archiv_art and budget_rest() > BUDGET_SEC * 0.25:
+        thesen_archiv = archiv_bilanz(eintraege, archiv_art, kurse, heute)
+    else:
+        thesen_archiv = alt.get("thesen_archiv") or {}
+        print("  Archiv-Bilanz übersprungen (Zeitbudget) – Stand vom letzten Lauf bleibt.")
+    if archiv_art and budget_rest() > BUDGET_SEC * 0.15:
+        entdeckt = entdecken(archiv_art, kurse, heute, eintraege)
+    else:
+        entdeckt = alt.get("entdeckt") or []
+        print("  Entdecken übersprungen (Zeitbudget).")
     # Keine einzige KI-Antwort, obwohl es etwas zu prüfen gab: Dann nicht
     # speichern und NICHT als erledigt vermerken – der nächste Lauf versucht
     # es erneut. Vorher stand dann für den ganzen Tag eine leere Vorausschau.
@@ -1998,7 +2024,9 @@ def main():
                               "nach drei Prüfungen verrechnet mit der beobachteten Trefferquote (8 Pseudobeobachtungen)."},
            "hinweis": "Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.",
            # Hat die KI geantwortet? Nur dann gilt der Tag als erledigt.
-           "ki_ok": bool(ketten or verworfen or not kandidaten)}
+           # Nur vollständig und mit KI-Antwort gilt der Tag als erledigt; sonst
+           # versucht es der nächste Lauf erneut (das Gespeicherte bleibt sichtbar).
+           "ki_ok": bool(ketten or verworfen or not kandidaten) and not unvollstaendig}
     _speichern(OUT, out)
     _speichern(ARCHIV, archiv[-500:])
     print(f"→ {OUT}: {len(ketten)} Einschätzungen, {len(verworfen)} verworfen, {len(beobachtung)} unter Beobachtung, "
