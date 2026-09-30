@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v65</title>
+<title>Presseschau – Entwurf v69</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -411,6 +411,19 @@ html{-webkit-tap-highlight-color:transparent}
 .sheet .panel,.pdf-seiten{overscroll-behavior:contain}
 @supports (height:100dvh){.sheet .panel{max-height:100dvh}.pdf-ov{height:100dvh}}
 .dok-kern{margin:10px 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-sm)}
+.dd{padding:14px 16px;margin-bottom:14px}
+.dd-titel{margin:6px 0 4px;font-size:var(--fs-lg);line-height:1.3}
+.dd-kern{font-size:var(--fs-md);line-height:1.55;margin:6px 0}
+.dd-zahlen,.dd-stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.dd-zahl{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:var(--fs-sm);display:flex;flex-direction:column;gap:2px}
+.dd-zahl b{font-size:var(--fs-md)}.dd-zahl svg{width:100%;height:22px}
+.dd-grid{display:grid;gap:4px 18px}@media (min-width:800px){.dd-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
+.dd-block h4{margin:10px 0 4px;font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.dd-block p{margin:3px 0;font-size:var(--fs-sm);line-height:1.5}
+.dd-alt>summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap;list-style:none}
+.dd-tag{transition:opacity .2s}.dd-tag:hover,.dd-tag:focus-within{opacity:1!important}
+.dd-verlauf{display:flex;align-items:flex-end;gap:2px;height:38px;margin:4px 0}
+.dd-verlauf i{flex:1;background:var(--accent,#3b82f6);border-radius:2px 2px 0 0;opacity:.8}
 .rb{padding:14px 16px;margin-bottom:12px}
 .rb-kopf{display:flex;align-items:center;gap:8px}.rb-kopf h3{flex:1;margin:0;font-size:var(--fs-lg)}
 .rb-lage{margin:8px 0 4px;font-size:var(--fs-md);line-height:1.5}
@@ -838,7 +851,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v65</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v69</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1576,8 +1589,10 @@ function topTauglich(a){
   if(AMT_CATS.has(a.cat)&&(a.cluster||1)<3)return false;
   return true;
 }
+/* Zahl der Häuser, die berichten – die eigentliche Relevanz. */
+function hausBreite(a){try{return 1+new Set(clusterArts(a).map(x=>x._qb||hausVon(x.src))).size}catch(e){return a.cluster||1}}
 function topScore(a){
-  const quellen=a.cluster||1;
+  const quellen=(typeof IDX!=='undefined'&&IDX.ready)?hausBreite(a):(a.cluster||1);
   const frisch=Math.max(0,1-a.ago/24);
   const amtlichAllein=AMT_CATS.has(a.cat)&&quellen<2;
   let f=1;
@@ -1814,8 +1829,42 @@ function gleicheSache(a,b){
   if(n+komp>=2||(gem>=1&&komp>=1))return true;
   return dubNah(a,b,{ohneFaden:true});
 }
+/* Weitere Häuser zum selben Ereignis – unabhängig davon, ob die KI oder
+   die Themenlagen sie schon zugeordnet haben. Gesucht wird über einen
+   Wortindex der letzten 72 Stunden: Meldungen anderer Häuser (±30 Std.), die
+   mindestens zwei nicht alltägliche Wörter teilen (in höchstens 40 Meldungen)
+   oder die Dublettenprüfung bestehen. "Trump" allein reicht also nicht,
+   "Trump … KI-Regulierung … Weißen Haus" schon. */
+function wortIndex(){
+  if(window._WIDX&&window._WIDX.n===ARTICLES.length)return window._WIDX;
+  const m=new Map();
+  ARTICLES.forEach(x=>{if(x.ago>72)return;dubWorte(x).forEach(w=>{let l=m.get(w);if(!l)m.set(w,l=[]);l.push(x)})});
+  return window._WIDX={n:ARTICLES.length,m};
+}
+function ereignisPartner(a){
+  if(a._partner)return a._partner;
+  if(typeof dubWorte!=='function'||a.kind!=='article')return a._partner=[];
+  const {m}=wortIndex(),zaehl=new Map(),eigen=a._qb||(a._qb=hausVon(a.src));
+  for(const w of dubWorte(a)){const l=m.get(w);if(!l||l.length>40)continue;for(const x of l){if(x===a)continue;zaehl.set(x,(zaehl.get(x)||0)+1)}}
+  const out=[],haeuser=new Set([eigen]);
+  [...zaehl].sort((p,q)=>q[1]-p[1]).forEach(([x,n])=>{
+    const h=x._qb||(x._qb=hausVon(x.src));
+    if(haeuser.has(h)||Math.abs(x.date-a.date)>30*H)return;
+    if(n>=2||dubNah(a,x,{ohneFaden:true})){if(n>=2&&!gleicheSache(a,x))return;haeuser.add(h);out.push(x)}
+  });
+  return a._partner=out.slice(0,12);
+}
 function clusterArts(a){
   if(a._cl)return a._cl;
+  return a._cl=clusterArtsRoh(a);
+}
+function clusterArtsRoh(a){
+  /* KI-Gruppe bzw. Themenlage, ergänzt um weitere Häuser zum selben Ereignis */
+  const basis=clusterArtsBasis(a),seen=new Set([a._qb||(a._qb=hausVon(a.src)),...basis.map(x=>x._qb||hausVon(x.src))]);
+  const dazu=(!window.PARTNER_AUS&&typeof titelWorte==='function'&&typeof dubNah==='function'&&typeof gleicheSache==='function')?ereignisPartner(a).filter(x=>{const h=x._qb||hausVon(x.src);if(seen.has(h))return false;seen.add(h);return true}):[];
+  return [...basis,...dazu].sort((x,y)=>y.date-x.date);
+}
+function clusterArtsBasis(a){
   /* Von der KI gebildete Gruppe: deren Mitglieder sind die weiteren Quellen. */
   if(a._kiGruppe&&a._kiGruppe.length>1){
     const eigen=a._qb||(a._qb=hausVon(a.src));
@@ -1922,6 +1971,9 @@ function topAuswahl(base,win){
     const h=a=>a._qb||(a._qb=hausVon(a.src));
     const eil=a=>a.priority==='eil'||/\beil\b/i.test(a.src||'');
     const kiLead=arts.find(a=>a.id===g.lead)||arts[0];
+    /* Weitere Häuser zum selben Ereignis dazunehmen – dann kann die Zeile
+       auch unter einem anderen Haus stehen, und die Quellenzahl stimmt. */
+    if(typeof IDX!=='undefined'&&IDX.ready)ereignisPartner(kiLead).forEach(x=>{if(!arts.includes(x)&&x.ago<=win&&!istRauschen(x))arts.push(x)});
     const lead=arts.slice().sort((x,y)=>((hausZahl[h(x)]||0)-(hausZahl[h(y)]||0))||(eil(x)-eil(y))||((y.desc||'').length-(x.desc||'').length)||(x===kiLead?-1:y===kiLead?1:0))[0];
     hausZahl[h(lead)]=(hausZahl[h(lead)]||0)+1;
     if(lead!==kiLead&&(window.KISCHLAG||{})[kiLead.id]&&!(window.KISCHLAG||{})[lead.id])KISCHLAG[lead.id]=KISCHLAG[kiLead.id];
@@ -1948,7 +2000,12 @@ function renderTop(){
   const win=S.topWin||24;
   const top=topAuswahl(base,win);
   let all=base.filter(a=>matchLQ('all',a)&&(S.topic==='all'||a.topics.includes(S.topic))&&(S.herkunft==='all'||a.herkunft===S.herkunft)&&(S.src==='all'||a.src===S.src));
-  all=entdoppeln(S.sort==='rel'?all.sort((a,b)=>b.rel-a.rel||b.date-a.date):all.sort((a,b)=>b.date-a.date));
+  /* Relevanz: vor allem, wie viele Häuser berichten; Eilmeldung nur ein
+     kleiner Zuschlag in den ersten sechs Stunden. Danach gemischt, damit
+     nicht zehnmal hintereinander dasselbe Haus steht (höchstens zwei in Folge). */
+  const relevanz=a=>(hausBreite(a)-1)*3+Math.min(a.boost||0,2)+(a.think?1:0)+((a.priority==='eil'&&a.ago<6)?1:0)+Math.max(0,1-a.ago/24)*2;
+  const mischen=l=>{const out=[],rest=l.slice();while(rest.length){let i=rest.findIndex(x=>{const h=x._qb||hausVon(x.src);return !(out.length>=2&&(out[out.length-1]._qb||hausVon(out[out.length-1].src))===h&&(out[out.length-2]._qb||hausVon(out[out.length-2].src))===h)});if(i<0)i=0;out.push(rest.splice(i,1)[0])}return out};
+  all=S.sort==='rel'?mischen(entdoppeln(all.map(a=>[a,relevanz(a)]).sort((p,q)=>q[1]-p[1]||q[0].date-p[0].date).map(p=>p[0]))):entdoppeln(all.sort((a,b)=>b.date-a.date));
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
   let h=`<div class="ov ${S.view==='paper'?'wide':''}"><div class="ov-main">`;
   h+=secHd('top','Top-Meldungen',(S.region!=='all'?REGION_NAME[S.region]:''),
@@ -1959,8 +2016,8 @@ function renderTop(){
        darunter sichtbar, und im Lesefenster steht ohnehin das Original. */
     const k=(window.KISCHLAG||{})[a.id];
     return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl"${k?` title="${esc(a.title)}"`:''}>${esc(k&&k.s?k.s:a.title)}${k&&k.t?`<span class="ki-satz">${esc(k.t)}</span>`:''}</div>
-      <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${k?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile und Satz automatisch geschrieben">KI</span>':''}${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:''}${zugangPill(a)}</div>${starHTML(a.id)}
-      ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
+      <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${k?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile und Satz automatisch geschrieben">KI</span>':''}${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:'<span class="pill grey" title="Bisher berichtet nur dieses Haus">1 Quelle</span>'}${zugangPill(a)}</div>${starHTML(a.id)}
+      ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(srcName(x.src))}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
   const topics=[...new Set(base.flatMap(a=>a.topics))].filter(ressortTauglich).map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
   const srcs=[...new Set(base.map(a=>a.src))].sort((a,b)=>a.localeCompare(b,'de'));
   h+=secHd('alle','Alle Meldungen',all.length+' · letzte 48 Std.',`
@@ -2189,7 +2246,7 @@ function quellenListe(a){
   if(S.openSrc!==a.id)return '';
   const cl=clusterArts(a);const alle=[a,...cl];const ids=alle.map(y=>y.id);
   const zeigen=alle.slice(0,40);
-  return `<div class="srclist">${zeigen.map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J(ids)})"><span class="src ${SRC_KIND[x.src]||''}">${esc(x.src)}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}${alle.length>40?`<div class="note" style="padding:6px 0">und ${alle.length-40} weitere</div>`:''}</div>`;
+  return `<div class="srclist">${zeigen.map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J(ids)})"><span class="src ${SRC_KIND[x.src]||''}">${esc(srcName(x.src))}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}${alle.length>40?`<div class="note" style="padding:6px 0">und ${alle.length-40} weitere</div>`:''}</div>`;
 }
 function rowHTML(a,listName,small){
   return `<div class="row ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">
@@ -2303,7 +2360,7 @@ function renderStories(){
   h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${(()=>{const h=new Map();s.arts.map(id=>ITEMS[id]).filter(Boolean).forEach(a=>{const k=a._qb||hausVon(a.src);if(!h.has(k))h.set(k,a.src)});return [...h.values()].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')+`<span class="pill blue">${h.size} ${h.size===1?'Haus':'Häuser'}</span>`})()}${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
-const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['vorausschau','Vorausschau']];
+const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['deepdive','Deep Dive'],['vorausschau','Vorausschau']];
 /* Quellennamen gehören nicht in die Trends: "Tagesschau", "Reuters" oder
    "Handelsblatt" sagen nichts über das Thema. Ebenso wenig Wörter wie
    "Unternehmen" oder Ländernamen, die in jeder zweiten Meldung stehen. */
@@ -2465,6 +2522,11 @@ function trendListeHTML(v){
 }
 function renderTrends(){
   const mode=S.trendMode||'topics';
+  if(mode==='deepdive'){
+    const kopf=secHd('tr','Trends','','');
+    const chips=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';render()">${l}</button>`).join('')}</div>`;
+    return kopf+body('tr',chips+renderDeepDive());
+  }
   if(mode==='vorausschau'){
     const kopf=secHd('tr','Trends','','');
     const chips=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';S.trendPick=null;render()">${l}</button>`).join('')}</div>`;
@@ -2603,7 +2665,7 @@ function renderStudies(){
      (Deutsche Bank Research, ING, Commerzbank, KfW, Goldman Sachs, Morgan
      Stanley, UBS, ifo, IfW, EZB, IWF …), nur öffentlich Zugängliches. */
   if(!window.WK)wkLaden();
-  const fo=((window.WK||{}).forschung||[]).filter(f=>!S.lq||!S.lq.sd||norm(f.titel+' '+f.institut).includes(norm(S.lq.sd)));
+  const fo=((window.WK||{}).forschung||[]).filter(f=>forschungBrauchbar(f.titel)&&(!S.lq||!S.lq.sd||norm(f.titel+' '+f.institut).includes(norm(S.lq.sd))));
   if(fo.length){
     const inst=[...new Set(fo.map(f=>f.institut))];
     const sel=S.foInst&&inst.includes(S.foInst)?S.foInst:'';
@@ -3426,7 +3488,7 @@ function dokHaus(d){
    Sätze Lage (KI, einmal am Morgen), darunter die vier aktivsten Unter-
    kategorien mit je bis zu vier Meldungen, dazu Dokumente oder Urteile. */
 let RBRIEF=null,_rbLaedt=false;
-async function rbLaden(){if(RBRIEF||_rbLaedt)return;_rbLaedt=true;try{RBRIEF=await hole('briefings.json')}catch(e){RBRIEF={ressorts:[]}}_rbLaedt=false;render()}
+async function rbLaden(){if(RBRIEF||_rbLaedt)return;_rbLaedt=true;try{RBRIEF=(await hole('briefings.json'))||{ressorts:[]}}catch(e){RBRIEF={ressorts:[]}}_rbLaedt=false;render()}
 function rbText(r){
   const z=[`${r.name} – Briefing ${new Date().toLocaleDateString('de-DE')}`,''];
   if(r.ki)z.push(r.ki,'');
@@ -3913,7 +3975,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v65 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v69 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -4955,7 +5017,8 @@ async function laden(){
     ARTICLES.forEach(a=>(a.topics||[]).forEach(t=>{if(!TOPICS[t])TOPICS[t]=KURZ[String(t).toLowerCase()]||String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}));
   });
   /* Erstes Bild so früh wie möglich: Nachrichten sind da, der Rest folgt. */
-  sicher('Verzeichnis (vorläufig)',indexieren);
+  /* Im vorläufigen Durchgang ohne Suche nach weiteren Häusern – die folgt im endgültigen. */
+  sicher('Verzeichnis (vorläufig)',()=>{window.PARTNER_AUS=true;try{indexieren()}finally{window.PARTNER_AUS=false}});
   zeigeLadebalken(`${ARTICLES.length} Meldungen geladen – Termine, Personen und Kurse folgen …`);
   render();
   await luft();
@@ -5103,7 +5166,9 @@ async function laden(){
         const ids=(it.ids&&it.ids.length?it.ids:[it.id]).filter(Boolean);
         const lead=it.id||ids[0];
         if(!lead)return;
-        KISCHLAG[lead]={s:it.schlagzeile,t:it.text||'',sp:r.sprache||'de'};
+        /* Sprachkennung, die das Modell manchmal mitschreibt ("[de] …"), weg */
+        const ohneTag=t=>String(t||'').replace(/^\s*\[(de|en|fr|es|it)\]\s*/i,'');
+        KISCHLAG[lead]={s:ohneTag(it.schlagzeile),t:ohneTag(it.text),sp:r.sprache||'de'};
         /* Alles in einer Gruppe ist für die Dublettenprüfung EINE Meldung –
            auch über Sprachgrenzen: "Dänemark und USA einigen sich" und
            "Denmark hails Greenland deal" hat das Modell zusammengelegt. */
@@ -5294,7 +5359,14 @@ function vsHistorieHTML(h){
   else if((h.daten||[]).length)t+=` <span class="note">(${h.daten.map(tag).join(', ')})</span>`;
   return `<div class="note" style="margin-top:6px;line-height:1.45">${t}.</div>`;
 }
+/* Keine Stellenanzeigen, keine Seitentitel ohne Inhalt – wie im Backend. */
+const KEIN_RESEARCH=/\((m|w|f|d|x|h)\s*\/\s*(m|w|f|d|x|h)(\s*\/\s*(m|w|f|d|x|h))?\)|werkstudent|working student|praktik|\bintern(ship)?\b|trainee|stellenangebot|karriere|career|\bjobs?\b|\bstage\b|business analyst|analyst mit|manager,|consultant|sachbearbeit|specialist|associate|officer|engineer|developer|entwickler|recruit|bewerb|\| .{0,40} at [A-Z]|bildarchiv|mediathek|pressebilder|impressum|datenschutz|webinar|\bevent\b|veranstaltung|konferenz|anmeldung|award|sponsor/i;
+function forschungBrauchbar(t){
+  const x=String(t||'').replace(/^\s*[-–|]\s*/,'').replace(/\s*[-–|]\s*(kfw(\.de)?|ifo|diw|helaba|ubs|allianz|bundesbank|oecd|fao|iea)\s*$/i,'').trim();
+  return x.length>=18&&x.split(/\s+/).length>=3&&!KEIN_RESEARCH.test(x);
+}
 function vsForschungHTML(f){
+  f=(f||[]).filter(x=>forschungBrauchbar(x.titel));
   if(!(f||[]).length)return '';
   return `<div class="wk-folgen"><b>Aus der Forschung</b>${f.map(x=>`<div><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a> <span class="note">– ${esc(x.institut)}, ${esc(String(x.datum||'').split('-').reverse().slice(0,2).join('.'))}.</span></div>`).join('')}</div>`;
 }
@@ -5391,6 +5463,66 @@ function dokKernHTML(x){
     <div class="note" style="margin-top:4px">Aus dem Originaldokument gelesen${v.titel?'; Titel und Kurzfassung von der KI':''}.</div>
   </div>`;
 }
+/* ── Deep Dive: drei bis vier aktuelle Debatten (deepdive.json) ───────────
+   Kern, Stichsätze, belegte Zahlen, amtliche Statistik, Verlauf im Archiv,
+   Auswirkungen, Gewinner und Verlierer, Parteien, Konfliktlinie und
+   Triggerpunkte, dazu Reden, Abstimmungen, Dokumente und Meldungen. */
+let DDIVE=null,_ddLaedt=false;
+async function ddLaden(){if(DDIVE||_ddLaedt)return;_ddLaedt=true;try{DDIVE=(await hole('deepdive.json'))||{themen:[]}}catch(e){DDIVE={themen:[]}}_ddLaedt=false;render()}
+function ddBalken(verl){
+  const max=Math.max(1,...verl.map(v=>v[1]));
+  return `<div class="dd-verlauf" title="Häuser-Nennungen je Woche, letzte 26 Wochen">${verl.map(([w,n])=>`<i style="height:${Math.max(2,Math.round(n/max*36))}px" title="${esc(w)}: ${n}"></i>`).join('')}</div>`;
+}
+function renderDeepDive(){
+  if(!DDIVE){ddLaden();return '<div class="box"><div class="empty"><b>Deep Dive wird geladen …</b></div></div>'}
+  const T=(DDIVE.themen||[]).filter(t=>t.analyse);
+  const HIST=(DDIVE.historie||[]).filter(h=>(h.themen||[]).some(t=>t.analyse));
+  if(!T.length&&!HIST.length)return '<div class="box"><div class="empty"><b>Noch kein Deep Dive</b>Er entsteht einmal am Tag ab 12 Uhr, wenn sich die Debatten des Tages entfaltet haben (deepdive.py).</div></div>';
+  const R=DDIVE.rahmen||{};
+  let h=`<p class="note" style="margin:0 0 10px">${T.length} Debatten vom ${esc(datumKurz(DDIVE.datum))} · jede Zahl ist gegen die Quellen geprüft; Sätze mit ungeprüften Zahlen wurden gestrichen.</p>`;
+  h+=T.map(t=>{const a=t.analyse,sg=t.signal||{};
+    const m=(n)=>{const x=t.meldungen[n-1];if(!x)return '';const it=x.id&&ITEMS[x.id];return it?`<a href="#" onclick="event.preventDefault();openReader('${x.id}')">${esc(x.quelle)}</a>`:`<a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.quelle)}</a>`};
+    return `<article class="box dd">
+    <div class="meta"><span class="pill blue">${esc(t.thema)}</span>${t.tage_im_deepdive>1?`<span class="pill amber">seit ${t.tage_im_deepdive} Tagen Thema</span>`:''}<span class="note">${sg.haeuser} Häuser · ${sg.anstieg>=1.5?'deutlich mehr als sonst (×'+fmtNum(sg.anstieg,1)+')':'Dauerthema'}${t.gdelt?' · '+esc(t.gdelt):''}</span></div>
+    <h3 class="dd-titel">${esc(a.titel||t.thema)}</h3>
+    ${a.kern?`<p class="dd-kern">${esc(a.kern)}</p>`:''}
+    ${(a.stichpunkte||[]).length?`<ul class="ml-punkte">${a.stichpunkte.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}
+    ${(a.zahlen||[]).length?`<div class="dd-zahlen">${a.zahlen.map(z=>`<div class="dd-zahl"><b>${esc(z.wert)}</b><span>${esc(z.bedeutung||'')}</span>${z.beleg?`<span class="note">${m(z.beleg)}</span>`:''}</div>`).join('')}</div>`:''}
+    ${(t.statistik||[]).length||(t.kurse||[]).length?`<div class="dd-stat">${(t.statistik||[]).map(st=>{const r=st.reihe||[],l=r[r.length-1]||[];return `<div class="dd-zahl"><b>${esc(String(l[1]))}</b><span>${esc(st.name)}</span><span class="note">${esc(l[0]||'')} · ${esc(st.quelle)}</span>${r.length>2?sparkline(r.map(x=>x[1]),r[r.length-1][1]>=r[0][1]):''}</div>`}).join('')}${(t.kurse||[]).map(k=>`<div class="dd-zahl"><b>${fmtNum(k.wert,2)} ${esc(k.einheit||'')}</b><span>${esc(k.name)}</span>${k.jahr_pct!=null?`<span class="note">${k.jahr_pct>=0?'+':'−'}${fmtNum(Math.abs(k.jahr_pct),1)} % in einem Jahr</span>`:''}</div>`).join('')}</div>`:''}
+    <div class="dd-block"><h4>Verlauf der Debatte</h4>${ddBalken(t.verlauf||[])}${a.verlauf?`<p class="note">${esc(a.verlauf)}</p>`:''}</div>
+    <div class="dd-grid">
+      ${['gesellschaft','wirtschaft','forschung_bildung'].filter(k=>(a.auswirkungen||{})[k]).map(k=>`<div class="dd-block"><h4>${{gesellschaft:'Gesellschaft',wirtschaft:'Wirtschaft',forschung_bildung:'Forschung und Bildung'}[k]}</h4><p>${esc(a.auswirkungen[k])}</p></div>`).join('')}
+    </div>
+    <div class="dd-grid">
+      <div class="dd-block"><h4>Wer profitiert</h4>${(a.gewinner||[]).map(g=>`<p><b>${esc(g.wer)}</b> – ${esc(g.warum||'')}</p>`).join('')||'<p class="note">–</p>'}</div>
+      <div class="dd-block"><h4>Wer verliert</h4>${(a.verlierer||[]).map(g=>`<p><b>${esc(g.wer)}</b> – ${esc(g.warum||'')}</p>`).join('')||'<p class="note">–</p>'}</div>
+    </div>
+    ${(a.parteien||[]).length?`<div class="dd-block"><h4>Parteien</h4>${a.parteien.map(p=>`<p><b>${esc(p.partei)}</b>: ${esc(p.position)} <span class="pill grey">${esc(p.quelle||'')}</span></p>`).join('')}</div>`:''}
+    ${a.konfliktlinie&&(a.konfliktlinie.cleavage||a.konfliktlinie.triggerpunkte)?`<div class="dd-block"><h4>Konfliktlinie und Triggerpunkte</h4>${a.konfliktlinie.cleavage?`<p><b>Cleavage:</b> ${esc(a.konfliktlinie.cleavage)}</p>`:''}${a.konfliktlinie.triggerpunkte?`<p><b>Triggerpunkte:</b> ${esc(a.konfliktlinie.triggerpunkte)}</p>`:''}<details class="auf"><summary>Was bedeutet das?</summary><p class="note">${esc(R.cleavage||'')}</p><p class="note">${esc(R.triggerpunkte||'')}</p></details></div>`:''}
+    <details class="auf"><summary>Parlament, Dokumente und Quellen</summary>
+      ${(t.reden||[]).length?`<div class="dd-block"><h4>Reden im Bundestag</h4>${t.reden.map(r=>`<p>${esc(datumKurz(r.datum))} · <b>${esc(r.name)}</b> (${esc(r.fraktion||'')}) – ${esc(r.betreff||'')}</p>`).join('')}</div>`:''}
+      ${(t.abstimmungen||[]).length?`<div class="dd-block"><h4>Abstimmungen</h4>${t.abstimmungen.map(v=>`<p>${esc(datumKurz(v.datum))} · ${esc(v.vorlage||v.gegenstand||'')}: <b>${esc(v.ergebnis||'')}</b></p>`).join('')}</div>`:''}
+      ${(t.dokumente||[]).length?`<div class="dd-block"><h4>Dokumente und Urteile</h4>${t.dokumente.map(d=>`<p><a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.titel)}</a> <span class="note">${esc(d.quelle)}</span></p>`).join('')}</div>`:''}
+      <div class="dd-block"><h4>Meldungen</h4>${t.meldungen.map((x,i)=>`<p><span class="note">[${i+1}]</span> ${x.id&&ITEMS[x.id]?`<a href="#" onclick="event.preventDefault();openReader('${x.id}')">${esc(x.titel)}</a>`:`<a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a>`} <span class="note">– ${esc(x.quelle)}</span></p>`).join('')}</div>
+    </details>
+    ${(a.offene_fragen||[]).length?`<div class="dd-block"><h4>Offene Fragen</h4><ul class="ml-punkte">${a.offene_fragen.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></div>`:''}
+    ${t.gestrichen?`<p class="note">${t.gestrichen} ${t.gestrichen===1?'Satz':'Sätze'} mit nicht belegten Zahlen gestrichen.</p>`:''}
+  </article>`}).join('');
+  /* Debatten der Vortage: bleiben lesbar, blassen mit jedem Tag weiter aus.
+     Kurzfassung sichtbar, alles Weitere aufklappbar. */
+  if(HIST.length){
+    h+=`<div class="sec-hd" style="margin-top:18px"><h2 style="font-size:var(--fs-md)">Debatten der Vortage</h2><span class="cnt">${HIST.length} ${HIST.length===1?'Tag':'Tage'}</span></div>`;
+    h+=HIST.map((tag,i)=>{const alt=Math.min(0.85,0.18+i*0.1);
+      return `<div class="dd-tag" style="opacity:${(1-alt).toFixed(2)}"><div class="note" style="margin:6px 0">${esc(datumKurz(tag.datum))}</div>${(tag.themen||[]).filter(t=>t.analyse).map(t=>{const a=t.analyse;
+        return `<details class="box dd dd-alt"><summary><span class="pill grey">${esc(t.thema)}</span> <b>${esc(a.titel||t.thema)}</b></summary>
+          ${a.kern?`<p class="dd-kern">${esc(a.kern)}</p>`:''}
+          ${(a.stichpunkte||[]).length?`<ul class="ml-punkte">${a.stichpunkte.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}
+          ${(a.gewinner||[]).length||(a.verlierer||[]).length?`<div class="dd-grid"><div class="dd-block"><h4>Wer profitiert</h4>${(a.gewinner||[]).map(g=>`<p><b>${esc(g.wer)}</b> – ${esc(g.warum||'')}</p>`).join('')}</div><div class="dd-block"><h4>Wer verliert</h4>${(a.verlierer||[]).map(g=>`<p><b>${esc(g.wer)}</b> – ${esc(g.warum||'')}</p>`).join('')}</div></div>`:''}
+          ${(t.meldungen||[]).length?`<div class="dd-block"><h4>Meldungen</h4>${t.meldungen.slice(0,6).map(x=>`<p><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a> <span class="note">– ${esc(x.quelle)}</span></p>`).join('')}</div>`:''}
+        </details>`}).join('')}</div>`}).join('');
+  }
+  return h;
+}
 function renderVorausschau(){
   if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
   const W=window.WK;
@@ -5404,7 +5536,7 @@ function renderVorausschau(){
   if(W.leer)return `<div class="box"><div class="empty"><b>Noch keine Vorausschau</b>Die erste Ausgabe entsteht mit dem nächsten Tageslauf (vorausschau.py).</div></div>`;
   b+=`<div class="box wk-kopf">
     <div class="desk-hd" style="padding:0 0 6px"><h3>Vorausschau</h3><span class="note">Foresight${W.stand?' · Stand '+esc(W.stand):''}</span></div>
-    ${W.tagesbild?`<p class="wk-lead">${esc(W.tagesbild)}</p>`:''}
+    ${Array.isArray(W.tagesbild)&&W.tagesbild.length?`<ul class="ml-punkte wk-lead">${W.tagesbild.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:W.tagesbild&&typeof W.tagesbild==='string'?`<p class="wk-lead">${esc(W.tagesbild)}</p>`:''}
     <div class="note">${liste.length} geprüfte ${liste.length===1?'Einschätzung':'Einschätzungen'} · ${(W.beobachtung||[]).length} unter Beobachtung · ${(W.verworfen||[]).length} verworfen${W.bilanz&&W.bilanz.geprueft?` · Bilanz ${W.bilanz.eingetreten} von ${W.bilanz.geprueft} eingetreten`:''}</div>
     ${W.archiv_meldungen?`<div class="vs-grundlage"><b>Grundlage:</b> ${(W.aktuelle_meldungen||0).toLocaleString('de-DE')} aktuelle Meldungen · <b>${W.archiv_meldungen.toLocaleString('de-DE')} Meldungen im Archiv</b>${W.archiv_zeitraum&&W.archiv_zeitraum[0]?` (${esc(datumKurz(W.archiv_zeitraum[0]))} bis ${esc(datumKurz(W.archiv_zeitraum[1]))})`:''} · ${W.kurse_anzahl||0} Kurse${W.thesen_archiv?` · ${Object.keys(W.thesen_archiv).length} Thesen mit früheren Fällen`:''}</div>`:''}
     <div class="note" style="margin-top:4px">${esc(W.hinweis||'Hypothesen aus geprüften Zusammenhängen, keine Vorhersagen und keine Anlageempfehlung.')}</div>
@@ -5482,7 +5614,8 @@ function renderVorausschau(){
   if((W.neu_aufgenommen||[]).length)b+=`<p class="note" style="margin-top:12px"><b>Heute vorläufig aufgenommen:</b> ${W.neu_aufgenommen.map(e=>`${esc(e.id)} ${esc(e.titel)}`).join(' · ')}</p>`;
   if((W.verworfen||[]).length)b+=`<details class="auf" style="margin-top:14px"><summary>Verworfen (${W.verworfen.length}) – Meldungen trafen die Stichworte, aber nicht den Zusammenhang</summary>
     <div class="box" style="margin-top:6px">${W.verworfen.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(v.id)}</span><span>${esc(v.titel)}</span></div>${v.grund?`<div class="note" style="margin-top:3px"><b>Grund:</b> ${esc(v.grund)}</div>`:''}${(v.meldungen||[]).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</div>`).join('')}</div></details>`;
-  if((W.forschung||[]).length)b+=`<details class="auf" style="margin-top:14px"><summary>Neu aus der Forschung (${W.forschung.length})</summary><div class="box" style="margin-top:6px;padding:8px 14px">${W.forschung.slice(0,20).map(x=>`<div class="note" style="margin-top:4px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a> – ${esc(x.institut)}, ${esc(String(x.datum||'').split('-').reverse().slice(0,2).join('.'))}.</div>`).join('')}</div></details>`;
+  const foB=(W.forschung||[]).filter(x=>forschungBrauchbar(x.titel));
+  if(foB.length)b+=`<details class="auf" style="margin-top:14px"><summary>Neu aus der Forschung (${foB.length})</summary><div class="box" style="margin-top:6px;padding:8px 14px">${foB.slice(0,20).map(x=>`<div class="note" style="margin-top:4px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a> – ${esc(x.institut)}, ${esc(String(x.datum||'').split('-').reverse().slice(0,2).join('.'))}.</div>`).join('')}</div></details>`;
   /* Datenquellen: was die Quellenprüfung gefunden hat */
   const QS=W.quellen_status||{};const z=QS.zusammenfassung||(typeof QS.ok==='number'?QS:null);
   if(W.gdelt&&W.gdelt.grund)b+=`<p class="note" style="margin-top:12px">GDELT war beim Lauf nicht erreichbar (${esc(W.gdelt.grund)}). Als zweites Signal dient stattdessen die eigene Berichterstattung im Archiv${W.archiv_meldungen?` (${W.archiv_meldungen.toLocaleString('de-DE')} Meldungen)`:''}.</p>`;

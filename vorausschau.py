@@ -97,6 +97,11 @@ FORSCHUNG_QUELLEN = [
     ("Berenberg", "berenberg.de"), ("BNP Paribas Research", "economic-research.bnpparibas.com"),
     ("DZ Bank Research", "dzbank.de"), ("Deka", "deka.de"), ("Helaba", "helaba.com"),
     ("Eurointelligence", "eurointelligence.com"), ("NBER", "nber.org"),
+    # Trend- und Technologieforschung (öffentliche Pressemitteilungen und
+    # Studienzusammenfassungen; Vollberichte oft kostenpflichtig)
+    ("Gartner", "gartner.com"), ("McKinsey Global Institute", "mckinsey.com"), ("Bitkom", "bitkom.org"),
+    ("Pew Research", "pewresearch.org"), ("IDC", "idc.com"), ("Roland Berger", "rolandberger.com"),
+    ("BCG", "bcg.com"), ("Deloitte Insights", "deloitte.com"), ("Zukunftsinstitut", "zukunftsinstitut.de"),
     # Institute und öffentliche Stellen
     ("ifo Institut", "ifo.de"), ("IfW Kiel", "ifw-kiel.de"),
     ("DIW Berlin", "diw.de"), ("IW Köln", "iwkoeln.de"), ("Bundesbank", "bundesbank.de"),
@@ -995,6 +1000,13 @@ def wahrscheinlichkeit(eintrag, w, h_kb, richtung, sig, sicherheit, archiv, hist
                  + (f", {_dez(af, 1, False)}-mal so viel wie sonst im Archiv" if af and not gd else "")
                  + f") × Sicherheit {_dez(sich, 2, False)} × Eingepreist-Faktor {_dez(ein, 1, False)}")
     p = _logistisch(_logit(p0) + d)
+    # Deckel: Eine Einschätzung mit niedriger Sicherheit darf nicht weit über
+    # der Grundrate liegen – "Prüfung: niedrig" und 88 % passen nicht zusammen.
+    deckel = {"niedrig": 0.12, "mittel": 0.25, "hoch": 0.40}.get(sicherheit, 0.25)
+    if p > p0 + deckel:
+        warum.append(f"Gedeckelt auf Grundrate + {round(deckel*100)} Punkte wegen Sicherheit „{sicherheit}“")
+        p = p0 + deckel
+    p = min(p, 0.90)
     # Ereignisstudie aus dem Archiv: wie lief der Wert nach früheren Auslösern?
     h = historie or {}
     if h.get("geprueft", 0) >= 3 and h.get("sym") == w.get("sym"):
@@ -1353,11 +1365,37 @@ def archiv_bilanz(eintraege, archiv_art, kurse, heute):
 # ─────────────────────────────────────────────────────────────
 # FORSCHUNGSINSTITUTE
 # ─────────────────────────────────────────────────────────────
+# Was in den Suchergebnissen der Research-Häuser keine Veröffentlichung ist:
+# Stellenanzeigen ("Working Student … (m/f/x) in München", "Business Analyst
+# … (m/w/d)", "STAGE – JURISTE …"), Seitentitel ohne Inhalt ("- KfW",
+# "Bildarchiv – KfW", "Fisheries and Aquaculture"), Veranstaltungen.
+_KEIN_RESEARCH = re.compile(
+    r"\((m|w|f|d|x|h)\s*/\s*(m|w|f|d|x|h)(\s*/\s*(m|w|f|d|x|h))?\)|werkstudent|working student|praktik|praktikum|"
+    r"\bintern(ship)?\b|trainee|azubi|ausbildung zum|stellenangebot|karriere|career|\bjobs?\b|\bstage\b|"
+    r"business analyst|analyst mit|manager,|consultant|sachbearbeit\w*|specialist|associate|officer|"
+    r"engineer|developer|entwickler\w*|recruit|bewerb\w*|\| .{0,40} at [A-Z]|"
+    r"bildarchiv|mediathek|pressebilder|newsletter abonnieren|impressum|datenschutz|cookie|"
+    r"webinar|\bevent\b|veranstaltung|konferenz|anmeldung|award|preis verliehen|sponsor|"
+    r"^(home|startseite|publikationen|publications|research|insights|news)$", re.I)
+
+
+def forschung_brauchbar(titel):
+    t = re.sub(r"^\s*[-–|]\s*", "", titel or "").strip()
+    t = re.sub(r"\s*[-–|]\s*(kfw(\.de)?|ifo|diw|helaba|ubs|allianz|bundesbank|oecd|fao|iea)\s*$", "", t, flags=re.I).strip()
+    if len(t) < 18 or len(t.split()) < 3:
+        return False                      # nur Hausname oder Rubrik
+    return not _KEIN_RESEARCH.search(t)
+
+
 def forschung_holen(heute):
     """Neue Veröffentlichungen der Institute, gesammelt über 60 Tage."""
     import xml.etree.ElementTree as ET
     from email.utils import parsedate_to_datetime
     alt = _laden(FORSCHUNG, {"eintraege": []})
+    vorher = len(alt.get("eintraege") or [])
+    alt["eintraege"] = [e for e in alt.get("eintraege") or [] if forschung_brauchbar(e.get("titel", ""))]
+    if vorher != len(alt["eintraege"]):
+        print(f"  Forschung: {vorher - len(alt['eintraege'])} Stellenanzeigen oder leere Seitentitel entfernt")
     bekannt = {e["link"] for e in alt.get("eintraege") or []}
     neu = 0
     for name, domain in FORSCHUNG_QUELLEN:
@@ -1376,7 +1414,7 @@ def forschung_holen(heute):
             titel = re.sub(r"\s+[-–]\s+[^-–]{2,40}$", "", titel)      # " - ifo Institut" am Ende weg
             # Stellenanzeigen, Veranstaltungen, Pressemitteilungen in eigener
             # Sache gehören nicht in die Forschung
-            if re.search(r"karriere|stellenangebot|job|webinar|event|veranstaltung|konferenz|anmeldung|award|preis verliehen|sponsor", titel, re.I):
+            if not forschung_brauchbar(titel):
                 continue
             try:
                 datum = parsedate_to_datetime(it.findtext("pubDate") or "").strftime("%Y-%m-%d")
@@ -1444,13 +1482,38 @@ def signal_fuer(eintrag, artikel):
 _GDELT = {"letzte": 0.0, "gesperrt": False, "grund": ""}
 
 
+GDELT_CACHE = "gdelt_cache.json"
+
+
 def gdelt_volumen(anfrage):
     """Weltweite Berichterstattung: letzte zwei Tage gegen die fünf davor.
-    GDELT verlangt mindestens fünf Sekunden zwischen Anfragen; wer schneller
-    fragt, bekommt HTTP 429. Nach einer Sperre (403/429 zweimal) wird GDELT
-    für den Rest des Laufs nicht mehr gefragt – das Archiv springt ein."""
-    if not GDELT or not anfrage or _GDELT["gesperrt"]:
+
+    GDELT drosselt die gemeinsam genutzten Adressen der GitHub-Server oft
+    (HTTP 429). Deshalb:
+      – Zwischenspeicher: Jede Anfrage wird nur einmal am Tag gestellt; ein
+        Ergebnis gilt 20 Stunden. Über mehrere Volläufe füllt sich der Speicher.
+      – Geduld: bei 429 zweimal warten (25 und 60 Sekunden), dann erst aufgeben.
+      – Nach einer Sperre im Lauf werden nur noch Ergebnisse aus dem
+        Zwischenspeicher verwendet; das Archiv springt ein."""
+    if not GDELT or not anfrage:
         return None
+    cache = _laden(GDELT_CACHE, {})
+    c = cache.get(anfrage)
+    if c and time.time() - c.get("ts", 0) < 20 * 3600:
+        return c.get("wert")
+    if _GDELT["gesperrt"]:
+        return (c or {}).get("wert")
+    ergebnis = _gdelt_abfragen(anfrage)
+    if ergebnis is not None:
+        cache[anfrage] = {"ts": time.time(), "wert": ergebnis}
+        # alte Einträge (älter als 3 Tage) entfernen
+        cache = {k: v for k, v in cache.items() if time.time() - v.get("ts", 0) < 3 * 86400}
+        _speichern(GDELT_CACHE, cache)
+        return ergebnis
+    return (c or {}).get("wert")
+
+
+def _gdelt_abfragen(anfrage):
     warte = 6 - (time.time() - _GDELT["letzte"])
     if warte > 0:
         time.sleep(warte)
@@ -1459,17 +1522,18 @@ def gdelt_volumen(anfrage):
     j, grund = None, ""
     # GDELT antwortet oft langsam und drosselt schnelle Folgeanfragen: zwei
     # Versuche mit Pause, dazu die unverschlüsselte Adresse als Ausweichweg.
-    for versuch, basis in enumerate(("https://api.gdeltproject.org", "http://api.gdeltproject.org")):
+    for versuch, (basis, pause) in enumerate((("https://api.gdeltproject.org", 0), ("https://api.gdeltproject.org", 25),
+                                                ("http://api.gdeltproject.org", 60))):
         try:
-            if versuch:
-                time.sleep(8)
+            if pause:
+                time.sleep(pause)
             _GDELT["letzte"] = time.time()
-            with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (Presseschau)"}), timeout=35) as r:
+            with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (compatible; Presseschau/1.0)"}), timeout=35) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             break
         except HTTPError as e:
             grund = f"HTTP {e.code}"
-            if e.code in (403, 429) and versuch:
+            if e.code in (403, 429) and versuch == 2:
                 _GDELT["gesperrt"] = True
         except (URLError, ValueError, TimeoutError) as e:
             grund = f"{type(e).__name__}: {getattr(e, 'reason', e)}"
@@ -1516,7 +1580,7 @@ def messpunkt_text(eintrag, kurse):
     return f"{syms[0]}, Richtung: {rt}, in {mp['tage']} Handelstagen", zeilen
 
 
-def kette_schreiben(anbieter, eintrag, sig, kurse, basis_nach_id):
+def kette_schreiben(anbieter, eintrag, sig, kurse, basis_nach_id, research=None):
     offen = eintrag.get("folgen_offen") or []
     hybrid = eintrag["id"].startswith("S")
     mp_text, kurszeilen = messpunkt_text(eintrag, kurse)
@@ -1548,6 +1612,9 @@ MELDUNGEN ({len(sig['haeuser'])} Häuser, {sig['jung']} davon aus den letzten 24
 KURSE:
 {chr(10).join("- " + z for z in kurszeilen) or "- keine Kursdaten"}
 
+RESEARCH VON BANKEN UND INSTITUTEN (letzte Wochen, nur Titel – als Einordnung nutzen, nicht zitieren):
+{chr(10).join(f"- {f['institut']}: {f['titel']}" for f in (research or [])) or "- keine"}
+
 AUFGABE
 1. Prüfe streng: Beschreiben die Meldungen ein KONKRETES, AKTUELLES Ereignis, das den Auslöser erfüllt?
    Nein bei: Rückblick, Jahrestag, Übung, Meinung, Analystenprognose ohne Anlass, bloßer Erwähnung,
@@ -1557,7 +1624,11 @@ AUFGABE
 REGELN
 - Namen, Orte, Zahlen, Daten nur aus den Meldungen oder Kursen.
 - "ereignis": 1–2 Sätze: wer, was, wo, wann.
-- "mechanismus": wie genau das Ereignis hier auf den Messpunkt wirkt, 1–2 Sätze.
+- "mechanismus": der konkrete Übertragungsweg in 1–2 Sätzen: wer kauft oder verkauft was, warum
+  ändert sich deshalb der Preis des Messpunkts – mit einer Größenordnung, wenn bekannt
+  (etwa "Chinas Bau- und Immobiliensektor braucht rund ein Viertel des chinesischen Kupfers für Leitungen
+  und Rohre; China verbraucht gut die Hälfte des Weltkupfers"). Ist der Weg nur indirekt oder unsicher,
+  schreibe das ausdrücklich und setze "sicherheit" auf "niedrig".
 - "eingepreist": Ist die Wirkung in den Kursen schon sichtbar? Nenne die Veränderung aus den Kursen.
 - "sicherheit": "hoch" nur bei mindestens drei übereinstimmenden Quellen UND direktem Zusammenhang;
   "niedrig" bei dünner Lage oder starken Gegenkräften; sonst "mittel".
@@ -1692,10 +1763,18 @@ def tagesbild_schreiben(anbieter, ketten):
     auftrag = f"""Heutige geprüfte Einschätzungen:
 {liste}
 
-Schreibe zwei bis drei Sätze Einleitung für die Rubrik "Vorausschau": Was ist heute der wichtigste
-Zusammenhang, wo verstärken sich Ketten gegenseitig, worauf lohnt es in den nächsten Tagen zu achten?
-Nur aus der Liste, keine neuen Fakten, keine Anlageempfehlung. Nur der Text."""
-    return (frage(anbieter, SYSTEM_WK, auftrag, max_tokens=300) or "").strip()[:700]
+Fasse für die Rubrik "Vorausschau" in 3 bis 5 STICHSÄTZEN zusammen (je höchstens 110 Zeichen,
+Telegrammstil, das Wichtigste vorn): wichtigster Zusammenhang heute, wo sich Ketten verstärken,
+worauf in den nächsten Tagen zu achten ist.
+Beispiel: "Öl: Hormus-Risiko und Iran-Sanktionen treiben Brent und Diesel"
+Nur aus der Liste, keine neuen Fakten, keine Anlageempfehlung.
+Antworte NUR mit JSON: {{"punkte": ["…", "…"]}}"""
+    roh = frage(anbieter, SYSTEM_WK, auftrag, max_tokens=350) or ""
+    d = _json_aus(roh)
+    punkte = [str(p).strip(" -•") for p in (d or {}).get("punkte") or [] if len(str(p).strip()) >= 12][:5]
+    if not punkte:
+        punkte = [z.strip(" -•*") for z in roh.splitlines() if len(z.strip()) >= 12][:5]
+    return punkte
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1882,7 +1961,7 @@ def main():
             print(f"  Zeitbudget knapp – {e['id']} und folgende im nächsten Lauf.")
             unvollstaendig = True
             break
-        d, meldungen = kette_schreiben(anbieter, e, s, kurse, nach_id)
+        d, meldungen = kette_schreiben(anbieter, e, s, kurse, nach_id, forschung_fuer(e, forschung))
         if not isinstance(d, dict):
             continue
         if not d.get("passt"):
@@ -1998,7 +2077,7 @@ def main():
     for v in vorschlaege:
         schl = " ".join(re.findall(r"[a-zäöüß]{4,}", (v.get("thema") or v.get("ausloeser") or "").lower())[:4])
         v["gesehen_an_tagen"] = len((kandidaten.get(schl) or {}).get("tage") or [])
-    tagesbild = tagesbild_schreiben(anbieter, ketten) if anbieter else ""
+    tagesbild = tagesbild_schreiben(anbieter, ketten) if anbieter else []
 
     out = {"updated": datetime.now(timezone.utc).isoformat(), "datum": heute,
            "stand": jetzt.strftime("%d.%m.%Y, %H:%M Uhr"), "tagesbild": tagesbild,
