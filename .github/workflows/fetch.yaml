@@ -8,13 +8,16 @@ on:
   # Minute 13 statt 0 (so fiel der Morgenlauf um 5 Uhr aus). Der zweite
   # Morgentermin um 3:43 UTC fängt einen ausgefallenen ersten auf; Vorausschau
   # und Quellenprüfung laufen trotzdem nur einmal am Tag.
+  # Alle 25 Minuten (Minute 4, 29, 54 – nicht zur vollen Stunde, da lässt
+  # GitHub bei Last Läufe ausfallen). Nachts (0–5 Uhr deutscher Zeit) prüft
+  # der Job "zeitfenster" und überspringt den Lauf in Sekunden.
+  # SCHNELLLAUF jedes Mal: Meldungen, Pflichtquellen, Entdoppeln, Archiv,
+  #   Märkte, KI-Zusammenfassungen, Veröffentlichen – rund 10–15 Minuten.
+  # VOLLLAUF alle zwei Stunden (wenn der letzte Volllauf ≥ 110 Minuten her ist),
+  #   dazu Aktien, Dokumente, Briefings, Vorausschau, Wahlen, Verzeichnis,
+  #   Plenarprotokolle. Der erste Volllauf ab 5 Uhr ist der Morgenlauf.
   schedule:
-    - cron: '13 3 * * *'
-    - cron: '43 3 * * *'
-    - cron: '13 5-21/2 * * *'
-  # Von Hand starten (Actions → Workflow → "Run workflow"): Dort lassen sich
-  # Vorausschau und Quellenprüfung neu erzwingen, auch wenn sie heute schon
-  # gelaufen sind – etwa nach einem fehlerhaften Lauf.
+    - cron: '4,29,54 * * * *'
   workflow_dispatch:
     inputs:
       vorausschau_neu:
@@ -36,7 +39,52 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Läuft der Abruf jetzt? Nachts (0–5 Uhr deutscher Zeit) nicht; der Morgen-
+  # termin nur um 5 Uhr; von Hand oder vom Wächter gestartet immer.
+  zeitfenster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    outputs:
+      laufen: ${{ steps.pruefen.outputs.laufen }}
+      morgen: ${{ steps.pruefen.outputs.morgen }}
+      voll: ${{ steps.pruefen.outputs.voll }}
+    steps:
+      - name: Uhrzeit prüfen
+        id: pruefen
+        env:
+          EREIGNIS: ${{ github.event_name }}
+          ZEITPLAN: ${{ github.event.schedule }}
+          MORGEN_HAND: ${{ inputs.morgenlauf }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          stunde=$(TZ=Europe/Berlin date +%-H)
+          # Wann war der letzte Volllauf? (voll_stand.txt im Repo, Sekunden seit 1970)
+          stand=$(gh api "repos/$REPO/contents/voll_stand.txt" -H "Accept: application/vnd.github.raw" 2>/dev/null | tr -dc '0-9' || true)
+          [ -z "$stand" ] && stand=0
+          alter=$(( ( $(date +%s) - stand ) / 60 ))
+          laufen=false; voll=false; morgen=0
+          if [ "$EREIGNIS" != "schedule" ]; then
+            laufen=true; voll=true
+            [ "$MORGEN_HAND" = "true" ] && morgen=1
+          elif [ "$stunde" -ge 5 ]; then
+            laufen=true
+            if [ "$alter" -ge 110 ]; then
+              voll=true
+              # erster Volllauf des Tages zwischen 5 und 6 Uhr = Morgenlauf
+              [ "$stunde" -eq 5 ] && morgen=1
+            fi
+          fi
+          echo "Deutsche Zeit: $(TZ=Europe/Berlin date '+%H:%M') · letzter Volllauf vor $alter Min. → laufen=$laufen, voll=$voll, Morgenlauf=$morgen"
+          echo "laufen=$laufen" >> "$GITHUB_OUTPUT"
+          echo "voll=$voll" >> "$GITHUB_OUTPUT"
+          echo "morgen=$morgen" >> "$GITHUB_OUTPUT"
+
   fetch:
+    needs: zeitfenster
+    if: needs.zeitfenster.outputs.laufen == 'true'
     runs-on: ubuntu-latest
     # Harte Obergrenze für den ganzen Job. Vorher 25 Minuten – zu knapp für alle
     # Schritte: Der Job wurde abgebrochen, BEVOR er committen konnte, und neue
@@ -46,7 +94,8 @@ jobs:
     timeout-minutes: 90
     env:
       # Im Morgenlauf bekommen die Skripte mehr Zeit und größere Portionen.
-      MORGENLAUF: ${{ (github.event.schedule == '13 3 * * *' || github.event.schedule == '43 3 * * *' || inputs.morgenlauf) && '1' || '0' }}
+      MORGENLAUF: ${{ needs.zeitfenster.outputs.morgen }}
+      VOLL: ${{ needs.zeitfenster.outputs.voll }}
     permissions:
       contents: write
     steps:
@@ -75,7 +124,7 @@ jobs:
       - name: Feeds holen (News, EU, Bundestag, Bundesländer, USA, Dokumente)
         timeout-minutes: 22          # Reserve über dem Budget des Skripts
         env:
-          NEWS_BUDGET_MIN: ${{ env.MORGENLAUF == '1' && '14' || '8' }}   # morgens ausgiebiger
+          NEWS_BUDGET_MIN: ${{ env.MORGENLAUF == '1' && '14' || env.VOLL == 'true' && '8' || '6' }}   # morgens ausgiebiger, Schnelllauf kürzer
           FEED_WORKERS: '8'          # parallele Abrufe
           FEED_TIMEOUT: '10'         # Sekunden je Feed
           FEED_FALLBACK: '1'         # gescheiterte Feeds über Nachrichtensuche nachholen
@@ -97,10 +146,10 @@ jobs:
       # NEU (v18): Neueste Wahlumfrage je Parlament aus DAWUM, mit richtigen
       # Parteinamen (in Landtagsumfragen fehlte sonst die CDU).
       - name: Umfragen (DAWUM)
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 2
-        run: python umfragen.py
-
+        run: if [ -f umfragen.py ]; then python umfragen.py; else echo "umfragen.py fehlt im Repo – Schritt übersprungen"; fi
       - name: Pflichtquellen ergänzen
         continue-on-error: true
         timeout-minutes: 5
@@ -108,26 +157,32 @@ jobs:
           QE_MIN_JE_HAUS: '3'
           QE_MAX_JE_HAUS: '15'
           QE_BUDGET_SEC: '180'
-        run: python quellen_ergaenzen.py
-
+        run: if [ -f quellen_ergaenzen.py ]; then python quellen_ergaenzen.py; else echo "quellen_ergaenzen.py fehlt im Repo – Schritt übersprungen"; fi
       - name: Meldungen entdoppeln (gleiches Haus, gleicher Artikel)
         continue-on-error: true
         timeout-minutes: 2
-        run: python entdoppeln.py
-
+        run: if [ -f entdoppeln.py ]; then python entdoppeln.py; else echo "entdoppeln.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v10): Anreicherung nachtragen – verteilt über mehrere Läufe.
       # Der Abruf oben reichert nur die frischen Meldungen an. Ältere
       # Bestände und die Monatsdateien unter archive/ arbeitet dieses Skript
       # portionsweise ab: eigenes Zeitbudget, fertige Monate werden mit
       # "angereichert": "v10" markiert und künftig übersprungen.
+      # NEU (v23): Archiv schlank halten und unter der GitHub-Grenze (100 MB je
+      # Datei) teilen – archive/2026-09.json war schon 62 MB.
+      - name: Archiv pflegen
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ARCHIV_MAX_MB: '40'
+        run: if [ -f archiv_pflegen.py ]; then python archiv_pflegen.py; else echo "archiv_pflegen.py fehlt im Repo – Schritt übersprungen"; fi
+
       - name: Anreicherung nachtragen (Bestand und Archiv)
         continue-on-error: true
         timeout-minutes: 4
         env:
           NACHTRAG_BUDGET_MIN: '2.5'
           NACHTRAG_DATEIEN: '3'
-        run: python nachtragen.py
-
+        run: if [ -f nachtragen.py ]; then python nachtragen.py; else echo "nachtragen.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v10): Zusammenfassungen der wichtigsten Meldungen.
       # OpenRouter zuerst, Groq als Rückfall – dieselben Secrets wie beim
       # Verzeichnis. Schreibt ki_meldungen.json (ai.json gehört weiter dem
@@ -142,8 +197,7 @@ jobs:
         env:
           MARKET_TIMEOUT: '12'
           MARKET_PAUSE: '0.25'   # 113 Werte × 2 Abrufe ≈ 2 Minuten
-        run: python fetch_markets.py
-
+        run: if [ -f fetch_markets.py ]; then python fetch_markets.py; else echo "fetch_markets.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v13): Zusatzwerte für die Vorausschau – Agrarrohstoffe,
       # Branchen-ETFs, Rheinpegel Kaub. Ergänzt markets.json, fasst die
       # Gruppen von fetch_markets.py nicht an; Ausfälle behalten den alten Wert.
@@ -153,8 +207,7 @@ jobs:
         env:
           MARKET_TIMEOUT: '12'
           MARKET_PAUSE: '0.25'
-        run: python fetch_markets_extra.py
-
+        run: if [ -f fetch_markets_extra.py ]; then python fetch_markets_extra.py; else echo "fetch_markets_extra.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v11): Das Skript wechselt das Modell selbst, wenn OpenRouter es
       # aus dem kostenlosen Kontingent nimmt ("unavailable for free") - erst
       # auf den in der Fehlermeldung genannten Nachfolger, dann auf ein
@@ -166,12 +219,12 @@ jobs:
       # NEU (v20): Einzelaktien (Kurse jeder Lauf) und – mit FMP_API_KEY –
       # die Bewertung gegen den eigenen KGV-Schnitt (einmal am Tag).
       - name: Aktien und Bewertung
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 6
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
-        run: python aktien.py
-
+        run: if [ -f aktien.py ]; then python aktien.py; else echo "aktien.py fehlt im Repo – Schritt übersprungen"; fi
       - name: KI-Zusammenfassungen, Top-Auswahl und Marktlage
         continue-on-error: true
         timeout-minutes: 12
@@ -180,7 +233,7 @@ jobs:
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'   # nur freie Modelle – kein Guthabenverbrauch
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API: ${{ secrets.GEMINI_API }}     # Secret "gemini_api" – GitHub schreibt Namen groß
-          KI_MAX: ${{ env.MORGENLAUF == '1' && '120' || '64' }}   # Meldungen je Lauf mit Zusammenfassung
+          KI_MAX: ${{ env.MORGENLAUF == '1' && '120' || env.VOLL == 'true' && '64' || '24' }}   # Meldungen je Lauf mit Zusammenfassung
           # Reihenfolge nach Kontingent der freien Stufen: Gemini (beste Qualität,
           # im Takt von 6,5 s), Groq (großzügigstes Tageskontingent), zuletzt
           # OpenRouter (ohne gekauftes Guthaben nur 50 freie Anfragen am Tag).
@@ -193,8 +246,7 @@ jobs:
           KI_SCHLAG_MIN: '100'         # in jedem Lauf (alle zwei Stunden) neu zusammenstellen
           KI_SCHLAG_REGIONEN: '6'      # alle Regionen je Lauf – die Läufe liegen jetzt zwei Stunden auseinander
           KI_MARKT_ZEITEN: '9,16'      # Marktlage zweimal je Handelstag (Uhr, deutsche Zeit)
-        run: python ki_zusammenfassungen.py
-
+        run: if [ -f ki_zusammenfassungen.py ]; then python ki_zusammenfassungen.py; else echo "ki_zusammenfassungen.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v15): Meldungen sofort veröffentlichen – nicht erst, wenn auch
       # Verzeichnis, Vorausschau und Protokolle fertig sind.
       - name: Zwischenstand veröffentlichen (Meldungen, KI, Märkte)
@@ -213,22 +265,11 @@ jobs:
           git push || { git fetch origin main && git rebase -X ours origin/main && git push; } || echo "Zwischenstand nicht gepusht – der Schlussschritt versucht es erneut."
 
 
-      # NEU (v21): Weitere Newsletter-Feeds als normale Einträge im
-      # Newsletter-Bereich (RSS oder Atom). Öffentliche Feeds (Deutsche Bank
-      # Research) stehen im Skript; private Feeds wie Kill the Newsletter
-      # gehören ins Secret NEWSLETTER_FEEDS (mehrere mit Komma), weil jeder
-      # mit der Adresse den Newsletter lesen kann.
-      - name: Newsletter-Feeds (DB Research, Kill the Newsletter …)
-        continue-on-error: true
-        timeout-minutes: 3
-        env:
-          NEWSLETTER_FEEDS: ${{ secrets.NEWSLETTER_FEEDS }}
-        run: python newsletter.py
-
       # NEU (v19): Gerichtsentscheidungen und Bundestags-PDFs lesen – Leitsatz,
       # Tenor und eine KI-Kurzfassung statt "IV ZR 259/25, Entscheidung vom …".
       # Gespeichert wird nur ein Auszug, keine PDFs.
       - name: Dokumente lesen (Urteile, Drucksachen)
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 14
         env:
@@ -240,6 +281,7 @@ jobs:
           DOK_PRO_LAUF: ${{ env.MORGENLAUF == '1' && '50' || '20' }}
           DOK_BUDGET_SEC: ${{ env.MORGENLAUF == '1' && '600' || '300' }}
         run: |
+          if [ ! -f dokumente_lesen.py ]; then echo "dokumente_lesen.py fehlt im Repo – Schritt übersprungen"; exit 0; fi
           pip install --quiet pypdf || echo "pypdf nicht installierbar – PDFs werden übersprungen"
           python dokumente_lesen.py
 
@@ -247,6 +289,7 @@ jobs:
       # Cyber & KI, Handel & Wirtschaft, Inneres & Sicherheit, Weltpolitik,
       # Verteidigung). Auswahl jeden Lauf, die KI-Lage einmal am Morgen.
       - name: Ressort-Briefings
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 6
         env:
@@ -255,26 +298,26 @@ jobs:
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
           KI_REIHENFOLGE: 'gemini,groq,openrouter'
-        run: python briefings.py
-
+        run: if [ -f briefings.py ]; then python briefings.py; else echo "briefings.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v14): Quellenprüfung – einmal am Tag. Prüft jede Kursquelle auf
       # Erreichbarkeit, richtiges Kürzel (Währung, Name), Aktualität und
       # plausible Werte, dazu Pegelonline und GDELT. Ergebnis in
       # quellen_status.json; die App zeigt Auffälliges an.
       - name: Datenquellen prüfen (einmal täglich)
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 4
         env:
           QP_FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.quellen_neu) && '1' || '0' }}
           QP_TIMEOUT: '15'
           QP_PAUSE: '0.3'
-        run: python quellen_pruefen.py
-
+        run: if [ -f quellen_pruefen.py ]; then python quellen_pruefen.py; else echo "quellen_pruefen.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v14): Vorausschau (Foresight) – einmal am Tag ab 7 Uhr deutscher
       # Zeit. Rechnet Wahrscheinlichkeiten aus Grundrate, Stärke des Zusammen-
       # hangs, Belegen und Kursbewegung; klassifiziert hybride Bedrohungen.
       # Übernimmt beim ersten Lauf eine vorhandene wirkungsketten_basis.json.
       - name: Vorausschau (einmal täglich)
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 20
         env:
@@ -290,23 +333,23 @@ jobs:
           VS_FENSTER_H: '72'      # Meldungen der letzten 72 Stunden
           VS_GDELT: '1'           # weltweite Berichterstattung als zweites Signal (Ersatz: eigenes Archiv)
           VS_ARCHIV_MONATE: '12'  # so viele Monate aus archive/ für frühere Ereignisse
-        run: python vorausschau.py
-
+        run: if [ -f vorausschau.py ]; then python vorausschau.py; else echo "vorausschau.py fehlt im Repo – Schritt übersprungen"; fi
       # Verzeichnis, DIP, Kalender, Newsletter.
       # Läuft nur im ersten Lauf jeder Stunde und hat ein eigenes Zeitbudget:
       # Was nicht hineinpasst (Landtage, MEP-Details, Profilfotos), macht der nächste Lauf.
       - name: Wahlen (Termine, Umfragen, Ergebnisse)
+        if: env.VOLL == 'true'
         timeout-minutes: 6
         env:
           ELECTION_BUDGET_MIN: '4'
-        run: python fetch_elections.py
-
+        run: if [ -f fetch_elections.py ]; then python fetch_elections.py; else echo "fetch_elections.py fehlt im Repo – Schritt übersprungen"; fi
       # NEU (v11): Derselbe Lauf holt jetzt auch die namentlichen Abstimmungen
       # des Bundestags (abgeordnetenwatch) nach votes.json und schreibt die
       # Sitzverteilung je Parlament nach people.json → "seats".
       # Weil das zusätzliche Abrufe sind, bekommt der Schritt mehr Luft:
       # 14 Minuten Obergrenze, 11 Minuten Eigenbudget.
       - name: Verzeichnis, DIP, Abstimmungen & Kalender
+        if: env.VOLL == 'true'
         timeout-minutes: 20
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
@@ -361,6 +404,7 @@ jobs:
       # Protokoll-Index: je Lauf wenige Sitzungen, bis die Wahlperiode
       # vollständig ist. Bricht nie den übrigen Ablauf ab.
       - name: Plenarprotokolle indizieren (inkrementell)
+        if: env.VOLL == 'true'
         continue-on-error: true
         env:
           DIP_KEY: ${{ secrets.DIP_KEY }}
@@ -375,6 +419,7 @@ jobs:
       # die Reden je Tagesordnungspunkt, und schreibt plenum_votes.json. Welche Protokolle fertig sind, steht in
       # plenum_cache.json. Bricht nie den uebrigen Ablauf ab.
       - name: Abstimmungen per Handzeichen (Plenarprotokolle)
+        if: env.VOLL == 'true'
         continue-on-error: true
         timeout-minutes: 10
         env:
@@ -388,6 +433,10 @@ jobs:
           # KOALITION: '…,…'   FRAKTIONEN: '…,…,…'
           REDEN_TAGE: '120'          # Reden so lange aufbewahren
         run: python3 fetch_plenum.py
+
+      - name: Volllauf vermerken
+        if: env.VOLL == 'true'
+        run: date +%s > voll_stand.txt
 
       - name: JSON-Dateien committen
         if: always()
@@ -411,7 +460,7 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json newsletter_eigene.json briefings.json \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done

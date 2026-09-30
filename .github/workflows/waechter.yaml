@@ -5,7 +5,7 @@
 # kleine Workflow schaut alle 30 Minuten (tagsüber) nach:
 #   – Ist der Abruf-Workflow ("RSS Feeds holen") abgeschaltet? → wieder ein.
 #   – Gibt es ihn doppelt (fetch.yml UND fetch.yaml)? → Warnung im Protokoll.
-#   – Lief er seit mehr als 150 Minuten nicht und läuft gerade keiner? → starten.
+#   – Lief er seit mehr als 60 Minuten nicht und läuft gerade keiner? → starten.
 #   – Hängt ein Lauf länger als 100 Minuten (Grenze des Jobs: 90)? → abbrechen
 #     und neu starten.
 #   – Fehlt nach 6:30 Uhr deutscher Zeit die Vorausschau von heute und läuft
@@ -18,7 +18,7 @@ name: Wächter (Abruf im Takt halten)
 
 on:
   schedule:
-    - cron: '7,37 3-21 * * *'       # UTC: 5–23 Uhr deutscher Sommerzeit
+    - cron: '7,37 3-22 * * *'       # UTC; Nachtruhe prüft der Schritt selbst (5–24 Uhr deutscher Zeit)
   workflow_dispatch:
 
 permissions:
@@ -35,9 +35,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           NAME: 'RSS Feeds holen'
-          MAX_ALTER_MIN: '150'
+          MAX_ALTER_MIN: '60'      # Takt 25 Minuten – eine Stunde ohne Lauf ist ein Ausfall
         run: |
           set -euo pipefail
+          # Nachts (0–5 Uhr deutscher Zeit) nichts starten
+          # Vor 5:40 Uhr: Nachtruhe bzw. dem geplanten Morgenlauf (5:13) den Vortritt lassen
+          if [ "$(TZ=Europe/Berlin date +%-H%M)" -lt 540 ]; then echo "Nachtruhe bzw. Morgenlauf abwarten – nichts zu tun."; exit 0; fi
           liste=$(gh api "repos/$REPO/actions/workflows" --paginate \
                   --jq ".workflows[] | select(.name==\"$NAME\") | \"\(.id) \(.state) \(.path)\"")
           if [ -z "$liste" ]; then
@@ -96,9 +99,8 @@ jobs:
             echo "Alles im Takt."
             exit 0
           fi
-          # Morgens (3–4 Uhr UTC) als Morgenlauf starten, sonst als normalen Lauf.
-          stunde=$(date -u +%H)
+          # Um 5 Uhr deutscher Zeit als Morgenlauf starten, sonst als normalen Lauf.
           morgen=false
-          if [ "$stunde" = "03" ] || [ "$stunde" = "04" ]; then morgen=true; fi
+          if [ "$(TZ=Europe/Berlin date +%-H)" -le 6 ]; then morgen=true; fi   # ausgefallener Morgenlauf
           echo "::warning::Seit $alter Minuten kein Lauf – starte jetzt (Morgenlauf: $morgen)."
           gh workflow run "$id" --repo "$REPO" -f vorausschau_neu=false -f quellen_neu=false -f morgenlauf=$morgen
