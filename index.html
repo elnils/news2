@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau</title>
+<title>Presseschau – Entwurf v65</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -838,7 +838,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v64</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v65</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -3913,7 +3913,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v64 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v65 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -5565,7 +5565,9 @@ async function archivLaden(){
     }
     for(const m of archivFehlend()){
       const d=await hole(m.datei);
-      ARCH.geladen.add(m.monat);
+      /* Nach Datei merken, nicht nach Monat: große Monate liegen in mehreren
+         Teilen (2026-09.json, 2026-09-b.json …). */
+      ARCH.geladen.add(m.datei);
       if(!d)continue;
       const arts=mapArtikel(d,'archiv').filter(a=>!ITEMS[a.id]);
       arts.forEach(a=>{ITEMS[a.id]=a});
@@ -5580,10 +5582,10 @@ function archivFehlend(){
   if(!ARCH.monate)return [];
   const grenze=NOW-S.archRange*D;
   return ARCH.monate.filter(m=>{
-    if(ARCH.geladen.has(m.monat))return false;
+    if(ARCH.geladen.has(m.datei))return false;
     const [y,mo]=m.monat.split('-').map(Number);
     return new Date(y,mo,0,23,59).getTime()>=grenze;
-  }).slice(0,S.archRange>90?24:3);
+  }).slice(0,S.archRange>90?40:8);
 }
 function archivPool(){
   return [...ARTICLES.filter(a=>a.ago>48),...ARCH.arts];

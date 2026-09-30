@@ -40,19 +40,40 @@ except Exception:                                   # pragma: no cover
 MARKETS = "markets.json"
 BEWERTUNG = "bewertung.json"
 FMP_KEY = os.environ.get("FMP_API_KEY", "").strip()
+# Der kostenlose Tarif von FMP deckt nur US-Börsen ab; deutsche Kürzel
+# (DTE.DE, MBG.DE …) werden mit HTTP 403 abgelehnt. Deshalb standardmäßig
+# nur Werte mit US-Kürzel bewerten (SAP über die US-Notierung "SAP").
+# Mit bezahltem Tarif: FMP_ALLE=1.
+FMP_ALLE = os.environ.get("FMP_ALLE") == "1"
 FMP = "https://financialmodelingprep.com"
 UA = {"User-Agent": "Mozilla/5.0 (Presseschau)"}
 
 # Yahoo-Kürzel · Name · Währung · FMP-Kürzel (leer = wie Yahoo)
 AKTIEN_VORGABE = [
-    ("SAP.DE", "SAP", "EUR", "SAP.DE"), ("SIE.DE", "Siemens", "EUR", "SIE.DE"), ("ALV.DE", "Allianz", "EUR", "ALV.DE"),
+    # Deutschland – Kurse und technische Lage; bewertet werden über FMP nur
+    # die mit US-Notierung (SAP, Deutsche Bank)
+    ("SAP.DE", "SAP", "EUR", "SAP"), ("SIE.DE", "Siemens", "EUR", "SIE.DE"), ("ALV.DE", "Allianz", "EUR", "ALV.DE"),
     ("DTE.DE", "Deutsche Telekom", "EUR", "DTE.DE"), ("MBG.DE", "Mercedes-Benz", "EUR", "MBG.DE"),
     ("BMW.DE", "BMW", "EUR", "BMW.DE"), ("BAS.DE", "BASF", "EUR", "BAS.DE"), ("RHM.DE", "Rheinmetall", "EUR", "RHM.DE"),
-    ("IFX.DE", "Infineon", "EUR", "IFX.DE"), ("MUV2.DE", "Munich Re", "EUR", "MUV2.DE"), ("DBK.DE", "Deutsche Bank", "EUR", "DBK.DE"),
+    ("IFX.DE", "Infineon", "EUR", "IFX.DE"), ("MUV2.DE", "Munich Re", "EUR", "MUV2.DE"), ("DBK.DE", "Deutsche Bank", "EUR", "DB"),
     ("VOW3.DE", "Volkswagen", "EUR", "VOW3.DE"), ("AIR.DE", "Airbus", "EUR", "AIR.PA"),
+    # USA – alle mit Bewertung (kostenloser FMP-Tarif): Dow-Jones-Werte und
+    # die großen Technologiewerte. Zwei Abfragen je Aktie, rund 90 am Tag.
     ("AAPL", "Apple", "USD", "AAPL"), ("MSFT", "Microsoft", "USD", "MSFT"), ("NVDA", "Nvidia", "USD", "NVDA"),
     ("AMZN", "Amazon", "USD", "AMZN"), ("GOOGL", "Alphabet", "USD", "GOOGL"), ("META", "Meta", "USD", "META"),
-    ("TSLA", "Tesla", "USD", "TSLA"), ("NKE", "Nike", "USD", "NKE"),
+    ("TSLA", "Tesla", "USD", "TSLA"), ("AVGO", "Broadcom", "USD", "AVGO"), ("AMD", "AMD", "USD", "AMD"),
+    ("NFLX", "Netflix", "USD", "NFLX"), ("ORCL", "Oracle", "USD", "ORCL"), ("ADBE", "Adobe", "USD", "ADBE"),
+    ("CRM", "Salesforce", "USD", "CRM"), ("CSCO", "Cisco", "USD", "CSCO"), ("INTC", "Intel", "USD", "INTC"),
+    ("IBM", "IBM", "USD", "IBM"), ("BRK-B", "Berkshire Hathaway", "USD", "BRK-B"), ("JPM", "JPMorgan Chase", "USD", "JPM"),
+    ("GS", "Goldman Sachs", "USD", "GS"), ("AXP", "American Express", "USD", "AXP"), ("V", "Visa", "USD", "V"),
+    ("MA", "Mastercard", "USD", "MA"), ("TRV", "Travelers", "USD", "TRV"), ("UNH", "UnitedHealth", "USD", "UNH"),
+    ("JNJ", "Johnson & Johnson", "USD", "JNJ"), ("LLY", "Eli Lilly", "USD", "LLY"), ("MRK", "Merck & Co.", "USD", "MRK"),
+    ("AMGN", "Amgen", "USD", "AMGN"), ("PG", "Procter & Gamble", "USD", "PG"), ("KO", "Coca-Cola", "USD", "KO"),
+    ("PEP", "PepsiCo", "USD", "PEP"), ("WMT", "Walmart", "USD", "WMT"), ("COST", "Costco", "USD", "COST"),
+    ("HD", "Home Depot", "USD", "HD"), ("MCD", "McDonald's", "USD", "MCD"), ("NKE", "Nike", "USD", "NKE"),
+    ("DIS", "Disney", "USD", "DIS"), ("BA", "Boeing", "USD", "BA"), ("CAT", "Caterpillar", "USD", "CAT"),
+    ("HON", "Honeywell", "USD", "HON"), ("MMM", "3M", "USD", "MMM"), ("CVX", "Chevron", "USD", "CVX"),
+    ("XOM", "ExxonMobil", "USD", "XOM"), ("VZ", "Verizon", "USD", "VZ"), ("SHW", "Sherwin-Williams", "USD", "SHW"),
 ]
 
 
@@ -141,7 +162,13 @@ def bewerten(liste):
         print("  Bewertung: heute schon aktualisiert.")
         return
     werte = alt.get("werte") or {}
+    abgelehnt = 0
     for sym, name, _, fsym in liste:
+        if not FMP_ALLE and "." in fsym:
+            continue                                   # nicht im kostenlosen Tarif
+        if abgelehnt >= 3:
+            print("  FMP lehnt wiederholt ab – Rest übersprungen (Schlüssel oder Tarif prüfen).")
+            break
         q = fmp("quote", symbol=fsym)
         q = q[0] if isinstance(q, list) and q else (q or {})
         r = fmp("ratios", symbol=fsym, period="annual", limit=5)
@@ -153,7 +180,9 @@ def bewerten(liste):
         pfcf_hist = [x for x in (zahl(j, "priceToFreeCashFlowRatio", "priceToFreeCashFlowsRatio") for j in r) if x and 0 < x < 300]
         if not (preis and kgv_hist):
             print(f"  {name}: keine Bewertungsdaten")
+            abgelehnt += 1 if not (q or r) else 0
             continue
+        abgelehnt = 0
         schnitt = sum(kgv_hist) / len(kgv_hist)
         if not kgv and eps:
             kgv = preis / eps if eps > 0 else None
