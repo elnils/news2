@@ -6,6 +6,10 @@
 #   – Ist der Abruf-Workflow ("RSS Feeds holen") abgeschaltet? → wieder ein.
 #   – Gibt es ihn doppelt (fetch.yml UND fetch.yaml)? → Warnung im Protokoll.
 #   – Lief er seit mehr als 150 Minuten nicht und läuft gerade keiner? → starten.
+#   – Hängt ein Lauf länger als 100 Minuten (Grenze des Jobs: 90)? → abbrechen
+#     und neu starten.
+#   – Fehlt nach 6:30 Uhr deutscher Zeit die Vorausschau von heute und läuft
+#     gerade nichts? → einen Lauf starten (höchstens einmal je Stunde).
 # Ein Start per workflow_dispatch mit dem eingebauten Token ist ausdrücklich
 # erlaubt; dafür braucht es nur die Berechtigung "actions: write".
 # Laufzeit je Prüfung: wenige Sekunden.
@@ -50,8 +54,22 @@ jobs:
             echo "::warning::Workflow war '$zustand' – wird wieder eingeschaltet."
             gh api -X PUT "repos/$REPO/actions/workflows/$id/enable"
           fi
-          aktiv=$(gh api "repos/$REPO/actions/workflows/$id/runs?per_page=10" \
-                  --jq '[.workflow_runs[] | select(.status=="in_progress" or .status=="queued" or .status=="pending" or .status=="waiting")] | length')
+          # Hängende Läufe erkennen: länger als 100 Minuten "in_progress" oder
+          # länger als 60 Minuten in der Warteschlange
+          jetzt=$(date +%s)
+          gh api "repos/$REPO/actions/workflows/$id/runs?per_page=10" \
+            --jq '.workflow_runs[] | select(.status=="in_progress" or .status=="queued" or .status=="pending" or .status=="waiting") | "\(.id) \(.status) \(.run_started_at // .created_at)"' > /tmp/aktiv.txt || true
+          aktiv=0
+          while read -r rid st seit; do
+            [ -z "$rid" ] && continue
+            min=$(( ( jetzt - $(date -d "$seit" +%s) ) / 60 ))
+            if { [ "$st" = "in_progress" ] && [ "$min" -gt 100 ]; } || { [ "$st" != "in_progress" ] && [ "$min" -gt 60 ]; }; then
+              echo "::warning::Lauf $rid hängt seit $min Minuten ($st) – wird abgebrochen."
+              gh api -X POST "repos/$REPO/actions/runs/$rid/cancel" || true
+            else
+              aktiv=$((aktiv+1))
+            fi
+          done < /tmp/aktiv.txt
           if [ "$aktiv" -gt 0 ]; then
             echo "Ein Lauf ist gerade aktiv oder wartet – nichts zu tun."
             exit 0
@@ -62,7 +80,19 @@ jobs:
             alter=$(( ( $(date +%s) - $(date -d "$letzter" +%s) ) / 60 ))
           fi
           echo "Letzter Lauf vor $alter Minuten (${letzter:-nie})."
+          # Vorausschau von heute vorhanden? (Stand in vorausschau.json im Repo)
+          heute=$(TZ=Europe/Berlin date +%F)
+          stunde_de=$(TZ=Europe/Berlin date +%H%M)
+          vs=$(gh api "repos/$REPO/contents/vorausschau.json" -H "Accept: application/vnd.github.raw" 2>/dev/null \
+               | jq -r '"\(.datum // "?") \(if .ki_ok == false then "False" else "True" end)"' 2>/dev/null || echo "? ?")
+          vs_datum=${vs%% *}; vs_ok=${vs##* }
+          echo "Vorausschau: Stand $vs_datum (vollständig: $vs_ok), heute ist $heute."
           if [ "$alter" -lt "$MAX_ALTER_MIN" ]; then
+            if [ "$stunde_de" -ge 0630 ] && { [ "$vs_datum" != "$heute" ] || [ "$vs_ok" = "False" ]; } && [ "$alter" -ge 60 ]; then
+              echo "::warning::Vorausschau von heute fehlt – starte einen Lauf, der sie nachholt."
+              gh workflow run "$id" --repo "$REPO" -f vorausschau_neu=false -f quellen_neu=false -f morgenlauf=false
+              exit 0
+            fi
             echo "Alles im Takt."
             exit 0
           fi

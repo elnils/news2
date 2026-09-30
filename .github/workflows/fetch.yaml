@@ -276,8 +276,9 @@ jobs:
       # Übernimmt beim ersten Lauf eine vorhandene wirkungsketten_basis.json.
       - name: Vorausschau (einmal täglich)
         continue-on-error: true
-        timeout-minutes: 12
+        timeout-minutes: 20
         env:
+          VS_BUDGET_SEC: '900'    # hört nach 15 Minuten auf und speichert, bevor die Grenze greift
           OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
           OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'   # nur freie Modelle – kein Guthabenverbrauch
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
