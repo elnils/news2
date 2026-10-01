@@ -297,6 +297,24 @@ jobs:
           pip install --quiet pypdf || echo "pypdf nicht installierbar – PDFs werden übersprungen"
           python dokumente_lesen.py
 
+      # NEU (v27): Daten des eigenen Energie-Dashboards. Die Adresse steht nur
+      # im Secret ENERGIE_API, nicht im Code.
+      - name: Energiedaten
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ENERGIE_API: ${{ secrets.ENERGIE_API }}
+        run: if [ -f energie_holen.py ]; then python energie_holen.py; else echo "energie_holen.py fehlt im Repo – Schritt übersprungen"; fi
+
+      # NEU (v28): Energiedaten historisch einordnen, Weitergabe an Verbraucher
+      # messen, Prognosen sammeln (energie_analyse.json) – vor der Vorausschau
+      - name: Energie-Analyse
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 3
+        run: if [ -f energie_analyse.py ]; then python energie_analyse.py; else echo "energie_analyse.py fehlt im Repo – Schritt übersprungen"; fi
+
       # NEU (v22): Ressort-Briefings (Energie & Klima, Technik & Digitales,
       # Cyber & KI, Handel & Wirtschaft, Inneres & Sicherheit, Weltpolitik,
       # Verteidigung). Auswahl jeden Lauf, die KI-Lage einmal am Morgen.
@@ -368,6 +386,15 @@ jobs:
           DD_TAGE: '7'            # Deep Dives der Vortage bleiben sieben Tage lesbar
           DD_FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.vorausschau_neu && inputs.takt != true) && '1' || '0' }}
         run: if [ -f deepdive.py ]; then python deepdive.py; else echo "deepdive.py fehlt im Repo – Schritt übersprungen"; fi
+
+      # NEU (v26): Namentliche Abstimmungen im Europäischen Parlament (HowTheyVote.eu)
+      - name: Abstimmungen im Europaparlament
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          EP_PRO_LAUF: '40'
+        run: if [ -f ep_abstimmungen.py ]; then python ep_abstimmungen.py; else echo "ep_abstimmungen.py fehlt im Repo – Schritt übersprungen"; fi
 
       - name: Wahlen (Termine, Umfragen, Ergebnisse)
         if: env.VOLL == 'true'
@@ -492,12 +519,13 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json ep_votes.json ep_abgeordnete.json energie.json energie_reihen.json energie_analyse.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
           [ -d docs_files ] && git add docs_files/ || true
           [ -d archive ] && git add archive/ && echo "  + archive/" || true
+          [ -d ep_stimmen ] && git add ep_stimmen/ && echo "  + ep_stimmen/" || true
           [ -d markets_archive ] && git add markets_archive/ && echo "  + markets_archive/" || true
           [ -d protokolle ] && git add protokolle/ && echo "  + protokolle/" || true
 
