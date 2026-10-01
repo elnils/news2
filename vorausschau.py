@@ -108,7 +108,7 @@ FORSCHUNG_QUELLEN = [
     ("EZB", "ecb.europa.eu"), ("IWF", "imf.org"), ("BIZ", "bis.org"), ("OECD", "oecd.org"),
     ("IEA", "iea.org"), ("FAO", "fao.org"), ("Bruegel", "bruegel.org"),
 ]
-BASIS_VERSION = 5
+BASIS_VERSION = 6
 KANDIDATEN = "vorausschau_kandidaten.json"
 MAX_KETTEN = int(os.environ.get("VS_MAX", "10"))
 STUNDE = int(os.environ.get("VS_STUNDE", "7"))
@@ -494,14 +494,29 @@ DEFAULT_BASIS = [
      "zeitraum": "Tage bis Wochen", "messpunkt": {"sym": "SMH", "richtung": -1, "tage": 5},
      "gegenkraefte": "Ausweichkapazität", "belege": ["dell2014"], "fuehrt_zu": ["H4"],
      "gdelt": "(earthquake OR typhoon OR flood) (Taiwan OR Japan) (factory OR semiconductor)"},
-    {"id": "T7", "titel": "Großschäden durch Unwetter und Brände",
-     "ausloeser": "Waldbrände, Hitze oder Unwetter mit großen Schäden",
-     "stichworte": [r"waldbrand|wildfire|unwetter|hagel|hail|flut|flood|sturm|storm|hurrikan|hurricane",
-                    r"schäden|damage|versicher|insur|milliarden|billion|verwüst|devastat"],
-     "wirkung": "Versicherer fallen", "mechanismus": "hohe Schadenszahlungen", "zeitraum": "Tage bis Wochen",
+    {"id": "T7", "titel": "Großschäden durch Naturkatastrophe in Europa",
+     "ausloeser": "Unwetter, Flut oder Brände in Europa mit versicherten Schäden in Milliardenhöhe",
+     "stichworte": [r"waldbrand|unwetter|hagel|flut|hochwasser|überschwemmung|sturm|orkan|wildfire|flood|storm|hail",
+                    r"deutschland|europa|europe|italien|italy|frankreich|france|spanien|spain|österreich|austria|schweiz|belgien|niederlande|polen|tschechien|griechenland|greece",
+                    r"versicherte schäden|insured loss\\w*|milliarden\\w*|billion|rückversicher\\w*|reinsur\\w*|schadenssumme|katastrophenschäden"],
+     "wirkung": "Europäische Versicherer fallen kurzfristig",
+     "mechanismus": "hohe Schadenszahlungen europäischer Erst- und Rückversicherer; erst ab mehreren Milliarden versicherter Schäden kursrelevant",
+     "zeitraum": "Tage bis Wochen",
      "messpunkt": {"sym": "EXH5.DE", "richtung": -1, "tage": 10},
-     "gegenkraefte": "Rückversicherung", "belege": ["dell2014"], "fuehrt_zu": [],
-     "gdelt": "(wildfire OR storm OR flood) (damage OR insured losses) billion"},
+     "gegenkraefte": "Rückversicherung, Rückstellungen, danach steigende Prämien", "belege": ["dell2014"], "fuehrt_zu": [],
+     "gdelt": "(flood OR storm OR wildfire) Europe (insured losses OR damage) billion"},
+    {"id": "T9", "titel": "Großschaden durch Naturkatastrophe in den USA",
+     "ausloeser": "Hurrikan, Waldbrand oder Unwetter in den USA mit versicherten Schäden im zweistelligen Milliardenbereich",
+     "stichworte": [r"hurrikan|hurricane|waldbrand|wildfire|tornado|unwetter|storm|flood|flut",
+                    r"usa|us-|florida|texas|kalifornien|california|louisiana|carolina|new york|new jersey|united states",
+                    r"versicherte schäden|insured loss\\w*|milliarden\\w*|billion|rückversicher\\w*|reinsur\\w*|catastrophe losses"],
+     "wirkung": "US-Erstversicherer fallen kurzfristig; Rückversicherer schwanken, profitieren mittelfristig von höheren Prämien",
+     "mechanismus": "US-Schäden zahlen zuerst US-Erstversicherer (Travelers, Allstate, Chubb); Rückversicherer wie Munich Re "
+                    "und Hannover Re nur bei sehr großen Ereignissen; danach steigen Rückversicherungspreise",
+     "zeitraum": "Tage bis Wochen",
+     "messpunkt": {"sym": "KIE", "wahl": ["KIE", "TRV"], "richtung": -1, "tage": 10},
+     "gegenkraefte": "kleine Schadenssumme, Rückversicherungsschutz, höhere Prämien danach", "belege": ["dell2014"], "fuehrt_zu": [],
+     "gdelt": "(hurricane OR wildfire OR tornado) (insured losses OR insurers) billion"},
     # ── Speicherchips (Version 5) ──
     {"id": "T8", "titel": "Knappheit bei Speicherchips",
      "ausloeser": "Speicherchips (DRAM, NAND, HBM) werden knapp oder teurer, etwa durch die KI-Nachfrage",
@@ -542,7 +557,9 @@ DEFAULT_BASIS = [
      "gdelt": "fertilizer (prices OR shortage)"},
     {"id": "L10", "titel": "Orangenernte fällt schwach aus",
      "ausloeser": "Schwache Orangenernte (Brasilien, Florida) durch Wetter oder Krankheit",
-     "stichworte": [r"orange|orangensaft|orange juice", r"ernte|harvest|hurrikan|hurricane|krankheit|greening|dürre|drought|frost"],
+     "stichworte": [r"orangensaft|orange juice|orangenernte|orangen\\b|orangenbäume|orange (crop|grove|harvest)|zitrus\\w*|citrus|\\bfcoj\\b",
+                    r"ernte|harvest|hurrikan|hurricane|krankheit|greening|dürre|drought|frost"],
+     "ausschluss": r"sneaker|schuh|shoe|trikot|farbe|colou?r|/white|/black|nike|adidas",
      "wirkung": "Orangensaftpreis steigt; Saft wird im Handel teurer", "mechanismus": "wenige Anbaugebiete, lange Nachwachszeit der Bäume",
      "zeitraum": "Wochen bis Monate", "messpunkt": {"sym": "OJ=F", "richtung": 1, "tage": 20}, "effekt": "mittel",
      "gegenkraefte": "Nachfragerückgang", "belege": [], "fuehrt_zu": [],
@@ -1628,6 +1645,81 @@ def messpunkt_text(eintrag, kurse):
     return f"{syms[0]}, Richtung: {rt}, in {mp['tage']} Handelstagen", zeilen
 
 
+# ── Einordnung je These: Wo muss es passieren, ab welcher Größe zählt es,
+# über welchen Weg wirkt es – und wirkt es global oder nur regional? ──
+# Damit prüft die KI jede These wie ein Analyst (nicht nur die Versicherer).
+EINORDNUNG = {
+    "E1": ("Golfstaaten, Iran, Irak", "spürbarer Förderausfall (≥ 0,5 Mio. Barrel/Tag) oder Angriff auf zentrale Anlagen", "global: Brent ist Weltpreis; Europa zahlt über Heizöl, Diesel, Benzin mit"),
+    "E2": ("Hormus, Rotes Meer/Bab al-Mandab, Suez, Malakka", "Umleitungen oder Ausfälle über Tage, nicht Einzelvorfälle", "global über Fracht- und Versicherungskosten; Europa besonders bei Suez/Rotem Meer"),
+    "E3": ("OPEC+-Beschluss", "Änderung ≥ 0,3 Mio. Barrel/Tag oder überraschend", "global über Brent"),
+    "E4": ("Russland, Iran, Venezuela", "Sanktionen mit tatsächlicher Wirkung auf Exportmengen", "global über Brent; Diesel für Europa besonders bei Russland"),
+    "E5": ("Golf von Mexiko", "Förderunterbrechung über mehrere Tage", "zuerst US-Gas (Henry Hub), über LNG-Exporte auch Europa"),
+    "E6": ("Europa (Norwegen, LNG-Terminals, Pipelines)", "Ausfall großer Mengen oder Speicher deutlich unter Vorjahr", "regional Europa: TTF, Strompreise, energieintensive Industrie"),
+    "E7": ("Europa", "mehrtägige Extremtemperaturen mit Nachfragesprung", "regional Europa: Gas- und Strompreise"),
+    "E8": ("Rhein (Pegel Kaub unter rund 80 cm)", "Teilladungen über Wochen", "regional Deutschland: Chemie, Stahl, Heizöl- und Baustofftransporte"),
+    "K1": ("weltweit", "militärische Eskalation zwischen Staaten, nicht Einzelgefechte", "global: Gold, Anleihen, Öl; Europa über Energie und Verteidigung"),
+    "K2": ("Deutschland, EU, NATO", "beschlossene Budgets, nicht Absichtserklärungen", "europäische Rüstungswerte, Staatsanleihen"),
+    "K3": ("Förder- und Anbauländer", "Ausfall nennenswerter Mengen", "global über den jeweiligen Rohstoff"),
+    "K4": ("weltweit", "Ausfälle bei großen Unternehmen oder Infrastruktur", "Cybersicherheitswerte; Versicherer bei Großschäden"),
+    "K5": ("Taiwanstraße", "Blockade, Manöver mit Eskalation oder Sanktionen", "global über Halbleiter-Lieferketten"),
+    "H1": ("USA, EU, China", "Zölle auf große Handelsvolumen", "Exporteure (Autos, Maschinen), Inflation im Importland"),
+    "H2": ("USA, China, Niederlande, Japan", "neue Kontrollen auf Chips oder Maschinen", "Halbleiter global; Ausrüster (ASML) besonders"),
+    "H3": ("China (Gallium, Germanium, Seltene Erden, Graphit)", "Exportstopp oder Genehmigungspflicht", "global, besonders Batterie-, Chip- und Rüstungsindustrie"),
+    "H4": ("weltweit", "Lieferverzug über Wochen", "Autobauer und Elektronik; Europa stark über Autoindustrie"),
+    "H5": ("China, Südostasien", "Schließungen großer Industriezentren", "global über Lieferketten"),
+    "H6": ("große Häfen (Rotterdam, Hamburg, US-Ostküste)", "Streik über mehrere Tage", "regional, dann Lieferketten"),
+    "H7": ("Containerrouten Asien–Europa", "Raten deutlich über Vormonat", "Importpreise in Europa, Inflation mit Verzug"),
+    "L1": ("große Exporteure (Russland, EU, USA, Kanada, Australien, Ukraine)", "Ernteschätzung deutlich unter Vorjahr", "global über Weizenpreis; Brot- und Futterkosten"),
+    "L2": ("Nordwesteuropa", "Ernteausfall im zweistelligen Prozentbereich", "regional Europa: Kartoffel- und Pommespreise"),
+    "L3": ("Elfenbeinküste, Ghana", "Ernteausfall, Exportbeschränkung", "global über Kakaopreis; Schokolade mit Verzug"),
+    "L4": ("Brasilien", "Frost oder Dürre in Anbaugebieten", "global über Kaffee- und Zuckerpreis"),
+    "L5": ("große Exporteure (Indien, Russland, USA, China)", "Exportverbot für wichtige Güter", "global über den jeweiligen Rohstoff; Verbraucherpreise im Importland"),
+    "L6": ("Pazifik (NOAA, BoM)", "offizielle Ausrufung", "global über Ernten (Zucker, Kakao, Palmöl)"),
+    "L7": ("Europa, USA, China", "Ausbrüche mit Keulungen oder Exportstopps", "Fleisch-, Eier- und Milchpreise"),
+    "L8": ("EU, Neuseeland", "Preisänderung bei Großhandel oder Molkereien", "Verbraucherpreise Milchprodukte"),
+    "L9": ("Russland, Belarus, China, Gasmarkt Europa", "Exportstopp oder Gaspreissprung", "Düngerpreise, dann Ernten und Nahrungsmittelpreise"),
+    "L10": ("Brasilien, Florida", "Ernteschätzung deutlich unter Vorjahr", "global über Orangensaftpreis"),
+    "L11": ("Spanien, Italien, Griechenland", "Ernteausfall", "Olivenölpreis in Europa"),
+    "G1": ("Euroraum oder USA", "Abweichung ≥ 0,2 Prozentpunkte von der Erwartung", "Anleiherenditen, Notenbank-Erwartungen; regional je Währungsraum"),
+    "G2": ("EZB, Fed, BoJ", "Entscheidung oder Ausblick entgegen der Markterwartung", "Renditen, Wechselkurse; global bei Fed"),
+    "G3": ("Deutschland, EU, USA", "beschlossene Pakete im zweistelligen Milliardenbereich", "Staatsanleihen, profitierende Branchen"),
+    "G4": ("große Staaten", "Herabstufung durch S&P, Moody's oder Fitch", "Anleihen des Staates, Währung"),
+    "G5": ("USA", "Abweichung deutlich von der Erwartung", "US-Renditen, Dollar, global über Zinsen"),
+    "G6": ("China", "Paket mit konkretem Volumen", "Industriemetalle global, europäische Exporteure"),
+    "G7": ("Frankreich, Italien, Spanien, Deutschland", "Regierungssturz oder Neuwahl", "Anleihe-Risikoaufschläge, Euro"),
+    "G8": ("Deutschland", "Abschluss deutlich über Inflation", "Lohnkosten, Inflation mit Verzug"),
+    "T1": ("USA, Europa, Asien", "Investitionen im Milliardenbereich", "Halbleiter, Strom- und Netzausrüster global"),
+    "T2": ("EU, USA", "Strafen in Milliardenhöhe oder Geschäftsauflagen", "betroffene Konzerne"),
+    "T3": ("Deutschland, EU, USA", "beschlossene Änderung der Förderung", "Erneuerbare-Werte im betroffenen Markt"),
+    "T4": ("EU", "beschlossene Reform des Emissionshandels", "CO₂-Preis, energieintensive Industrie in Europa"),
+    "T5": ("weltweit", "Reisebeschränkungen durch Behörden", "Airlines, Tourismus global"),
+    "T6": ("Taiwan, Japan, Korea, China", "Produktionsausfall in Fabriken", "Halbleiter und Elektronik global"),
+    "T7": ("Europa", "versicherte Schäden in Milliardenhöhe", "europäische Erst- und Rückversicherer"),
+    "T9": ("USA", "versicherte Schäden im zweistelligen Milliardenbereich", "zuerst US-Erstversicherer; Rückversicherer global nur bei Großereignissen"),
+    "T8": ("weltweit", "Preissteigerung oder Lieferengpass bei DRAM/NAND/HBM", "Speicherhersteller profitieren; Smartphone- und PC-Hersteller unter Druck"),
+    "E9": ("Deutschland", "Änderung von Tarifen, Netzentgelten, Steuern", "Haushalte, Inflation"),
+    "S1": ("Ostsee, Nordsee, Mittelmeer", "Beschädigung wichtiger Kabel oder Leitungen", "Gaspreis bei Pipelines, Sicherheitspolitik, Rüstung"),
+    "S2": ("Europa", "wiederholte Vorfälle mit Betriebsunterbrechung", "Sicherheitspolitik, Drohnenabwehr, Rüstungswerte"),
+    "S3": ("Europa, USA", "Angriff auf Staat oder kritische Infrastruktur mit Zuschreibung", "Cybersicherheitswerte, Sicherheitspolitik"),
+    "S4": ("Ostsee, Baltikum, Nahost", "Störungen mit Folgen für Luft- oder Schifffahrt", "Luftfahrt, Schifffahrt, Sicherheitspolitik"),
+    "S5": ("Deutschland, Europa", "Ausfälle über Stunden oder Tage", "Bahn, Energieversorger, Sicherheitspolitik"),
+    "S6": ("Europa", "Kampagne mit staatlicher Zuschreibung", "Politik, Wahlen; kaum Märkte"),
+    "S7": ("EU-Außengrenzen", "organisierte Grenzübertritte mit staatlicher Steuerung", "Innenpolitik, EU-Beziehungen"),
+}
+
+
+def energie_zeilen(eintrag):
+    """Energiedaten nur für Thesen, bei denen sie zählen (Energie, Inflation,
+    Fracht, Dünger, Konflikte, Haushaltsenergie)."""
+    if not re.match(r"^(E\d|G1|G2|H7|L9|K1|K3|S1|T4)$", eintrag.get("id", "")):
+        return ""
+    try:
+        import energie_analyse
+        return energie_analyse.zeilen_fuer_ki()
+    except Exception:
+        return ""
+
+
 def kette_schreiben(anbieter, eintrag, sig, kurse, basis_nach_id, research=None):
     offen = eintrag.get("folgen_offen") or []
     hybrid = eintrag["id"].startswith("S")
@@ -1647,6 +1739,9 @@ ZUSAMMENHANG AUS DER GEPRÜFTEN WISSENSBASIS ({eintrag['id']}, nicht verändern)
 - Zeitraum: {eintrag['zeitraum']}
 - Messpunkt: {mp_text}
 - Bekannte Gegenkräfte: {eintrag['gegenkraefte']}
+- Wo es passieren muss: {(EINORDNUNG.get(eintrag['id']) or ('–',))[0]}
+- Ab welcher Größe es zählt: {(EINORDNUNG.get(eintrag['id']) or ('–', '–'))[1]}
+- Wirkt global oder regional, über welchen Weg: {(EINORDNUNG.get(eintrag['id']) or ('–', '–', '–'))[2]}
 
 MÖGLICHE FOLGEN ZWEITER ORDNUNG (nur diese dürfen genannt werden, sonst keine):
 {chr(10).join(f"- {f['id']}: {f['ausloeser']} → {f['wirkung']}" for f in folgen) or "- keine"}
@@ -1660,6 +1755,9 @@ MELDUNGEN ({len(sig['haeuser'])} Häuser, {sig['jung']} davon aus den letzten 24
 KURSE:
 {chr(10).join("- " + z for z in kurszeilen) or "- keine Kursdaten"}
 
+ENERGIE – EIGENE DATEN, HISTORISCH EINGEORDNET (Verbraucherpreise, Speicher, Weitergabe, Prognosen):
+{energie_zeilen(eintrag) or "- keine"}
+
 RESEARCH VON BANKEN UND INSTITUTEN (letzte Wochen, nur Titel – als Einordnung nutzen, nicht zitieren):
 {chr(10).join(f"- {f['institut']}: {f['titel']}" for f in (research or [])) or "- keine"}
 
@@ -1667,6 +1765,14 @@ AUFGABE
 1. Prüfe streng: Beschreiben die Meldungen ein KONKRETES, AKTUELLES Ereignis, das den Auslöser erfüllt?
    Nein bei: Rückblick, Jahrestag, Übung, Meinung, Analystenprognose ohne Anlass, bloßer Erwähnung,
    Ereignis, das den Auslöser nur entfernt streift. Im Zweifel: nein.
+   Denke wie ein Analyst: Ist das Ereignis GROSS GENUG und am RICHTIGEN ORT, um den Messpunkt zu bewegen?
+   Beispiel: Ein regionaler Sturm in den USA bewegt europäische Versicherer kaum – das tun erst versicherte
+   Schäden in zweistelliger Milliardenhöhe (dann vor allem Rückversicherer wie Munich Re, Hannover Re, Swiss Re);
+   US-Schäden treffen zuerst US-Erstversicherer. Nach großen Schäden steigen zudem oft die Prämien – mittelfristig
+   gut für Rückversicherer. Passt Größenordnung oder Region nicht, ist die Antwort "passt": false.
+   Dasselbe gilt für JEDEN Zusammenhang: Prüfe "Wo es passieren muss", "Ab welcher Größe es zählt" und ob der
+   Messpunkt zum Wirkungsraum passt (globaler Rohstoffpreis, europäischer Index, US-Wert). Nenne im
+   "mechanismus", ob die Wirkung global oder nur regional ist.
 2. Nur wenn ja: Schreibe die Kette aus – auf den Fall angewandt, nicht allgemein.
 
 REGELN
@@ -1683,6 +1789,12 @@ REGELN
 - "gegenkraefte": zuerst, was die Meldungen selbst nennen, dann aus der Wissensbasis.
 - "folgen_offen": wähle aus der Liste weiterer Folgen die aus, die nach den Meldungen plausibel sind,
   mit Plausibilität hoch/mittel/niedrig und einem Satz Begründung aus den Meldungen.
+- "weitere_folgen": wie ein Analyst – je ein Satz, nur wenn es einen klaren Weg gibt, sonst leer lassen:
+  "verbraucherpreise" (was wird für Haushalte in Deutschland teurer oder billiger? Beispiel: Exportsperre der USA für
+  Diesel → weniger Angebot in Europa → höhere Dieselpreise an deutschen Tankstellen; nutze die gemessene
+  Weitergabe aus den Energiedaten, etwa "10 % Brent ≈ 2 % Diesel nach zwei Wochen"), "inflation",
+  "staatsfinanzen" (Steuern, Ausgaben, Subventionen), "sicherheit" (Versorgung, Verteidigung, Infrastruktur),
+  "investitionen" (wer investiert mehr oder weniger), "verteilung" (wer gewinnt, wer verliert).
 {"- \"klassifikation\": Art (Sabotage, Cyber, Drohnen, Navigation, Desinformation, Migration als Druckmittel, Sonstiges), Ziel (Energie, Kommunikation, Verkehr, Militär, Staat und Verwaltung, Politik und Öffentlichkeit, Wirtschaft), Zuschreibung (bestätigt, vermutet, unklar) und Akteur nur, wenn die Meldungen ihn nennen." if hybrid else ""}
 - Keine Anlageempfehlung, keine Floskeln.
 
@@ -1693,10 +1805,23 @@ Antworte NUR mit JSON, ohne Code-Zaun:
   "richtung": "+ oder − (nur bei Auswahl der Richtung)", "messpunkt": "Kürzel (nur bei Auswahl des Werts)",
   "folgen": [{{"id": "…", "text": "ein Satz"}}],
   "folgen_offen": [{{"text": "aus der Liste", "plausibilitaet": "hoch|mittel|niedrig", "begruendung": "…"}}],
+  "weitere_folgen": {{"verbraucherpreise": "…", "inflation": "…", "staatsfinanzen": "…", "sicherheit": "…", "investitionen": "…", "verteilung": "…"}},
   "klassifikation": {{"art": "…", "ziel": "…", "zuschreibung": "…", "akteur": "…"}},
   "quellen": [1, 2]}}"""
-    antwort = frage(anbieter, SYSTEM_WK, auftrag, max_tokens=900)
+    antwort = frage(anbieter, SYSTEM_WK, auftrag, max_tokens=1200)
     return _json_aus(antwort), meldungen
+
+
+def archiv_haeufigkeit(stichworte, archiv_art):
+    """Wie oft kam ein vorgeschlagener Auslöser im Archiv vor (Tage mit mindestens zwei Häusern)?"""
+    if not stichworte or not archiv_art:
+        return None
+    try:
+        tage = treffer_tage({"id": "vorschlag:" + "|".join(stichworte)[:80], "stichworte": stichworte}, archiv_art)
+    except re.error:
+        return None
+    breit = sorted(t for t, h in tage.items() if len(h["haeuser"]) >= MIN_HAEUSER)
+    return {"tage": len(breit), "zuletzt": breit[-1] if breit else None}
 
 
 def vorschlaege_schreiben(anbieter, artikel, basis, kurse):
@@ -1935,6 +2060,11 @@ def main():
                 e["stichworte"] = vorgabe["E5"]["stichworte"]
             if e["id"] == "E7" and len(e.get("stichworte") or []) == 2:
                 e["stichworte"] = vorgabe["E7"]["stichworte"]
+    if int(basis.get("_version") or 1) < 6:
+        # Version 6: L10 (Orangen ohne die Farbe "orange") und T7 (nur Europa,
+        # mit Größenordnung) durch die neue Vorgabe ersetzen
+        vorgabe = {e["id"]: e for e in DEFAULT_BASIS}
+        basis["eintraege"] = [vorgabe[e["id"]] if e["id"] in ("L10", "T7") else e for e in basis["eintraege"]]
     if int(basis.get("_version") or 1) < BASIS_VERSION:
         # Einmalig neue Einträge der Vorgabe ergänzen (etwa die hybriden
         # Bedrohungen). Gelöschte Einträge kommen danach nie wieder.
@@ -2084,6 +2214,8 @@ def main():
                  "sicherheit": sicherheit,
                  "messpunkt": messpunkt, "wahrscheinlichkeit": wkeit, "quellen": quellen, "folgen": folgen,
                  "folgen_offen": folgen_offen, "klassifikation": kl, "belege": e.get("belege") or [],
+                 "weitere_folgen": {k: str(v).strip()[:300] for k, v in (d.get("weitere_folgen") or {}).items()
+                                    if isinstance(v, str) and len(v.strip()) > 8 and "…" not in v},
                  "historie": historie, "forschung": forschung_fuer(e, forschung), "evidenz": ev,
                  "signal": {"haeuser": len(s["haeuser"]), "meldungen": len(s["treffer"]), "jung": s["jung"],
                             "aelter": s["aelter"], "staerke": s["staerke"], "gdelt": gd,
@@ -2121,6 +2253,9 @@ def main():
         print("  Kein KI-Anbieter hat geantwortet – Vorausschau bleibt beim alten Stand; nächster Lauf versucht es erneut.")
         return 0
     vorschlaege = vorschlaege_schreiben(anbieter, artikel, eintraege, kurse) if anbieter else []
+    for v in vorschlaege or []:
+        if isinstance(v, dict):
+            v["archiv"] = archiv_haeufigkeit(v.get("stichworte"), archiv_art)
     neu_aufgenommen, kandidaten = kandidaten_fortschreiben(vorschlaege, basis, heute, kurse)
     for v in vorschlaege:
         schl = " ".join(re.findall(r"[a-zäöüß]{4,}", (v.get("thema") or v.get("ausloeser") or "").lower())[:4])
@@ -2141,6 +2276,7 @@ def main():
            "archiv_zeitraum": [min((a["date"] for a in archiv_art), default=None), max((a["date"] for a in archiv_art), default=None)],
            "aktuelle_meldungen": len(artikel), "kurse_anzahl": len(kurse),
            "thesen_archiv": thesen_archiv, "entdeckt": entdeckt,
+           "einordnung": {k: {"region": v[0], "schwelle": v[1], "wirkung": v[2]} for k, v in EINORDNUNG.items()},
            "gdelt": {"gesperrt": _GDELT["gesperrt"], "grund": _GDELT["grund"]},
            "quellen_status": {"zusammenfassung": _laden(QUELLEN_STATUS, {}).get("zusammenfassung"),
                               "geprueft": _laden(QUELLEN_STATUS, {}).get("geprueft"),

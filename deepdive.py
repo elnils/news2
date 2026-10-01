@@ -366,7 +366,7 @@ def zahlen_pruefen(text, belegtext):
     return " ".join(behalten).strip(), gestrichen
 
 
-def analyse(anbieter, t, meldungen, zahlen, stat, kurse_l, reden, abst, doks, verl, gdelt):
+def analyse(anbieter, t, meldungen, zahlen, stat, kurse_l, reden, abst, doks, verl, gdelt, extra=None):
     liste = "\n".join(f"[{i}] {a.get('source','')} · {str(a.get('date',''))[:10]} · {a.get('title','')}"
                       + (f" – {re.sub('<[^>]+>', ' ', a.get('desc') or '')[:300]}" if a.get("desc") else "")
                       for i, a in enumerate(meldungen, 1))
@@ -398,6 +398,18 @@ DOKUMENTE UND URTEILE:
 {dok_txt}
 
 VERLAUF DER BERICHTERSTATTUNG (Häuser-Nennungen je Woche, älteste zuerst): {verl_txt}
+
+FRÜHERE MELDUNGEN AUS DEM ARCHIV (Vorgeschichte):
+{(extra or {}).get("archiv") or "- keine"}
+
+KI-TOP-SCHLAGZEILEN DES TAGES (Themenlagen):
+{(extra or {}).get("top") or "- keine"}
+
+NEWSLETTER UND RESEARCH:
+{(extra or {}).get("newsletter") or "- keine"}
+
+ENERGIEDATEN (eigenes Dashboard: Strom, Gas, Kraftstoffe, Heizöl, Speicher, CO₂):
+{(extra or {}).get("energie") or "- keine"}
 INTERNATIONAL (GDELT): {gdelt or 'keine Daten'}
 
 ANALYSERAHMEN:
@@ -420,7 +432,9 @@ Antworte NUR mit JSON:
  "kern": "4–5 Sätze: worum es geht, warum jetzt, wer belastet, wer entlastet, was diskutiert wird",
  "stichpunkte": ["3–5 Stichsätze, je höchstens 120 Zeichen"],
  "zahlen": [{{"wert": "3,4 %", "bedeutung": "…", "beleg": 3}}],
- "auswirkungen": {{"gesellschaft": "1–2 Sätze", "wirtschaft": "1–2 Sätze", "forschung_bildung": "1 Satz oder leer"}},
+ "auswirkungen": {{"gesellschaft": "1–2 Sätze", "wirtschaft": "1–2 Sätze", "forschung_bildung": "1 Satz oder leer",
+                   "verbraucherpreise": "1 Satz oder leer", "inflation": "1 Satz oder leer", "staatsfinanzen": "Steuern, Ausgaben – 1 Satz oder leer",
+                   "sicherheit": "1 Satz oder leer", "investitionen": "1 Satz oder leer"}},
  "gewinner": [{{"wer": "Gruppe, Branche oder Unternehmen", "warum": "…"}}],
  "verlierer": [{{"wer": "…", "warum": "…"}}],
  "parteien": [{{"partei": "…", "position": "…", "quelle": "Rede|Abstimmung|Meldung|Wahlprogramm 2025"}}],
@@ -499,18 +513,53 @@ def main():
                 gd = f"Berichterstattung weltweit ×{g['faktor']} gegen die Vorwoche" if g and g.get("faktor") else None
             except Exception:
                 gd = None
-        a = analyse(anbieter, t, meldungen, zahlen, stat, kurse_l, reden, abst, doks, verl, gd) if anbieter else None
+        # Vorgeschichte: frühere Meldungen aus dem Archiv (älter als 3 Tage), je Haus und Woche eine
+        frueher, ges = [], set()
+        for x in sorted((x for x in archiv if x["_t"] < jetzt - 3 * 86400 and rx.search(x["title"])), key=lambda x: -x["_t"]):
+            k = (haus(x), datetime.fromtimestamp(x["_t"], timezone.utc).strftime("%G-%V"))
+            if k in ges:
+                continue
+            ges.add(k)
+            frueher.append(x)
+            if len(frueher) >= 8:
+                break
+        top_items = [it for r in ((laden("ki_meldungen.json", {}).get("schlagzeilen") or {}).get("regionen") or {}).values()
+                     for it in (r.get("items") or []) if isinstance(it, dict) and rx.search((it.get("schlagzeile") or "") + " " + (it.get("text") or ""))]
+        nl = [n for n in (laden("newsletters.json", {}).get("items") or []) if rx.search((n.get("title") or "") + " " + (n.get("desc") or "")[:400])][:5]
+        fo = [f for f in (laden("vorausschau_forschung.json", {}).get("eintraege") or []) if rx.search(f.get("titel") or "")][:5]
+        # Energiedaten aus dem eigenen Dashboard (energie.json) für passende Themen
+        energie_txt = ""
+        if t["id"] in ("energie", "klima", "inflation", "industrie", "verkehr", "nahost", "zoelle", "konjunktur", "auto") or \
+                re.search(r"energ|strom|gas|öl|diesel|benzin|heiz", t["name"], re.I):
+            try:
+                import energie_analyse
+                energie_txt = energie_analyse.zeilen_fuer_ki() + "\n"
+            except Exception:
+                energie_txt = ""
+            for pfad, z in ((laden("energie.json", {}).get("dateien")) or {}).items() if not energie_txt.strip() else []:
+                if z.get("art") == "reihe" and z.get("letzter"):
+                    energie_txt += f"- {z.get('name')}: " + ", ".join(f"{k} {v}" for k, v in z["letzter"].items()) + "\n"
+                elif z.get("werte"):
+                    energie_txt += f"- {z.get('name')}: " + ", ".join(f"{k} {v}" for k, v in list(z["werte"].items())[:8]) + "\n"
+        extra = {
+            "energie": energie_txt[:2500],
+            "archiv": "\n".join(f"- {x['date'][:10]} {x.get('source','')}: {x['title']}" for x in frueher),
+            "top": "\n".join(f"- {it.get('schlagzeile','')}" + (f" – {it.get('text','')[:200]}" if it.get("text") else "") for it in top_items[:6]),
+            "newsletter": "\n".join([f"- {n.get('source','')}: {n.get('title','')} – {(n.get('desc') or '')[:200]}" for n in nl] +
+                                     [f"- {f.get('institut','')}: {f.get('titel','')}" for f in fo]),
+        }
+        a = analyse(anbieter, t, meldungen, zahlen, stat, kurse_l, reden, abst, doks, verl, gd, extra) if anbieter else None
         # Zahlenprüfung gegen alle Belege
         belegtext = " ".join((m.get("title") or "") + " " + (m.get("desc") or "") for m in meldungen) + " " + \
             json.dumps(stat, ensure_ascii=False) + " " + json.dumps(kurse_l, ensure_ascii=False) + " " + \
-            " ".join((r.get("auszug") or "") for r in reden[:10])
+            " ".join((r.get("auszug") or "") for r in reden[:10]) + " " + json.dumps(extra, ensure_ascii=False)
         gestrichen = 0
         if a:
             for feld in ("kern", "verlauf"):
                 a[feld], n = zahlen_pruefen(a.get(feld, ""), belegtext)
                 gestrichen += n
             a["stichpunkte"] = [p for p in (a.get("stichpunkte") or []) if zahlen_pruefen(p, belegtext)[1] == 0]
-            for k in ("gesellschaft", "wirtschaft", "forschung_bildung"):
+            for k in ("gesellschaft", "wirtschaft", "forschung_bildung", "verbraucherpreise", "inflation", "staatsfinanzen", "sicherheit", "investitionen"):
                 v, n = zahlen_pruefen((a.get("auswirkungen") or {}).get(k, ""), belegtext)
                 a.setdefault("auswirkungen", {})[k] = v
                 gestrichen += n
@@ -522,7 +571,10 @@ def main():
                    "zahlen_belege": zahlen[:12], "statistik": stat, "kurse": kurse_l, "verlauf": verl, "gdelt": gd,
                    "reden": [{k: r.get(k) for k in ("datum", "name", "fraktion", "betreff", "sitzung")} for r in reden[:8]],
                    "abstimmungen": [{k: v.get(k) for k in ("datum", "vorlage", "gegenstand", "ergebnis", "dafuer", "dagegen")} for v in abst[:5]],
-                   "dokumente": doks}
+                   "dokumente": doks,
+                   "frueher": [{"datum": x["date"][:10], "titel": x["title"], "quelle": x.get("source", "")} for x in frueher],
+                   "newsletter": [{"titel": n.get("title", ""), "quelle": n.get("source", ""), "link": n.get("link", "")} for n in nl] +
+                                 [{"titel": f.get("titel", ""), "quelle": f.get("institut", ""), "link": f.get("link", "")} for f in fo]}
         themen_out.append(eintrag)
         print(f"  + {t['name']}: {eintrag['signal']['haeuser']} Häuser, Anstieg ×{anstieg}, {len(reden)} Reden, "
               f"{len(stat)} Statistiken, {'Analyse' if a else 'ohne Analyse'}{f', {gestrichen} Sätze gestrichen' if gestrichen else ''}")

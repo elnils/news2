@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau – Entwurf v70</title>
+<title>Presseschau</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -84,7 +84,33 @@
 
 /* ───────────────────────────── Basis ───────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* ── Android ──────────────────────────────────────────────────────────────
+   Viele Android-Geräte sind 360 Pixel breit (iPhone 390–430). Kopfleiste,
+   untere Leiste und Umschalter werden dort enger gesetzt, damit nichts
+   überläuft. Unschärfe-Effekte kosten auf vielen Android-Geräten spürbar
+   Leistung beim Scrollen – dort aus. Kein Ziehen-zum-Neuladen mitten in
+   der Seite, kein blauer Tipp-Rahmen um Bedienelemente. */
+html.android{overscroll-behavior-y:none}
+html.android *{-webkit-tap-highlight-color:transparent}
+html.android :focus:not(:focus-visible){outline:none}
+html.android #topbar,html.android .sheet .panel,html.android #tabbar,html.android .bnav{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.android body{font-family:system-ui,-apple-system,"Roboto","Segoe UI",sans-serif}
+/* Nur für Android – das iPhone bleibt, wie es ist. */
+@media (max-width:380px){
+  html.android #topbar{gap:4px;padding:0 6px 0 10px}
+  html.android #topbar .icon-btn,html.android #topbar .btn.quiet{width:34px;min-width:34px;height:34px;padding:0}
+  html.android #topbar .logo .wm{font-size:15px}
+  html.android #topbar .logo small{font-size:10.5px}
+  html.android #marks-btn .cnt{min-width:18px;height:18px;font-size:10.5px}
+  html.android .tb{font-size:10px;gap:2px}
+  html.android .seg button{padding:6px 8px;font-size:var(--fs-sm)}
+  html.android .chips .chip{padding:6px 10px}
+}
+@media (max-width:340px){
+  html.android #topbar .logo .mark{display:none}
+}
+
 body{background:var(--bg);color:var(--text);font-family:var(--f);font-size:var(--fs);line-height:1.45;min-height:100dvh;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font-family:var(--f);font-size:inherit;color:inherit}
 button{cursor:pointer;-webkit-appearance:none;appearance:none}
@@ -420,6 +446,25 @@ html{-webkit-tap-highlight-color:transparent}
 .dd-grid{display:grid;gap:4px 18px}@media (min-width:800px){.dd-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
 .dd-block h4{margin:10px 0 4px;font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .dd-block p{margin:3px 0;font-size:var(--fs-sm);line-height:1.5}
+.ea-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ea-k{padding:12px 14px;display:flex;flex-direction:column;gap:4px}.ea-k svg{width:100%;height:28px}
+.ea-w b{font-size:var(--fs-lg)}.ea-d{display:flex;gap:10px;flex-wrap:wrap;font-size:var(--fs-sm)}
+.ea-d .up{color:#be123c}.ea-d .down{color:#65a30d}
+.ea-band{position:relative;height:6px;border-radius:3px;background:linear-gradient(90deg,#65a30d,#eab308,#be123c);opacity:.75;margin:4px 0 2px}
+.ea-band i{position:absolute;top:-4px;width:3px;height:14px;background:var(--text);border-radius:2px;transform:translateX(-50%)}
+.ep-filter{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.ep-filter select,.ep-filter input{font:inherit;font-size:var(--fs-sm);padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)}
+.ep-liste{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.ep-z{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:5px 10px;font-size:var(--fs-sm);border-bottom:1px solid var(--border)}
+.ep-z .ep-st{font-weight:600}.ep-z.J .ep-st{color:#65a30d}.ep-z.N .ep-st{color:#be123c}.ep-z.E .ep-st{color:#64748b}
+@media (max-width:520px){.ep-z{grid-template-columns:1fr auto}.ep-z .note{grid-column:1/-1;order:3}}
+.ep-balken{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface2);margin:6px 0 4px}
+.ep-balken i{display:block;height:100%}.ep-balken .ja{background:#65a30d}.ep-balken .nein{background:#be123c}.ep-balken .enth{background:#94a3b8}
+.ep-fr{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:center;font-size:var(--fs-sm)}
+.vs-dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:6px 0 0;font-size:var(--fs-sm);line-height:1.45}
+.vs-dl dt{color:var(--muted);font-weight:600}.vs-dl dd{margin:0}
+@media (max-width:480px){.vs-dl{grid-template-columns:1fr}.vs-dl dt{margin-top:4px}}
+.dd-stich{font-size:var(--fs-md)}
 .dd-alt>summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap;list-style:none}
 .dd-tag{transition:opacity .2s}.dd-tag:hover,.dd-tag:focus-within{opacity:1!important}
 .dd-verlauf{display:flex;align-items:flex-end;gap:2px;height:38px;margin:4px 0}
@@ -851,7 +896,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v70</span>
+    <span class="demo-pill" id="ver-pill" hidden>Beispieldaten</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -890,7 +935,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
       </div>
     </main>
   </div>
-  <footer><span>Presseschau · Entwurf v10</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
+  <footer><span>Presseschau</span><span>Alle Inhalte sind erfundene Beispieldaten.</span><span id="foot-upd"></span></footer>
 </div>
 
 <nav id="tabbar" aria-label="Bereiche"></nav>
@@ -1053,7 +1098,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
 <script src="config.js" onerror="void 0"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
-   Presseschau · Entwurf v11 · Alle Daten unten sind erfundene Beispiele.
+   Presseschau · Alle Daten unten sind erfundene Beispiele.
    ═══════════════════════════════════════════════════════════════════ */
 const NOW=Date.now(), H=36e5, D=864e5;
 const TOPICS={politik:'Politik',wirtschaft:'Wirtschaft',tech:'Technik',ki:'KI',energie:'Energie',gesundheit:'Gesundheit',digitales:'Digitales',verteidigung:'Verteidigung',finanzen:'Finanzen',migration:'Migration',handel:'Handel',klima:'Klima',haushalt:'Haushalt',aussenpolitik:'Außenpolitik',netzpolitik:'Netzpolitik',recht:'Recht'};
@@ -1346,11 +1391,24 @@ INSTITUTIONS.forEach(i=>{i.src=i.type;i.title=i.name;i.link='https://demo.presse
 </script>
 <script>
 /* ───────────────────────────── Speicher & Zustand ───────────────────────────── */
+/* Android (Chrome, Samsung Internet, Firefox): eigene Klasse für gezielte Anpassungen */
+if(/Android/i.test(navigator.userAgent))document.documentElement.classList.add('android');
 const store={get(k,d){try{const v=localStorage.getItem('ps11_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('ps11_'+k,JSON.stringify(v))}catch(e){}}};
 const PREF=Object.assign({theme:'system',font:'normal',motion:'system',inner:true,teasers:false,dedupe:true,inline:false,rauschen:false,start:'news',region:'all',mailMon:true,mailBrief:false,pushEil:false},store.get('pref',{}));
+/* Android färbt Statusleiste und Adresszeile nach theme-color. Bisher folgte
+   die Farbe nur dem System – wer in der App "dunkel" wählte, bekam bei hellem
+   System eine helle Leiste über dunkler Seite. Jetzt folgt sie der App. */
+function themeFarbe(){
+  const systemDunkel=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const dunkel=PREF.theme==='dark'||(PREF.theme!=='light'&&systemDunkel);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{m.setAttribute('content',dunkel?'#0f1420':'#f6f7fa');m.removeAttribute('media')});
+  document.documentElement.style.colorScheme=dunkel?'dark':'light';
+}
+try{window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>themeFarbe())}catch(e){}
 function applyPrefs(){
   const de=document.documentElement;
   if(PREF.theme==='system')delete de.dataset.theme;else de.dataset.theme=PREF.theme;
+  themeFarbe();
   if(PREF.font==='large'||PREF.font==='small')de.dataset.font=PREF.font;else delete de.dataset.font;
   document.body.classList.toggle('reduce-motion',PREF.motion==='reduced');
   document.body.classList.toggle('no-inner',!PREF.inner);
@@ -1760,7 +1818,30 @@ function topEntdoppeln(arr,max,proHausMax){
   if(!window._STAMMDF||window._STAMMDF.n!==ARTICLES.length){const df={};ARTICLES.forEach(x=>{if(x.ago<=48)staemme(x).forEach(st=>df[st]=(df[st]||0)+1)});window._STAMMDF={n:ARTICLES.length,df}}
   const DF=window._STAMMDF.df;
   const gleichesThema=(a,b)=>{if(Math.abs(a.date-b.date)>36*H)return false;const sb=staemme(b);for(const st of staemme(a))if(sb.has(st)&&(DF[st]||0)<=8)return true;return false};
-  const passt=a=>!out.some(b=>dubNah(a,b)||gleichesThema(a,b));
+  /* Dasselbe Ereignis in zwei Sprachen ("Christa Pike: Sie sollte
+     hingerichtet werden" / "The many questions raised by the failed execution
+     of Christa Pike"): Beide Zeilen haben viele Quellen, und diese überlappen.
+     Steht die eine unter den Quellen der anderen oder teilen sie mindestens
+     zwei Quellen, ist es dieselbe Geschichte. Dazu ein gemeinsamer seltener
+     Name aus zwei oder mehr Wörtern ("Christa Pike", "Gemini 4 Argon"). */
+  const quellIds=a=>a._qids||(a._qids=new Set(clusterArts(a).map(x=>x.id)));
+  /* Namen als Wortpaare aus großgeschriebenen Wörtern und Zahlen ("christa
+     pike", "gemini 4", "4 argon"). Zählt nur, wenn das Paar selten ist – in
+     höchstens sechs Meldungen der letzten zwei Tage –, damit "Donald Trump"
+     nicht alles zur selben Geschichte macht. */
+  const paare=t=>{const w=(t||'').split(/[\s:,;„“"'’()]+/).filter(Boolean),o=[];
+    for(let i=0;i+1<w.length;i++){const x=w[i],y=w[i+1];if(/^[A-ZÄÖÜ][\wäöüß-]+$|^\d+$/.test(x)&&/^[A-ZÄÖÜ][\wäöüß-]+$|^\d+$/.test(y)&&!/^\d+$/.test(x+y))o.push((x+' '+y).toLowerCase())}
+    return o};
+  if(!window._PAARDF||window._PAARDF.n!==ARTICLES.length){const df={};ARTICLES.forEach(x=>{if(x.ago<=48)new Set(paare(x.title)).forEach(p=>df[p]=(df[p]||0)+1)});window._PAARDF={n:ARTICLES.length,df}}
+  const PDF=window._PAARDF.df;
+  const nameWoerter=a=>a._nw||(a._nw=new Set(paare(a.title).filter(p=>(PDF[p]||0)<=6&&!/^(die|der|das|the|a|an|in|im|bei|was|wie|neues|new) /.test(p))));
+  const gleichesEreignis=(a,b)=>{try{
+    const qa=quellIds(a),qb=quellIds(b);
+    if(qa.has(b.id)||qb.has(a.id))return true;
+    let n=0;for(const id of qa)if(qb.has(id)&&++n>=2)return true;
+    const na=nameWoerter(a),nb=nameWoerter(b);for(const x of na)if(nb.has(x)&&Math.abs(a.date-b.date)<=36*H)return true;
+  }catch(e){}return false};
+  const passt=a=>!out.some(b=>dubNah(a,b)||gleichesThema(a,b)||gleichesEreignis(a,b));
   /* Meldungen, über die mindestens zwei Häuser berichten, kommen zuerst –
      eine Top-Meldung aus nur einer Quelle ist selten wirklich eine. Einzel-
      meldungen füllen danach auf (Eilmeldungen zählen wie zwei Häuser). */
@@ -2380,7 +2461,7 @@ function renderStories(){
   h+=`<div class="box">${list.length?list.map(s=>`<div class="story" role="button" tabindex="0" onclick="openReader('${s.id}',STORYLIST)" onkeydown="rowKey(event,'${s.id}')"><div class="hd"><div><div class="ttl">${esc(s.title)}</div><div class="sum">${esc(s.sum)}</div><div class="srcs">${(()=>{const h=new Map();s.arts.map(id=>ITEMS[id]).filter(Boolean).forEach(a=>{const k=a._qb||hausVon(a.src);if(!h.has(k))h.set(k,a.src)});return [...h.values()].map(x=>`<span class="pill grey">${esc(x)}</span>`).join('')+`<span class="pill blue">${h.size} ${h.size===1?'Haus':'Häuser'}</span>`})()}${s.ki?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile automatisch geschrieben">KI</span>':''}</div></div>${starHTML(s.id)}</div></div>`).join(''):'<div class="empty"><b>Keine Themenlage</b>Themenlagen entstehen, sobald mehrere Quellen dasselbe berichten.</div>'}</div>`;
   return h;
 }
-const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['deepdive','Deep Dive'],['vorausschau','Vorausschau']];
+const TREND_MODES=[['topics','Ressorts'],['issues','Sachfragen'],['entities','Personen & Orte'],['deepdive','Deep Dive'],['energie','Energie'],['vorausschau','Vorausschau']];
 /* Quellennamen gehören nicht in die Trends: "Tagesschau", "Reuters" oder
    "Handelsblatt" sagen nichts über das Thema. Ebenso wenig Wörter wie
    "Unternehmen" oder Ländernamen, die in jeder zweiten Meldung stehen. */
@@ -2542,6 +2623,11 @@ function trendListeHTML(v){
 }
 function renderTrends(){
   const mode=S.trendMode||'topics';
+  if(mode==='energie'){
+    const kopf=secHd('tr','Trends','','');
+    const chips=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';render()">${l}</button>`).join('')}</div>`;
+    return kopf+body('tr',chips+renderEnergieTrends());
+  }
   if(mode==='deepdive'){
     const kopf=secHd('tr','Trends','','');
     const chips=`<div class="chips" role="group" aria-label="Was gezählt wird" style="margin-bottom:10px;flex-wrap:wrap">${TREND_MODES.map(([k,l])=>`<button class="chip" aria-pressed="${mode===k}" onclick="S.trendMode='${k}';render()">${l}</button>`).join('')}</div>`;
@@ -2778,7 +2864,7 @@ function renderMarkets(){
       <div class="val">${fmtNum(d.last,m.dec)}${m.unit==='%'?' %':''}<small style="color:${d.c>=0?'var(--green)':'var(--red)'}">${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),2)}${d.pp?' Pkt.':' %'}</small></div>
       <button class="btn sm ${drin?'':'primary'}" onclick="watchToggle('${m.sym}')">${drin?'Entfernen':'Hinzufügen'}</button></div>`}).join(''):'<div class="empty"><b>Nichts gefunden</b>Anderer Name oder Symbol – der Katalog im Entwurf enthält Indizes, ETFs, Energie, Zinsen und Rohstoffe.</div>'}</div>`;
   }
-  if(!q)b+=marktlageHTML()+wkTeaserHTML();
+  if(!q)b+=marktlageHTML()+wkTeaserHTML()+energieHTML();
   b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Meine Werte</h2><span class="cnt">${w.length}</span></div>`;
   b+=w.length?`<div class="mk">${w.map(s=>{const m=MARKET_BY_SYM[s];return `<div style="position:relative">${tileHTML(m)}<button class="icon-btn" style="position:absolute;top:4px;right:2px;width:26px;height:26px" aria-label="${esc(m.n)} entfernen" onclick="watchToggle('${s}')"><svg class="i" style="width:13px;height:13px"><use href="#i-x"/></svg></button></div>`}).join('')}</div>`
     :(MARKET_CATALOG.length?'<div class="box"><div class="empty"><b>Noch keine Werte</b>Oben suchen und hinzufügen – die Liste bleibt im Browser gespeichert.</div></div>':'<div class="box"><div class="empty"><b>Keine Kursdaten</b>Kurse erscheinen hier, sobald der nächste Lauf sie geholt hat.</div></div>');
@@ -2977,6 +3063,68 @@ function renderProcs(){
   return h;
 }
 /* Die Abstimmungsliste: Ergebnis auf einen Blick, Fraktionen im Balken. */
+/* ── Europäisches Parlament: namentliche Abstimmungen (ep_votes.json) ── */
+let EPV=null,_epLaedt=false;
+async function epLaden(){if(EPV||_epLaedt)return;_epLaedt=true;try{EPV=(await hole('ep_votes.json'))||{abstimmungen:[]}}catch(e){EPV={abstimmungen:[]}}_epLaedt=false;render()}
+function epBalken(ja,nein,enth){const g=ja+nein+enth||1;return `<div class="ep-balken" title="dafür ${ja} · dagegen ${nein} · Enthaltung ${enth}"><i class="ja" style="width:${ja/g*100}%"></i><i class="nein" style="width:${nein/g*100}%"></i><i class="enth" style="width:${enth/g*100}%"></i></div>`}
+const EP_LAND={DEU:'Deutschland',FRA:'Frankreich',ITA:'Italien',ESP:'Spanien',POL:'Polen',ROU:'Rumänien',NLD:'Niederlande',BEL:'Belgien',CZE:'Tschechien',GRC:'Griechenland',PRT:'Portugal',SWE:'Schweden',HUN:'Ungarn',AUT:'Österreich',BGR:'Bulgarien',DNK:'Dänemark',FIN:'Finnland',SVK:'Slowakei',IRL:'Irland',HRV:'Kroatien',LTU:'Litauen',SVN:'Slowenien',LVA:'Lettland',EST:'Estland',CYP:'Zypern',LUX:'Luxemburg',MLT:'Malta'};
+/* Einzelstimmen erst beim Aufklappen laden: Verzeichnis der Abgeordneten
+   (einmal) und die Monatsdatei der Abstimmung. Filter nach Land, Fraktion
+   und Stimme, dazu eine Namenssuche. */
+let EP_ABG=null;const EP_MONAT={};
+async function epEinzelLaden(id,monat){
+  const box=g('ep-einzel-'+id);if(!box)return;
+  try{
+    if(!EP_ABG)EP_ABG=(await hole('ep_abgeordnete.json'))||{};
+    if(!EP_MONAT[monat])EP_MONAT[monat]=(await hole('ep_stimmen/'+monat+'.json'))||{};
+  }catch(e){}
+  const liste=(EP_MONAT[monat]||{})[id];
+  if(!liste||!liste.length){box.innerHTML='<p class="note">Keine Einzelstimmen gespeichert.</p>';return}
+  box.dataset.id=id;box.dataset.monat=monat;epEinzelZeigen(box);
+}
+function epEinzelZeigen(box){
+  const liste=(EP_MONAT[box.dataset.monat]||{})[box.dataset.id]||[];
+  const f=box._f||(box._f={land:'',fr:'',st:'',q:''});
+  const zeilen=liste.map(([mid,st])=>({...(EP_ABG[mid]||{name:mid,land:'',fraktion:''}),st})).filter(x=>(!f.land||x.land===f.land)&&(!f.fr||x.fraktion===f.fr)&&(!f.st||x.st===f.st)&&(!f.q||norm(x.name).includes(norm(f.q))));
+  const laender=[...new Set(liste.map(([m])=>(EP_ABG[m]||{}).land).filter(Boolean))].sort((a,b)=>(EP_LAND[a]||a).localeCompare(EP_LAND[b]||b));
+  const frak=[...new Set(liste.map(([m])=>(EP_ABG[m]||{}).fraktion).filter(Boolean))].sort();
+  const sel=(k,opts,leer)=>`<select onchange="const b=this.closest('.ep-einzel');b._f.${k}=this.value;epEinzelZeigen(b)"><option value="">${leer}</option>${opts.map(([v,l])=>`<option value="${esc(v)}"${f[k]===v?' selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  const ST={J:'dafür',N:'dagegen',E:'Enthaltung','-':'nicht abgestimmt'};
+  box.innerHTML=`<div class="ep-filter">${sel('land',laender.map(l=>[l,EP_LAND[l]||l]),'Alle Länder')}${sel('fr',frak.map(x=>[x,x]),'Alle Fraktionen')}${sel('st',[['J','dafür'],['N','dagegen'],['E','Enthaltung']],'Alle Stimmen')}<input type="search" placeholder="Name …" value="${esc(f.q)}" oninput="const b=this.closest('.ep-einzel');b._f.q=this.value;clearTimeout(b._t);b._t=setTimeout(()=>{epEinzelZeigen(b);const i=b.querySelector('input');i&&(i.focus(),i.setSelectionRange(i.value.length,i.value.length))},250)"></div>
+    <p class="note">${zeilen.length} von ${liste.length} Abgeordneten</p>
+    <div class="ep-liste">${zeilen.slice(0,800).map(x=>`<div class="ep-z ${x.st}"><span>${esc(x.name)}</span><span class="note">${esc(EP_LAND[x.land]||x.land)} · ${esc(x.fraktion||'')}</span><span class="ep-st">${ST[x.st]||''}</span></div>`).join('')}</div>`;
+}
+/* Daten des eigenen Energie-Dashboards (energie.json): je Datenreihe der
+   letzte Wert und der Verlauf der ersten Zahlenreihe. */
+let ENERGIE=null,_enLaedt=false;
+async function energieLaden(){if(ENERGIE||_enLaedt)return;_enLaedt=true;try{ENERGIE=(await hole('energie.json'))||{dateien:{}}}catch(e){ENERGIE={dateien:{}}}_enLaedt=false;render()}
+function energieHTML(){
+  if(!ENERGIE){energieLaden();return ''}
+  const R=Object.entries(ENERGIE.dateien||{}).filter(([p,z])=>z.art==='reihe'&&z.letzter&&(z.felder||[]).length&&!/news|wetter|weather/i.test(z.name+p));
+  if(!R.length)return '';
+  const zahl=v=>typeof v==='number'?fmtNum(v,Math.abs(v)<10?3:Math.abs(v)<1000?2:0):esc(String(v));
+  return `<details class="auf" style="margin:10px 0"><summary><b>Energie Deutschland</b> <span class="note">· Strom, Gas, Kraftstoffe, Heizöl, Speicher – aus dem eigenen Energie-Dashboard</span></summary>
+    <div class="dd-stat">${R.map(([p,z])=>{const f=z.felder[0],r=(z.reihe||[]).map(x=>x[f]).filter(x=>typeof x==='number');const t=z.zeitfeld&&z.letzter[z.zeitfeld];
+      return `<div class="dd-zahl"><span class="note">${esc(z.name)}</span><b>${zahl(z.letzter[f])}</b><span class="note">${esc(f)}${t?' · '+esc(String(t).slice(0,16)):''}</span>${z.felder.slice(1,4).map(k=>`<span class="note">${esc(k)}: ${zahl(z.letzter[k])}</span>`).join('')}${r.length>2?sparkline(r,r[r.length-1]>=r[0]):''}</div>`}).join('')}</div></details>`;
+}
+function renderEPVotes(kopf){
+  if(!EPV){epLaden();return kopf+'<div class="box"><div class="empty"><b>Abstimmungen des Europaparlaments werden geladen …</b></div></div>'}
+  const L=(EPV.abstimmungen||[]).filter(v=>!S.lq||!S.lq.ab||norm(v.titel+' '+(v.referenz||'')).includes(norm(S.lq.ab)));
+  if(!L.length)return kopf+'<div class="box"><div class="empty"><b>Noch keine Abstimmungen des Europaparlaments</b>Sie kommen mit dem nächsten Volllauf (ep_abstimmungen.py).</div></div>';
+  return kopf+L.slice(0,80).map(v=>{const pos=f=>f.ja>f.nein+f.enth?'dafür':f.nein>f.ja+f.enth?'dagegen':'gespalten';
+    const dafuer=(v.fraktionen||[]).filter(f=>pos(f)==='dafür').map(f=>f.name),dagegen=(v.fraktionen||[]).filter(f=>pos(f)==='dagegen').map(f=>f.name);
+    return `<div class="box proc" style="padding:12px 14px;margin-bottom:10px">
+    <div><b style="font-size:var(--fs-md);line-height:1.3">${esc(v.titel)}</b></div>
+    <div class="ab-zeile"><span class="pill ${v.ergebnis==='angenommen'?'green':'red'}">${v.ergebnis==='angenommen'?'Angenommen':'Abgelehnt'}</span><span class="note">Europaparlament · ${esc(datumKurz(v.datum))}${v.referenz?' · '+esc(v.referenz):''}</span></div>
+    ${epBalken(v.ja,v.nein,v.enth)}
+    <div class="note">${v.ja} dafür · ${v.nein} dagegen · ${v.enth} Enthaltungen${v.deutschland?` · deutsche Abgeordnete: ${v.deutschland.ja} dafür, ${v.deutschland.nein} dagegen, ${v.deutschland.enth} Enthaltung`:''}</div>
+    ${dafuer.length||dagegen.length?`<div class="note" style="margin-top:3px">dafür: ${esc(dafuer.join(', ')||'–')} &nbsp; dagegen: ${esc(dagegen.join(', ')||'–')}</div>`:''}
+    ${(v.fraktionen||[]).length?`<details class="auf"><summary>Nach Fraktionen</summary>${v.fraktionen.map(f=>`<div class="ep-fr"><span>${esc(f.name)}</span>${epBalken(f.ja,f.nein,f.enth)}<span class="note">${f.ja}:${f.nein}:${f.enth}</span></div>`).join('')}</details>`:''}
+    ${v.laender&&Object.keys(v.laender).length?`<details class="auf"><summary>Nach Ländern (${Object.keys(v.laender).length})</summary>${Object.entries(v.laender).sort((a,b)=>(b[1].ja+b[1].nein+b[1].enth)-(a[1].ja+a[1].nein+a[1].enth)).map(([l,x])=>`<div class="ep-fr"><span>${esc(EP_LAND[l]||l)}</span>${epBalken(x.ja,x.nein,x.enth)}<span class="note">${x.ja}:${x.nein}:${x.enth}</span></div>`).join('')}</details>`:''}
+    <details class="auf" ontoggle="if(this.open)epEinzelLaden('${esc(v.id)}','${esc((v.datum||'').slice(0,7))}')"><summary>Alle Abgeordneten</summary><div id="ep-einzel-${esc(v.id)}" class="ep-einzel"><p class="note">Wird geladen …</p></div></details>
+    <div class="note"><a href="${esc(v.link)}" target="_blank" rel="noopener">Einzelstimmen bei HowTheyVote.eu</a></div>
+  </div>`}).join('')+`<p class="note">Quelle: ${esc(EPV.quelle||'HowTheyVote.eu')}. Namentliche Abstimmungen im Plenum; Fraktion „dafür", wenn die Mehrheit ihrer Stimmen dafür war.</p>`;
+}
 function renderVotes(){
   const list=VOTES.filter(v=>matchLQ('ab',v)&&(S.voteErg==='all'||!S.voteErg||v.ergebnis===S.voteErg)
     &&(!S.voteArt||S.voteArt==='all'||(S.voteArt==='nam')===!!v.abstimmung.namentlich)
@@ -2984,7 +3132,8 @@ function renderVotes(){
   const wps=[...new Set(VOTES.map(v=>v.wp).filter(Boolean))].sort((a,b)=>b-a);
   window.ABLIST=list.map(v=>v.id);
   let h=`<div class="sec-hd" style="margin-top:4px"><h2>Abstimmungen im Bundestag</h2><span class="cnt">${list.length}${VOTES.length!==list.length?' von '+VOTES.length:''}</span><div class="tools">${lsearch('ab','Abstimmungen durchsuchen …')}${copyBtn(ABLIST,'Abstimmungen')}</div></div>`;
-  h+=`<div class="filters"><div class="chips" role="group" aria-label="Art" style="margin-bottom:8px">${[['all','Alle'],['nam','Namentlich'],['hand','Per Handzeichen']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteArt||'all')===k}" onclick="S.voteArt='${k}';render()">${l}${k==='all'?'':` <span class="n">${VOTES.filter(v=>(k==='nam')===!!v.abstimmung.namentlich).length}</span>`}</button>`).join('')}</div>`;
+  h+=`<div class="filters"><div class="chips" role="group" aria-label="Art" style="margin-bottom:8px">${[['all','Alle'],['nam','Namentlich'],['hand','Per Handzeichen'],['ep','Europaparlament']].map(([k,l])=>`<button class="chip" aria-pressed="${(S.voteArt||'all')===k}" onclick="S.voteArt='${k}';render()">${l}${k==='all'||k==='ep'?'':` <span class="n">${VOTES.filter(v=>(k==='nam')===!!v.abstimmung.namentlich).length}</span>`}</button>`).join('')}</div>`;
+  if(S.voteArt==='ep')return renderEPVotes(h.replace('Abstimmungen im Bundestag','Abstimmungen im Europaparlament')+'</div>');
   /* Wahlperiode und Ergebnis als Auswahlfelder in einer Zeile – vorher drei
      Chipzeilen übereinander. */
   h+=`<div class="bar" style="gap:8px;margin-bottom:10px;flex-wrap:wrap">
@@ -3995,7 +4144,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v70 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').hidden=false;
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
@@ -5039,6 +5188,38 @@ async function laden(){
   /* Erstes Bild so früh wie möglich: Nachrichten sind da, der Rest folgt. */
   /* Im vorläufigen Durchgang ohne Suche nach weiteren Häusern – die folgt im endgültigen. */
   sicher('Verzeichnis (vorläufig)',()=>{window.PARTNER_AUS=true;try{indexieren()}finally{window.PARTNER_AUS=false}});
+  /* KI-Zusammenfassungen und KI-Top-Schlagzeilen vor dem ersten Bild – sie
+     brauchen nur die Meldungen und sind schnell; so steht die Top-Liste
+     gleich in ihrer endgültigen Form da. */
+  sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
+  sicher('KI-Marktlage',()=>{window.MARKTLAGE=ki&&ki.marktlage&&((ki.marktlage.punkte||[]).length||(ki.marktlage.absaetze||[]).length)?ki.marktlage:null});
+  /* Schlagzeilen der Top-Meldungen, im Lauf geschrieben
+     (ki_zusammenfassungen.py, alle sechs Stunden, je Region und in der
+     Sprache der Quellen). Flach abgelegt: id → Schlagzeile und Satz. */
+  sicher('KI-Schlagzeilen',()=>{
+    window.KISCHLAG={};window.KIBLOCK={};window.KIDUB={};
+    const sch=ki&&(ki.schlagzeilen||ki.lage);
+    if(!sch||!sch.regionen)return;
+    Object.entries(sch.regionen).forEach(([region,r])=>{
+      const gruppen=[];
+      (r.items||[]).forEach((it,i)=>{
+        if(!it||!it.schlagzeile)return;
+        const ids=(it.ids&&it.ids.length?it.ids:[it.id]).filter(Boolean);
+        const lead=it.id||ids[0];
+        if(!lead)return;
+        /* Sprachkennung, die das Modell manchmal mitschreibt ("[de] …"), weg */
+        const ohneTag=t=>String(t||'').replace(/^\s*\[(de|en|fr|es|it)\]\s*/i,'');
+        KISCHLAG[lead]={s:ohneTag(it.schlagzeile),t:ohneTag(it.text),sp:r.sprache||'de'};
+        /* Alles in einer Gruppe ist für die Dublettenprüfung EINE Meldung –
+           auch über Sprachgrenzen: "Dänemark und USA einigen sich" und
+           "Denmark hails Greenland deal" hat das Modell zusammengelegt. */
+        ids.forEach(id=>{if(!KIDUB[id])KIDUB[id]='kg:'+region+':'+i});
+        gruppen.push({lead,ids});
+      });
+      KIBLOCK[region]={ts:(r.ts||0)*1000,gruppen,sprache:r.sprache||'de'};
+    });
+    window.KISTAND=sch.stand||'';
+  });
   zeigeLadebalken(`${ARTICLES.length} Meldungen geladen – Termine, Personen und Kurse folgen …`);
   render();
   await luft();
@@ -5148,7 +5329,10 @@ async function laden(){
   /* Themenlagen sind der teuerste Schritt (bei 10.000 Meldungen rund eine
      Sekunde). Sie werden erst gerechnet, nachdem die Nachrichten stehen –
      bis dahin sieht man bereits Meldungen statt eines leeren Bildschirms. */
+  await luft();
   sicher('Themenlagen',()=>{STORIES.push(...baueStories(ARTICLES))});
+  await luft();
+  if(S.ws==='news')render();
   await luft();
   sicher('Personen',()=>{PEOPLE.push(...((pp&&pp.people||[]).map(mapPerson)))});
   sicher('Gremien',()=>{
@@ -5157,6 +5341,7 @@ async function laden(){
       regions:[PARL_REGION[c.parliament]||'de'],members:PEOPLE.filter(p=>(p.committees||[]).includes(c.id)).map(p=>p.id),
       color:farbeFuer(c.name),src:c.parliament_label||'',title:c.name,link:'#'}))));
   });
+  await luft();
   sicher('Institutionen',()=>{INSTITUTIONS.push(...baueInstitutionen(ARTICLES))});
   sicher('Organisationen',()=>{ORGS.push(...baueOrgs(ARTICLES))});
   sicher('Newsletter',()=>{
@@ -5166,40 +5351,14 @@ async function laden(){
   sicher('Verfahren',()=>{if(dip&&dip.procedures)PROCS.push(...dip.procedures.slice(0,400).map(mapVerfahren))});
   /* Amtliche Sitzverteilung aus dem Lauf – schlägt die eingebaute Tabelle. */
   sicher('Sitzverteilung',()=>{window.SEATS=(pp&&pp.seats)||null});
+  await luft();
   sicher('Abstimmungen',()=>{VOTES.push(...mapAbstimmungen(vo),...mapPlenum(pl));VOTES.sort((a,b)=>b.date-a.date);abstimmungenZuordnen()});
   sicher('Reden im Plenum',()=>redenZuordnen(pl));
   sicher('Wahlen',()=>{if(el)ELECTIONS.push(...mapWahlen(el))});
   sicher('Märkte',()=>{if(mk)MARKET_CATALOG.push(...mapMaerkte(mk))});
-  sicher('KI-Zusammenfassungen',()=>{if(ki&&ki.items)Object.entries(ki.items).forEach(([id,v])=>{AI[id]=v})});
-  sicher('KI-Marktlage',()=>{window.MARKTLAGE=ki&&ki.marktlage&&((ki.marktlage.punkte||[]).length||(ki.marktlage.absaetze||[]).length)?ki.marktlage:null});
-  /* Schlagzeilen der Top-Meldungen, im Lauf geschrieben
-     (ki_zusammenfassungen.py, alle sechs Stunden, je Region und in der
-     Sprache der Quellen). Flach abgelegt: id → Schlagzeile und Satz. */
-  sicher('KI-Schlagzeilen',()=>{
-    window.KISCHLAG={};window.KIBLOCK={};window.KIDUB={};
-    const sch=ki&&(ki.schlagzeilen||ki.lage);
-    if(!sch||!sch.regionen)return;
-    Object.entries(sch.regionen).forEach(([region,r])=>{
-      const gruppen=[];
-      (r.items||[]).forEach((it,i)=>{
-        if(!it||!it.schlagzeile)return;
-        const ids=(it.ids&&it.ids.length?it.ids:[it.id]).filter(Boolean);
-        const lead=it.id||ids[0];
-        if(!lead)return;
-        /* Sprachkennung, die das Modell manchmal mitschreibt ("[de] …"), weg */
-        const ohneTag=t=>String(t||'').replace(/^\s*\[(de|en|fr|es|it)\]\s*/i,'');
-        KISCHLAG[lead]={s:ohneTag(it.schlagzeile),t:ohneTag(it.text),sp:r.sprache||'de'};
-        /* Alles in einer Gruppe ist für die Dublettenprüfung EINE Meldung –
-           auch über Sprachgrenzen: "Dänemark und USA einigen sich" und
-           "Denmark hails Greenland deal" hat das Modell zusammengelegt. */
-        ids.forEach(id=>{if(!KIDUB[id])KIDUB[id]='kg:'+region+':'+i});
-        gruppen.push({lead,ids});
-      });
-      KIBLOCK[region]={ts:(r.ts||0)*1000,gruppen,sprache:r.sprache||'de'};
-    });
-    window.KISTAND=sch.stand||'';
-  });
+  await luft();
   sicher('Themenlagen mit KI',kiThemenVerschneiden);
+  await luft();
   sicher('Verzeichnis (Index)',indexieren);
 
   ZEITEN['_gesamt']=Math.round(performance.now()-(window.LADESTART||0));
@@ -5493,6 +5652,26 @@ function ddBalken(verl){
   const max=Math.max(1,...verl.map(v=>v[1]));
   return `<div class="dd-verlauf" title="Häuser-Nennungen je Woche, letzte 26 Wochen">${verl.map(([w,n])=>`<i style="height:${Math.max(2,Math.round(n/max*36))}px" title="${esc(w)}: ${n}"></i>`).join('')}</div>`;
 }
+/* ── Energie: historisch eingeordnet (energie_analyse.json) ───────────── */
+let EANA=null,_eaLaedt=false;
+async function eaLaden(){if(EANA||_eaLaedt)return;_eaLaedt=true;try{EANA=(await hole('energie_analyse.json'))||{kennzahlen:[]}}catch(e){EANA={kennzahlen:[]}}_eaLaedt=false;render()}
+function renderEnergieTrends(){
+  if(!EANA){eaLaden();return '<div class="box"><div class="empty"><b>Energiedaten werden geladen …</b></div></div>'}
+  const K=EANA.kennzahlen||[];
+  if(!K.length)return '<div class="box"><div class="empty"><b>Noch keine Energie-Analyse</b>Sie entsteht im nächsten Volllauf aus deinem Energie-Dashboard (Secret ENERGIE_API) und dem Marktarchiv.</div></div>';
+  const z=(v,n=1)=>v==null?'–':(v>=0?'+':'−')+fmtNum(Math.abs(v),n)+' %';
+  const kl=v=>v==null?'':v>0?'up':v<0?'down':'';
+  const wert=v=>fmtNum(v,Math.abs(v)<10?3:Math.abs(v)<1000?2:0);
+  let h=`<p class="note" style="margin:0 0 10px">Eigene Energiedaten, eingeordnet gegen die letzten drei Jahre. Der Balken zeigt, wo der heutige Wert zwischen Tief und Hoch liegt; das Perzentil sagt, an wie viel Prozent der Tage der Wert niedriger oder gleich war.</p><div class="ea-grid">`;
+  h+=K.map(k=>{const r=(k.verlauf||[]).map(x=>x[1]);const p=k.perzentil_3j;
+    return `<div class="box ea-k"><div class="note">${esc(k.name)}</div><div class="ea-w"><b>${wert(k.wert)}</b> ${esc(k.einheit||'')}</div>
+      <div class="ea-d"><span class="${kl(k.d7)}">7 T. ${z(k.d7)}</span><span class="${kl(k.d30)}">30 T. ${z(k.d30)}</span><span class="${kl(k.d365)}">1 J. ${z(k.d365)}</span></div>
+      ${p!=null?`<div class="ea-band" title="Tief ${wert(k.tief_3j)} · Hoch ${wert(k.hoch_3j)}"><i style="left:${Math.max(0,Math.min(100,p))}%"></i></div><div class="note">${p}. Perzentil · Tief ${wert(k.tief_3j)} · Hoch ${wert(k.hoch_3j)}${k.vorjahr!=null?` · Vorjahr ${wert(k.vorjahr)}`:''}</div>`:''}
+      ${r.length>2?sparkline(r,r[r.length-1]>=r[0]):''}<div class="note">Stand ${esc(datumKurz(k.datum))}</div></div>`}).join('')+'</div>';
+  if((EANA.weitergabe||[]).length)h+=`<div class="box" style="padding:12px 14px;margin-top:12px"><b>Weitergabe an Verbraucher</b><p class="note" style="margin:2px 0 6px">Gemessen aus den eigenen Wochendaten: wie stark und wie schnell Großhandelspreise bei Tankstelle, Heizöl und Strom ankommen.</p><ul class="ml-punkte">${EANA.weitergabe.map(w=>`<li>${esc(w.text)}</li>`).join('')}</ul></div>`;
+  if((EANA.prognosen||[]).length)h+=`<div class="box" style="padding:12px 14px;margin-top:12px"><b>Prognosen</b> <span class="note">EIA, Weltbank, IWF und Terminmärkte aus dem Energie-Dashboard</span>${EANA.prognosen.map(p=>`<p class="note" style="margin:4px 0"><b>${esc(p.quelle)}:</b> ${Object.entries(p.werte||{}).map(([k,v])=>esc(k)+' '+(typeof v==='number'?wert(v):esc(String(v)))).join(' · ')}</p>`).join('')}</div>`;
+  return h;
+}
 function renderDeepDive(){
   if(!DDIVE){ddLaden();return '<div class="box"><div class="empty"><b>Deep Dive wird geladen …</b></div></div>'}
   const T=(DDIVE.themen||[]).filter(t=>t.analyse);
@@ -5505,13 +5684,13 @@ function renderDeepDive(){
     return `<article class="box dd">
     <div class="meta"><span class="pill blue">${esc(t.thema)}</span>${t.tage_im_deepdive>1?`<span class="pill amber">seit ${t.tage_im_deepdive} Tagen Thema</span>`:''}<span class="note">${sg.haeuser} Häuser · ${sg.anstieg>=1.5?'deutlich mehr als sonst (×'+fmtNum(sg.anstieg,1)+')':'Dauerthema'}${t.gdelt?' · '+esc(t.gdelt):''}</span></div>
     <h3 class="dd-titel">${esc(a.titel||t.thema)}</h3>
-    ${a.kern?`<p class="dd-kern">${esc(a.kern)}</p>`:''}
-    ${(a.stichpunkte||[]).length?`<ul class="ml-punkte">${a.stichpunkte.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}
+    ${(a.stichpunkte||[]).length?`<ul class="ml-punkte dd-stich">${a.stichpunkte.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}
+    ${a.kern&&(a.stichpunkte||[]).length?`<details class="auf"><summary>Ausführlich</summary><p class="dd-kern">${esc(a.kern)}</p></details>`:a.kern?`<p class="dd-kern">${esc(a.kern)}</p>`:''}
     ${(a.zahlen||[]).length?`<div class="dd-zahlen">${a.zahlen.map(z=>`<div class="dd-zahl"><b>${esc(z.wert)}</b><span>${esc(z.bedeutung||'')}</span>${z.beleg?`<span class="note">${m(z.beleg)}</span>`:''}</div>`).join('')}</div>`:''}
     ${(t.statistik||[]).length||(t.kurse||[]).length?`<div class="dd-stat">${(t.statistik||[]).map(st=>{const r=st.reihe||[],l=r[r.length-1]||[];return `<div class="dd-zahl"><b>${esc(String(l[1]))}</b><span>${esc(st.name)}</span><span class="note">${esc(l[0]||'')} · ${esc(st.quelle)}</span>${r.length>2?sparkline(r.map(x=>x[1]),r[r.length-1][1]>=r[0][1]):''}</div>`}).join('')}${(t.kurse||[]).map(k=>`<div class="dd-zahl"><b>${fmtNum(k.wert,2)} ${esc(k.einheit||'')}</b><span>${esc(k.name)}</span>${k.jahr_pct!=null?`<span class="note">${k.jahr_pct>=0?'+':'−'}${fmtNum(Math.abs(k.jahr_pct),1)} % in einem Jahr</span>`:''}</div>`).join('')}</div>`:''}
     <div class="dd-block"><h4>Verlauf der Debatte</h4>${ddBalken(t.verlauf||[])}${a.verlauf?`<p class="note">${esc(a.verlauf)}</p>`:''}</div>
     <div class="dd-grid">
-      ${['gesellschaft','wirtschaft','forschung_bildung'].filter(k=>(a.auswirkungen||{})[k]).map(k=>`<div class="dd-block"><h4>${{gesellschaft:'Gesellschaft',wirtschaft:'Wirtschaft',forschung_bildung:'Forschung und Bildung'}[k]}</h4><p>${esc(a.auswirkungen[k])}</p></div>`).join('')}
+      ${['gesellschaft','wirtschaft','verbraucherpreise','inflation','staatsfinanzen','sicherheit','investitionen','forschung_bildung'].filter(k=>(a.auswirkungen||{})[k]).map(k=>`<div class="dd-block"><h4>${{gesellschaft:'Gesellschaft',wirtschaft:'Wirtschaft',verbraucherpreise:'Verbraucherpreise',inflation:'Inflation',staatsfinanzen:'Staatsfinanzen und Steuern',sicherheit:'Sicherheit',investitionen:'Investitionen',forschung_bildung:'Forschung und Bildung'}[k]}</h4><p>${esc(a.auswirkungen[k])}</p></div>`).join('')}
     </div>
     <div class="dd-grid">
       <div class="dd-block"><h4>Wer profitiert</h4>${(a.gewinner||[]).map(g=>`<p><b>${esc(g.wer)}</b> – ${esc(g.warum||'')}</p>`).join('')||'<p class="note">–</p>'}</div>
@@ -5523,6 +5702,8 @@ function renderDeepDive(){
       ${(t.reden||[]).length?`<div class="dd-block"><h4>Reden im Bundestag</h4>${t.reden.map(r=>`<p>${esc(datumKurz(r.datum))} · <b>${esc(r.name)}</b> (${esc(r.fraktion||'')}) – ${esc(r.betreff||'')}</p>`).join('')}</div>`:''}
       ${(t.abstimmungen||[]).length?`<div class="dd-block"><h4>Abstimmungen</h4>${t.abstimmungen.map(v=>`<p>${esc(datumKurz(v.datum))} · ${esc(v.vorlage||v.gegenstand||'')}: <b>${esc(v.ergebnis||'')}</b></p>`).join('')}</div>`:''}
       ${(t.dokumente||[]).length?`<div class="dd-block"><h4>Dokumente und Urteile</h4>${t.dokumente.map(d=>`<p><a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.titel)}</a> <span class="note">${esc(d.quelle)}</span></p>`).join('')}</div>`:''}
+      ${(t.frueher||[]).length?`<div class="dd-block"><h4>Vorgeschichte im Archiv</h4>${t.frueher.map(x=>`<p><span class="note">${esc(datumKurz(x.datum))}</span> ${esc(x.titel)} <span class="note">– ${esc(x.quelle)}</span></p>`).join('')}</div>`:''}
+      ${(t.newsletter||[]).length?`<div class="dd-block"><h4>Newsletter und Research</h4>${t.newsletter.map(x=>`<p>${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a>`:esc(x.titel)} <span class="note">– ${esc(x.quelle)}</span></p>`).join('')}</div>`:''}
       <div class="dd-block"><h4>Meldungen</h4>${t.meldungen.map((x,i)=>`<p><span class="note">[${i+1}]</span> ${x.id&&ITEMS[x.id]?`<a href="#" onclick="event.preventDefault();openReader('${x.id}')">${esc(x.titel)}</a>`:`<a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.titel)}</a>`} <span class="note">– ${esc(x.quelle)}</span></p>`).join('')}</div>
     </details>
     ${(a.offene_fragen||[]).length?`<div class="dd-block"><h4>Offene Fragen</h4><ul class="ml-punkte">${a.offene_fragen.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></div>`:''}
@@ -5590,6 +5771,8 @@ function renderVorausschau(){
         ${(k.annahmen||[]).length?`<div><b>Annahmen</b><ul>${k.annahmen.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
         ${(k.gegenkraefte||[]).length?`<div><b>Gegenkräfte</b><ul>${k.gegenkraefte.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}</div>`:''}
       ${(k.folgen||[]).length?`<div class="wk-folgen"><b>Folgen zweiter Ordnung</b>${k.folgen.map(f=>`<div><span class="pill grey">${esc(f.id)}</span> ${esc(f.titel)}${f.text?` – <span class="note">${esc(f.text)}</span>`:''}</div>`).join('')}</div>`:''}
+      ${(W.einordnung||{})[k.kb_id]?(()=>{const e=W.einordnung[k.kb_id];return `<div class="wk-folgen"><b>Einordnung</b><dl class="vs-dl"><dt>Wo</dt><dd>${esc(e.region)}</dd><dt>Ab welcher Größe</dt><dd>${esc(e.schwelle)}</dd><dt>Wirkt</dt><dd>${esc(e.wirkung)}</dd></dl></div>`})():''}
+      ${k.weitere_folgen&&Object.keys(k.weitere_folgen).length?`<div class="wk-folgen"><b>Weitere Folgen</b><dl class="vs-dl">${[['verbraucherpreise','Verbraucherpreise'],['inflation','Inflation'],['staatsfinanzen','Staatsfinanzen'],['sicherheit','Sicherheit'],['investitionen','Investitionen'],['verteilung','Wer gewinnt, wer verliert']].filter(([x])=>k.weitere_folgen[x]).map(([x,l])=>`<dt>${l}</dt><dd>${esc(k.weitere_folgen[x])}</dd>`).join('')}</dl></div>`:''}
       ${vsForschungHTML(k.forschung)}
       <div class="note" style="margin-top:8px">Signal: ${sg.haeuser||0} Häuser · ${sg.meldungen||0} Meldungen, ${sg.jung||0} aus den letzten 24 Stunden${sg.gdelt&&sg.gdelt.faktor?` · weltweit ${sg.gdelt.faktor>=1?'×'+fmtNum(sg.gdelt.faktor,1):'rückläufig'} (GDELT)`:''}${sg.archiv_faktor&&!(sg.gdelt&&sg.gdelt.faktor)?` · ${sg.archiv_faktor>=20?'über 20':fmtNum(sg.archiv_faktor,1)}-mal so viel wie sonst im Archiv`:''}${(k.belege||[]).length?` · Belege: ${k.belege.map(kurzLit).map(esc).join('; ')}`:''}</div>
       ${q?`<details class="wk-quellen"><summary>${(k.quellen||[]).length} ${(k.quellen||[]).length===1?'Meldung':'Meldungen'} dazu</summary>${q}</details>`:''}
@@ -5630,7 +5813,16 @@ function renderVorausschau(){
     </div>`:`<p class="note">Noch keine Einschätzung hat ihr Prüfdatum erreicht. Die Bilanz füllt sich mit der Zeit und zeigt dann, welche Zusammenhänge tragen und ob die Wahrscheinlichkeiten stimmen.</p>`;
   if((W.vorschlaege||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Vorschläge für neue Zusammenhänge</h2><span class="cnt">ungeprüft</span></div>
     <p class="note" style="margin-bottom:6px">Breit berichtete Themen, die kein Eintrag der Wissensbasis abdeckt. Taucht ein Vorschlag an drei Tagen binnen zwei Wochen auf, wird er vorläufig aufgenommen – mit schwacher Wirkung und gekennzeichnet. Bestätigen, schärfen oder löschen in vorausschau_basis.json.</p>
-    <div class="box">${W.vorschlaege.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="ttl">${esc(v.ausloeser)} → ${esc(v.wirkung)}${v.gesehen_an_tagen?` <span class="note">· an ${v.gesehen_an_tagen} von 3 nötigen Tagen</span>`:''}</div><div class="note">${esc(v.mechanismus||'')}${v.zeitraum?' · '+esc(v.zeitraum):''}${v.messpunkt?' · Messpunkt '+esc(v.messpunkt)+' '+esc(v.richtung||''):''}</div>${v.begruendung?`<div class="note">${esc(v.begruendung)}</div>`:''}</div>`).join('')}</div>`;
+    <div class="box">${W.vorschlaege.map(v=>`<div class="rul vs-vorschlag" style="cursor:default;display:block;padding:10px 14px">
+      <div class="meta">${v.gesehen_an_tagen?`<span class="pill amber">an ${v.gesehen_an_tagen} von 3 nötigen Tagen</span>`:''}${v.archiv&&v.archiv.tage?`<span class="pill grey">im Archiv an ${v.archiv.tage} Tagen${v.archiv.zuletzt?', zuletzt '+esc(datumKurz(v.archiv.zuletzt)):''}</span>`:v.archiv?'<span class="pill grey">im Archiv noch nie</span>':''}</div>
+      <dl class="vs-dl">
+        <dt>Auslöser</dt><dd>${esc(v.ausloeser||'')}</dd>
+        <dt>Wirkung</dt><dd>${esc(v.wirkung||'')}</dd>
+        ${v.mechanismus?`<dt>Mechanismus</dt><dd>${esc(v.mechanismus)}</dd>`:''}
+        ${v.zeitraum?`<dt>Zeitraum</dt><dd>${esc(v.zeitraum)}</dd>`:''}
+        ${v.messpunkt?`<dt>Messpunkt</dt><dd>${esc((wkKurs(v.messpunkt)||{}).n||v.messpunkt)} ${v.richtung==='+'?'steigt':v.richtung==='−'||v.richtung==='-'?'fällt':esc(v.richtung||'')}</dd>`:''}
+        ${v.begruendung?`<dt>Warum</dt><dd>${esc(v.begruendung)}</dd>`:''}
+      </dl></div>`).join('')}</div>`;
   if((W.neu_aufgenommen||[]).length)b+=`<p class="note" style="margin-top:12px"><b>Heute vorläufig aufgenommen:</b> ${W.neu_aufgenommen.map(e=>`${esc(e.id)} ${esc(e.titel)}`).join(' · ')}</p>`;
   if((W.verworfen||[]).length)b+=`<details class="auf" style="margin-top:14px"><summary>Verworfen (${W.verworfen.length}) – Meldungen trafen die Stichworte, aber nicht den Zusammenhang</summary>
     <div class="box" style="margin-top:6px">${W.verworfen.map(v=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(v.id)}</span><span>${esc(v.titel)}</span></div>${v.grund?`<div class="note" style="margin-top:3px"><b>Grund:</b> ${esc(v.grund)}</div>`:''}${(v.meldungen||[]).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(m.quelle)}</div>`}).join('')}</div>`).join('')}</div></details>`;
