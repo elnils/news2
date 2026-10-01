@@ -60,7 +60,7 @@ AKTIEN_VORGABE = [
     # USA – alle mit Bewertung (kostenloser FMP-Tarif): Dow-Jones-Werte und
     # die großen Technologiewerte. Zwei Abfragen je Aktie, rund 90 am Tag.
     ("AAPL", "Apple", "USD", "AAPL"), ("MSFT", "Microsoft", "USD", "MSFT"), ("NVDA", "Nvidia", "USD", "NVDA"),
-    ("AMZN", "Amazon", "USD", "AMZN"), ("GOOGL", "Alphabet", "USD", "GOOGL"), ("META", "Meta", "USD", "META"),
+    ("MU", "Micron", "USD", "MU"), ("QCOM", "Qualcomm", "USD", "QCOM"), ("AMZN", "Amazon", "USD", "AMZN"), ("GOOGL", "Alphabet", "USD", "GOOGL"), ("META", "Meta", "USD", "META"),
     ("TSLA", "Tesla", "USD", "TSLA"), ("AVGO", "Broadcom", "USD", "AVGO"), ("AMD", "AMD", "USD", "AMD"),
     ("NFLX", "Netflix", "USD", "NFLX"), ("ORCL", "Oracle", "USD", "ORCL"), ("ADBE", "Adobe", "USD", "ADBE"),
     ("CRM", "Salesforce", "USD", "CRM"), ("CSCO", "Cisco", "USD", "CSCO"), ("INTC", "Intel", "USD", "INTC"),

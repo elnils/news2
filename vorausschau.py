@@ -108,7 +108,7 @@ FORSCHUNG_QUELLEN = [
     ("EZB", "ecb.europa.eu"), ("IWF", "imf.org"), ("BIZ", "bis.org"), ("OECD", "oecd.org"),
     ("IEA", "iea.org"), ("FAO", "fao.org"), ("Bruegel", "bruegel.org"),
 ]
-BASIS_VERSION = 4
+BASIS_VERSION = 5
 KANDIDATEN = "vorausschau_kandidaten.json"
 MAX_KETTEN = int(os.environ.get("VS_MAX", "10"))
 STUNDE = int(os.environ.get("VS_STUNDE", "7"))
@@ -502,6 +502,19 @@ DEFAULT_BASIS = [
      "messpunkt": {"sym": "EXH5.DE", "richtung": -1, "tage": 10},
      "gegenkraefte": "Rückversicherung", "belege": ["dell2014"], "fuehrt_zu": [],
      "gdelt": "(wildfire OR storm OR flood) (damage OR insured losses) billion"},
+    # ── Speicherchips (Version 5) ──
+    {"id": "T8", "titel": "Knappheit bei Speicherchips",
+     "ausloeser": "Speicherchips (DRAM, NAND, HBM) werden knapp oder teurer, etwa durch die KI-Nachfrage",
+     "stichworte": [r"speicherchip\w*|arbeitsspeicher|speicherpreis\w*|memory (chip|crunch|shortage|price)\w*|\bdram\b|\bnand\b|\bhbm\b|micron|sk hynix",
+                    r"knapp\w*|engpass\w*|teurer|preiserhöhung\w*|preise steigen|shortage|crunch|price hikes?|surge|rekord\w*|record"],
+     "wirkung": "Speicherhersteller und Halbleiterwerte steigen; Smartphone- und PC-Hersteller erhöhen Preise oder verlieren Marge",
+     "mechanismus": "Rechenzentren für KI binden einen großen Teil der Speicherproduktion; knappes Angebot hebt die Preise, "
+                    "Hersteller wie Micron verdienen mehr, Abnehmer wie Huawei, Apple oder Xiaomi müssen Preise erhöhen",
+     "zeitraum": "Wochen bis Monate",
+     "messpunkt": {"sym": "MU", "wahl": ["MU", "SMH"], "richtung": 1, "tage": 20},
+     "gegenkraefte": "neue Fertigungskapazitäten, schwächere Nachfrage nach Smartphones und PCs",
+     "belege": [], "fuehrt_zu": [],
+     "gdelt": "(memory chip OR DRAM OR NAND) (shortage OR prices OR crunch)"},
     # ── Verbraucherpreise und Vorleistungen (Version 3) ──
     {"id": "L8", "titel": "Milch- und Butterpreise bewegen sich",
      "ausloeser": "Erzeuger- oder Abgabepreise für Milch, Butter oder Käse ändern sich deutlich",
@@ -1076,25 +1089,51 @@ def archiv_laden():
     return out
 
 
+_TREFFER_MEMO = {}
+
+
+def _aufbereiten(a):
+    """Einmal je Archivmeldung: bereinigte Schlagzeile, Text, Wirtschaftsbezug.
+    Vorher geschah das für jeden der ~60 Zusammenhänge erneut – bei 113.000
+    Meldungen der Hauptgrund, warum die Vorausschau ihr Zeitbudget aufbrauchte."""
+    if "_tt" not in a:
+        a["_tt"] = FALSCHE_FREUNDE.sub(" ", a["title"])
+        a["_tx"] = a["_tt"] + " " + FALSCHE_FREUNDE.sub(" ", a.get("desc", ""))
+        a["_w"] = bool(WIRTSCHAFT_RE.search(a["_tx"]))
+    return a
+
+
 def treffer_tage(eintrag, artikel):
     """Tag → Menge der Häuser, die an dem Tag über den Auslöser berichteten."""
     muster_l = [muster(g) for g in eintrag.get("stichworte") or []]
     if not muster_l:
         return {}
+    memo_k = (eintrag.get("id"), id(artikel), len(artikel))
+    if memo_k in _TREFFER_MEMO:
+        return _TREFFER_MEMO[memo_k]
     aus = re.compile(eintrag["ausschluss"], re.I) if eintrag.get("ausschluss") else None
     tage = {}
+    noetig = min(3, len(muster_l))
+    erstes = muster_l[0]
     for a in artikel:
-        titel = FALSCHE_FREUNDE.sub(" ", a["title"])
-        text = titel + " " + FALSCHE_FREUNDE.sub(" ", a.get("desc", ""))
-        if not WIRTSCHAFT_RE.search(text):
+        if "_tt" in a:
+            titel = a["_tt"]
+            # schneller Vorfilter: die erste Stichwortgruppe muss im Text stehen
+            if not erstes.search(a["_tx"]):
+                continue
+        else:
+            titel = FALSCHE_FREUNDE.sub(" ", a["title"])
+        _aufbereiten(a)
+        text = a["_tx"]
+        if not a["_w"]:
             continue
         # Archiv: alle Stichwortgruppen (bis drei) in der SCHLAGZEILE – sonst
         # zählen Fußballberichte mit "Kartoffel" im Vorspann oder "NIH-Budget
         # für Verteidigungsforschung" als frühere Fälle und verfälschen die Bilanz.
-        noetig = min(3, len(muster_l))
         if sum(1 for m in muster_l if m.search(titel)) >= noetig and all(m.search(text) for m in muster_l) and not (aus and aus.search(text)):
             t = tage.setdefault(a["date"], {"haeuser": set(), "titel": titel, "link": a.get("link", "")})
             t["haeuser"].add(a["haus"])
+    _TREFFER_MEMO[memo_k] = tage
     return tage
 
 
@@ -1522,13 +1561,18 @@ def _gdelt_abfragen(anfrage):
     j, grund = None, ""
     # GDELT antwortet oft langsam und drosselt schnelle Folgeanfragen: zwei
     # Versuche mit Pause, dazu die unverschlüsselte Adresse als Ausweichweg.
-    for versuch, (basis, pause) in enumerate((("https://api.gdeltproject.org", 0), ("https://api.gdeltproject.org", 25),
-                                                ("http://api.gdeltproject.org", 60))):
+    # Höchstens 90 Sekunden GDELT je Lauf – danach nur noch Zwischenspeicher.
+    if _GDELT.get("zeit", 0) > 90:
+        _GDELT["gesperrt"] = True
+        return None
+    beginn = time.time()
+    for versuch, (basis, pause) in enumerate((("https://api.gdeltproject.org", 0), ("https://api.gdeltproject.org", 15),
+                                                ("http://api.gdeltproject.org", 30))):
         try:
             if pause:
                 time.sleep(pause)
             _GDELT["letzte"] = time.time()
-            with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (compatible; Presseschau/1.0)"}), timeout=35) as r:
+            with urlopen(Request(basis + pfad, headers={"User-Agent": "Mozilla/5.0 (compatible; Presseschau/1.0)"}), timeout=20) as r:
                 j = json.loads(r.read().decode("utf-8", "replace"))
             break
         except HTTPError as e:
@@ -1537,7 +1581,11 @@ def _gdelt_abfragen(anfrage):
                 _GDELT["gesperrt"] = True
         except (URLError, ValueError, TimeoutError) as e:
             grund = f"{type(e).__name__}: {getattr(e, 'reason', e)}"
+    _GDELT["zeit"] = _GDELT.get("zeit", 0) + (time.time() - beginn)
     if j is None:
+        # Nach drei vergeblichen Versuchen – gleich aus welchem Grund – für
+        # diesen Lauf aufgeben, sonst kostet jede weitere Anfrage Minuten.
+        _GDELT["gesperrt"] = True
         _GDELT["grund"] = grund
         print(f"  GDELT nicht erreichbar ({grund})" + (" – für diesen Lauf abgeschaltet" if _GDELT["gesperrt"] else "") + ".")
         return None

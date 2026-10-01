@@ -109,7 +109,7 @@ def nachholen(name, dom, sprache, bekannt):
             continue                                                     # ohne Datum lieber nicht
         bekannt.add(schluessel)
         out.append({"id": "gn-" + hashlib.sha1(link.encode()).hexdigest()[:12], "title": titel, "source": name,
-                    "link": link, "date": datum, "desc": "", "haus": dom, "ersatz": "google-news"})
+                    "link": link, "date": datum, "desc": "", "haus": dom, "ersatz": "google-news", "lang": sprache})
         if len(out) >= MAX_JE_HAUS:
             break
     return out

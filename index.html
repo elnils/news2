@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Presseschau</title>
+<title>Presseschau – Entwurf v70</title>
 <meta name="description" content="Presseschau – Meldungen, Dokumente, Urteile und Akteure aus Bund, Ländern, EU und USA an einem Ort.">
 <!-- Logo und Startbildschirm: Die PNG liegen neben dieser Datei. Ohne
      apple-touch-icon nimmt iOS einen Bildschirmausschnitt als Symbol. -->
@@ -851,7 +851,7 @@ footer{font-size:var(--fs-xs);color:var(--muted);padding:12px 24px;border-top:1p
     <a class="logo" href="#news/top" onclick="event.preventDefault();go('news','top')" aria-label="Presseschau – Startseite">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#111a2c"/><rect x="96" y="138" width="320" height="52" rx="26" fill="#3b82f6"/><rect x="96" y="226" width="320" height="52" rx="26" fill="#ffffff"/><rect x="96" y="314" width="208" height="52" rx="26" fill="#b7bfd0"/></svg>
       <span class="txt"><span class="wm">Presse<em>schau</em></span><small id="stand"></small></span></a>
-    <span class="demo-pill" id="ver-pill">Entwurf v69</span>
+    <span class="demo-pill" id="ver-pill">Entwurf v70</span>
     <div id="search" role="search">
       <svg class="i"><use href="#i-search"/></svg>
       <input id="q" placeholder="Alles durchsuchen – Meldungen, Dokumente, Urteile, Personen …" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}" aria-label="Suchen">
@@ -1565,18 +1565,30 @@ const AMT_CATS=new Set(['bundesrat','bt-allg','breg','ec','ep','eu-council','ecb
 /* Was in den Top-Meldungen nichts verloren hat, stört in den Listen genauso:
    Veranstaltungswerbung, Eigenwerbung, Serviceformate, Ticker, Dateiauswürfe.
    Standardmäßig ausgeblendet, abschaltbar in den Einstellungen. */
+/* TV-Programm und Branchentreffen sind keine Nachricht. */
+const PROGRAMM_RE=/\btv-tipps?\b|\bfernsehtipps?\b|\btv-programm\b|^vorschau:\s*tv|was läuft heute|\bsymposium\b|\bfachmesse\b|\bbranchentreff\w*|empfängt den (weltweiten|internationalen)/i;
 function istRauschen(a){
   const t=a.title||'';
-  return a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||istSammelmeldung(t)||a.sendung===true;
+  return PROGRAMM_RE.test(t)||a.isDoc||a.isTicker||a.isPodcast||WERBUNG_RE.test(t)||EVENT_RE.test(t)||EIGENWERBUNG_RE.test(t)||SERVICE_RE.test(t)||SENDUNG_RE.test(t)||TEST_RE.test(t)||DEAL_RE.test(t)||SERIE_RE.test(t)||istDatumsMeldung(t)||istSammelmeldung(t)||a.sendung===true;
 }
 const ohneRauschen=arr=>PREF.rauschen?arr:arr.filter(a=>!istRauschen(a));
 /* Pressedienst des Bundestags: Kleine Anfragen und Antworten ("Linke
    stellt Fragen zum Thema Migräne") sind Parlamentsbetrieb, keine
    Top-Nachricht – sie stehen unter Verfahren und Dokumente. */
 const ANFRAGE_RE=/\b(stellt|stellen) fragen\b|\bfragt nach\b|\berkundig(t|en) sich\b|\bwill(st)? wissen\b|\bwollen wissen\b|\bkleine anfrage\b|\bantwort der bundesregierung\b|^(antwort|anfrage) (zu|zum|zur)\b|\bfragen zu(m|r)?\b/i;
+/* Meldungen in anderen Sprachen als Deutsch und Englisch (Le Monde aus der
+   Pflichtquellen-Suche, spanische und italienische Feeds) gehören nicht in
+   die Top-Meldungen; in den Listen bleiben sie. */
+const FREMD_RE=/\b(le|la|les|des|du|une|qu['’]|d['’]un|est|sont|avec|pour|dans|sur|el|los|las|del|con|por|para|una|il|gli|della|degli|nel|sono)\b/gi;
+function fremdsprachig(a){
+  if(a.lang&&!/^(de|en)/i.test(a.lang))return true;
+  const t=(a.title||'')+' '+(a.desc||'').slice(0,160);
+  return (t.match(FREMD_RE)||[]).length>=4;
+}
 function topTauglich(a){
   const t=a.title||'';
   if(a.herkunft==='think')return false;
+  if(fremdsprachig(a))return false;
   if(ANFRAGE_RE.test(t)&&/bundestag|hib|deutscher bundestag/i.test((a.src||'')+' '+(a._qb||'')))return false;
   if(a.isDoc)return false;   /* PDF-Auswürfe und Gesetzestexte aus Dokumentenportalen */
   if(a.isTicker)return false; /* Liveticker und Newsblogs sind Sammelseiten */
@@ -1754,7 +1766,15 @@ function topEntdoppeln(arr,max,proHausMax){
      meldungen füllen danach auf (Eilmeldungen zählen wie zwei Häuser). */
   const haeuser=a=>{try{return 1+new Set(clusterArts(a).map(x=>x._qb||hausVon(x.src))).size}catch(e){return 2}};
   const breit=arr.filter(a=>a.priority==='eil'||haeuser(a)>=2);
-  if(breit.length>=Math.min(max,6))arr=[...breit,...arr.filter(a=>!breit.includes(a))];
+  /* Einzelmeldungen füllen nur aus Leitmedien auf. Früh am Morgen gibt es
+     wenige Mehrquellen-Meldungen – dann standen Pressemitteilungen von
+     finanzen.net ("Tafeltrauben-Symposium") oder TV-Tipps in der Top-Liste.
+     Was übrig ist, kommt nur, wenn sonst weniger als fünf Meldungen da wären. */
+  const LEIT=/^(tagesschau\.de|zdf\.de|zdfheute\.de|spiegel\.de|zeit\.de|faz\.net|sueddeutsche\.de|handelsblatt\.com|welt\.de|tagesspiegel\.de|deutschlandfunk\.de|br\.de|ndr\.de|wdr\.de|mdr\.de|swr\.de|rbb24\.de|dw\.com|reuters\.com|apnews\.com|bbc\.co\.uk|bbc\.com|nytimes\.com|washingtonpost\.com|wsj\.com|ft\.com|theguardian\.com|economist\.com|bloomberg\.com|politico\.eu|politico\.com|euractiv\.com|npr\.org|axios\.com)$/;
+  const leit=a=>LEIT.test(a._qb||hausVon(a.src)||'');
+  const einzelLeit=arr.filter(a=>!breit.includes(a)&&leit(a));
+  const rest=arr.filter(a=>!breit.includes(a)&&!leit(a));
+  arr=[...breit,...einzelLeit,...((breit.length+einzelLeit.length)<5?rest:[])];
   /* Erster Durchgang mit Hausgrenze: sonst füllt ein einziges Fachmedium
      die halbe Liste, wie zuletzt vier Heise-Meldungen von acht Plätzen. */
   for(const a of arr){
@@ -3975,7 +3995,7 @@ fromHash();
    inhalte, die für echte gehalten werden könnten.
    ═══════════════════════════════════════════════════════════════════ */
 const DEMO = new URLSearchParams(location.search).has('demo');
-if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v69 · Beispieldaten';
+if(DEMO&&g('ver-pill'))g('ver-pill').textContent='Entwurf v70 · Beispieldaten';
 const LOADLOG = [];
 const DATEIEN = {
   news:'articles.json', eu:'eu_articles.json', bt:'bundestag_articles.json',
