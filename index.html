@@ -446,6 +446,14 @@ html{-webkit-tap-highlight-color:transparent}
 .dd-grid{display:grid;gap:4px 18px}@media (min-width:800px){.dd-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
 .dd-block h4{margin:10px 0 4px;font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .dd-block p{margin:3px 0;font-size:var(--fs-sm);line-height:1.5}
+.chips.gekappt{overflow:hidden}
+.chips-mehr{display:block;margin:-2px 0 10px;padding:4px 2px;border:0;background:none;color:var(--accent,#3b82f6);font:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;min-height:32px}
+details.vs-abschnitt{margin-top:14px}details.vs-abschnitt>summary{list-style:none;cursor:pointer}
+details.vs-abschnitt>summary::-webkit-details-marker{display:none}
+details.vs-abschnitt>summary .sec-hd{margin-top:0!important}
+details.vs-abschnitt>summary .sec-hd h2::before{content:'▸ ';color:var(--muted);font-size:.8em}
+details.vs-abschnitt[open]>summary .sec-hd h2::before{content:'▾ '}
+details.dd-mehr>summary{margin:8px 0 4px;font-weight:600}
 .ea-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
 .ea-k{padding:12px 14px;display:flex;flex-direction:column;gap:4px}.ea-k svg{width:100%;height:28px}
 .ea-w b{font-size:var(--fs-lg)}.ea-d{display:flex;gap:10px;flex-wrap:wrap;font-size:var(--fs-sm)}
@@ -1419,13 +1427,13 @@ const WS=[
   {id:'news',label:'Nachrichten',icon:'i-news',tabs:[['top','Übersicht','i-news'],['desk','Ressorts','i-grid'],['stories','Themenlagen','i-layers'],['trends','Trends','i-trend'],['studies','Studien','i-book'],['markets','Märkte','i-chart']],versteckt:['archive']},
   {id:'monitor',label:'Beobachten',icon:'i-eye',tabs:[]},
   {id:'policy',label:'Verfahren & Recht',kurz:'Verfahren',icon:'i-policy',tabs:[['procs','Verfahren','i-policy'],['votes','Abstimmungen','i-vote'],['docs','Dokumente','i-doc'],['events','Termine','i-cal'],['rulings','Urteile','i-scale'],['elections','Wahlen','i-vote']]},
-  {id:'stakeholder',label:'Akteure',icon:'i-people',tabs:[['people','Personen','i-user'],['orgs','Organisationen','i-building'],['committees','Gremien','i-people'],['institutions','Institutionen','i-bank']]},
+  {id:'stakeholder',label:'Akteure',icon:'i-people',tabs:[['people','Personen','i-user'],['orgs','Organisationen','i-building'],['committees','Gremien','i-people'],['institutions','Institutionen','i-bank'],['stellen','Stellenangebote','i-building']]},
   {id:'reporting',label:'Briefings',icon:'i-report',tabs:[['ressorts','Ressort-Briefings','i-report'],['brief','Eigene Briefings','i-report'],['tageslage','Tageslage','i-book'],['newsletter','Newsletter','i-mail']]},
 ];
 /* Region gilt nur dort, wo sie etwas filtert – bei Kursen zum Beispiel nicht. */
 const REGION_TABS={news:['top','desk','stories','trends','studies','archive'],stakeholder:['people','orgs','committees','institutions']};
 const REGION_SHORT={all:'Alle',de:'DE',eu:'EU',us:'USA',china:'China',welt:'Welt'};
-const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',kammer:'all',fraktion:'all',voteErg:'all',voteArt:'all',voteWp:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
+const S={ws:'news',tab:store.get('tab',{news:'top',policy:'procs',stakeholder:'people',reporting:'brief'}),region:store.get('region',PREF.region||'all'),q:'',lq:{},focus:null,topic:'all',herkunft:'all',src:'all',gericht:'all',parl:'all',kammer:'all',fraktion:'all',voteErg:'all',voteArt:'all',voteWp:'all',ebene:store.get('ebene','all'),deskWin:24,deskOpen:{},sort:'new',view:store.get('view','list'),win:24,topWin:store.get('topwin',24),trendMode:'topics',topKurz:store.get('topkurz',false),trendPick:null,archRange:30,docType:'all',docHaus:'all',calMode:'list',calMonth:0,calDay:null,fold:store.get('fold',{}),mkRange:store.get('mkrange','1m'),mkQ:'',shown:40,openSrc:null,inlineId:null,reader:null,readerList:[],monOpen:new Set(DEFAULT_MONITORS.map(m=>m.id)),monForm:null,copyFmt:store.get('copyfmt','full'),clearAfterCopy:false,searchType:'all',brief:store.get('brief','b1'),briefCfg:false,user:store.get('user',null)};
 let MARKS=new Set(store.get('marks',[]));
 let MONITORS=store.get('monitors',DEFAULT_MONITORS).map(m=>({...MON_FELDER,...m,kw:m.kw||[],pflicht:m.pflicht||[],nicht:m.nicht||[]}));
 let BRIEFS=store.get('briefs',DEFAULT_BRIEFS);
@@ -1560,6 +1568,30 @@ function render(){
   g('foot-upd').textContent='Stand '+fmtTime(NOW);
   if(g('stand')){const t=window.META_STAND;g('stand').textContent=t?('Stand '+(sameDay(t,NOW)?fmtTime(t):WD[new Date(t).getDay()]+' '+fmtTime(t))+' Uhr'):''}
   if(S.focus){const el=g(S.focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}S.focus=null}
+  try{requestAnimationFrame(chipsKappen)}catch(e){}
+}
+/* Auf dem Handy höchstens zwei Reihen Chips. Was darüber hinausgeht, steckt
+   hinter "Mehr"; ist ein gewählter Chip verdeckt, bleibt die Leiste offen.
+   Der Zustand gilt je Leiste (über ihren Namen) bis zum Neuladen. */
+const istMobil=()=>!!(window.matchMedia&&window.matchMedia('(max-width: 720px)').matches);
+const CHIPS_OFFEN=new Set();
+function chipsKappen(){
+  if(!istMobil())return;
+  document.querySelectorAll('#page .chips, #sheet .chips').forEach((el,i)=>{
+    if(el.dataset.gekappt)return;
+    const chips=[...el.querySelectorAll('.chip')];if(chips.length<4)return;
+    const h=chips[0].offsetHeight;if(!h)return;
+    const gap=parseFloat(getComputedStyle(el).rowGap)||6,grenze=2*h+gap+2;
+    if(el.scrollHeight<=grenze+2)return;
+    const name=el.getAttribute('aria-label')||('chips'+i);
+    const gewaehlt=chips.find(c=>c.getAttribute('aria-pressed')==='true');
+    const verdeckt=gewaehlt&&gewaehlt.offsetTop-el.offsetTop>=grenze-4;
+    el.dataset.gekappt='1';
+    const knopf=document.createElement('button');knopf.className='chips-mehr';knopf.type='button';
+    const setze=offen=>{el.style.maxHeight=offen?'':grenze+'px';el.classList.toggle('gekappt',!offen);knopf.textContent=offen?'Weniger ▴':`Mehr ▾ (${chips.length})`;knopf.setAttribute('aria-expanded',offen)};
+    knopf.onclick=()=>{const offen=!el.classList.contains('gekappt');offen?CHIPS_OFFEN.delete(name):CHIPS_OFFEN.add(name);setze(!offen)};
+    el.after(knopf);setze(CHIPS_OFFEN.has(name)||verdeckt);
+  });
 }
 
 /* ── Nachrichten: Übersicht ── */
@@ -2110,13 +2142,13 @@ function renderTop(){
   window.TOPLIST=top.map(a=>a.id);window.ALLLIST=all.map(a=>a.id);
   let h=`<div class="ov ${S.view==='paper'?'wide':''}"><div class="ov-main">`;
   h+=secHd('top','Top-Meldungen',(S.region!=='all'?REGION_NAME[S.region]:''),
-    `<div class="seg" role="group" aria-label="Zeitraum">${[[6,'6 Std.'],[12,'12 Std.'],[24,'24 Std.'],[48,'48 Std.']].map(([v,l])=>`<button aria-pressed="${win===v}" onclick="S.topWin=${v};store.set('topwin',${v});render()">${l}</button>`).join('')}</div>${copyBtn(TOPLIST,'Top-Meldungen')}`);
+    `<div class="seg" role="group" aria-label="Zeitraum">${[[6,'6 Std.'],[12,'12 Std.'],[24,'24 Std.'],[48,'48 Std.']].map(([v,l])=>`<button aria-pressed="${win===v}" onclick="S.topWin=${v};store.set('topwin',${v});render()">${l}</button>`).join('')}</div><button class="icon-btn" aria-pressed="${!!S.topKurz}" title="${S.topKurz?'Mit Kurztext anzeigen':'Nur Schlagzeilen (Kurzansicht)'}" aria-label="Kurzansicht" onclick="S.topKurz=!S.topKurz;store.set('topkurz',S.topKurz);render()">${S.topKurz?'☰':'≡'}</button>${copyBtn(TOPLIST,'Top-Meldungen')}`);
   h+=body('top',`<div class="box top">${top.length?top.map((a,i)=>{const cl=clusterArts(a),auf=S.openSrc===a.id;
     /* Liegt eine geschriebene Schlagzeile vor, steht sie oben und die
        Feed-Überschrift tritt zurück – die Herkunft bleibt in der Zeile
        darunter sichtbar, und im Lesefenster steht ohnehin das Original. */
     const k=(window.KISCHLAG||{})[a.id];
-    return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl"${k?` title="${esc(a.title)}"`:''}>${esc(k&&k.s?k.s:a.title)}${k&&k.t?`<span class="ki-satz">${esc(k.t)}</span>`:''}</div>
+    return `<div class="top-row" role="button" tabindex="0" onclick="openReader('${a.id}',TOPLIST)" onkeydown="rowKey(event,'${a.id}')"><span class="rank">${i+1}</span><div class="ttl"${k?` title="${esc(a.title)}"`:''}>${esc(k&&k.s?k.s:a.title)}${k&&k.t&&!S.topKurz?`<span class="ki-satz">${esc(k.t)}</span>`:''}</div>
       <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${k?'<span class="pill" style="background:#ede9fe;color:#6d28d9" title="Schlagzeile und Satz automatisch geschrieben">KI</span>':''}${cl.length?`<button class="pill blue" aria-expanded="${auf}" title="Quellen anzeigen" onclick="event.stopPropagation();S.openSrc=${auf?'null':`'${a.id}'`};render()">${cl.length+1} Quellen ${auf?'▴':'▾'}</button>`:'<span class="pill grey" title="Bisher berichtet nur dieses Haus">1 Quelle</span>'}${zugangPill(a)}</div>${starHTML(a.id)}
       ${auf?`<div class="srclist">${[a,...cl].map(x=>`<button class="srcrow" onclick="event.stopPropagation();openReader('${x.id}',${J([a.id,...cl.map(y=>y.id)])})"><span class="src ${SRC_KIND[x.src]||''}">${esc(srcName(x.src))}</span><span class="t">${esc(x.title)}</span><span class="note">${fmtAgo(x.date)}</span></button>`).join('')}</div>`:''}</div>`}).join(''):'<div class="empty"><b>Keine Top-Meldung</b>In dieser Region gab es in den letzten 24 Stunden nichts, das mehrere Quellen aufgegriffen haben.</div>'}</div>`);
   const topics=[...new Set(base.flatMap(a=>a.topics))].filter(ressortTauglich).map(t=>[t,base.filter(a=>a.topics.includes(t)).length]).sort((a,b)=>b[1]-a[1]);
@@ -3085,14 +3117,14 @@ async function epEinzelLaden(id,monat){
 function epEinzelZeigen(box){
   const liste=(EP_MONAT[box.dataset.monat]||{})[box.dataset.id]||[];
   const f=box._f||(box._f={land:'',fr:'',st:'',q:''});
-  const zeilen=liste.map(([mid,st])=>({...(EP_ABG[mid]||{name:mid,land:'',fraktion:''}),st})).filter(x=>(!f.land||x.land===f.land)&&(!f.fr||x.fraktion===f.fr)&&(!f.st||x.st===f.st)&&(!f.q||norm(x.name).includes(norm(f.q))));
+  const zeilen=liste.map(([mid,st])=>({...(EP_ABG[mid]||{name:mid,land:'',fraktion:''}),st,mid})).filter(x=>(!f.land||x.land===f.land)&&(!f.fr||x.fraktion===f.fr)&&(!f.st||x.st===f.st)&&(!f.q||norm(x.name).includes(norm(f.q))));
   const laender=[...new Set(liste.map(([m])=>(EP_ABG[m]||{}).land).filter(Boolean))].sort((a,b)=>(EP_LAND[a]||a).localeCompare(EP_LAND[b]||b));
   const frak=[...new Set(liste.map(([m])=>(EP_ABG[m]||{}).fraktion).filter(Boolean))].sort();
   const sel=(k,opts,leer)=>`<select onchange="const b=this.closest('.ep-einzel');b._f.${k}=this.value;epEinzelZeigen(b)"><option value="">${leer}</option>${opts.map(([v,l])=>`<option value="${esc(v)}"${f[k]===v?' selected':''}>${esc(l)}</option>`).join('')}</select>`;
   const ST={J:'dafür',N:'dagegen',E:'Enthaltung','-':'nicht abgestimmt'};
   box.innerHTML=`<div class="ep-filter">${sel('land',laender.map(l=>[l,EP_LAND[l]||l]),'Alle Länder')}${sel('fr',frak.map(x=>[x,x]),'Alle Fraktionen')}${sel('st',[['J','dafür'],['N','dagegen'],['E','Enthaltung']],'Alle Stimmen')}<input type="search" placeholder="Name …" value="${esc(f.q)}" oninput="const b=this.closest('.ep-einzel');b._f.q=this.value;clearTimeout(b._t);b._t=setTimeout(()=>{epEinzelZeigen(b);const i=b.querySelector('input');i&&(i.focus(),i.setSelectionRange(i.value.length,i.value.length))},250)"></div>
     <p class="note">${zeilen.length} von ${liste.length} Abgeordneten</p>
-    <div class="ep-liste">${zeilen.slice(0,800).map(x=>`<div class="ep-z ${x.st}"><span>${esc(x.name)}</span><span class="note">${esc(EP_LAND[x.land]||x.land)} · ${esc(x.fraktion||'')}</span><span class="ep-st">${ST[x.st]||''}</span></div>`).join('')}</div>`;
+    <div class="ep-liste">${zeilen.slice(0,800).map(x=>`<div class="ep-z ${x.st}"><span>${(pid=>pid?`<a href="#" onclick="event.preventDefault();openReader('${pid}')">${esc(x.name)}</a>`:esc(x.name))(epPersonFuer(x.mid))}</span><span class="note">${esc(EP_LAND[x.land]||x.land)} · ${esc(x.fraktion||'')}</span><span class="ep-st">${ST[x.st]||''}</span></div>`).join('')}</div>`;
 }
 /* Daten des eigenen Energie-Dashboards (energie.json): je Datenreihe der
    letzte Wert und der Verlauf der ersten Zahlenreihe. */
@@ -3100,12 +3132,65 @@ let ENERGIE=null,_enLaedt=false;
 async function energieLaden(){if(ENERGIE||_enLaedt)return;_enLaedt=true;try{ENERGIE=(await hole('energie.json'))||{dateien:{}}}catch(e){ENERGIE={dateien:{}}}_enLaedt=false;render()}
 function energieHTML(){
   if(!ENERGIE){energieLaden();return ''}
-  const R=Object.entries(ENERGIE.dateien||{}).filter(([p,z])=>z.art==='reihe'&&z.letzter&&(z.felder||[]).length&&!/news|wetter|weather/i.test(z.name+p));
-  if(!R.length)return '';
+  const D=Object.entries(ENERGIE.dateien||{}).filter(([p,z])=>!/news|meldung|artikel/i.test(z.name+p));
+  if(!D.length)return '';
   const zahl=v=>typeof v==='number'?fmtNum(v,Math.abs(v)<10?3:Math.abs(v)<1000?2:0):esc(String(v));
-  return `<details class="auf" style="margin:10px 0"><summary><b>Energie Deutschland</b> <span class="note">· Strom, Gas, Kraftstoffe, Heizöl, Speicher – aus dem eigenen Energie-Dashboard</span></summary>
-    <div class="dd-stat">${R.map(([p,z])=>{const f=z.felder[0],r=(z.reihe||[]).map(x=>x[f]).filter(x=>typeof x==='number');const t=z.zeitfeld&&z.letzter[z.zeitfeld];
-      return `<div class="dd-zahl"><span class="note">${esc(z.name)}</span><b>${zahl(z.letzter[f])}</b><span class="note">${esc(f)}${t?' · '+esc(String(t).slice(0,16)):''}</span>${z.felder.slice(1,4).map(k=>`<span class="note">${esc(k)}: ${zahl(z.letzter[k])}</span>`).join('')}${r.length>2?sparkline(r,r[r.length-1]>=r[0]):''}</div>`}).join('')}</div></details>`;
+  const lesbar=k=>String(k).replace(/_/g,' ').replace(/\b(eur|usd|mwh|kwh|pct)\b/gi,m=>m.toUpperCase());
+  const datei=p=>p.replace(/^data\//,'').replace(/\.(jsonl?|csv)$/,'');
+  /* je Datei eine Kachel: Reihe → alle Zahlenfelder des letzten Eintrags und
+     Verlauf der ersten; Objekt → seine Zahlen und Unterbereiche */
+  const kachel=([p,z])=>{
+    if(z.art==='reihe'&&z.letzter){const f=(z.felder||[])[0],r=(z.reihe||[]).map(x=>x[f]).filter(x=>typeof x==='number'),t=z.zeitfeld&&z.letzter[z.zeitfeld];
+      return `<div class="dd-zahl"><span class="note">${esc(datei(p))}</span>${(z.felder||[]).slice(0,8).map((k,i)=>i===0?`<b>${zahl(z.letzter[k])}</b><span class="note">${esc(lesbar(k))}</span>`:`<span class="note">${esc(lesbar(k))}: ${zahl(z.letzter[k])}</span>`).join('')}${r.length>2?sparkline(r,r[r.length-1]>=r[0]):''}${t?`<span class="note">Stand ${esc(String(t).slice(0,16))} · ${z.anzahl} Einträge</span>`:''}</div>`}
+    const w=Object.entries(z.werte||{}),teile=Object.entries(z.teile||{});
+    if(!w.length&&!teile.length)return '';
+    return `<div class="dd-zahl"><span class="note">${esc(datei(p))}</span>${w.slice(0,12).map(([k,v])=>`<span>${esc(lesbar(k))}: <b>${zahl(v)}</b></span>`).join('')}${teile.slice(0,8).map(([k,t])=>{const l=t.letzter||t.werte||{};const e=Object.entries(l).filter(([,v])=>typeof v==='number').slice(0,4);return e.length?`<span class="note">${esc(lesbar(k))}: ${e.map(([kk,v])=>esc(lesbar(kk))+' '+zahl(v)).join(' · ')}</span>`:''}).join('')}${z.stand?`<span class="note">Stand ${esc(String(z.stand).slice(0,16))}</span>`:''}</div>`};
+  const gruppen={};D.forEach(e=>{(gruppen[e[1].name]=gruppen[e[1].name]||[]).push(e)});
+  const reihenfolge=['Strompreis Day-Ahead','Strommix','Kraftstoffpreise','Heizöl','Gasspeicher','TTF Erdgas','Gas','Rohöl','CO₂','Verbraucherpreise Energie','Jet-Fuel','Stromflüsse','Wechselkurse','Wetter'];
+  const namen=Object.keys(gruppen).sort((a,b)=>((reihenfolge.indexOf(a)+1)||99)-((reihenfolge.indexOf(b)+1)||99)||a.localeCompare(b));
+  return `<details class="auf" style="margin:10px 0"><summary><b>Energie Deutschland und Welt</b> <span class="note">· ${D.length} Datenreihen aus dem eigenen Energie-Dashboard</span></summary>
+    ${namen.map((n,i)=>`<details class="auf" ${i<3?'open':''} style="margin:6px 0 6px 8px"><summary>${esc(n)} <span class="note">· ${gruppen[n].length}</span></summary><div class="dd-stat">${gruppen[n].map(kachel).join('')}</div></details>`).join('')}
+    <p class="note">Historische Einordnung, Weitergabe an Verbraucher und Prognosen: Trends → Energie.</p></details>`;
+}
+/* ── Europaabgeordnete: Abstimmungsverhalten im Profil, wie beim Bundestag ──
+   Zuordnung über den Namen (Vor- und Nachname, Reihenfolge egal). Geladen
+   wird erst beim Öffnen des Profils: Verzeichnis, Abstimmungsliste und die
+   Einzelstimmen der letzten Monate. */
+const nameSchl=n=>norm(String(n||'')).split(/\s+/).filter(w=>w.length>1).sort().join(' ');
+function epMidFuer(x){if(!EP_ABG)return null;if(x.ep_id&&EP_ABG[x.ep_id])return String(x.ep_id);const k=nameSchl(x.name);
+  for(const [mid,a] of Object.entries(EP_ABG))if(nameSchl(a.name)===k)return mid;return null}
+function epPersonFuer(mid){const a=(EP_ABG||{})[mid];if(!a)return null;const k=nameSchl(a.name);
+  if(!window._EPPERS){window._EPPERS={};(PEOPLE||[]).forEach(p=>{if(parlGruppe(p)==='ep')window._EPPERS[nameSchl(p.name)]=p.id})}
+  return window._EPPERS[k]||null}
+function epProfilHTML(x){
+  if(parlGruppe(x)!=='ep')return '';
+  setTimeout(()=>epProfilLaden(x.id),0);
+  return `<div id="ep-profil-${esc(x.id)}"><p class="note" style="margin-top:12px">Abstimmungen im Europaparlament werden geladen …</p></div>`;
+}
+async function epProfilLaden(pid){
+  const box=g('ep-profil-'+pid),x=ITEMS[pid];if(!box||!x)return;
+  try{
+    if(!EPV)EPV=(await hole('ep_votes.json'))||{abstimmungen:[]};
+    if(!EP_ABG)EP_ABG=(await hole('ep_abgeordnete.json'))||{};
+  }catch(e){}
+  const mid=epMidFuer(x);
+  if(!mid){box.innerHTML='';return}
+  const votes=(EPV.abstimmungen||[]).slice(0,300);
+  const monate=[...new Set(votes.map(v=>(v.datum||'').slice(0,7)))].slice(0,4);
+  for(const m of monate){if(!EP_MONAT[m]){try{EP_MONAT[m]=(await hole('ep_stimmen/'+m+'.json'))||{}}catch(e){EP_MONAT[m]={}}}}
+  const fr=(EP_ABG[mid]||{}).fraktion||'';
+  const liste=[];
+  votes.forEach(v=>{const e=((EP_MONAT[(v.datum||'').slice(0,7)]||{})[v.id]||[]).find(z=>String(z[0])===String(mid));if(!e)return;
+    const f=(v.fraktionen||[]).find(f=>f.name===fr);const mehr=f?(f.ja>=f.nein&&f.ja>=f.enth?'J':f.nein>=f.enth?'N':'E'):null;
+    liste.push({v,st:e[1],abw:mehr&&e[1]!=='-'&&e[1]!==mehr})});
+  if(!liste.length){box.innerHTML='';return}
+  const n=liste.length,teil=liste.filter(l=>l.st!=='-').length,abw=liste.filter(l=>l.abw).length;
+  const z={J:0,N:0,E:0};liste.forEach(l=>{if(z[l.st]!=null)z[l.st]++});
+  const ST={J:'dafür',N:'dagegen',E:'Enthaltung','-':'nicht abgestimmt'};
+  box.innerHTML=`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Abstimmungen im Europaparlament</h2><span class="cnt">${n}</span></div>
+    <p class="note">Teilnahme ${Math.round(teil/n*100)} % · ${z.J} dafür · ${z.N} dagegen · ${z.E} Enthaltungen${fr?` · mit der Mehrheit der Fraktion ${esc(fr)}: ${teil?Math.round((teil-abw)/teil*100):0} %${abw?`, ${abw}-mal abweichend`:''}`:''}</p>
+    <div class="box">${liste.slice(0,40).map(l=>`<div class="ep-z ${l.st}"><span>${esc(l.v.titel)}</span><span class="note">${esc(datumKurz(l.v.datum))}${l.abw?' · <b>gegen die Fraktion</b>':''}</span><span class="ep-st">${ST[l.st]||''}</span></div>`).join('')}</div>
+    <p class="note"><a href="#" onclick="event.preventDefault();S.voteArt='ep';go('policy','votes')">Alle Abstimmungen des Europaparlaments</a></p>`;
 }
 function renderEPVotes(kopf){
   if(!EPV){epLaden();return kopf+'<div class="box"><div class="empty"><b>Abstimmungen des Europaparlaments werden geladen …</b></div></div>'}
@@ -3559,7 +3644,30 @@ function kammerLabel(k,leute){
   const p=leute.find(x=>kammerVon(x)===k&&x.org);
   return (p&&p.org)||(window.SEATS&&SEATS[k]&&SEATS[k].label)||(SITZE_AMTLICH[k]&&SITZE_AMTLICH[k].label)||PARL_LABEL[parlGruppe({parl:k})]||k;
 }
+/* ── Stellenangebote (stellen.json): beim Research-Abruf der Banken und
+   Institute gefundene Stellenanzeigen – filterbar nach Haus und Art. ── */
+let STELLEN=null,_stLaedt=false;
+async function stellenLaden(){if(STELLEN||_stLaedt)return;_stLaedt=true;try{STELLEN=(await hole('stellen.json'))||{eintraege:[]}}catch(e){STELLEN={eintraege:[]}}_stLaedt=false;render()}
+const STELLEN_ART=[['praktikum',/praktik|intern(ship)?\b|stage\b|werkstudent|working student|trainee|volontariat|azubi|ausbildung/i,'Praktikum, Werkstudium, Einstieg'],
+  ['analyse',/analyst|research|ökonom|economist|referent/i,'Analyse und Research'],['it',/engineer|developer|entwickler|it\b|data|software|cloud|security/i,'IT und Daten'],
+  ['fuehrung',/manager|leiter|head of|director|lead\b/i,'Führung und Management']];
+function stellenArt(t){const a=STELLEN_ART.find(([,re])=>re.test(t||''));return a?a[0]:'sonst'}
+function renderStellen(){
+  const kopf=`<div class="sec-hd" style="margin-top:4px"><h2>Stellenangebote</h2><span class="cnt">${STELLEN?(STELLEN.eintraege||[]).length:''}</span></div>`;
+  if(!STELLEN){stellenLaden();return kopf+'<div class="box"><div class="empty"><b>Wird geladen …</b></div></div>'}
+  const E=STELLEN.eintraege||[];
+  if(!E.length)return kopf+'<div class="box"><div class="empty"><b>Noch keine Stellenangebote</b>Sie werden beim täglichen Research-Abruf der Banken und Institute gesammelt.</div></div>';
+  const haeuser=[...new Set(E.map(e=>e.haus||e.institut).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const f=S.stellenF||(S.stellenF={haus:'',art:'',q:''});
+  const L=E.filter(e=>(!f.haus||(e.haus||e.institut)===f.haus)&&(!f.art||stellenArt(e.titel)===f.art)&&(!f.q||norm(e.titel+' '+(e.haus||'')).includes(norm(f.q))));
+  const n=a=>E.filter(e=>stellenArt(e.titel)===a).length;
+  return kopf+`<div class="chips wrap" role="group" aria-label="Art" style="margin-bottom:8px"><button class="chip" aria-pressed="${!f.art}" onclick="S.stellenF.art='';render()">Alle</button>${[...STELLEN_ART.map(([k,,l])=>[k,l]),['sonst','Sonstige']].map(([k,l])=>`<button class="chip" aria-pressed="${f.art===k}" onclick="S.stellenF.art='${k}';render()">${l} <span class="n">${n(k)}</span></button>`).join('')}</div>
+    <div class="ep-filter"><select onchange="S.stellenF.haus=this.value;render()"><option value="">Alle Häuser (${haeuser.length})</option>${haeuser.map(h=>`<option${f.haus===h?' selected':''}>${esc(h)}</option>`).join('')}</select><input type="search" placeholder="Titel oder Ort …" value="${esc(f.q)}" oninput="S.stellenF.q=this.value;clearTimeout(window._stT);window._stT=setTimeout(()=>{render();const i=document.querySelector('.ep-filter input');i&&(i.focus(),i.setSelectionRange(i.value.length,i.value.length))},300)"></div>
+    <p class="note">${L.length} von ${E.length} Anzeigen · aus der Research-Suche bei Banken und Instituten, 90 Tage</p>
+    <div class="box">${L.slice(0,200).map(e=>`<div class="ep-z"><span><a href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.titel)}</a></span><span class="note">${esc(e.haus||e.institut||'')} · ${esc(datumKurz(e.datum))}</span><span></span></div>`).join('')}</div>`;
+}
 function renderStakeholder(tab){
+  if(tab==='stellen')return renderStellen();
   const cfg={people:['Personen',PEOPLE,'Personen durchsuchen \u2013 Name, Rolle, Gremium, Wahlkreis \u2026','Niemand gefunden'],orgs:['Organisationen',ORGS,'Organisationen durchsuchen \u2026','Keine Organisation'],committees:['Gremien',COMMITTEES,'Gremien durchsuchen \u2026','Kein Gremium'],institutions:['Institutionen',INSTITUTIONS,'Institutionen durchsuchen \u2013 Gerichte, EZB, L\u00e4nder \u2026','Keine Institution']}[tab];
   const mitParl=tab==='people'||tab==='committees';
   /* Vier Stufen, jede enger als die vorige: Region \u2192 Ebene \u2192 Parlament
@@ -3886,6 +3994,7 @@ function openReader(id,list){
       ${x.wiki?`<p class="note" style="margin-top:10px">${esc(x.wiki)}${x.wikiUrl?` <a href="${esc(x.wikiUrl)}" target="_blank" rel="noopener">Wikipedia</a>`:''}</p>`:''}
       ${aus.length?`<div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">Ausschüsse</h2></div><div class="reader-tags">${aus.map(k=>`<button class="chip" ${ITEMS[k.id]?`onclick="openReader('${k.id}')"`:''}>${esc(k.name.split(' – ')[0])}${k.role?` <span class="n">${esc(k.role)}</span>`:''}</button>`).join('')}</div>`:''}
       ${stimmverhaltenHTML(x)}
+      ${epProfilHTML(x)}
       ${redenHTML(x)}
       <div class="sec-hd" style="margin:16px 0 4px"><h2 style="font-size:var(--fs-md)">In Meldungen erwähnt</h2><span class="cnt">${men.length}</span></div>${men.length?`<div class="box list">${men.slice(0,20).map(a=>rowHTML(a,'READERSUB',true)).join('')}</div>`:'<p class="note">Keine Erwähnung in den letzten Meldungen.</p>'}
       ${(()=>{
@@ -5686,6 +5795,7 @@ function renderDeepDive(){
     <h3 class="dd-titel">${esc(a.titel||t.thema)}</h3>
     ${(a.stichpunkte||[]).length?`<ul class="ml-punkte dd-stich">${a.stichpunkte.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:''}
     ${a.kern&&(a.stichpunkte||[]).length?`<details class="auf"><summary>Ausführlich</summary><p class="dd-kern">${esc(a.kern)}</p></details>`:a.kern?`<p class="dd-kern">${esc(a.kern)}</p>`:''}
+    <details class="auf dd-mehr" ${istMobil()?'':'open'}><summary>Analyse: Zahlen, Folgen, Gewinner und Verlierer, Parteien</summary>
     ${(a.zahlen||[]).length?`<div class="dd-zahlen">${a.zahlen.map(z=>`<div class="dd-zahl"><b>${esc(z.wert)}</b><span>${esc(z.bedeutung||'')}</span>${z.beleg?`<span class="note">${m(z.beleg)}</span>`:''}</div>`).join('')}</div>`:''}
     ${(t.statistik||[]).length||(t.kurse||[]).length?`<div class="dd-stat">${(t.statistik||[]).map(st=>{const r=st.reihe||[],l=r[r.length-1]||[];return `<div class="dd-zahl"><b>${esc(String(l[1]))}</b><span>${esc(st.name)}</span><span class="note">${esc(l[0]||'')} · ${esc(st.quelle)}</span>${r.length>2?sparkline(r.map(x=>x[1]),r[r.length-1][1]>=r[0][1]):''}</div>`}).join('')}${(t.kurse||[]).map(k=>`<div class="dd-zahl"><b>${fmtNum(k.wert,2)} ${esc(k.einheit||'')}</b><span>${esc(k.name)}</span>${k.jahr_pct!=null?`<span class="note">${k.jahr_pct>=0?'+':'−'}${fmtNum(Math.abs(k.jahr_pct),1)} % in einem Jahr</span>`:''}</div>`).join('')}</div>`:''}
     <div class="dd-block"><h4>Verlauf der Debatte</h4>${ddBalken(t.verlauf||[])}${a.verlauf?`<p class="note">${esc(a.verlauf)}</p>`:''}</div>
@@ -5708,6 +5818,7 @@ function renderDeepDive(){
     </details>
     ${(a.offene_fragen||[]).length?`<div class="dd-block"><h4>Offene Fragen</h4><ul class="ml-punkte">${a.offene_fragen.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></div>`:''}
     ${t.gestrichen?`<p class="note">${t.gestrichen} ${t.gestrichen===1?'Satz':'Sätze'} mit nicht belegten Zahlen gestrichen.</p>`:''}
+    </details>
   </article>`}).join('');
   /* Debatten der Vortage: bleiben lesbar, blassen mit jedem Tag weiter aus.
      Kurzfassung sichtbar, alles Weitere aufklappbar. */
@@ -5723,6 +5834,26 @@ function renderDeepDive(){
         </details>`}).join('')}</div>`}).join('');
   }
   return h;
+}
+/* Macht aus jeder Zwischenüberschrift (.sec-hd) einen einklappbaren
+   Abschnitt. Auf dem Handy ist anfangs nur der erste offen (die Einschätzungen
+   selbst stehen davor und bleiben immer sichtbar),
+   am Rechner offen; geöffnete und geschlossene merkt sich die App. */
+const ABSCHNITT_ZU=store.get('abschnitte',{});
+function abschnitteEinklappbar(html,praefix){
+  const t=document.createElement('template');t.innerHTML=html;
+  const kinder=[...t.content.childNodes];let aktuell=null,nr=0;const out=document.createDocumentFragment();
+  kinder.forEach(k=>{
+    if(k.nodeType===1&&k.classList.contains('sec-hd')){
+      nr++;
+      const titel=(k.querySelector('h2')||k).textContent.trim(),schl=praefix+':'+titel;
+      const zu=schl in ABSCHNITT_ZU?ABSCHNITT_ZU[schl]:(istMobil()&&nr>1);
+      const d=document.createElement('details');d.className='auf vs-abschnitt';if(!zu)d.open=true;
+      d.setAttribute('ontoggle',`ABSCHNITT_ZU['${schl.replace(/'/g,"\\'")}']=!this.open;store.set('abschnitte',ABSCHNITT_ZU)`);
+      const su=document.createElement('summary');su.appendChild(k);d.appendChild(su);out.appendChild(d);aktuell=d;return}
+    (aktuell||out).appendChild(k);
+  });
+  const box=document.createElement('div');box.appendChild(out);return box.innerHTML;
 }
 function renderVorausschau(){
   if(!window.WK){wkLaden();return `<div class="box"><div class="empty"><b>Vorausschau wird geladen …</b></div></div>`}
@@ -5782,6 +5913,34 @@ function renderVorausschau(){
   if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
     <p class="note" style="margin-bottom:6px">Erste Anzeichen, aber noch zu dünn belegt – meist nur ein Haus.</p>
     <div class="box">${W.beobachtung.map(o=>`<div class="rul" style="cursor:default;display:block;padding:9px 14px"><div class="meta"><span class="pill grey">${esc(o.id)}</span><span>${esc(o.bereich)}</span><span>${o.haeuser} ${o.haeuser===1?'Haus':'Häuser'}</span></div><div class="ttl" style="margin-top:3px">${esc(o.titel)}${(o.auch||[]).length?` <span class="note">· passt auch zu ${o.auch.map(x=>esc(x.id)+' '+esc(x.titel)).join(', ')}</span>`:''}</div>${o.kennzahl&&wkKurs(o.kennzahl)?(()=>{const m=wkKurs(o.kennzahl),d=mkData(m,'1w');return `<div class="note" style="margin-top:2px">${esc(m.n)}: <b>${fmtNum(d.last,m.dec)}</b> (${d.c>=0?'+':'−'}${fmtNum(Math.abs(d.c),d.pp?2:1)}${d.pp?' Pkt.':' %'} in 7 Tagen)</div>`})():''}${vsEinmal(o.meldungen).map(m=>{const a=m.id&&ITEMS[m.id];return `<div class="note" style="margin-top:2px">${a?`<a href="#" onclick="event.preventDefault();openReader('${a.id}')">${esc(m.titel)}</a>`:esc(m.titel)} · ${esc(a?a.src:m.quelle)}</div>`}).join('')}</div>`).join('')}</div>`;
+  /* ── Lernen aus der eigenen Bilanz (lernen.py) ── */
+  if(W.lernen){const L=W.lernen,G=L.guete,kurve=L.lernkurve||[];
+    const zwei=(a,b2)=>{if(a.length<2)return '';const all=[...a,...b2.filter(x=>x!=null)],mn=Math.min(...all),mx=Math.max(...all),sp=mx-mn||1,X=i=>i/(a.length-1)*300,Y=v=>40-(v-mn)/sp*36;
+      const linie=(r,c,d)=>`<polyline fill="none" stroke="${c}" stroke-width="2" ${d?'stroke-dasharray="4 3"':''} points="${r.map((v,i)=>v==null?'':X(i)+','+Y(v)).filter(Boolean).join(' ')}"/>`;
+      return `<svg viewBox="0 0 300 44" style="width:100%;height:56px">${linie(b2,'var(--muted)',true)}${linie(a,'var(--accent,#3b82f6)')}</svg>`};
+    b+=`<details class="auf" style="margin-top:16px"><summary><b>Lernen aus der eigenen Bilanz</b> <span class="note">· ${L.geprueft} geprüft · ${L.offen} offen${L.pool_aktiv?' · Gewichte aktiv':''}${L.kalibrierung?' · Kalibrierung aktiv':''}</span></summary>
+      <div class="box" style="padding:10px 14px;margin-top:6px">
+      <p class="note" style="margin:0 0 8px">Jede Einschätzung wird nach Ablauf ihrer Frist am Kurs geprüft. Daraus lernt das System, welchem Baustein es wie stark trauen soll, und ob seine Prozentzahlen zu forsch oder zu vorsichtig sind.</p>
+      <b>Gewichte der Bausteine</b> <span class="note">(Fixed-Share; ${L.pool_aktiv?'werden genutzt':'ab 10 geprüften Fällen genutzt'})</span>
+      ${Object.entries(L.gewichte||{}).map(([k,v])=>`<div class="ep-fr" style="grid-template-columns:1fr 110px 44px"><span>${esc((L.namen||{})[k]||k)}</span><div class="ep-balken"><i class="ja" style="width:${Math.round(v*100)}%"></i></div><span class="note">${Math.round(v*100)} %</span></div>`).join('')}
+      ${G?`<p style="margin:10px 0 2px"><b>Güte</b> <span class="note">(Brier-Zerlegung nach Murphy, ${G.n} Fälle)</span></p>
+      <dl class="vs-dl"><dt>Brier-Wert</dt><dd>${fmtNum(G.brier,3)} <span class="note">(0 = perfekt, 0,25 = Münzwurf)</span></dd><dt>Zuverlässigkeit</dt><dd>${fmtNum(G.zuverlaessigkeit,3)} <span class="note">(Abweichung der Prozentzahlen von der Wirklichkeit – kleiner ist besser)</span></dd><dt>Trennschärfe</dt><dd>${fmtNum(G.trennschaerfe,3)} <span class="note">(wie gut eintretende von nicht eintretenden Fällen unterschieden werden – größer ist besser)</span></dd><dt>Trefferquote</dt><dd>${Math.round(G.trefferquote*100)} %</dd></dl>
+      ${(G.diagramm||[]).length?`<p class="note" style="margin:8px 0 2px"><b>Zuverlässigkeitsdiagramm</b> – vorhergesagt gegen eingetreten je Klasse</p>${G.diagramm.map(d=>`<div class="ep-fr" style="grid-template-columns:76px 1fr 90px"><span class="note">${esc(d.klasse)}</span><div class="ep-balken" title="vorhergesagt ${Math.round(d.vorhergesagt*100)} %, eingetreten ${Math.round(d.eingetreten*100)} %"><i class="ja" style="width:${Math.round(d.eingetreten*100)}%"></i></div><span class="note">${Math.round(d.eingetreten*100)} % von ${d.n}</span></div>`).join('')}`:''}`:'<p class="note" style="margin-top:8px">Noch keine Einschätzung hat ihre Frist erreicht – die Güte erscheint, sobald die ersten geprüft sind.</p>'}
+      ${L.kalibrierung?`<p class="note" style="margin-top:8px"><b>Kalibrierung</b> (Platt-Skalierung an ${L.kalibrierung.n} Fällen): p<sub>neu</sub> = σ(${fmtNum(L.kalibrierung.a,2)} · logit p ${L.kalibrierung.b>=0?'+':'−'} ${fmtNum(Math.abs(L.kalibrierung.b),2)}). ${L.kalibrierung.a<0.9?'Die Zahlen waren zu forsch und werden zur Mitte gezogen.':L.kalibrierung.a>1.1?'Die Zahlen waren zu vorsichtig und werden gespreizt.':'Die Zahlen passen schon gut.'}</p>`:''}
+      ${kurve.length>1?`<p class="note" style="margin:8px 0 0"><b>Lernkurve</b> – Brier-Wert der letzten 30 Fälle je Woche (blau) gegen reine Grundrate (gestrichelt); unter der gestrichelten Linie ist besser.</p>${zwei(kurve.map(k=>k.brier),kurve.map(k=>k.brier_grundrate))}`:''}
+      <p class="note" style="margin-top:8px">Verfahren: ${(L.quellen||[]).map(esc).join(' · ')}</p>
+      </div></details>`;}
+  /* ── Gelerntes Modell (logistische Regression aus Archiv und Kursen) ── */
+  if(W.modell&&W.modell.n){const M=W.modell;
+    b+=`<details class="auf" style="margin-top:16px"><summary><b>Gelerntes Modell</b> <span class="note">· ${M.n} Archivfälle aus ${M.thesen||'?'} Thesen · ${M.genutzt?`fließt mit ${Math.round((M.gewicht||0)*100)} % ein`:'nur zur Ansicht'}</span></summary>
+      <div class="box" style="padding:10px 14px;margin-top:6px">
+      <p class="note" style="margin:0 0 6px">Logistische Regression über alle Tage im Archiv, an denen ein Auslöser in der Presseschau stand, gegen den Kursverlauf danach. Geprüft wird es zeitlich getrennt: trainiert nur mit früheren, getestet mit späteren Fällen.</p>
+      <dl class="vs-dl"><dt>Trefferfläche (AUC)</dt><dd>${M.auc_cv!=null?fmtNum(M.auc_cv,2):'–'} <span class="note">(0,5 = Zufall, 1 = perfekt)</span></dd>
+      <dt>Brier-Wert</dt><dd>${M.brier_cv!=null?fmtNum(M.brier_cv,3):'–'} gegen ${M.brier_grundrate!=null?fmtNum(M.brier_grundrate,3):'–'} bei reiner Grundrate <span class="note">(kleiner ist besser)</span></dd>
+      <dt>Trefferquote gesamt</dt><dd>${M.trefferquote!=null?Math.round(M.trefferquote*100)+' %':'–'} der Fälle liefen in Thesenrichtung</dd>
+      <dt>Status</dt><dd>${M.genutzt?'besser als die Grundrate – fließt in die Wahrscheinlichkeiten ein':esc(M.grund||'nicht genutzt')}</dd></dl>
+      ${M.koeffizienten?`<p class="note" style="margin:8px 0 2px"><b>Was das Modell gelernt hat</b> (positiv = spricht für die These, auf Standardabweichungen bezogen)</p><ul class="ml-punkte">${Object.entries(M.koeffizienten).map(([k,v])=>`<li>${esc(k)}: ${v>0?'+':'−'}${fmtNum(Math.abs(v),2)}</li>`).join('')}</ul>`:''}
+      </div></details>`;}
   /* ── Was das Archiv zu den Thesen sagt ── alle Zusammenhänge, nicht nur
      die heutigen: wie oft kam der Auslöser vor, lief der Kurs danach wie
      erwartet? So bestätigen alte Meldungen die Thesen – oder nicht. */
@@ -5844,7 +6003,7 @@ function renderVorausschau(){
       ${(W.werkzeuge||[]).length?`<div><b style="font-size:var(--fs-sm)">Offene Werkzeuge und Daten</b>${W.werkzeuge.map(x=>`<div class="note" style="margin-top:3px"><a href="${esc(x.link)}" target="_blank" rel="noopener">${esc(x.name)}</a> – ${esc(x.wofuer)}</div>`).join('')}</div>`:''}
     </div>
     <p class="note" style="margin-top:10px"><b>So entsteht eine Einschätzung:</b> Meldungen treffen die Stichworte eines Zusammenhangs (mindestens zwei Häuser) → ein Sprachmodell prüft streng, ob ein aktuelles Ereignis vorliegt, und schreibt den Wirkungspfad auf den Fall angewandt aus → das Skript rechnet die Wahrscheinlichkeit aus Grundrate, Stärke des Zusammenhangs, Belegen und schon erfolgter Kursbewegung → am Prüfdatum wird gegen die Kurse abgeglichen, und die Bilanz fließt in künftige Wahrscheinlichkeiten ein.${W.modell&&W.modell.text?' Formel: '+esc(W.modell.text):''}</p>`;
-  return b;
+  return abschnitteEinklappbar(b,'vs');
 }
 async function tageslageLaden(){
   if(TL.liste||TL.laeuft)return;TL.laeuft=true;

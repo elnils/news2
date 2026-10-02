@@ -1148,8 +1148,10 @@ def treffer_tage(eintrag, artikel):
         # zählen Fußballberichte mit "Kartoffel" im Vorspann oder "NIH-Budget
         # für Verteidigungsforschung" als frühere Fälle und verfälschen die Bilanz.
         if sum(1 for m in muster_l if m.search(titel)) >= noetig and all(m.search(text) for m in muster_l) and not (aus and aus.search(text)):
-            t = tage.setdefault(a["date"], {"haeuser": set(), "titel": titel, "link": a.get("link", "")})
+            t = tage.setdefault(a["date"], {"haeuser": set(), "titel": titel, "link": a.get("link", ""), "texte": []})
             t["haeuser"].add(a["haus"])
+            if len(t["texte"]) < 8:
+                t["texte"].append(text[:400])
     _TREFFER_MEMO[memo_k] = tage
     return tage
 
@@ -1435,6 +1437,20 @@ _KEIN_RESEARCH = re.compile(
     r"^(home|startseite|publikationen|publications|research|insights|news)$", re.I)
 
 
+# Stellenanzeigen werden nicht weggeworfen, sondern in stellen.json gesammelt –
+# die App zeigt sie unter Akteure → Stellenangebote (filterbar nach Haus).
+_STELLE = re.compile(
+    r"\((m|w|f|d|x|h)\s*/\s*(m|w|f|d|x|h)(\s*/\s*(m|w|f|d|x|h))?\)|werkstudent|working student|praktik|\bintern(ship)?\b|"
+    r"trainee|azubi|ausbildung zum|stellenangebot|\bstage\b|business analyst|analyst mit|manager,|consultant|"
+    r"sachbearbeit\w*|specialist|associate|officer|engineer|developer|entwickler\w*|referent\w*|volontariat|"
+    r"\| .{0,40} at [A-Z]|\bjobs?\b|karriere|career", re.I)
+STELLEN = "stellen.json"
+
+
+def ist_stelle(titel):
+    return bool(_STELLE.search(titel or ""))
+
+
 def forschung_brauchbar(titel):
     t = re.sub(r"^\s*[-–|]\s*", "", titel or "").strip()
     t = re.sub(r"\s*[-–|]\s*(kfw(\.de)?|ifo|diw|helaba|ubs|allianz|bundesbank|oecd|fao|iea)\s*$", "", t, flags=re.I).strip()
@@ -1448,6 +1464,12 @@ def forschung_holen(heute):
     import xml.etree.ElementTree as ET
     from email.utils import parsedate_to_datetime
     alt = _laden(FORSCHUNG, {"eintraege": []})
+    stellen = _laden(STELLEN, {"eintraege": []})
+    st_bekannt = {e.get("link") for e in stellen.get("eintraege") or []}
+    for e in alt.get("eintraege") or []:                     # früher fälschlich als Research gespeicherte Stellen umziehen
+        if ist_stelle(e.get("titel", "")) and e.get("link") not in st_bekannt:
+            stellen["eintraege"].append(dict(e, haus=e.get("institut")))
+            st_bekannt.add(e.get("link"))
     vorher = len(alt.get("eintraege") or [])
     alt["eintraege"] = [e for e in alt.get("eintraege") or [] if forschung_brauchbar(e.get("titel", ""))]
     if vorher != len(alt["eintraege"]):
@@ -1470,12 +1492,15 @@ def forschung_holen(heute):
             titel = re.sub(r"\s+[-–]\s+[^-–]{2,40}$", "", titel)      # " - ifo Institut" am Ende weg
             # Stellenanzeigen, Veranstaltungen, Pressemitteilungen in eigener
             # Sache gehören nicht in die Forschung
-            if not forschung_brauchbar(titel):
-                continue
             try:
                 datum = parsedate_to_datetime(it.findtext("pubDate") or "").strftime("%Y-%m-%d")
             except Exception:
                 datum = heute
+            if not forschung_brauchbar(titel):
+                if ist_stelle(titel) and link not in st_bekannt:
+                    stellen["eintraege"].append({"haus": name, "titel": titel, "link": link, "datum": datum})
+                    st_bekannt.add(link)
+                continue
             alt["eintraege"].append({"institut": name, "titel": titel, "link": link, "datum": datum})
             bekannt.add(link)
             neu += 1
@@ -1483,6 +1508,12 @@ def forschung_holen(heute):
     grenze = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=60)).strftime("%Y-%m-%d")
     alt["eintraege"] = sorted((e for e in alt["eintraege"] if e["datum"] >= grenze), key=lambda e: e["datum"], reverse=True)[:600]
     _speichern(FORSCHUNG, alt)
+    grenze_st = (datetime.strptime(heute, "%Y-%m-%d") - timedelta(days=90)).strftime("%Y-%m-%d")
+    stellen["eintraege"] = sorted((e for e in stellen["eintraege"] if e.get("datum", "") >= grenze_st),
+                                  key=lambda e: e.get("datum", ""), reverse=True)[:800]
+    stellen["stand"] = heute
+    _speichern(STELLEN, stellen)
+    print(f"  Stellenangebote: {len(stellen['eintraege'])} gesammelt (stellen.json)")
     print(f"  Forschung: {neu} neue Veröffentlichungen, {len(alt['eintraege'])} im Bestand")
     return alt["eintraege"]
 
@@ -2080,6 +2111,37 @@ def main():
     artikel = artikel_laden()
     kurse = kurse_laden()
     archiv_art = archiv_laden()
+    # Gelerntes Modell (logistische Regression) aus Archiv und Kursen – siehe prognose_modell.py
+    modell, modell_info = None, {"genutzt": False, "grund": "kein Archiv"}
+    try:
+        import prognose_modell as pm
+
+        def _mp(e):
+            mp = e.get("messpunkt") or {}
+            sym = mp.get("sym") if mp.get("sym") not in (None, "auswahl") else ((mp.get("wahl") or [None])[0])
+            r = mp.get("richtung")
+            return (sym, r, int(mp.get("tage", 5))) if sym and r in (1, -1) else None
+        # Aus der eigenen Bilanz lernen (lernen.py): abgelaufene Einschätzungen prüfen,
+        # Gewichte der Experten (Fixed-Share) und Kalibrierung (Platt) aktualisieren
+        lern, eigene = None, []
+        try:
+            import lernen
+            lern, eigene = lernen.aktualisieren(pm.kursreihe)
+            print(f"  Lernen: {lern['geprueft']} geprüfte, {lern['offen']} offene Einschätzungen; Gewichte "
+                  + ", ".join(f"{k} {round(v * 100)} %" for k, v in lern["gewichte"].items())
+                  + (f"; Kalibrierung a={lern['kalibrierung']['a']}, b={lern['kalibrierung']['b']}" if lern.get("kalibrierung") else ""))
+        except Exception as ex:
+            print(f"  Lernen: übersprungen ({type(ex).__name__})")
+        if archiv_art:
+            modell, modell_info = pm.trainieren(eintraege, archiv_art, treffer_tage, _mp,
+                                                extra=lernen.trainingsfaelle(eigene) if lern else None)
+        print(f"  Modell: {modell_info.get('n', 0)} Fälle aus {modell_info.get('thesen', 0)} Thesen, "
+              f"AUC {modell_info.get('auc_cv')}, Brier {modell_info.get('brier_cv')} gegen Grundrate {modell_info.get('brier_grundrate')} – "
+              f"{'genutzt, Gewicht ' + str(modell_info.get('gewicht')) if modell_info.get('genutzt') else 'nicht genutzt: ' + str(modell_info.get('grund'))}")
+    except Exception as ex:                                # Modell ist Zugabe – nie den Lauf gefährden
+        modell, modell_info = None, {"genutzt": False, "grund": f"Fehler: {type(ex).__name__}"}
+        lern = None
+    lern_heute = []
     print(f"  Archiv: {len(archiv_art)} Meldungen aus bis zu {ARCHIV_MONATE} Monaten")
     try:
         forschung = forschung_holen(heute)
@@ -2183,6 +2245,44 @@ def main():
                                            {"haeuser_n": len(s["haeuser"]), "gdelt": gd, "archiv_faktor": archiv_faktor,
                                             "evidenz": ev},
                                            sicherheit, archiv, historie)
+            if wkeit and richtung in (1, -1):
+                p_reg, x = None, None
+                if modell:
+                    try:
+                        texte_heute = [((m.get("title") or "") + " " + (m.get("desc") or "")[:300]) for m in (s.get("treffer") or [])][:8]
+                        p_reg, x = pm.heute(modell, e, archiv_art, treffer_tage, sym, richtung, len(s["haeuser"]), jetzt.date(), texte_heute)
+                    except Exception:
+                        p_reg, x = None, None
+                experten = {"grundrate": wkeit.get("grundrate"), "verfahren": wkeit["p"]}
+                if p_reg is not None:
+                    p_reg = min(0.9, max(0.1, p_reg))
+                    experten["regression"] = round(p_reg, 3)
+                    wkeit["regression"] = {"p": round(p_reg, 3), "merkmale": x, "genutzt": bool(modell_info.get("genutzt")),
+                                           "gewicht": modell_info.get("gewicht", 0)}
+                p_alt = wkeit["p"]
+                if lern and lern.get("pool_aktiv"):
+                    # gelernte Gewichte der Experten (Fixed-Share) statt fester Gewichte
+                    p_pool = lernen.poolen(experten, lern["gewichte"])
+                    if p_pool is not None:
+                        wkeit["p"] = round(p_pool, 3)
+                        wkeit["warum"].append("Aus der eigenen Bilanz gelernte Gewichte: " + ", ".join(
+                            f"{k} {round(v * 100)} % ({round(lern['gewichte'][k] * 100)} % Gewicht)" for k, v in experten.items() if v is not None)
+                            + f" → {round(p_alt * 100)} % wird {round(wkeit['p'] * 100)} %")
+                elif p_reg is not None and modell_info.get("genutzt"):
+                    gw = modell_info["gewicht"]
+                    wkeit["p"] = round((1 - gw) * p_alt + gw * p_reg, 3)
+                    wkeit["warum"].append(f"Gelerntes Modell aus {modell_info['n']} Archivfällen: {round(p_reg * 100)} %, "
+                                          f"Gewicht {round(gw * 100)} % → {round(p_alt * 100)} % wird {round(wkeit['p'] * 100)} %")
+                p_roh = wkeit["p"]
+                if lern and lern.get("kalibrierung"):
+                    wkeit["p"] = round(min(0.95, max(0.05, lernen.kalibrieren(p_roh, lern["kalibrierung"]))), 3)
+                    if abs(wkeit["p"] - p_roh) >= 0.005:
+                        wkeit["warum"].append(f"Kalibriert an {lern['kalibrierung']['n']} geprüften Einschätzungen: "
+                                              f"{round(p_roh * 100)} % wird {round(wkeit['p'] * 100)} %")
+                wkeit["experten"] = experten
+                lern_heute.append({"id": e["id"], "sym": sym, "richtung": richtung, "tage": int(mp.get("tage", 5)),
+                                   "startwert": (w or {}).get("last"), "experten": experten, "p": p_roh, "p_final": wkeit["p"],
+                                   "merkmale": x})
             elif gestoert:
                 messpunkt["hinweis"] = "Kursquelle laut Quellenprüfung gestört – keine Wahrscheinlichkeit gerechnet"
             if not w:
@@ -2260,6 +2360,13 @@ def main():
     for v in vorschlaege:
         schl = " ".join(re.findall(r"[a-zäöüß]{4,}", (v.get("thema") or v.get("ausloeser") or "").lower())[:4])
         v["gesehen_an_tagen"] = len((kandidaten.get(schl) or {}).get("tage") or [])
+    # Heutige Einschätzungen ins Lernprotokoll – nach Ablauf ihrer Frist lernt das System daraus
+    if lern_heute:
+        try:
+            import lernen
+            print(f"  Lernprotokoll: {lernen.protokollieren(lern_heute, heute)} neue Einschätzungen vermerkt")
+        except Exception as ex:
+            print(f"  Lernprotokoll: übersprungen ({type(ex).__name__})")
     tagesbild = tagesbild_schreiben(anbieter, ketten) if anbieter else []
 
     out = {"updated": datetime.now(timezone.utc).isoformat(), "datum": heute,
@@ -2277,6 +2384,8 @@ def main():
            "aktuelle_meldungen": len(artikel), "kurse_anzahl": len(kurse),
            "thesen_archiv": thesen_archiv, "entdeckt": entdeckt,
            "einordnung": {k: {"region": v[0], "schwelle": v[1], "wirkung": v[2]} for k, v in EINORDNUNG.items()},
+           "modell": modell_info,
+           "lernen": {k: v for k, v in (lern or {}).items() if k != "gewichtsverlauf"} if lern else None,
            "gdelt": {"gesperrt": _GDELT["gesperrt"], "grund": _GDELT["grund"]},
            "quellen_status": {"zusammenfassung": _laden(QUELLEN_STATUS, {}).get("zusammenfassung"),
                               "geprueft": _laden(QUELLEN_STATUS, {}).get("geprueft"),
