@@ -305,6 +305,7 @@ jobs:
         timeout-minutes: 5
         env:
           ENERGIE_API: ${{ secrets.ENERGIE_API }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # nur für das Dateiverzeichnis (höheres Abruflimit)
         run: if [ -f energie_holen.py ]; then python energie_holen.py; else echo "energie_holen.py fehlt im Repo – Schritt übersprungen"; fi
 
       # NEU (v28): Energiedaten historisch einordnen, Weitergabe an Verbraucher
@@ -519,7 +520,7 @@ jobs:
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
                    vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
-                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json ep_votes.json ep_abgeordnete.json energie.json energie_reihen.json energie_analyse.json \
+                   vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json ep_votes.json ep_abgeordnete.json energie.json energie_reihen.json energie_analyse.json stellen.json lern_protokoll.json lernen.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
           done
