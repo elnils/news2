@@ -316,6 +316,43 @@ jobs:
         timeout-minutes: 3
         run: if [ -f energie_analyse.py ]; then python energie_analyse.py; else echo "energie_analyse.py fehlt im Repo – Schritt übersprungen"; fi
 
+      # NEU (v29): Ereignistabelle im Backend (ereignisse/JJJJ-MM.jsonl und .csv) –
+      # eine Zeile je Ereignis, feste Spalten; Rechengrundlage für das gelernte
+      # Modell. Je Lauf aktuelle Ereignisse plus ein Stück Nachtrag aus dem Archiv.
+      - name: Ereignisse codieren
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          GEMINI_API: ${{ secrets.GEMINI_API }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPEN_ROUTER_API: ${{ secrets.OPEN_ROUTER_API }}
+          OR_MODEL: 'meta-llama/llama-3.3-70b-instruct:free'
+          KI_REIHENFOLGE: 'gemini,groq,openrouter'
+          EREIGNIS_AKTUELL: '24'     # neue Ereignisse je Volllauf
+          EREIGNIS_NACHTRAG: '24'    # Nachtrag aus dem Archiv je Volllauf (Lerntage zuerst)
+        run: if [ -f ereignisse.py ]; then python ereignisse.py; else echo "ereignisse.py fehlt im Repo – Schritt übersprungen"; fi
+
+      # Ontologie (ohne KI): Akteure, Güter, Seewege als Objekte; Verknüpfungen
+      # und Ereignisketten; Wirkung am Markt nach 1/5/20 Handelstagen
+      # (Ereignisstudie) und Nachhall; Auswertung je Ereignistyp.
+      - name: Ereignis-Ontologie und Wirkung
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 8
+        run: if [ -f ontologie.py ]; then python ontologie.py; else echo "ontologie.py fehlt im Repo – Schritt übersprungen"; fi
+
+      # Semi-autonomer Analysealgorithmus (ohne KI): sucht Muster selbst,
+      # sichert sie ab (Benjamini-Hochberg, Prüfung an den neuesten 30 %),
+      # verfolgt Drift, rechnet das Wirkungsmodell (4. Experte) und schlägt
+      # Änderungen an der Wissensbasis vor. Freigabe in analyse_freigabe.json;
+      # Bericht in der Zusammenfassung dieses Laufs.
+      - name: Analysealgorithmus
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 8
+        run: if [ -f analyse_auto.py ]; then python analyse_auto.py; else echo "analyse_auto.py fehlt im Repo – Schritt übersprungen"; fi
+
       # NEU (v22): Ressort-Briefings (Energie & Klima, Technik & Digitales,
       # Cyber & KI, Handel & Wirtschaft, Inneres & Sicherheit, Weltpolitik,
       # Verteidigung). Auswahl jeden Lauf, die KI-Lage einmal am Morgen.
@@ -372,6 +409,16 @@ jobs:
       # Volllauf ab 12 Uhr (dann haben sich die Debatten des Tages entfaltet). Meldungen, Archivverlauf, Reden, Abstimmungen,
       # Dokumente, amtliche Statistik (Eurostat, EZB), Kurse, GDELT; jede Zahl
       # gegen die Quellen geprüft.
+      # Langzeitgedächtnis (ohne KI): jede vorsortierte Meldung, jeder Deep
+      # Dive (Archiv), jeder Thesenstand und jede Kennzahl als Zeile mit ID;
+      # Begriffshäufigkeit über alle Meldungen; statistisch erhärtete
+      # Verknüpfungen als eigene Zeilen mit Gedächtnisstärke; Lagebild.
+      - name: Langzeitgedächtnis
+        if: env.VOLL == 'true'
+        continue-on-error: true
+        timeout-minutes: 8
+        run: if [ -f gedaechtnis.py ]; then python gedaechtnis.py; else echo "gedaechtnis.py fehlt im Repo – Schritt übersprungen"; fi
+
       - name: Deep Dives (aktuelle Debatten)
         if: env.VOLL == 'true'
         continue-on-error: true
@@ -519,7 +566,7 @@ jobs:
                    people_cache.json landtage_cache.json groq_cache.json ai.json access.json \
                    markets.json ki_meldungen.json votes.json votes_cache.json \
                    plenum_votes.json plenum_cache.json \
-                   vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json \
+                   vorausschau.json vorausschau_archiv.json vorausschau_basis.json vorausschau_kandidaten.json analyse.json analyse_freigabe.json \
                    vorausschau_forschung.json gesehen.json umfragen.json dokumente_text.json bewertung.json briefings.json voll_stand.txt deepdive.json statistik_cache.json gdelt_cache.json ep_votes.json ep_abgeordnete.json energie.json energie_reihen.json energie_analyse.json stellen.json lern_protokoll.json lernen.json \
                    quellen_status.json; do
             [ -e "$f" ] && git add "$f" && echo "  + $f"
@@ -527,6 +574,8 @@ jobs:
           [ -d docs_files ] && git add docs_files/ || true
           [ -d archive ] && git add archive/ && echo "  + archive/" || true
           [ -d ep_stimmen ] && git add ep_stimmen/ && echo "  + ep_stimmen/" || true
+          [ -d ereignisse ] && git add ereignisse/ && echo "  + ereignisse/" || true
+          [ -d gedaechtnis ] && git add gedaechtnis/ && echo "  + gedaechtnis/" || true
           [ -d markets_archive ] && git add markets_archive/ && echo "  + markets_archive/" || true
           [ -d protokolle ] && git add protokolle/ && echo "  + protokolle/" || true
 
