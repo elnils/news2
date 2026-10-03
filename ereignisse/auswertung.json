@@ -1,17 +1,17 @@
 {
- "stand": "2026-10-03T15:17+02:00",
- "ereignisse": 144,
- "mit_wirkung": 21,
+ "stand": "2026-10-03T18:18+02:00",
+ "ereignisse": 185,
+ "mit_wirkung": 26,
  "methode": "Ereignisstudie (MacKinlay 1997): Basis letzter Handelstag vor dem Ereignis, z = log-Rendite / (σ der 60 Handelstage davor · √h); bei Rohstoffen in erwarteter Preisrichtung.",
  "nach": {
   "kategorie": {
    "naturereignis": {
-    "n": 10,
-    "z5_mittel": 0.227,
-    "betrag_mittel": 0.453,
+    "n": 13,
+    "z5_mittel": -0.013,
+    "betrag_mittel": 0.537,
     "anteil_deutlich": 0.0,
-    "t": 1.26,
-    "nachhall_mittel": 2.3
+    "t": -0.07,
+    "nachhall_mittel": 1.7
    },
    "technologie": {
     "n": 5,
@@ -20,93 +20,101 @@
     "anteil_deutlich": 0.0,
     "t": -1.43,
     "nachhall_mittel": 0.4
+   },
+   "unternehmen": {
+    "n": 4,
+    "z5_mittel": 0.659,
+    "betrag_mittel": 0.697,
+    "anteil_deutlich": 0.0,
+    "t": 2.23,
+    "nachhall_mittel": 0.0
    }
   },
   "status": {
    "geschehen": {
-    "n": 14,
-    "z5_mittel": 0.149,
-    "betrag_mittel": 0.363,
+    "n": 17,
+    "z5_mittel": -0.021,
+    "betrag_mittel": 0.443,
     "anteil_deutlich": 0.0,
-    "t": 1.14,
-    "nachhall_mittel": 1.5
+    "t": -0.14,
+    "nachhall_mittel": 1.2
    },
    "angekuendigt": {
-    "n": 6,
-    "z5_mittel": -0.099,
-    "betrag_mittel": 0.447,
+    "n": 8,
+    "z5_mittel": 0.202,
+    "betrag_mittel": 0.612,
     "anteil_deutlich": 0.0,
-    "t": -0.43,
-    "nachhall_mittel": 0.4
+    "t": 0.77,
+    "nachhall_mittel": 0.3
    }
   },
   "schwere": {
    "3": {
-    "n": 14,
-    "z5_mittel": 0.076,
-    "betrag_mittel": 0.453,
+    "n": 16,
+    "z5_mittel": 0.088,
+    "betrag_mittel": 0.539,
     "anteil_deutlich": 0.0,
-    "t": 0.49,
-    "nachhall_mittel": 1.2
+    "t": 0.51,
+    "nachhall_mittel": 1.1
    },
    "2": {
-    "n": 4,
-    "z5_mittel": 0.117,
-    "betrag_mittel": 0.301,
+    "n": 6,
+    "z5_mittel": 0.178,
+    "betrag_mittel": 0.401,
     "anteil_deutlich": 0.0,
-    "t": 0.64,
+    "t": 0.9,
     "nachhall_mittel": 0.0
    },
    "4": {
-    "n": 3,
-    "z5_mittel": 0.153,
-    "betrag_mittel": 0.239,
+    "n": 4,
+    "z5_mittel": -0.18,
+    "betrag_mittel": 0.474,
     "anteil_deutlich": 0.0,
-    "t": 0.77,
-    "nachhall_mittel": 1.7
+    "t": -0.5,
+    "nachhall_mittel": 1.2
    }
   },
   "umfang": {
    "national": {
-    "n": 7,
-    "z5_mittel": -0.028,
-    "betrag_mittel": 0.373,
+    "n": 9,
+    "z5_mittel": 0.224,
+    "betrag_mittel": 0.536,
     "anteil_deutlich": 0.0,
-    "t": -0.15,
-    "nachhall_mittel": 1.0
+    "t": 1.02,
+    "nachhall_mittel": 0.7
    },
    "global": {
-    "n": 7,
-    "z5_mittel": 0.252,
-    "betrag_mittel": 0.461,
+    "n": 9,
+    "z5_mittel": -0.042,
+    "betrag_mittel": 0.597,
     "anteil_deutlich": 0.0,
-    "t": 1.06,
+    "t": -0.16,
     "nachhall_mittel": 0.3
    },
    "regional": {
-    "n": 5,
-    "z5_mittel": 0.12,
-    "betrag_mittel": 0.317,
+    "n": 6,
+    "z5_mittel": 0.05,
+    "betrag_mittel": 0.314,
     "anteil_deutlich": 0.0,
-    "t": 0.66,
-    "nachhall_mittel": 3.7
+    "t": 0.3,
+    "nachhall_mittel": 2.8
    }
   },
   "route": {
    "keine": {
-    "n": 16,
-    "z5_mittel": 0.055,
-    "betrag_mittel": 0.331,
+    "n": 20,
+    "z5_mittel": 0.047,
+    "betrag_mittel": 0.483,
     "anteil_deutlich": 0.0,
-    "t": 0.53,
-    "nachhall_mittel": 1.4
+    "t": 0.34,
+    "nachhall_mittel": 1.1
    },
    "rhein": {
-    "n": 3,
-    "z5_mittel": -0.197,
-    "betrag_mittel": 0.419,
+    "n": 4,
+    "z5_mittel": -0.223,
+    "betrag_mittel": 0.39,
     "anteil_deutlich": 0.0,
-    "t": -0.74,
+    "t": -1.17,
     "nachhall_mittel": 0.0
    }
   },
@@ -120,20 +128,20 @@
     "nachhall_mittel": 0.3
    },
    "dauerhaft": {
-    "n": 5,
-    "z5_mittel": -0.034,
-    "betrag_mittel": 0.536,
+    "n": 7,
+    "z5_mittel": 0.291,
+    "betrag_mittel": 0.699,
     "anteil_deutlich": 0.0,
-    "t": -0.12,
+    "t": 1.0,
     "nachhall_mittel": 0.0
    },
    "monate": {
-    "n": 4,
-    "z5_mittel": 0.42,
-    "betrag_mittel": 0.457,
+    "n": 6,
+    "z5_mittel": -0.078,
+    "betrag_mittel": 0.662,
     "anteil_deutlich": 0.0,
-    "t": 1.22,
-    "nachhall_mittel": 2.8
+    "t": -0.2,
+    "nachhall_mittel": 2.0
    },
    "tage": {
     "n": 3,
@@ -146,56 +154,64 @@
   },
   "bestaetigt": {
    "0": {
-    "n": 21,
-    "z5_mittel": 0.095,
-    "betrag_mittel": 0.394,
+    "n": 26,
+    "z5_mittel": 0.068,
+    "betrag_mittel": 0.497,
     "anteil_deutlich": 0.0,
-    "t": 0.86,
-    "nachhall_mittel": 1.1
+    "t": 0.54,
+    "nachhall_mittel": 0.9
    }
   },
   "neuheit": {
    "neu": {
-    "n": 17,
-    "z5_mittel": 0.16,
-    "betrag_mittel": 0.411,
+    "n": 21,
+    "z5_mittel": 0.133,
+    "betrag_mittel": 0.541,
     "anteil_deutlich": 0.0,
-    "t": 1.26,
-    "nachhall_mittel": 0.5
+    "t": 0.89,
+    "nachhall_mittel": 0.4
    },
    "fortsetzung": {
-    "n": 4,
-    "z5_mittel": -0.181,
-    "betrag_mittel": 0.318,
+    "n": 5,
+    "z5_mittel": -0.205,
+    "betrag_mittel": 0.315,
     "anteil_deutlich": 0.0,
-    "t": -1.02,
-    "nachhall_mittel": 3.7
+    "t": -1.47,
+    "nachhall_mittel": 2.8
    }
   },
   "kette": {
    "1": {
     "n": 6,
-    "z5_mittel": 0.118,
-    "betrag_mittel": 0.519,
+    "z5_mittel": 0.065,
+    "betrag_mittel": 0.53,
     "anteil_deutlich": 0.0,
-    "t": 0.39,
-    "nachhall_mittel": 0.8
+    "t": 0.21,
+    "nachhall_mittel": 1.0
    },
    "2": {
     "n": 5,
-    "z5_mittel": 0.053,
-    "betrag_mittel": 0.513,
+    "z5_mittel": -0.108,
+    "betrag_mittel": 0.684,
     "anteil_deutlich": 0.0,
-    "t": 0.19,
+    "t": -0.29,
     "nachhall_mittel": 0.0
    },
    "3": {
     "n": 4,
-    "z5_mittel": -0.019,
-    "betrag_mittel": 0.27,
+    "z5_mittel": 0.425,
+    "betrag_mittel": 0.71,
     "anteil_deutlich": 0.0,
-    "t": -0.1,
-    "nachhall_mittel": 6.5
+    "t": 1.04,
+    "nachhall_mittel": 0.0
+   },
+   "4": {
+    "n": 3,
+    "z5_mittel": -0.244,
+    "betrag_mittel": 0.605,
+    "anteil_deutlich": 0.0,
+    "t": -0.59,
+    "nachhall_mittel": 0.0
    }
   }
  }

@@ -1,13 +1,13 @@
 {
- "stand": "2026-10-03T15:17+02:00",
+ "stand": "2026-10-03T18:18+02:00",
  "stichtag": "2026-10-03",
  "auffaellige_begriffe": [
   {
    "begriff": "galeria",
    "df": 43,
    "erwartet": 0.0,
-   "z": 288.68,
-   "faktor": 1940.1,
+   "z": 278.61,
+   "faktor": 1807.1,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -26,8 +26,8 @@
    "begriff": "warenhauskett",
    "df": 27,
    "erwartet": 0.0,
-   "z": 181.21,
-   "faktor": 1218.2,
+   "z": 174.88,
+   "faktor": 1134.7,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -46,8 +46,8 @@
    "begriff": "exzellenz",
    "df": 20,
    "erwartet": 0.0,
-   "z": 134.19,
-   "faktor": 902.3,
+   "z": 129.5,
+   "faktor": 840.5,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -56,11 +56,27 @@
    "belege": []
   },
   {
+   "begriff": "dieselreserv",
+   "df": 19,
+   "erwartet": 0.0,
+   "z": 123.02,
+   "faktor": 798.5,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-845e8ced783e",
+    "M-4b2b5f46965f"
+   ]
+  },
+  {
    "begriff": "exzellenzuniversität",
    "df": 19,
    "erwartet": 0.0,
-   "z": 127.47,
-   "faktor": 857.2,
+   "z": 123.02,
+   "faktor": 798.5,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -74,8 +90,21 @@
    "begriff": "anleihencheck",
    "df": 19,
    "erwartet": 0.0,
-   "z": 127.47,
-   "faktor": 857.2,
+   "z": 123.02,
+   "faktor": 798.5,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "milde",
+   "df": 18,
+   "erwartet": 0.0,
+   "z": 116.54,
+   "faktor": 756.5,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -87,8 +116,8 @@
    "begriff": "insolvenzantrag",
    "df": 18,
    "erwartet": 0.0,
-   "z": 120.76,
-   "faktor": 812.1,
+   "z": 116.54,
+   "faktor": 756.5,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -104,11 +133,24 @@
    ]
   },
   {
+   "begriff": "festakt",
+   "df": 17,
+   "erwartet": 0.0,
+   "z": 110.05,
+   "faktor": 714.5,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
    "begriff": "flydubai-copilot",
    "df": 16,
    "erwartet": 0.0,
-   "z": 107.32,
-   "faktor": 721.9,
+   "z": 103.57,
+   "faktor": 672.4,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -119,40 +161,11 @@
    ]
   },
   {
-   "begriff": "milde",
-   "df": 16,
-   "erwartet": 0.0,
-   "z": 107.32,
-   "faktor": 721.9,
-   "neu": true,
-   "fenster": [
-    "2026-10-03",
-    "2026-10-02"
-   ],
-   "belege": []
-  },
-  {
-   "begriff": "dieselreserv",
-   "df": 16,
-   "erwartet": 0.0,
-   "z": 107.32,
-   "faktor": 721.9,
-   "neu": true,
-   "fenster": [
-    "2026-10-03",
-    "2026-10-02"
-   ],
-   "belege": [
-    "M-845e8ced783e",
-    "M-4b2b5f46965f"
-   ]
-  },
-  {
    "begriff": "asia-pacific",
    "df": 15,
    "erwartet": 0.0,
-   "z": 100.61,
-   "faktor": 676.8,
+   "z": 97.09,
+   "faktor": 630.4,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -164,8 +177,8 @@
    "begriff": "gruppenvergewaltigung",
    "df": 13,
    "erwartet": 0.0,
-   "z": 87.17,
-   "faktor": 586.5,
+   "z": 84.12,
+   "faktor": 546.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -179,8 +192,8 @@
    "begriff": "feier",
    "df": 12,
    "erwartet": 0.0,
-   "z": 80.45,
-   "faktor": 541.4,
+   "z": 77.64,
+   "faktor": 504.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -196,8 +209,8 @@
    "begriff": "altkanzler",
    "df": 12,
    "erwartet": 0.0,
-   "z": 80.45,
-   "faktor": 541.4,
+   "z": 77.64,
+   "faktor": 504.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -209,8 +222,21 @@
    "begriff": "ki-enthüllun",
    "df": 12,
    "erwartet": 0.0,
-   "z": 80.45,
-   "faktor": 541.4,
+   "z": 77.64,
+   "faktor": 504.3,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "einheitsfeier",
+   "df": 11,
+   "erwartet": 0.0,
+   "z": 71.16,
+   "faktor": 462.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -222,8 +248,8 @@
    "begriff": "xinjiang",
    "df": 11,
    "erwartet": 0.0,
-   "z": 73.74,
-   "faktor": 496.3,
+   "z": 71.16,
+   "faktor": 462.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -235,11 +261,11 @@
    ]
   },
   {
-   "begriff": "gerhard",
+   "begriff": "gegenverkehr",
    "df": 11,
    "erwartet": 0.0,
-   "z": 73.74,
-   "faktor": 496.3,
+   "z": 71.16,
+   "faktor": 462.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -248,11 +274,26 @@
    "belege": []
   },
   {
-   "begriff": "festakt",
-   "df": 10,
+   "begriff": "bürgerfest",
+   "df": 11,
    "erwartet": 0.0,
-   "z": 67.02,
-   "faktor": 451.2,
+   "z": 71.16,
+   "faktor": 462.3,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-eb8444a2c178"
+   ]
+  },
+  {
+   "begriff": "gerhard",
+   "df": 11,
+   "erwartet": 0.0,
+   "z": 71.16,
+   "faktor": 462.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -264,8 +305,8 @@
    "begriff": "galeria-insolvenz",
    "df": 10,
    "erwartet": 0.0,
-   "z": 67.02,
-   "faktor": 451.2,
+   "z": 64.67,
+   "faktor": 420.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -277,8 +318,8 @@
    "begriff": "diesel-reserv",
    "df": 10,
    "erwartet": 0.0,
-   "z": 67.02,
-   "faktor": 451.2,
+   "z": 64.67,
+   "faktor": 420.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -290,8 +331,8 @@
    "begriff": "supermarktkett",
    "df": 10,
    "erwartet": 0.0,
-   "z": 67.02,
-   "faktor": 451.2,
+   "z": 64.67,
+   "faktor": 420.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -303,8 +344,8 @@
    "begriff": "rekordzeit",
    "df": 10,
    "erwartet": 0.0,
-   "z": 67.02,
-   "faktor": 451.2,
+   "z": 64.67,
+   "faktor": 420.3,
    "neu": true,
    "fenster": [
     "2026-10-03",
@@ -313,63 +354,58 @@
    "belege": []
   },
   {
-   "begriff": "zara",
-   "df": 9,
-   "erwartet": 0.0,
-   "z": 60.3,
-   "faktor": 406.1,
-   "neu": true,
-   "fenster": [
-    "2026-10-03",
-    "2026-10-02"
-   ],
-   "belege": []
-  },
-  {
-   "begriff": "einheitsfeier",
-   "df": 9,
-   "erwartet": 0.0,
-   "z": 60.3,
-   "faktor": 406.1,
-   "neu": true,
-   "fenster": [
-    "2026-10-03",
-    "2026-10-02"
-   ],
-   "belege": []
-  },
-  {
-   "begriff": "widdecomb",
-   "df": 9,
-   "erwartet": 0.0,
-   "z": 60.3,
-   "faktor": 406.1,
-   "neu": true,
+   "begriff": "freigab",
+   "df": 43,
+   "erwartet": 0.2,
+   "z": 59.67,
+   "faktor": 258.2,
+   "neu": false,
    "fenster": [
     "2026-10-03",
     "2026-10-02"
    ],
    "belege": [
-    "M-2b7d6ae93ab4"
-   ]
-  },
-  {
-   "begriff": "auslieferun",
-   "df": 9,
-   "erwartet": 0.0,
-   "z": 60.3,
-   "faktor": 406.1,
-   "neu": true,
-   "fenster": [
-    "2026-10-03",
-    "2026-10-02"
-   ],
-   "belege": [
-    "M-aa2a8a086d3d"
+    "M-c432b2597d5d",
+    "M-da3dbe05db3a"
    ]
   }
  ],
  "neue_verknuepfungen": [
+  {
+   "id": "X-8eaf2955fcaf",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-frei",
+   "nach": "B-geben",
+   "titel": "frei ↔ geben",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 4,
+    "n_b": 4,
+    "N": 268,
+    "lift": 67.0,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.0
+   },
+   "belege": [
+    "M-08a3b03b7ba9",
+    "M-845e8ced783e",
+    "M-4b2b5f46965f",
+    "M-f0c2d38bf561"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-frei",
+    "B-geben"
+   ],
+   "staerke_aktuell": 1.0
+  },
   {
    "id": "X-2f5caafce2dd",
    "typ": "verknuepfung",
@@ -381,8 +417,8 @@
     "n_ab": 5,
     "n_a": 5,
     "n_b": 5,
-    "N": 238,
-    "lift": 47.6,
+    "N": 268,
+    "lift": 53.6,
     "p": 0.0,
     "tage": 2,
     "haeuser": 5,
@@ -417,8 +453,8 @@
     "n_ab": 5,
     "n_a": 5,
     "n_b": 5,
-    "N": 238,
-    "lift": 47.6,
+    "N": 268,
+    "lift": 53.6,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
@@ -443,6 +479,41 @@
    "staerke_aktuell": 1.0
   },
   {
+   "id": "X-7da077bab4b0",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-arabisch",
+   "nach": "B-israel",
+   "titel": "arabisch ↔ israel",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 4,
+    "n_b": 5,
+    "N": 268,
+    "lift": 53.6,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 0.0
+   },
+   "belege": [
+    "M-4a41f456f85e",
+    "M-83d5cc5131bd",
+    "M-e70dc6418e3a",
+    "M-e7826f936631"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-arabisch",
+    "B-israel"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
    "id": "X-ae4c6d8c54a7",
    "typ": "verknuepfung",
    "art": "begriff_begriff",
@@ -453,8 +524,8 @@
     "n_ab": 4,
     "n_a": 6,
     "n_b": 4,
-    "N": 238,
-    "lift": 39.67,
+    "N": 268,
+    "lift": 44.67,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
@@ -488,18 +559,18 @@
     "n_ab": 4,
     "n_a": 4,
     "n_b": 7,
-    "N": 238,
-    "lift": 34.0,
+    "N": 268,
+    "lift": 38.29,
     "p": 0.0,
     "tage": 2,
     "haeuser": 2,
-    "q": 1e-06
+    "q": 0.0
    },
    "belege": [
     "M-d9d9d99f7834",
     "M-43f8b2aa1377",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -509,6 +580,41 @@
    "verweise": [
     "B-tode",
     "B-verurteilt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-728b52c6fe5a",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-scheiter",
+   "nach": "B-wohnungsnot",
+   "titel": "scheiter ↔ wohnungsnot",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 5,
+    "n_b": 6,
+    "N": 268,
+    "lift": 35.73,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-49a4520c47e3",
+    "M-ce39aa9855be",
+    "M-e341b8ecac90",
+    "M-3cef0fb4627b"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-scheiter",
+    "B-wohnungsnot"
    ],
    "staerke_aktuell": 1.0
   },
@@ -523,8 +629,8 @@
     "n_ab": 6,
     "n_a": 6,
     "n_b": 8,
-    "N": 238,
-    "lift": 29.75,
+    "N": 268,
+    "lift": 33.5,
     "p": 0.0,
     "tage": 2,
     "haeuser": 5,
@@ -535,8 +641,8 @@
     "M-ba4615b03f22",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -560,12 +666,12 @@
     "n_ab": 4,
     "n_a": 6,
     "n_b": 6,
-    "N": 238,
-    "lift": 26.44,
-    "p": 2e-06,
+    "N": 268,
+    "lift": 29.78,
+    "p": 1e-06,
     "tage": 2,
     "haeuser": 3,
-    "q": 4e-06
+    "q": 2e-06
    },
    "belege": [
     "M-6203f2760092",
@@ -595,8 +701,8 @@
     "n_ab": 5,
     "n_a": 10,
     "n_b": 5,
-    "N": 238,
-    "lift": 23.8,
+    "N": 268,
+    "lift": 26.8,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
@@ -631,12 +737,12 @@
     "n_ab": 4,
     "n_a": 10,
     "n_b": 4,
-    "N": 238,
-    "lift": 23.8,
-    "p": 2e-06,
+    "N": 268,
+    "lift": 26.8,
+    "p": 1e-06,
     "tage": 2,
     "haeuser": 3,
-    "q": 3e-06
+    "q": 2e-06
    },
    "belege": [
     "M-26aef2888254",
@@ -656,6 +762,76 @@
    "staerke_aktuell": 1.0
   },
   {
+   "id": "X-57ca4531fba0",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-frei",
+   "nach": "B-öl",
+   "titel": "frei ↔ öl",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 4,
+    "n_b": 10,
+    "N": 268,
+    "lift": 26.8,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 2e-06
+   },
+   "belege": [
+    "M-08a3b03b7ba9",
+    "M-845e8ced783e",
+    "M-4b2b5f46965f",
+    "M-f0c2d38bf561"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-frei",
+    "B-öl"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-40db86c2fdbf",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-geben",
+   "nach": "B-öl",
+   "titel": "geben ↔ öl",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 4,
+    "n_b": 10,
+    "N": 268,
+    "lift": 26.8,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 2e-06
+   },
+   "belege": [
+    "M-08a3b03b7ba9",
+    "M-845e8ced783e",
+    "M-4b2b5f46965f",
+    "M-f0c2d38bf561"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-geben",
+    "B-öl"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
    "id": "X-111f427b99d7",
    "typ": "verknuepfung",
    "art": "begriff_begriff",
@@ -666,12 +842,12 @@
     "n_ab": 4,
     "n_a": 7,
     "n_b": 6,
-    "N": 238,
-    "lift": 22.67,
-    "p": 4e-06,
+    "N": 268,
+    "lift": 25.52,
+    "p": 2e-06,
     "tage": 2,
     "haeuser": 4,
-    "q": 7e-06
+    "q": 4e-06
    },
    "belege": [
     "M-a7abea5c96a2",
@@ -691,42 +867,6 @@
    "staerke_aktuell": 1.0
   },
   {
-   "id": "X-5cf5355cba56",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-iran",
-   "nach": "B-krieg",
-   "titel": "iran ↔ krieg",
-   "statistik": {
-    "n_ab": 5,
-    "n_a": 11,
-    "n_b": 5,
-    "N": 238,
-    "lift": 21.64,
-    "p": 0.0,
-    "tage": 2,
-    "haeuser": 4,
-    "q": 0.0
-   },
-   "belege": [
-    "M-037f91ae0bb2",
-    "M-15a017eda702",
-    "M-273b7433b0f5",
-    "M-538322c0ec2d",
-    "M-eb764a2e12a4"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-iran",
-    "B-krieg"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
    "id": "X-dffbea23f1db",
    "typ": "verknuepfung",
    "art": "begriff_begriff",
@@ -737,12 +877,12 @@
     "n_ab": 4,
     "n_a": 4,
     "n_b": 11,
-    "N": 238,
-    "lift": 21.64,
-    "p": 3e-06,
+    "N": 268,
+    "lift": 24.36,
+    "p": 2e-06,
     "tage": 2,
     "haeuser": 4,
-    "q": 5e-06
+    "q": 3e-06
    },
    "belege": [
     "M-eb8444a2c178",
@@ -772,12 +912,12 @@
     "n_ab": 5,
     "n_a": 7,
     "n_b": 8,
-    "N": 238,
-    "lift": 21.25,
+    "N": 268,
+    "lift": 23.93,
     "p": 0.0,
     "tage": 2,
     "haeuser": 5,
-    "q": 1e-06
+    "q": 0.0
    },
    "belege": [
     "M-a7abea5c96a2",
@@ -798,6 +938,77 @@
    "staerke_aktuell": 1.0
   },
   {
+   "id": "X-5cf5355cba56",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-iran",
+   "nach": "B-krieg",
+   "titel": "iran ↔ krieg",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 12,
+    "n_b": 5,
+    "N": 268,
+    "lift": 22.33,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 0.0
+   },
+   "belege": [
+    "M-037f91ae0bb2",
+    "M-15a017eda702",
+    "M-273b7433b0f5",
+    "M-538322c0ec2d",
+    "M-eb764a2e12a4"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-iran",
+    "B-krieg"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-89a2b285c306",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-iran",
+   "nach": "B-option",
+   "titel": "iran ↔ option",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 12,
+    "n_b": 4,
+    "N": 268,
+    "lift": 22.33,
+    "p": 2e-06,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 4e-06
+   },
+   "belege": [
+    "M-124ab9bc3d51",
+    "M-8a70dfb81ae5",
+    "M-9ca258a71f67",
+    "M-414bf7b0d7b6"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-iran",
+    "B-option"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
    "id": "X-5548a1855ef5",
    "typ": "verknuepfung",
    "art": "begriff_begriff",
@@ -808,12 +1019,12 @@
     "n_ab": 4,
     "n_a": 10,
     "n_b": 5,
-    "N": 238,
-    "lift": 19.04,
-    "p": 8e-06,
+    "N": 268,
+    "lift": 21.44,
+    "p": 5e-06,
     "tage": 2,
     "haeuser": 4,
-    "q": 1.2e-05
+    "q": 8e-06
    },
    "belege": [
     "M-0a13a8b45d82",
@@ -843,8 +1054,8 @@
     "n_ab": 6,
     "n_a": 7,
     "n_b": 11,
-    "N": 238,
-    "lift": 18.55,
+    "N": 268,
+    "lift": 20.88,
     "p": 0.0,
     "tage": 2,
     "haeuser": 6,
@@ -868,223 +1079,6 @@
     "B-überlebt"
    ],
    "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-7d8553455426",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-gescheitert",
-   "nach": "B-kritischem",
-   "titel": "gescheitert ↔ kritischem",
-   "statistik": {
-    "n_ab": 5,
-    "n_a": 11,
-    "n_b": 6,
-    "N": 238,
-    "lift": 18.03,
-    "p": 0.0,
-    "tage": 2,
-    "haeuser": 4,
-    "q": 1e-06
-   },
-   "belege": [
-    "M-ba4615b03f22",
-    "M-eebebdf25637",
-    "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-gescheitert",
-    "B-kritischem"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-097f6793cc4c",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-attempt",
-   "nach": "B-execution",
-   "titel": "attempt ↔ execution",
-   "statistik": {
-    "n_ab": 5,
-    "n_a": 5,
-    "n_b": 14,
-    "N": 238,
-    "lift": 17.0,
-    "p": 0.0,
-    "tage": 2,
-    "haeuser": 4,
-    "q": 1e-06
-   },
-   "belege": [
-    "M-45fe085c4622",
-    "M-71f52eaffcb7",
-    "M-a36f0978cb96",
-    "M-dc6326fbfb76",
-    "M-0f07b7f4fcb3"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-attempt",
-    "B-execution"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-7fe15e9cd1fb",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-execution",
-   "nach": "B-failed",
-   "titel": "execution ↔ failed",
-   "statistik": {
-    "n_ab": 8,
-    "n_a": 14,
-    "n_b": 8,
-    "N": 238,
-    "lift": 17.0,
-    "p": 0.0,
-    "tage": 2,
-    "haeuser": 4,
-    "q": 0.0
-   },
-   "belege": [
-    "M-4167895a9417",
-    "M-71f52eaffcb7",
-    "M-a36f0978cb96",
-    "M-0f07b7f4fcb3",
-    "M-1196e0d99cf2",
-    "M-9f507886f3f4",
-    "M-aa0071ff2822",
-    "M-b064a4c450b2"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-execution",
-    "B-failed"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-2d961cbc6dbf",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-verurteilt",
-   "nach": "B-zustand",
-   "titel": "verurteilt ↔ zustand",
-   "statistik": {
-    "n_ab": 4,
-    "n_a": 7,
-    "n_b": 8,
-    "N": 238,
-    "lift": 17.0,
-    "p": 1.8e-05,
-    "tage": 2,
-    "haeuser": 3,
-    "q": 2.7e-05
-   },
-   "belege": [
-    "M-eebebdf25637",
-    "M-43f8b2aa1377",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-verurteilt",
-    "B-zustand"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-22dd1a394fc7",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-verurteilt",
-   "nach": "B-überlebt",
-   "titel": "verurteilt ↔ überlebt",
-   "statistik": {
-    "n_ab": 5,
-    "n_a": 7,
-    "n_b": 11,
-    "N": 238,
-    "lift": 15.45,
-    "p": 2e-06,
-    "tage": 3,
-    "haeuser": 4,
-    "q": 3e-06
-   },
-   "belege": [
-    "M-6a2d2f6ef9e0",
-    "M-d9d9d99f7834",
-    "M-eebebdf25637",
-    "M-43f8b2aa1377",
-    "M-825efdda9d7a"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-verurteilt",
-    "B-überlebt"
-   ],
-   "staerke_aktuell": 1.0
-  },
-  {
-   "id": "X-7e02d541ccf9",
-   "typ": "verknuepfung",
-   "art": "begriff_begriff",
-   "von": "B-execution",
-   "nach": "B-injection",
-   "titel": "execution ↔ injection",
-   "statistik": {
-    "n_ab": 4,
-    "n_a": 14,
-    "n_b": 5,
-    "N": 238,
-    "lift": 13.6,
-    "p": 3.7e-05,
-    "tage": 2,
-    "haeuser": 4,
-    "q": 4.9e-05
-   },
-   "belege": [
-    "M-45fe085c4622",
-    "M-a36f0978cb96",
-    "M-dc6326fbfb76",
-    "M-572d108cb04e"
-   ],
-   "erstmals": "2026-10-03",
-   "zuletzt": "2026-10-03",
-   "beobachtungen": 1,
-   "staerke": 1.0,
-   "status": "neu",
-   "verweise": [
-    "B-execution",
-    "B-injection"
-   ],
-   "staerke_aktuell": 1.0
   }
  ],
  "staerkste_verknuepfungen": [
@@ -1098,13 +1092,13 @@
    "statistik": {
     "n_ab": 5,
     "n_a": 10,
-    "n_b": 12,
-    "N": 238,
-    "lift": 9.92,
-    "p": 2.9e-05,
+    "n_b": 14,
+    "N": 268,
+    "lift": 9.57,
+    "p": 3.9e-05,
     "tage": 2,
     "haeuser": 4,
-    "q": 4.2e-05
+    "q": 5.2e-05
    },
    "belege": [
     "M-08a3b03b7ba9",
@@ -1135,12 +1129,12 @@
     "n_ab": 9,
     "n_a": 32,
     "n_b": 11,
-    "N": 238,
-    "lift": 6.09,
+    "N": 268,
+    "lift": 6.85,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
-    "q": 1e-06
+    "q": 0.0
    },
    "belege": [
     "M-6e9e6deccc94",
@@ -1150,8 +1144,8 @@
     "M-c086dbdf791f",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1175,8 +1169,8 @@
     "n_ab": 15,
     "n_a": 32,
     "n_b": 19,
-    "N": 238,
-    "lift": 5.87,
+    "N": 268,
+    "lift": 6.61,
     "p": 0.0,
     "tage": 3,
     "haeuser": 9,
@@ -1216,8 +1210,8 @@
     "n_ab": 31,
     "n_a": 32,
     "n_b": 31,
-    "N": 238,
-    "lift": 7.44,
+    "N": 268,
+    "lift": 8.38,
     "p": 0.0,
     "tage": 3,
     "haeuser": 15,
@@ -1257,8 +1251,8 @@
     "n_ab": 10,
     "n_a": 11,
     "n_b": 19,
-    "N": 238,
-    "lift": 11.39,
+    "N": 268,
+    "lift": 12.82,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1273,8 +1267,8 @@
     "M-c086dbdf791f",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1298,8 +1292,8 @@
     "n_ab": 9,
     "n_a": 11,
     "n_b": 31,
-    "N": 238,
-    "lift": 6.28,
+    "N": 268,
+    "lift": 7.07,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1313,8 +1307,8 @@
     "M-c086dbdf791f",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1338,8 +1332,8 @@
     "n_ab": 15,
     "n_a": 19,
     "n_b": 31,
-    "N": 238,
-    "lift": 6.06,
+    "N": 268,
+    "lift": 6.83,
     "p": 0.0,
     "tage": 3,
     "haeuser": 9,
@@ -1379,8 +1373,8 @@
     "n_ab": 13,
     "n_a": 32,
     "n_b": 14,
-    "N": 238,
-    "lift": 6.91,
+    "N": 268,
+    "lift": 7.78,
     "p": 0.0,
     "tage": 2,
     "haeuser": 6,
@@ -1420,8 +1414,8 @@
     "n_ab": 19,
     "n_a": 32,
     "n_b": 23,
-    "N": 238,
-    "lift": 6.14,
+    "N": 268,
+    "lift": 6.92,
     "p": 0.0,
     "tage": 3,
     "haeuser": 12,
@@ -1461,8 +1455,8 @@
     "n_ab": 12,
     "n_a": 14,
     "n_b": 31,
-    "N": 238,
-    "lift": 6.58,
+    "N": 268,
+    "lift": 7.41,
     "p": 0.0,
     "tage": 2,
     "haeuser": 6,
@@ -1502,8 +1496,8 @@
     "n_ab": 10,
     "n_a": 14,
     "n_b": 23,
-    "N": 238,
-    "lift": 7.39,
+    "N": 268,
+    "lift": 8.32,
     "p": 0.0,
     "tage": 2,
     "haeuser": 6,
@@ -1543,8 +1537,8 @@
     "n_ab": 19,
     "n_a": 31,
     "n_b": 23,
-    "N": 238,
-    "lift": 6.34,
+    "N": 268,
+    "lift": 7.14,
     "p": 0.0,
     "tage": 3,
     "haeuser": 12,
@@ -1584,8 +1578,8 @@
     "n_ab": 10,
     "n_a": 32,
     "n_b": 13,
-    "N": 238,
-    "lift": 5.72,
+    "N": 268,
+    "lift": 6.44,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1600,8 +1594,8 @@
     "M-b190a5386be1",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1625,8 +1619,8 @@
     "n_ab": 7,
     "n_a": 11,
     "n_b": 13,
-    "N": 238,
-    "lift": 11.65,
+    "N": 268,
+    "lift": 13.12,
     "p": 0.0,
     "tage": 3,
     "haeuser": 6,
@@ -1638,8 +1632,8 @@
     "M-b190a5386be1",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1663,8 +1657,8 @@
     "n_ab": 11,
     "n_a": 13,
     "n_b": 19,
-    "N": 238,
-    "lift": 10.6,
+    "N": 268,
+    "lift": 11.94,
     "p": 0.0,
     "tage": 3,
     "haeuser": 8,
@@ -1680,7 +1674,7 @@
     "M-b190a5386be1",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a"
+    "M-6d91703f4083"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1704,8 +1698,8 @@
     "n_ab": 10,
     "n_a": 13,
     "n_b": 31,
-    "N": 238,
-    "lift": 5.91,
+    "N": 268,
+    "lift": 6.65,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1720,8 +1714,8 @@
     "M-b190a5386be1",
     "M-eebebdf25637",
     "M-0caf3be1f786",
-    "M-825efdda9d7a",
-    "M-6d91703f4083"
+    "M-6d91703f4083",
+    "M-825efdda9d7a"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1745,8 +1739,8 @@
     "n_ab": 8,
     "n_a": 13,
     "n_b": 11,
-    "N": 238,
-    "lift": 13.31,
+    "N": 268,
+    "lift": 14.99,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1784,8 +1778,8 @@
     "n_ab": 12,
     "n_a": 19,
     "n_b": 23,
-    "N": 238,
-    "lift": 6.54,
+    "N": 268,
+    "lift": 7.36,
     "p": 0.0,
     "tage": 3,
     "haeuser": 6,
@@ -1801,7 +1795,7 @@
     "M-eebebdf25637",
     "M-0caf3be1f786",
     "M-43f8b2aa1377",
-    "M-825efdda9d7a"
+    "M-6d91703f4083"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -1825,8 +1819,8 @@
     "n_ab": 10,
     "n_a": 19,
     "n_b": 11,
-    "N": 238,
-    "lift": 11.39,
+    "N": 268,
+    "lift": 12.82,
     "p": 0.0,
     "tage": 3,
     "haeuser": 7,
@@ -1866,8 +1860,8 @@
     "n_ab": 9,
     "n_a": 23,
     "n_b": 11,
-    "N": 238,
-    "lift": 8.47,
+    "N": 268,
+    "lift": 9.53,
     "p": 0.0,
     "tage": 3,
     "haeuser": 6,
@@ -1906,12 +1900,12 @@
     "n_ab": 4,
     "n_a": 5,
     "n_b": 32,
-    "N": 238,
-    "lift": 5.95,
-    "p": 0.001247,
+    "N": 268,
+    "lift": 6.7,
+    "p": 0.000783,
     "tage": 2,
     "haeuser": 4,
-    "q": 0.001247
+    "q": 0.000783
    },
    "belege": [
     "M-71f52eaffcb7",
@@ -1941,12 +1935,12 @@
     "n_ab": 5,
     "n_a": 5,
     "n_b": 14,
-    "N": 238,
-    "lift": 17.0,
+    "N": 268,
+    "lift": 19.14,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
-    "q": 1e-06
+    "q": 0.0
    },
    "belege": [
     "M-45fe085c4622",
@@ -1977,8 +1971,8 @@
     "n_ab": 8,
     "n_a": 32,
     "n_b": 8,
-    "N": 238,
-    "lift": 7.44,
+    "N": 268,
+    "lift": 8.38,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
@@ -2016,8 +2010,8 @@
     "n_ab": 8,
     "n_a": 14,
     "n_b": 8,
-    "N": 238,
-    "lift": 17.0,
+    "N": 268,
+    "lift": 19.14,
     "p": 0.0,
     "tage": 2,
     "haeuser": 4,
@@ -2052,15 +2046,15 @@
    "nach": "B-vorerst",
    "titel": "stoppt ↔ vorerst",
    "statistik": {
-    "n_ab": 6,
-    "n_a": 12,
-    "n_b": 10,
-    "N": 238,
-    "lift": 11.9,
-    "p": 1e-06,
-    "tage": 2,
-    "haeuser": 5,
-    "q": 2e-06
+    "n_ab": 7,
+    "n_a": 13,
+    "n_b": 11,
+    "N": 268,
+    "lift": 13.12,
+    "p": 0.0,
+    "tage": 3,
+    "haeuser": 6,
+    "q": 0.0
    },
    "belege": [
     "M-35bb142f007e",
@@ -2068,7 +2062,8 @@
     "M-c81c58e3815b",
     "M-d86b6dc756ad",
     "M-e8ba7c701f3e",
-    "M-ba4615b03f22"
+    "M-ba4615b03f22",
+    "M-08c3a0e9ee09"
    ],
    "erstmals": "2026-10-03",
    "zuletzt": "2026-10-03",
@@ -2130,13 +2125,13 @@
   "Zuckersteuer"
  ],
  "umfang": {
-  "meldungen": 238,
+  "meldungen": 268,
   "deepdives": 11,
   "thesen": 6,
   "kennzahlen": 0,
   "begriffstage": 274,
-  "begriffe": 51,
-  "verknuepfungen": 105,
+  "begriffe": 55,
+  "verknuepfungen": 115,
   "vergessen_heute": 0
  }
 }
