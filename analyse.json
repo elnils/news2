@@ -1,7 +1,7 @@
 {
- "stand": "2026-10-03T08:44+02:00",
+ "stand": "2026-10-03T12:17+02:00",
  "wirkungsmodell": {
-  "n": 9,
+  "n": 15,
   "nutzbar": false,
   "spalten": [
    "konstante",
@@ -30,11 +30,11 @@
    "preis_richtung"
   ],
   "zusatz": [],
-  "grund": "zu wenige gerichtete Fälle (9 von 40)"
+  "grund": "zu wenige gerichtete Fälle (15 von 40)"
  },
  "thesen": {},
  "vorschlaege": [],
  "angewendet": [],
- "tests": 2,
- "ereignisse": 48
+ "tests": 16,
+ "ereignisse": 96
 }
