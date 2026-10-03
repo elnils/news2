@@ -1,5 +1,5 @@
 {
- "stand": "2026-10-03T18:18+02:00",
+ "stand": "2026-10-03T21:15+02:00",
  "wirkungsmodell": {
   "n": 26,
   "nutzbar": false,
@@ -46,5 +46,5 @@
  "vorschlaege": [],
  "angewendet": [],
  "tests": 53,
- "ereignisse": 185
+ "ereignisse": 203
 }

@@ -1,6 +1,6 @@
 {
- "stand": "2026-10-03T18:18+02:00",
- "ereignisse": 185,
+ "stand": "2026-10-03T21:15+02:00",
+ "ereignisse": 203,
  "mit_wirkung": 26,
  "methode": "Ereignisstudie (MacKinlay 1997): Basis letzter Handelstag vor dem Ereignis, z = log-Rendite / (σ der 60 Handelstage davor · √h); bei Rohstoffen in erwarteter Preisrichtung.",
  "nach": {
