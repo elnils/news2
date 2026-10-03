@@ -1,52 +1,60 @@
 {
- "stand": "2026-10-03T12:17+02:00",
- "ereignisse": 96,
- "mit_wirkung": 15,
+ "stand": "2026-10-03T15:17+02:00",
+ "ereignisse": 144,
+ "mit_wirkung": 21,
  "methode": "Ereignisstudie (MacKinlay 1997): Basis letzter Handelstag vor dem Ereignis, z = log-Rendite / (σ der 60 Handelstage davor · √h); bei Rohstoffen in erwarteter Preisrichtung.",
  "nach": {
   "kategorie": {
    "naturereignis": {
-    "n": 9,
-    "z5_mittel": 0.309,
-    "betrag_mittel": 0.447,
+    "n": 10,
+    "z5_mittel": 0.227,
+    "betrag_mittel": 0.453,
     "anteil_deutlich": 0.0,
-    "t": 1.71,
-    "nachhall_mittel": 2.7
+    "t": 1.26,
+    "nachhall_mittel": 2.3
+   },
+   "technologie": {
+    "n": 5,
+    "z5_mittel": -0.278,
+    "betrag_mittel": 0.378,
+    "anteil_deutlich": 0.0,
+    "t": -1.43,
+    "nachhall_mittel": 0.4
    }
   },
   "status": {
    "geschehen": {
-    "n": 11,
-    "z5_mittel": 0.244,
-    "betrag_mittel": 0.371,
+    "n": 14,
+    "z5_mittel": 0.149,
+    "betrag_mittel": 0.363,
     "anteil_deutlich": 0.0,
-    "t": 1.65,
-    "nachhall_mittel": 2.0
+    "t": 1.14,
+    "nachhall_mittel": 1.5
    },
    "angekuendigt": {
-    "n": 3,
-    "z5_mittel": 0.305,
-    "betrag_mittel": 0.391,
+    "n": 6,
+    "z5_mittel": -0.099,
+    "betrag_mittel": 0.447,
     "anteil_deutlich": 0.0,
-    "t": 1.41,
-    "nachhall_mittel": 0.0
+    "t": -0.43,
+    "nachhall_mittel": 0.4
    }
   },
   "schwere": {
    "3": {
-    "n": 9,
-    "z5_mittel": 0.32,
-    "betrag_mittel": 0.458,
+    "n": 14,
+    "z5_mittel": 0.076,
+    "betrag_mittel": 0.453,
     "anteil_deutlich": 0.0,
-    "t": 1.81,
-    "nachhall_mittel": 1.8
+    "t": 0.49,
+    "nachhall_mittel": 1.2
    },
    "2": {
-    "n": 3,
-    "z5_mittel": 0.253,
-    "betrag_mittel": 0.304,
+    "n": 4,
+    "z5_mittel": 0.117,
+    "betrag_mittel": 0.301,
     "anteil_deutlich": 0.0,
-    "t": 1.47,
+    "t": 0.64,
     "nachhall_mittel": 0.0
    },
    "4": {
@@ -59,13 +67,21 @@
    }
   },
   "umfang": {
-   "global": {
-    "n": 5,
-    "z5_mittel": 0.484,
-    "betrag_mittel": 0.515,
+   "national": {
+    "n": 7,
+    "z5_mittel": -0.028,
+    "betrag_mittel": 0.373,
     "anteil_deutlich": 0.0,
-    "t": 1.89,
-    "nachhall_mittel": 0.0
+    "t": -0.15,
+    "nachhall_mittel": 1.0
+   },
+   "global": {
+    "n": 7,
+    "z5_mittel": 0.252,
+    "betrag_mittel": 0.461,
+    "anteil_deutlich": 0.0,
+    "t": 1.06,
+    "nachhall_mittel": 0.3
    },
    "regional": {
     "n": 5,
@@ -74,33 +90,41 @@
     "anteil_deutlich": 0.0,
     "t": 0.66,
     "nachhall_mittel": 3.7
-   },
-   "national": {
-    "n": 4,
-    "z5_mittel": 0.188,
-    "betrag_mittel": 0.316,
-    "anteil_deutlich": 0.0,
-    "t": 1.03,
-    "nachhall_mittel": 2.5
    }
   },
   "route": {
    "keine": {
-    "n": 11,
-    "z5_mittel": 0.226,
-    "betrag_mittel": 0.299,
+    "n": 16,
+    "z5_mittel": 0.055,
+    "betrag_mittel": 0.331,
     "anteil_deutlich": 0.0,
-    "t": 2.5,
-    "nachhall_mittel": 2.0
+    "t": 0.53,
+    "nachhall_mittel": 1.4
+   },
+   "rhein": {
+    "n": 3,
+    "z5_mittel": -0.197,
+    "betrag_mittel": 0.419,
+    "anteil_deutlich": 0.0,
+    "t": -0.74,
+    "nachhall_mittel": 0.0
    }
   },
   "dauer": {
    "unklar": {
-    "n": 5,
-    "z5_mittel": 0.084,
-    "betrag_mittel": 0.333,
+    "n": 9,
+    "z5_mittel": -0.029,
+    "betrag_mittel": 0.306,
     "anteil_deutlich": 0.0,
-    "t": 0.45,
+    "t": -0.23,
+    "nachhall_mittel": 0.3
+   },
+   "dauerhaft": {
+    "n": 5,
+    "z5_mittel": -0.034,
+    "betrag_mittel": 0.536,
+    "anteil_deutlich": 0.0,
+    "t": -0.12,
     "nachhall_mittel": 0.0
    },
    "monate": {
@@ -110,14 +134,6 @@
     "anteil_deutlich": 0.0,
     "t": 1.22,
     "nachhall_mittel": 2.8
-   },
-   "dauerhaft": {
-    "n": 3,
-    "z5_mittel": 0.418,
-    "betrag_mittel": 0.418,
-    "anteil_deutlich": 0.0,
-    "t": 4.97,
-    "nachhall_mittel": 0.0
    },
    "tage": {
     "n": 3,
@@ -130,56 +146,56 @@
   },
   "bestaetigt": {
    "0": {
-    "n": 15,
-    "z5_mittel": 0.274,
-    "betrag_mittel": 0.383,
+    "n": 21,
+    "z5_mittel": 0.095,
+    "betrag_mittel": 0.394,
     "anteil_deutlich": 0.0,
-    "t": 2.39,
-    "nachhall_mittel": 1.5
+    "t": 0.86,
+    "nachhall_mittel": 1.1
    }
   },
   "neuheit": {
    "neu": {
-    "n": 12,
-    "z5_mittel": 0.36,
-    "betrag_mittel": 0.416,
+    "n": 17,
+    "z5_mittel": 0.16,
+    "betrag_mittel": 0.411,
     "anteil_deutlich": 0.0,
-    "t": 2.89,
-    "nachhall_mittel": 0.6
+    "t": 1.26,
+    "nachhall_mittel": 0.5
    },
    "fortsetzung": {
-    "n": 3,
-    "z5_mittel": -0.073,
-    "betrag_mittel": 0.255,
+    "n": 4,
+    "z5_mittel": -0.181,
+    "betrag_mittel": 0.318,
     "anteil_deutlich": 0.0,
-    "t": -0.37,
-    "nachhall_mittel": 5.5
+    "t": -1.02,
+    "nachhall_mittel": 3.7
    }
   },
   "kette": {
    "1": {
-    "n": 5,
-    "z5_mittel": 0.367,
-    "betrag_mittel": 0.449,
+    "n": 6,
+    "z5_mittel": 0.118,
+    "betrag_mittel": 0.519,
     "anteil_deutlich": 0.0,
-    "t": 1.3,
-    "nachhall_mittel": 1.0
+    "t": 0.39,
+    "nachhall_mittel": 0.8
    },
    "2": {
-    "n": 4,
-    "z5_mittel": 0.229,
-    "betrag_mittel": 0.438,
+    "n": 5,
+    "z5_mittel": 0.053,
+    "betrag_mittel": 0.513,
     "anteil_deutlich": 0.0,
-    "t": 1.01,
+    "t": 0.19,
     "nachhall_mittel": 0.0
    },
    "3": {
-    "n": 3,
-    "z5_mittel": 0.1,
-    "betrag_mittel": 0.235,
+    "n": 4,
+    "z5_mittel": -0.019,
+    "betrag_mittel": 0.27,
     "anteil_deutlich": 0.0,
-    "t": 0.5,
-    "nachhall_mittel": 5.5
+    "t": -0.1,
+    "nachhall_mittel": 6.5
    }
   }
  }
