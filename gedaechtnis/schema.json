@@ -1,0 +1,22 @@
+{
+ "typen": {
+  "M": "Meldung",
+  "D": "Deep Dive",
+  "T": "These (Tagesstand)",
+  "K": "Kennzahl / Marktsymbol",
+  "B": "Begriff",
+  "X": "Verknüpfung",
+  "E": "Ereignis (ereignisse/)"
+ },
+ "verknuepfungsarten": [
+  "begriff_begriff",
+  "begriff_markt",
+  "these_deepdive"
+ ],
+ "gedaechtnis": {
+  "tau_tage": 30.0,
+  "vergessen_unter": 0.2
+ },
+ "auffaellig": "quasi-Poisson z ≥ 3 gegen 28 Vortage, df ≥ 5, Faktor ≥ 1,5",
+ "paare": "hypergeometrisch exakt, Lift ≥ 2, ≥ 4 Meldungen, ≥ 2 Tage, ≥ 2 Häuser, BH q ≤ 0,05, Fenster 90 Tage"
+}

@@ -1,0 +1,6 @@
+{
+ "_hinweis": "Vorschläge des Analysealgorithmus freigeben: IDs unter 'angenommen' oder 'abgelehnt' eintragen. 'autonomie': 'vorschlagen' (alles nur vorschlagen) oder 'abschwaechen' (Abschwächungen automatisch anwenden, Verstärkungen weiter nur mit Freigabe).",
+ "autonomie": "vorschlagen",
+ "angenommen": [],
+ "abgelehnt": []
+}

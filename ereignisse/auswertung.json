@@ -1,0 +1,114 @@
+{
+ "stand": "2026-10-03T08:44+02:00",
+ "ereignisse": 48,
+ "mit_wirkung": 9,
+ "methode": "Ereignisstudie (MacKinlay 1997): Basis letzter Handelstag vor dem Ereignis, z = log-Rendite / (σ der 60 Handelstage davor · √h); bei Rohstoffen in erwarteter Preisrichtung.",
+ "nach": {
+  "kategorie": {
+   "naturereignis": {
+    "n": 6,
+    "z5_mittel": 0.155,
+    "betrag_mittel": 0.32,
+    "anteil_deutlich": 0.0,
+    "t": 1.02,
+    "nachhall_mittel": 3.7
+   }
+  },
+  "status": {
+   "geschehen": {
+    "n": 7,
+    "z5_mittel": 0.172,
+    "betrag_mittel": 0.313,
+    "anteil_deutlich": 0.0,
+    "t": 1.33,
+    "nachhall_mittel": 2.8
+   }
+  },
+  "schwere": {
+   "3": {
+    "n": 6,
+    "z5_mittel": 0.221,
+    "betrag_mittel": 0.385,
+    "anteil_deutlich": 0.0,
+    "t": 1.39,
+    "nachhall_mittel": 3.7
+   }
+  },
+  "umfang": {
+   "regional": {
+    "n": 5,
+    "z5_mittel": 0.12,
+    "betrag_mittel": 0.317,
+    "anteil_deutlich": 0.0,
+    "t": 0.66,
+    "nachhall_mittel": 3.7
+   }
+  },
+  "route": {
+   "keine": {
+    "n": 6,
+    "z5_mittel": 0.337,
+    "betrag_mittel": 0.362,
+    "anteil_deutlich": 0.0,
+    "t": 3.01,
+    "nachhall_mittel": 3.7
+   }
+  },
+  "dauer": {
+   "monate": {
+    "n": 3,
+    "z5_mittel": 0.082,
+    "betrag_mittel": 0.131,
+    "anteil_deutlich": 0.0,
+    "t": 0.81,
+    "nachhall_mittel": 3.7
+   }
+  },
+  "bestaetigt": {
+   "0": {
+    "n": 9,
+    "z5_mittel": 0.246,
+    "betrag_mittel": 0.355,
+    "anteil_deutlich": 0.0,
+    "t": 2.23,
+    "nachhall_mittel": 2.2
+   }
+  },
+  "neuheit": {
+   "neu": {
+    "n": 6,
+    "z5_mittel": 0.405,
+    "betrag_mittel": 0.405,
+    "anteil_deutlich": 0.0,
+    "t": 5.22,
+    "nachhall_mittel": 0.0
+   },
+   "fortsetzung": {
+    "n": 3,
+    "z5_mittel": -0.073,
+    "betrag_mittel": 0.255,
+    "anteil_deutlich": 0.0,
+    "t": -0.37,
+    "nachhall_mittel": 5.5
+   }
+  },
+  "kette": {
+   "1": {
+    "n": 5,
+    "z5_mittel": 0.315,
+    "betrag_mittel": 0.345,
+    "anteil_deutlich": 0.0,
+    "t": 2.88,
+    "nachhall_mittel": 2.8
+   },
+   "2": {
+    "n": 4,
+    "z5_mittel": 0.159,
+    "betrag_mittel": 0.368,
+    "anteil_deutlich": 0.0,
+    "t": 0.72,
+    "nachhall_mittel": 0.0
+   }
+  }
+ }
+}

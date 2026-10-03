@@ -1,0 +1,170 @@
+{"von":"cb41086fb272","nach":"donald trump","art":"akteur","rolle":"verursacher"}
+{"von":"cb41086fb272","nach":"usa","art":"akteur","rolle":"verursacher"}
+{"von":"cb41086fb272","nach":"diesel","art":"gut"}
+{"von":"24c1d86ddd0d","nach":"europäische zentralbank","art":"akteur","rolle":"verursacher"}
+{"von":"24c1d86ddd0d","nach":"federal reserve","art":"akteur","rolle":"verursacher"}
+{"von":"24c1d86ddd0d","nach":"joachim nagel","art":"akteur","rolle":"reagiert"}
+{"von":"24c1d86ddd0d","nach":"michael barr","art":"akteur","rolle":"reagiert"}
+{"von":"e567a8ae9feb","nach":"indien","art":"akteur","rolle":"verursacher"}
+{"von":"e567a8ae9feb","nach":"bangladesch","art":"akteur","rolle":"betroffen"}
+{"von":"e567a8ae9feb","nach":"russland","art":"akteur","rolle":"verursacher"}
+{"von":"e567a8ae9feb","nach":"ukraine","art":"akteur","rolle":"betroffen"}
+{"von":"e567a8ae9feb","nach":"weizen","art":"gut"}
+{"von":"e567a8ae9feb","nach":"bosporus","art":"route"}
+{"von":"fb795002e368","nach":"usa","art":"akteur","rolle":"verursacher"}
+{"von":"goldman sachs","nach":"GS","art":"akteur_kuerzel"}
+{"von":"fb795002e368","nach":"goldman sachs","art":"akteur","rolle":"reagiert"}
+{"von":"fb795002e368","nach":"diesel","art":"gut"}
+{"von":"56e467fe9bb1","nach":"eu","art":"akteur","rolle":"betroffen"}
+{"von":"56e467fe9bb1","nach":"co2-emissionsrechte","art":"gut"}
+{"von":"6a02763e610d","nach":"blackrock","art":"akteur","rolle":"verursacher"}
+{"von":"6a02763e610d","nach":"ifm investors pty","art":"akteur","rolle":"verursacher"}
+{"von":"6a02763e610d","nach":"stack infrastructure","art":"akteur","rolle":"betroffen"}
+{"von":"6a02763e610d","nach":"rechenzentren","art":"gut"}
+{"von":"6cfa95d4f08f","nach":"federal reserve","art":"akteur","rolle":"verursacher"}
+{"von":"6cfa95d4f08f","nach":"europäische zentralbank","art":"akteur","rolle":"verursacher"}
+{"von":"6cfa95d4f08f","nach":"anna paulson","art":"akteur","rolle":"verursacher"}
+{"von":"6cfa95d4f08f","nach":"zinsen","art":"gut"}
+{"von":"a6755584d4fe","nach":"fährverkehr","art":"gut"}
+{"von":"a6755584d4fe","nach":"rhein","art":"route"}
+{"von":"db80cc9d727c","nach":"fonterra","art":"akteur","rolle":"betroffen"}
+{"von":"db80cc9d727c","nach":"save the children","art":"akteur","rolle":"reagiert"}
+{"von":"db80cc9d727c","nach":"milch","art":"gut"}
+{"von":"238bfaf8cb37","nach":"eu","art":"akteur","rolle":"verursacher"}
+{"von":"238bfaf8cb37","nach":"vereinigtes königreich","art":"akteur","rolle":"betroffen"}
+{"von":"238bfaf8cb37","nach":"elektroautos","art":"gut"}
+{"von":"39aebe71277d","nach":"donald trump","art":"akteur","rolle":"verursacher"}
+{"von":"39aebe71277d","nach":"diesel","art":"gut"}
+{"von":"42c624f33261","nach":"federal reserve","art":"akteur","rolle":"verursacher"}
+{"von":"42c624f33261","nach":"zinsen","art":"gut"}
+{"von":"86f941a1742b","nach":"houthi miliz","art":"akteur","rolle":"verursacher"}
+{"von":"86f941a1742b","nach":"saudi arabien","art":"akteur","rolle":"reagiert"}
+{"von":"86f941a1742b","nach":"rohöl","art":"gut"}
+{"von":"86f941a1742b","nach":"rotes_meer","art":"route"}
+{"von":"1e017f7eeec8","nach":"molkereien","art":"akteur","rolle":"verursacher"}
+{"von":"1e017f7eeec8","nach":"milchprodukte","art":"gut"}
+{"von":"5f7d6ee00729","nach":"schiffstransport","art":"gut"}
+{"von":"5f7d6ee00729","nach":"rhein","art":"route"}
+{"von":"b1c43dbaed93","nach":"europäische zentralbank","art":"akteur","rolle":"verursacher"}
+{"von":"b1c43dbaed93","nach":"alexander demarco","art":"akteur","rolle":"verursacher"}
+{"von":"b1c43dbaed93","nach":"federal reserve","art":"akteur","rolle":"verursacher"}
+{"von":"b1c43dbaed93","nach":"michael barr","art":"akteur","rolle":"verursacher"}
+{"von":"b1c43dbaed93","nach":"zinsen","art":"gut"}
+{"von":"daa139f2014c","nach":"regierung von thailand","art":"akteur","rolle":"reagiert"}
+{"von":"f7f951494249","nach":"schwarz","art":"akteur","rolle":"verursacher"}
+{"von":"f7f951494249","nach":"rechenzentrum","art":"gut"}
+{"von":"micron technology","nach":"MU","art":"akteur_kuerzel"}
+{"von":"27e33c0f538a","nach":"micron technology","art":"akteur","rolle":"verursacher"}
+{"von":"27e33c0f538a","nach":"speicherchips","art":"gut"}
+{"von":"9e66ac85408d","nach":"frachttransport","art":"gut"}
+{"von":"9e66ac85408d","nach":"rhein","art":"route"}
+{"von":"oracle","nach":"ORCL","art":"akteur_kuerzel"}
+{"von":"ddee5ccb997d","nach":"oracle","art":"akteur","rolle":"betroffen"}
+{"von":"ddee5ccb997d","nach":"ki-rechenzentrum","art":"gut"}
+{"von":"502babbf5b70","nach":"micron technology","art":"akteur","rolle":"betroffen"}
+{"von":"502babbf5b70","nach":"huawei technologies","art":"akteur","rolle":"reagiert"}
+{"von":"infineon technologies","nach":"IFX.DE","art":"akteur_kuerzel"}
+{"von":"502babbf5b70","nach":"infineon technologies","art":"akteur","rolle":"reagiert"}
+{"von":"502babbf5b70","nach":"speicherchips","art":"gut"}
+{"von":"034fc8afbae1","nach":"bundesministerium der verteidigung","art":"akteur","rolle":"verursacher"}
+{"von":"034fc8afbae1","nach":"fregatten","art":"gut"}
+{"von":"06a54a893475","nach":"russland","art":"akteur","rolle":"verursacher"}
+{"von":"06a54a893475","nach":"bundesverband der deutschen industrie","art":"akteur","rolle":"reagiert"}
+{"von":"06a54a893475","nach":"elisabeth braw","art":"akteur","rolle":"reagiert"}
+{"von":"0c34a67b7b98","nach":"verivox","art":"akteur","rolle":"reagiert"}
+{"von":"0c34a67b7b98","nach":"strom und gas","art":"gut"}
+{"von":"18ee31825923","nach":"japan","art":"akteur","rolle":"verursacher"}
+{"von":"18ee31825923","nach":"russland","art":"akteur","rolle":"betroffen"}
+{"von":"18ee31825923","nach":"diesel","art":"gut"}
+{"von":"1bac567c3ca9","nach":"huthis","art":"akteur","rolle":"verursacher"}
+{"von":"1bac567c3ca9","nach":"saudi arabien","art":"akteur","rolle":"reagiert"}
+{"von":"1bac567c3ca9","nach":"hapag lloyd","art":"akteur","rolle":"betroffen"}
+{"von":"1bac567c3ca9","nach":"maersk","art":"akteur","rolle":"betroffen"}
+{"von":"1bac567c3ca9","nach":"handelsgüter","art":"gut"}
+{"von":"1bac567c3ca9","nach":"hormus","art":"route"}
+{"von":"1bdd589329aa","nach":"federal reserve system","art":"akteur","rolle":"betroffen"}
+{"von":"1bdd589329aa","nach":"robert reich","art":"akteur","rolle":"reagiert"}
+{"von":"1bdd589329aa","nach":"chris phelan","art":"akteur","rolle":"reagiert"}
+{"von":"1bdd589329aa","nach":"us-dollar","art":"gut"}
+{"von":"1c8f3a47ce11","nach":"pedro sánchez","art":"akteur","rolle":"reagiert"}
+{"von":"1c8f3a47ce11","nach":"regierung von spanien","art":"akteur","rolle":"betroffen"}
+{"von":"23b190f0ea2f","nach":"donald trump","art":"akteur","rolle":"verursacher"}
+{"von":"23b190f0ea2f","nach":"g7","art":"akteur","rolle":"reagiert"}
+{"von":"23b190f0ea2f","nach":"frankreich","art":"akteur","rolle":"reagiert"}
+{"von":"23b190f0ea2f","nach":"keir mather","art":"akteur","rolle":"reagiert"}
+{"von":"23b190f0ea2f","nach":"international energy agency","art":"akteur","rolle":"reagiert"}
+{"von":"23b190f0ea2f","nach":"diesel und rohöl","art":"gut"}
+{"von":"28857f622cc9","nach":"greg lui","art":"akteur","rolle":"verursacher"}
+{"von":"28857f622cc9","nach":"united states department of justice","art":"akteur","rolle":"reagiert"}
+{"von":"28857f622cc9","nach":"verband deutscher maschinen und anlagenbau","art":"akteur","rolle":"reagiert"}
+{"von":"nvidia","nach":"NVDA","art":"akteur_kuerzel"}
+{"von":"28857f622cc9","nach":"nvidia","art":"akteur","rolle":"betroffen"}
+{"von":"28857f622cc9","nach":"server","art":"gut"}
+{"von":"411924a0a4d8","nach":"shinhan bank","art":"akteur","rolle":"betroffen"}
+{"von":"411924a0a4d8","nach":"kundendaten","art":"gut"}
+{"von":"566ee9001445","nach":"usa","art":"akteur","rolle":"verursacher"}
+{"von":"566ee9001445","nach":"iran","art":"akteur","rolle":"betroffen"}
+{"von":"566ee9001445","nach":"russland","art":"akteur","rolle":"verursacher"}
+{"von":"566ee9001445","nach":"militärgüter","art":"gut"}
+{"von":"amazon com","nach":"AMZN","art":"akteur_kuerzel"}
+{"von":"65586783e3c2","nach":"amazon com","art":"akteur","rolle":"verursacher"}
+{"von":"65586783e3c2","nach":"matt garman","art":"akteur","rolle":"reagiert"}
+{"von":"65586783e3c2","nach":"rechenzentren","art":"gut"}
+{"von":"77ce9246f59f","nach":"bundesgerichtshof","art":"akteur","rolle":"verursacher"}
+{"von":"amazon","nach":"AMZN","art":"akteur_kuerzel"}
+{"von":"77ce9246f59f","nach":"amazon","art":"akteur","rolle":"reagiert"}
+{"von":"77ce9246f59f","nach":"amazon prime","art":"gut"}
+{"von":"7afb4bc9e540","nach":"galeria karstadt kaufhof","art":"akteur","rolle":"betroffen"}
+{"von":"7afb4bc9e540","nach":"warenhäuser","art":"gut"}
+{"von":"805b09f14b21","nach":"russland","art":"akteur","rolle":"verursacher"}
+{"von":"805b09f14b21","nach":"elisabeth braw","art":"akteur","rolle":"reagiert"}
+{"von":"805b09f14b21","nach":"sarah wheaton","art":"akteur","rolle":"reagiert"}
+{"von":"91644c067a6f","nach":"micron technology","art":"akteur","rolle":"betroffen"}
+{"von":"91644c067a6f","nach":"samsung electronics","art":"akteur","rolle":"betroffen"}
+{"von":"91644c067a6f","nach":"speicherchips","art":"gut"}
+{"von":"bba75174b631","nach":"forschungsförderung","art":"gut"}
+{"von":"c37b52d6a374","nach":"taiwan","art":"akteur","rolle":"betroffen"}
+{"von":"c37b52d6a374","nach":"china","art":"akteur","rolle":"verursacher"}
+{"von":"c37b52d6a374","nach":"militärgüter","art":"gut"}
+{"von":"c37b52d6a374","nach":"taiwanstrasse","art":"route"}
+{"von":"c662fb20f163","nach":"usa","art":"akteur","rolle":"verursacher"}
+{"von":"c662fb20f163","nach":"china","art":"akteur","rolle":"betroffen"}
+{"von":"c662fb20f163","nach":"nvidia","art":"akteur","rolle":"betroffen"}
+{"von":"c662fb20f163","nach":"asml","art":"akteur","rolle":"betroffen"}
+{"von":"c662fb20f163","nach":"ki-chips","art":"gut"}
+{"von":"de7c76e95746","nach":"europäische zentralbank","art":"akteur","rolle":"betroffen"}
+{"von":"de7c76e95746","nach":"frankreich","art":"akteur","rolle":"betroffen"}
+{"von":"de7c76e95746","nach":"verbraucherpreise","art":"gut"}
+{"von":"e4758ebfd0b7","nach":"mthuli ncube","art":"akteur","rolle":"reagiert"}
+{"von":"e4758ebfd0b7","nach":"azhar ehsan","art":"akteur","rolle":"reagiert"}
+{"von":"e4758ebfd0b7","nach":"noaa","art":"akteur","rolle":"reagiert"}
+{"von":"e4758ebfd0b7","nach":"nahrungsmittel und kohle","art":"gut"}
+{"von":"fb5db7a7a40b","nach":"iran","art":"akteur","rolle":"verursacher"}
+{"von":"fb5db7a7a40b","nach":"huthis","art":"akteur","rolle":"verursacher"}
+{"von":"fb5db7a7a40b","nach":"rohöl","art":"gut"}
+{"von":"fb5db7a7a40b","nach":"hormus","art":"route"}
+{"von":"fea28bdd8906","nach":"europäische zentralbank","art":"akteur","rolle":"reagiert"}
+{"von":"fea28bdd8906","nach":"federal reserve","art":"akteur","rolle":"reagiert"}
+{"von":"fea28bdd8906","nach":"austan goolsbee","art":"akteur","rolle":"reagiert"}
+{"von":"fea28bdd8906","nach":"kitty richards","art":"akteur","rolle":"reagiert"}
+{"von":"fea28bdd8906","nach":"zinsen","art":"gut"}
+{"von":"fb795002e368","nach":"cb41086fb272","art":"folge_von"}
+{"von":"6cfa95d4f08f","nach":"24c1d86ddd0d","art":"folge_von"}
+{"von":"db80cc9d727c","nach":"ed2a69af4fc5","art":"folge_von"}
+{"von":"39aebe71277d","nach":"fb795002e368","art":"folge_von"}
+{"von":"42c624f33261","nach":"6cfa95d4f08f","art":"folge_von"}
+{"von":"5f7d6ee00729","nach":"a6755584d4fe","art":"folge_von"}
+{"von":"b1c43dbaed93","nach":"42c624f33261","art":"folge_von"}
+{"von":"daa139f2014c","nach":"6fd926f6830d","art":"folge_von"}
+{"von":"f7f951494249","nach":"6a02763e610d","art":"folge_von"}
+{"von":"9e66ac85408d","nach":"5f7d6ee00729","art":"folge_von"}
+{"von":"ddee5ccb997d","nach":"f7f951494249","art":"folge_von"}
+{"von":"502babbf5b70","nach":"27e33c0f538a","art":"folge_von"}
+{"von":"23b190f0ea2f","nach":"39aebe71277d","art":"folge_von"}
+{"von":"65586783e3c2","nach":"ddee5ccb997d","art":"folge_von"}
+{"von":"805b09f14b21","nach":"e567a8ae9feb","art":"folge_von"}
+{"von":"82eb49315d46","nach":"daa139f2014c","art":"folge_von"}
+{"von":"91644c067a6f","nach":"502babbf5b70","art":"folge_von"}
+{"von":"e4758ebfd0b7","nach":"db80cc9d727c","art":"folge_von"}
+{"von":"fb5db7a7a40b","nach":"86f941a1742b","art":"folge_von"}
+{"von":"fea28bdd8906","nach":"b1c43dbaed93","art":"folge_von"}

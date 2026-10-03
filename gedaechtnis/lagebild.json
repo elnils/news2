@@ -1,0 +1,2076 @@
+{
+ "stand": "2026-10-03T08:59+02:00",
+ "stichtag": "2026-10-03",
+ "auffaellige_begriffe": [
+  {
+   "begriff": "galeria",
+   "df": 39,
+   "erwartet": 0.0,
+   "z": 288.09,
+   "faktor": 2130.1,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-33e225cca009",
+    "M-26aef2888254",
+    "M-1381293719c7",
+    "M-c9ee8d8b098b",
+    "M-011d08e31bb0",
+    "M-6203f2760092"
+   ]
+  },
+  {
+   "begriff": "warenhauskett",
+   "df": 26,
+   "erwartet": 0.0,
+   "z": 192.01,
+   "faktor": 1420.0,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-33e225cca009",
+    "M-26aef2888254",
+    "M-011d08e31bb0",
+    "M-6203f2760092",
+    "M-67557952115c",
+    "M-ce925a11fff1"
+   ]
+  },
+  {
+   "begriff": "exzellenz",
+   "df": 20,
+   "erwartet": 0.0,
+   "z": 147.67,
+   "faktor": 1092.3,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "anleihencheck",
+   "df": 19,
+   "erwartet": 0.0,
+   "z": 140.28,
+   "faktor": 1037.7,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "exzellenzuniversität",
+   "df": 18,
+   "erwartet": 0.0,
+   "z": 132.89,
+   "faktor": 983.1,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-25fcd8dfc851"
+   ]
+  },
+  {
+   "begriff": "insolvenzantrag",
+   "df": 18,
+   "erwartet": 0.0,
+   "z": 132.89,
+   "faktor": 983.1,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-1381293719c7",
+    "M-c9ee8d8b098b",
+    "M-011d08e31bb0",
+    "M-6203f2760092",
+    "M-67557952115c",
+    "M-ce925a11fff1"
+   ]
+  },
+  {
+   "begriff": "gruppenvergewaltigung",
+   "df": 13,
+   "erwartet": 0.0,
+   "z": 95.94,
+   "faktor": 710.0,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-973a7dcabdbd"
+   ]
+  },
+  {
+   "begriff": "milde",
+   "df": 12,
+   "erwartet": 0.0,
+   "z": 88.55,
+   "faktor": 655.4,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "dieselreserv",
+   "df": 12,
+   "erwartet": 0.0,
+   "z": 88.55,
+   "faktor": 655.4,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-845e8ced783e"
+   ]
+  },
+  {
+   "begriff": "ki-enthüllun",
+   "df": 12,
+   "erwartet": 0.0,
+   "z": 88.55,
+   "faktor": 655.4,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "gerhard",
+   "df": 11,
+   "erwartet": 0.0,
+   "z": 81.16,
+   "faktor": 600.8,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "altkanzler",
+   "df": 10,
+   "erwartet": 0.0,
+   "z": 73.77,
+   "faktor": 546.2,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "supermarktkett",
+   "df": 10,
+   "erwartet": 0.0,
+   "z": 73.77,
+   "faktor": 546.2,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "rekordzeit",
+   "df": 10,
+   "erwartet": 0.0,
+   "z": 73.77,
+   "faktor": 546.2,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "berlin-spandau",
+   "df": 9,
+   "erwartet": 0.0,
+   "z": 66.38,
+   "faktor": 491.6,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "machchhar",
+   "df": 9,
+   "erwartet": 0.0,
+   "z": 66.38,
+   "faktor": 491.6,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "birkenstock",
+   "df": 9,
+   "erwartet": 0.0,
+   "z": 66.38,
+   "faktor": 491.6,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "asia-pacific",
+   "df": 9,
+   "erwartet": 0.0,
+   "z": 66.38,
+   "faktor": 491.6,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "diesel-reserv",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "flugzeugträger",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "ampel",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "spitzenforschung",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": [
+    "M-25fcd8dfc851"
+   ]
+  },
+  {
+   "begriff": "freigeb",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "smit",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  },
+  {
+   "begriff": "nachzählung",
+   "df": 8,
+   "erwartet": 0.0,
+   "z": 58.99,
+   "faktor": 436.9,
+   "neu": true,
+   "fenster": [
+    "2026-10-03",
+    "2026-10-02"
+   ],
+   "belege": []
+  }
+ ],
+ "neue_verknuepfungen": [
+  {
+   "id": "X-097f6793cc4c",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-attempt",
+   "nach": "B-execution",
+   "titel": "attempt ↔ execution",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 5,
+    "n_b": 9,
+    "N": 145,
+    "lift": 16.11,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-45fe085c4622",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-attempt",
+    "B-execution"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-7fe15e9cd1fb",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-failed",
+   "titel": "execution ↔ failed",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 9,
+    "n_b": 5,
+    "N": 145,
+    "lift": 16.11,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-a36f0978cb96",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-failed"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-9c3947197b92",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-giftspritz",
+   "nach": "B-überlebt",
+   "titel": "giftspritz ↔ überlebt",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 9,
+    "n_b": 6,
+    "N": 145,
+    "lift": 13.43,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 4e-06
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-b2c375a12787"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-giftspritz",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-19864e746bdd",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-gescheitert",
+   "nach": "B-hinrichtung",
+   "titel": "gescheitert ↔ hinrichtung",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 7,
+    "n_b": 12,
+    "N": 145,
+    "lift": 10.36,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 2e-06
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-6a2d2f6ef9e0",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-gescheitert",
+    "B-hinrichtung"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-e2304dd9a08c",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-hinrichtung",
+   "nach": "B-überlebt",
+   "titel": "hinrichtung ↔ überlebt",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 12,
+    "n_b": 6,
+    "N": 145,
+    "lift": 10.07,
+    "p": 9e-06,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1.9e-05
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-d9d9d99f7834"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-hinrichtung",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-0782cbba99a4",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-giftspritz",
+   "nach": "B-hinrichtung",
+   "titel": "giftspritz ↔ hinrichtung",
+   "statistik": {
+    "n_ab": 7,
+    "n_a": 9,
+    "n_b": 12,
+    "N": 145,
+    "lift": 9.4,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35",
+    "M-6586b14ba12f"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-giftspritz",
+    "B-hinrichtung"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-11d66946c1aa",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-gescheitert",
+   "nach": "B-giftspritz",
+   "titel": "gescheitert ↔ giftspritz",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 7,
+    "n_b": 9,
+    "N": 145,
+    "lift": 9.21,
+    "p": 0.000229,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000282
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-gescheitert",
+    "B-giftspritz"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-9da282fe4bbf",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-druck",
+   "nach": "B-wegen",
+   "titel": "druck ↔ wegen",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 8,
+    "n_b": 8,
+    "N": 145,
+    "lift": 9.06,
+    "p": 0.000253,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000302
+   },
+   "belege": [
+    "M-16036d4d7832",
+    "M-08a3b03b7ba9",
+    "M-ce39aa9855be",
+    "M-e341b8ecac90"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-druck",
+    "B-wegen"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-e7588d6fb6ab",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-pike",
+   "titel": "christa ↔ pike",
+   "statistik": {
+    "n_ab": 17,
+    "n_a": 18,
+    "n_b": 17,
+    "N": 145,
+    "lift": 8.06,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 10,
+    "q": 0.0
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-150aeb3f9e19",
+    "M-b190a5386be1",
+    "M-80c44b5aa459",
+    "M-a7abea5c96a2",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-518b88aa90e0",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-failed",
+   "titel": "christa ↔ failed",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 18,
+    "n_b": 5,
+    "N": 145,
+    "lift": 8.06,
+    "p": 1.7e-05,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 3e-05
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-a36f0978cb96",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-failed"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-fc9415f94d83",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-tennesse",
+   "titel": "execution ↔ tennesse",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 9,
+    "n_b": 13,
+    "N": 145,
+    "lift": 7.44,
+    "p": 1.1e-05,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 2.1e-05
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-45fe085c4622"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-tennesse"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-7d4b119d395b",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-tennesse",
+   "nach": "B-überlebt",
+   "titel": "tennesse ↔ überlebt",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 13,
+    "n_b": 6,
+    "N": 145,
+    "lift": 7.44,
+    "p": 0.000547,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000578
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-48171fbea9d6",
+    "M-d9d9d99f7834"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-tennesse",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-2bc5394b904e",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-kanzleramt",
+   "nach": "B-klingbeil",
+   "titel": "kanzleramt ↔ klingbeil",
+   "statistik": {
+    "n_ab": 10,
+    "n_a": 13,
+    "n_b": 15,
+    "N": 145,
+    "lift": 7.44,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 9,
+    "q": 0.0
+   },
+   "belege": [
+    "M-c81c58e3815b",
+    "M-e56fbed34f0e",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-4b251fa51ddb",
+    "M-e3864013dc84",
+    "M-e5bdd06732f1",
+    "M-b26c7eeced87",
+    "M-e8ba7c701f3e",
+    "M-8fb69a49bf80"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-kanzleramt",
+    "B-klingbeil"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-b9544a69c4dd",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-stoppt",
+   "nach": "B-vorerst",
+   "titel": "stoppt ↔ vorerst",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 12,
+    "n_b": 10,
+    "N": 145,
+    "lift": 7.25,
+    "p": 1.4e-05,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 2.7e-05
+   },
+   "belege": [
+    "M-ba4615b03f22",
+    "M-c81c58e3815b",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-5bc954bf57da",
+    "M-e8ba7c701f3e"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-stoppt",
+    "B-vorerst"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-f03588fd5e80",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-execution",
+   "titel": "christa ↔ execution",
+   "statistik": {
+    "n_ab": 8,
+    "n_a": 18,
+    "n_b": 9,
+    "N": 145,
+    "lift": 7.16,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 0.0
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-execution"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-4747651d2495",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-failed",
+   "nach": "B-pike",
+   "titel": "failed ↔ pike",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 5,
+    "n_b": 17,
+    "N": 145,
+    "lift": 6.82,
+    "p": 0.000624,
+    "tage": 2,
+    "haeuser": 2,
+    "q": 0.000641
+   },
+   "belege": [
+    "M-9f507886f3f4",
+    "M-a36f0978cb96",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-failed",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-f0e27ac38852",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-kanzleramt",
+   "nach": "B-vorerst",
+   "titel": "kanzleramt ↔ vorerst",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 13,
+    "n_b": 10,
+    "N": 145,
+    "lift": 6.69,
+    "p": 2.6e-05,
+    "tage": 2,
+    "haeuser": 6,
+    "q": 4.4e-05
+   },
+   "belege": [
+    "M-c81c58e3815b",
+    "M-e56fbed34f0e",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-5bc954bf57da",
+    "M-e8ba7c701f3e"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-kanzleramt",
+    "B-vorerst"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-eb053a21d225",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-pike",
+   "titel": "execution ↔ pike",
+   "statistik": {
+    "n_ab": 7,
+    "n_a": 9,
+    "n_b": 17,
+    "N": 145,
+    "lift": 6.63,
+    "p": 3e-06,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 6e-06
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-fb6f029b2944",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-klingbeil",
+   "nach": "B-zucker",
+   "titel": "klingbeil ↔ zucker",
+   "statistik": {
+    "n_ab": 15,
+    "n_a": 15,
+    "n_b": 22,
+    "N": 145,
+    "lift": 6.59,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 11,
+    "q": 0.0
+   },
+   "belege": [
+    "M-a92175733fd7",
+    "M-c81c58e3815b",
+    "M-e56fbed34f0e",
+    "M-369b525a8370",
+    "M-636ae75be72f",
+    "M-9c096c715d80",
+    "M-8962d669c5dd",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-4b251fa51ddb"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-klingbeil",
+    "B-zucker"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-fd4488729e08",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-klingbeil",
+   "nach": "B-zuckersteuer",
+   "titel": "klingbeil ↔ zuckersteuer",
+   "statistik": {
+    "n_ab": 15,
+    "n_a": 15,
+    "n_b": 22,
+    "N": 145,
+    "lift": 6.59,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 11,
+    "q": 0.0
+   },
+   "belege": [
+    "M-a92175733fd7",
+    "M-c81c58e3815b",
+    "M-e56fbed34f0e",
+    "M-369b525a8370",
+    "M-636ae75be72f",
+    "M-9c096c715d80",
+    "M-8962d669c5dd",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-4b251fa51ddb"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-klingbeil",
+    "B-zuckersteuer"
+   ],
+   "staerke_aktuell": 1.0
+  }
+ ],
+ "staerkste_verknuepfungen": [
+  {
+   "id": "X-9da282fe4bbf",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-druck",
+   "nach": "B-wegen",
+   "titel": "druck ↔ wegen",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 8,
+    "n_b": 8,
+    "N": 145,
+    "lift": 9.06,
+    "p": 0.000253,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000302
+   },
+   "belege": [
+    "M-16036d4d7832",
+    "M-08a3b03b7ba9",
+    "M-ce39aa9855be",
+    "M-e341b8ecac90"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-druck",
+    "B-wegen"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-3bb5f62e626b",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-gescheitert",
+   "titel": "christa ↔ gescheitert",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 18,
+    "n_b": 7,
+    "N": 145,
+    "lift": 5.75,
+    "p": 0.000307,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 0.000355
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-gescheitert"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-c330249ebca9",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-hinrichtung",
+   "titel": "christa ↔ hinrichtung",
+   "statistik": {
+    "n_ab": 8,
+    "n_a": 18,
+    "n_b": 12,
+    "N": 145,
+    "lift": 5.37,
+    "p": 4e-06,
+    "tage": 2,
+    "haeuser": 7,
+    "q": 9e-06
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-a7abea5c96a2",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-56c8014063b3",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-hinrichtung"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-e7588d6fb6ab",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-pike",
+   "titel": "christa ↔ pike",
+   "statistik": {
+    "n_ab": 17,
+    "n_a": 18,
+    "n_b": 17,
+    "N": 145,
+    "lift": 8.06,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 10,
+    "q": 0.0
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-150aeb3f9e19",
+    "M-b190a5386be1",
+    "M-80c44b5aa459",
+    "M-a7abea5c96a2",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-19864e746bdd",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-gescheitert",
+   "nach": "B-hinrichtung",
+   "titel": "gescheitert ↔ hinrichtung",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 7,
+    "n_b": 12,
+    "N": 145,
+    "lift": 10.36,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 2e-06
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-6a2d2f6ef9e0",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-gescheitert",
+    "B-hinrichtung"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-09b03f9d65cc",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-gescheitert",
+   "nach": "B-pike",
+   "titel": "gescheitert ↔ pike",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 7,
+    "n_b": 17,
+    "N": 145,
+    "lift": 6.09,
+    "p": 0.000225,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 0.000282
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-gescheitert",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-ac694fb6d6e8",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-hinrichtung",
+   "nach": "B-pike",
+   "titel": "hinrichtung ↔ pike",
+   "statistik": {
+    "n_ab": 8,
+    "n_a": 12,
+    "n_b": 17,
+    "N": 145,
+    "lift": 5.69,
+    "p": 2e-06,
+    "tage": 2,
+    "haeuser": 7,
+    "q": 6e-06
+   },
+   "belege": [
+    "M-c086dbdf791f",
+    "M-b190a5386be1",
+    "M-a7abea5c96a2",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-56c8014063b3",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-hinrichtung",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-f03588fd5e80",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-execution",
+   "titel": "christa ↔ execution",
+   "statistik": {
+    "n_ab": 8,
+    "n_a": 18,
+    "n_b": 9,
+    "N": 145,
+    "lift": 7.16,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 0.0
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-execution"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-4b1f81ced607",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-tennesse",
+   "titel": "christa ↔ tennesse",
+   "statistik": {
+    "n_ab": 9,
+    "n_a": 18,
+    "n_b": 13,
+    "N": 145,
+    "lift": 5.58,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 7,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-56c8014063b3"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-tennesse"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-eb053a21d225",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-pike",
+   "titel": "execution ↔ pike",
+   "statistik": {
+    "n_ab": 7,
+    "n_a": 9,
+    "n_b": 17,
+    "N": 145,
+    "lift": 6.63,
+    "p": 3e-06,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 6e-06
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-fc9415f94d83",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-tennesse",
+   "titel": "execution ↔ tennesse",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 9,
+    "n_b": 13,
+    "N": 145,
+    "lift": 7.44,
+    "p": 1.1e-05,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 2.1e-05
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-45fe085c4622"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-tennesse"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-8b2d52c2cabe",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-pike",
+   "nach": "B-tennesse",
+   "titel": "pike ↔ tennesse",
+   "statistik": {
+    "n_ab": 9,
+    "n_a": 17,
+    "n_b": 13,
+    "N": 145,
+    "lift": 5.9,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 7,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-150aeb3f9e19",
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-9f507886f3f4",
+    "M-gn-2eba86fd8134",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-56c8014063b3"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-pike",
+    "B-tennesse"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-3cdf2d9f0cf8",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-giftspritz",
+   "titel": "christa ↔ giftspritz",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 18,
+    "n_b": 9,
+    "N": 145,
+    "lift": 5.37,
+    "p": 0.000106,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 0.000141
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-80c44b5aa459",
+    "M-eebebdf25637",
+    "M-b2c375a12787",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-giftspritz"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-11d66946c1aa",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-gescheitert",
+   "nach": "B-giftspritz",
+   "titel": "gescheitert ↔ giftspritz",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 7,
+    "n_b": 9,
+    "N": 145,
+    "lift": 9.21,
+    "p": 0.000229,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000282
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-6e9e6deccc94"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-gescheitert",
+    "B-giftspritz"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-0782cbba99a4",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-giftspritz",
+   "nach": "B-hinrichtung",
+   "titel": "giftspritz ↔ hinrichtung",
+   "statistik": {
+    "n_ab": 7,
+    "n_a": 9,
+    "n_b": 12,
+    "N": 145,
+    "lift": 9.4,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35",
+    "M-6586b14ba12f"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-giftspritz",
+    "B-hinrichtung"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-9509e4410a19",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-giftspritz",
+   "nach": "B-pike",
+   "titel": "giftspritz ↔ pike",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 9,
+    "n_b": 17,
+    "N": 145,
+    "lift": 5.69,
+    "p": 7.2e-05,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 0.000103
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-80c44b5aa459",
+    "M-eebebdf25637",
+    "M-b2c375a12787",
+    "M-6e9e6deccc94",
+    "M-15100b4d8a35"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-giftspritz",
+    "B-pike"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-9c3947197b92",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-giftspritz",
+   "nach": "B-überlebt",
+   "titel": "giftspritz ↔ überlebt",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 9,
+    "n_b": 6,
+    "N": 145,
+    "lift": 13.43,
+    "p": 1e-06,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 4e-06
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-b2c375a12787"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-giftspritz",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-bfec4ff655db",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-hinrichtung",
+   "nach": "B-tennesse",
+   "titel": "hinrichtung ↔ tennesse",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 12,
+    "n_b": 13,
+    "N": 145,
+    "lift": 5.58,
+    "p": 0.000104,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 0.000141
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-ba4615b03f22",
+    "M-56c8014063b3",
+    "M-48171fbea9d6",
+    "M-d9d9d99f7834"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-hinrichtung",
+    "B-tennesse"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-e2304dd9a08c",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-hinrichtung",
+   "nach": "B-überlebt",
+   "titel": "hinrichtung ↔ überlebt",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 12,
+    "n_b": 6,
+    "N": 145,
+    "lift": 10.07,
+    "p": 9e-06,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1.9e-05
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-6a2d2f6ef9e0",
+    "M-48171fbea9d6",
+    "M-d9d9d99f7834"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-hinrichtung",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-7d4b119d395b",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-tennesse",
+   "nach": "B-überlebt",
+   "titel": "tennesse ↔ überlebt",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 13,
+    "n_b": 6,
+    "N": 145,
+    "lift": 7.44,
+    "p": 0.000547,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 0.000578
+   },
+   "belege": [
+    "M-b190a5386be1",
+    "M-eebebdf25637",
+    "M-48171fbea9d6",
+    "M-d9d9d99f7834"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-tennesse",
+    "B-überlebt"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-270e1ed64e84",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-attempt",
+   "nach": "B-christa",
+   "titel": "attempt ↔ christa",
+   "statistik": {
+    "n_ab": 4,
+    "n_a": 5,
+    "n_b": 18,
+    "N": 145,
+    "lift": 6.44,
+    "p": 0.000797,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 0.000797
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-attempt",
+    "B-christa"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-097f6793cc4c",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-attempt",
+   "nach": "B-execution",
+   "titel": "attempt ↔ execution",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 5,
+    "n_b": 9,
+    "N": 145,
+    "lift": 16.11,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 4,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-a36f0978cb96",
+    "M-dc6326fbfb76",
+    "M-45fe085c4622",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-attempt",
+    "B-execution"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-518b88aa90e0",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-christa",
+   "nach": "B-failed",
+   "titel": "christa ↔ failed",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 18,
+    "n_b": 5,
+    "N": 145,
+    "lift": 8.06,
+    "p": 1.7e-05,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 3e-05
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-a36f0978cb96",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-christa",
+    "B-failed"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-7fe15e9cd1fb",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-execution",
+   "nach": "B-failed",
+   "titel": "execution ↔ failed",
+   "statistik": {
+    "n_ab": 5,
+    "n_a": 9,
+    "n_b": 5,
+    "N": 145,
+    "lift": 16.11,
+    "p": 0.0,
+    "tage": 2,
+    "haeuser": 3,
+    "q": 1e-06
+   },
+   "belege": [
+    "M-0f07b7f4fcb3",
+    "M-9f507886f3f4",
+    "M-a36f0978cb96",
+    "M-4167895a9417",
+    "M-71f52eaffcb7"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-execution",
+    "B-failed"
+   ],
+   "staerke_aktuell": 1.0
+  },
+  {
+   "id": "X-b9544a69c4dd",
+   "typ": "verknuepfung",
+   "art": "begriff_begriff",
+   "von": "B-stoppt",
+   "nach": "B-vorerst",
+   "titel": "stoppt ↔ vorerst",
+   "statistik": {
+    "n_ab": 6,
+    "n_a": 12,
+    "n_b": 10,
+    "N": 145,
+    "lift": 7.25,
+    "p": 1.4e-05,
+    "tage": 2,
+    "haeuser": 5,
+    "q": 2.7e-05
+   },
+   "belege": [
+    "M-ba4615b03f22",
+    "M-c81c58e3815b",
+    "M-d86b6dc756ad",
+    "M-35bb142f007e",
+    "M-5bc954bf57da",
+    "M-e8ba7c701f3e"
+   ],
+   "erstmals": "2026-10-03",
+   "zuletzt": "2026-10-03",
+   "beobachtungen": 1,
+   "staerke": 1.0,
+   "status": "neu",
+   "verweise": [
+    "B-stoppt",
+    "B-vorerst"
+   ],
+   "staerke_aktuell": 1.0
+  }
+ ],
+ "thesen_heute": [
+  {
+   "kb_id": "E2",
+   "titel": "Störungen in Straße von Hormus und Rotem Meer → Frachtraten und Ölpreis",
+   "p": 0.755,
+   "grundrate": 0.628
+  },
+  {
+   "kb_id": "G5",
+   "titel": "Schwache US-Arbeitsmarktdaten → Sinkende Erwartungen an Fed-Zinserhöhungen",
+   "p": 0.488,
+   "grundrate": 0.36
+  },
+  {
+   "kb_id": "G7",
+   "titel": "Regierungskrise in Spanien → Euro-Schwäche und höhere Risikoaufschläge",
+   "p": 0.639,
+   "grundrate": 0.521
+  }
+ ],
+ "deepdive_themen": [
+  "China",
+  "Christa Pike",
+  "Insolvenzantrag",
+  "Verkehr und Bahn",
+  "Zuckersteuer"
+ ],
+ "umfang": {
+  "meldungen": 145,
+  "deepdives": 7,
+  "thesen": 3,
+  "kennzahlen": 0,
+  "begriffstage": 96,
+  "begriffe": 40,
+  "verknuepfungen": 39,
+  "vergessen_heute": 0
+ }
+}

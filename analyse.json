@@ -1,0 +1,40 @@
+{
+ "stand": "2026-10-03T08:44+02:00",
+ "wirkungsmodell": {
+  "n": 9,
+  "nutzbar": false,
+  "spalten": [
+   "konstante",
+   "kat_konflikt",
+   "kat_sanktion",
+   "kat_handel_zoll",
+   "kat_lieferstoerung",
+   "kat_produktion_kapazitaet",
+   "kat_preis_markt",
+   "kat_regulierung",
+   "kat_geld_fiskal",
+   "kat_naturereignis",
+   "kat_infrastruktur_cyber",
+   "status",
+   "schwere",
+   "umfang",
+   "dauer",
+   "kette",
+   "unsicherheit",
+   "bestaetigt",
+   "konkret",
+   "eskalation",
+   "groesse",
+   "log_haeuser",
+   "seeweg",
+   "preis_richtung"
+  ],
+  "zusatz": [],
+  "grund": "zu wenige gerichtete Fälle (9 von 40)"
+ },
+ "thesen": {},
+ "vorschlaege": [],
+ "angewendet": [],
+ "tests": 2,
+ "ereignisse": 48
+}
