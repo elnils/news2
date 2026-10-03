@@ -50,10 +50,11 @@ ZUSTAND = "lernen.json"
 ALPHA = 0.02
 MIN_KALIBRIERUNG = 30
 MIN_POOL = 10
-EXPERTEN = ["grundrate", "verfahren", "regression"]
+EXPERTEN = ["grundrate", "verfahren", "regression", "wirkung"]
 NAMEN = {"grundrate": "Grundrate (wie oft der Kurs ohnehin so läuft)",
          "verfahren": "Regelwerk (Evidenzindex, Archiv-Fälle, Sicherheit der KI)",
-         "regression": "Gelerntes Modell (Regression)"}
+         "regression": "Gelerntes Modell (Regression)",
+         "wirkung": "Wirkungsmodell aus der Ereignistabelle (analyse_auto.py)"}
 
 
 def _laden(pfad, leer):
@@ -258,7 +259,8 @@ def trainingsfaelle(faelle):
     out = []
     for f in faelle:
         x = f.get("merkmale")
-        felder = ("breite", "ueberraschung", "serie", "momentum", "vola", "abstand", "konkret", "eskalation", "groesse")
+        import prognose_modell
+        felder = tuple(prognose_modell.MERKMALE)
         if isinstance(x, dict) and all(k in x for k in felder):
             try:
                 out.append((date.fromisoformat(f["datum"]), [x[k] for k in felder],

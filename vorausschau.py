@@ -1901,6 +1901,41 @@ Antworte NUR mit JSON: [{{"thema": "…", "ausloeser": "…", "wirkung": "…", 
     return [x for x in (d or []) if isinstance(x, dict) and x.get("ausloeser")][:3]
 
 
+def ketten_buendeln(ketten):
+    """Zwei Einschätzungen zum selben Geschehen erscheinen als eine Karte:
+    gleicher Messpunkt in gleicher Richtung und überwiegend dieselben
+    Belegmeldungen (Überlappung ≥ 40 % der kleineren Menge), oder ohne
+    Messpunkt ≥ 60 %. Es bleibt die feste vor der vorläufigen These, sonst
+    die mit mehr Häusern; die andere wird in "zusammengefasst" vermerkt."""
+    def mp(k):
+        m = k.get("messpunkt") or {}
+        return (m.get("sym"), m.get("richtung")) if m.get("sym") else None
+    def belege(k):
+        return {q.get("id") or q.get("titel") for q in (k.get("quellen") or []) if q.get("id") or q.get("titel")}
+    def rang(k):
+        return (0 if k.get("vorlaeufig") else 1, (k.get("signal") or {}).get("haeuser", 0), len(k.get("quellen") or []))
+    behalten = []
+    for k in sorted(ketten, key=rang, reverse=True):
+        bk, partner = belege(k), None
+        for h in behalten:
+            bh = belege(h)
+            if not bk or not bh:
+                continue
+            ueber = len(bk & bh) / min(len(bk), len(bh))
+            if (mp(k) and mp(k) == mp(h) and ueber >= 0.4) or (not mp(k) and not mp(h) and ueber >= 0.6):
+                partner = h
+                break
+        if partner:
+            partner.setdefault("zusammengefasst", []).append(
+                {"kb_id": k.get("kb_id"), "titel": k.get("titel"),
+                 "p": (k.get("wahrscheinlichkeit") or {}).get("p"), "vorlaeufig": bool(k.get("vorlaeufig"))})
+            print(f"  Gebündelt: {k.get('kb_id')} in {partner.get('kb_id')} (gleicher Messpunkt, überwiegend dieselben Belege)")
+        else:
+            behalten.append(k)
+    reihenfolge = {id(k): i for i, k in enumerate(ketten)}
+    return sorted(behalten, key=lambda k: reihenfolge[id(k)])
+
+
 def kandidaten_fortschreiben(vorschlaege, basis, heute, kurse):
     """Wiederkehrende Signale ohne eigenes Zutun berücksichtigen: Taucht ein
     vorgeschlagener Zusammenhang an drei verschiedenen Tagen binnen zwei
@@ -2112,7 +2147,8 @@ def main():
     kurse = kurse_laden()
     archiv_art = archiv_laden()
     # Gelerntes Modell (logistische Regression) aus Archiv und Kursen – siehe prognose_modell.py
-    modell, modell_info = None, {"genutzt": False, "grund": "kein Archiv"}
+    modell, modell_info, ev_tab = None, {"genutzt": False, "grund": "kein Archiv"}, {}
+    aa, wm_info = None, None
     try:
         import prognose_modell as pm
 
@@ -2132,9 +2168,22 @@ def main():
                   + (f"; Kalibrierung a={lern['kalibrierung']['a']}, b={lern['kalibrierung']['b']}" if lern.get("kalibrierung") else ""))
         except Exception as ex:
             print(f"  Lernen: übersprungen ({type(ex).__name__})")
+        # Ereignistabelle (ereignisse.py) als zusätzliche Merkmale
+        try:
+            import ereignisse as ev_mod
+            ev_tab = ev_mod.nachschlagen()
+        except Exception:
+            ev_tab = {}
+        # Wirkungsmodell des Analysealgorithmus (analyse_auto.py) als vierter Experte
+        try:
+            import analyse_auto as aa
+            wm_info = (_laden("analyse.json", {}) or {}).get("wirkungsmodell")
+        except Exception:
+            aa, wm_info = None, None
         if archiv_art:
             modell, modell_info = pm.trainieren(eintraege, archiv_art, treffer_tage, _mp,
-                                                extra=lernen.trainingsfaelle(eigene) if lern else None)
+                                                extra=lernen.trainingsfaelle(eigene) if lern else None, ereignisse=ev_tab)
+            modell_info["ereignisse"] = len(ev_tab)
         print(f"  Modell: {modell_info.get('n', 0)} Fälle aus {modell_info.get('thesen', 0)} Thesen, "
               f"AUC {modell_info.get('auc_cv')}, Brier {modell_info.get('brier_cv')} gegen Grundrate {modell_info.get('brier_grundrate')} – "
               f"{'genutzt, Gewicht ' + str(modell_info.get('gewicht')) if modell_info.get('genutzt') else 'nicht genutzt: ' + str(modell_info.get('grund'))}")
@@ -2250,7 +2299,7 @@ def main():
                 if modell:
                     try:
                         texte_heute = [((m.get("title") or "") + " " + (m.get("desc") or "")[:300]) for m in (s.get("treffer") or [])][:8]
-                        p_reg, x = pm.heute(modell, e, archiv_art, treffer_tage, sym, richtung, len(s["haeuser"]), jetzt.date(), texte_heute)
+                        p_reg, x = pm.heute(modell, e, archiv_art, treffer_tage, sym, richtung, len(s["haeuser"]), jetzt.date(), texte_heute, ev_tab)
                     except Exception:
                         p_reg, x = None, None
                 experten = {"grundrate": wkeit.get("grundrate"), "verfahren": wkeit["p"]}
@@ -2259,6 +2308,11 @@ def main():
                     experten["regression"] = round(p_reg, 3)
                     wkeit["regression"] = {"p": round(p_reg, 3), "merkmale": x, "genutzt": bool(modell_info.get("genutzt")),
                                            "gewicht": modell_info.get("gewicht", 0)}
+                if aa and wm_info and wm_info.get("nutzbar"):
+                    p_w = aa.wirkungs_p(wm_info, (ev_tab or {}).get((e["id"], jetzt.date().isoformat())), richtung)
+                    if p_w is not None:
+                        experten["wirkung"] = round(p_w, 3)
+                        wkeit["wirkungsmodell"] = {"p": round(p_w, 3), "r2_oos": wm_info.get("r2_oos")}
                 p_alt = wkeit["p"]
                 if lern and lern.get("pool_aktiv"):
                     # gelernte Gewichte der Experten (Fixed-Share) statt fester Gewichte
@@ -2367,6 +2421,7 @@ def main():
             print(f"  Lernprotokoll: {lernen.protokollieren(lern_heute, heute)} neue Einschätzungen vermerkt")
         except Exception as ex:
             print(f"  Lernprotokoll: übersprungen ({type(ex).__name__})")
+    ketten = ketten_buendeln(ketten)
     tagesbild = tagesbild_schreiben(anbieter, ketten) if anbieter else []
 
     out = {"updated": datetime.now(timezone.utc).isoformat(), "datum": heute,

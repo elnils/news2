@@ -41,13 +41,36 @@ import math
 import os
 from datetime import date, timedelta
 
-MERKMALE = ["breite", "ueberraschung", "serie", "momentum", "vola", "abstand", "konkret", "eskalation", "groesse"]
+MERKMALE = ["breite", "ueberraschung", "serie", "momentum", "vola", "abstand", "konkret", "eskalation", "groesse",
+            "codiert", "schwere", "status", "umfang", "preis_richtung", "dauer", "kette", "unsicherheit", "bestaetigt"]
 NAMEN = {"breite": "Breite der Berichterstattung", "ueberraschung": "Überraschung gegenüber den 30 Vortagen",
          "serie": "Berichterstattung schon an Vortagen", "momentum": "Kursbewegung der 20 Vortage (in Thesenrichtung)",
          "vola": "Schwankung des Messpunkts", "abstand": "Abstand zum 60-Tage-Mittel (in Thesenrichtung)",
          "konkret": "Text: Geschehenes statt Möglichem (beschlossen, verhängt – nicht erwägt, droht)",
          "eskalation": "Text: Verschärfung statt Entspannung (Rekord, massiv – nicht Einigung, Waffenruhe)",
-         "groesse": "Text: konkrete Größenangaben (Milliarden, Prozent, Barrel, Tonnen)"}
+         "groesse": "Text: konkrete Größenangaben (Milliarden, Prozent, Barrel, Tonnen)",
+         "codiert": "Ereignistabelle: Ereignis codiert (ja/nein)",
+         "schwere": "Ereignistabelle: Schwere (1 gering … 5 systemisch)",
+         "status": "Ereignistabelle: geschehen statt nur erwogen",
+         "umfang": "Ereignistabelle: Reichweite (lokal … global)",
+         "preis_richtung": "Ereignistabelle: erwartete Preiswirkung in Thesenrichtung",
+         "dauer": "Ereignistabelle: Dauer (Tage … dauerhaft)",
+         "kette": "Ontologie: Teil einer Ereigniskette (Eskalationsfolge)",
+         "unsicherheit": "Ereignistabelle: vage Formulierungen (soll, angeblich …)",
+         "bestaetigt": "Ereignistabelle: offiziell bestätigt"}
+
+
+def ereignismerkmale(ev, richtung):
+    """Spalten der Ereignistabelle (ereignisse.py) als Zahlen; ohne Eintrag neutral mit codiert = 0."""
+    if not ev:
+        return [0.0] * 9
+    st = {"geschehen": 1.0, "angekuendigt": 0.5, "erwogen": -0.5, "dementiert": -1.0}.get(ev.get("status"), 0.0)
+    um = {"lokal": 0.0, "national": 0.33, "regional": 0.67, "global": 1.0}.get(ev.get("umfang"), 0.0)
+    du = {"tage": 0.0, "wochen": 0.33, "monate": 0.67, "dauerhaft": 1.0}.get(ev.get("dauer"), 0.0)
+    sw = ((ev.get("schwere") or 3) - 3) / 2
+    ke = min(4, (ev.get("kette") or 1) - 1) / 4
+    return [1.0, sw, st, um, float(ev.get("preis") or 0) * richtung, du, ke,
+            float(ev.get("unsicherheit") or 0), float(ev.get("bestaetigt") or 0)]
 
 # ── Textmerkmale aus Schlagzeile und Vorspann ──
 # Eigene kleine Wortlisten (deutsch und englisch). Bewusst nur Schlagzeile und
@@ -119,7 +142,7 @@ def _index_bis(reihe, tag):
     return lo
 
 
-def merkmale(tag, haeuser_tag, tage_map, reihe, richtung, texte=None):
+def merkmale(tag, haeuser_tag, tage_map, reihe, richtung, texte=None, ereignis=None):
     """Merkmale am Tag; tage_map: {datum_iso: anzahl_haeuser}. None, wenn Kurse fehlen."""
     i = _index_bis(reihe, tag - timedelta(days=1))
     if i < 60:
@@ -133,7 +156,7 @@ def merkmale(tag, haeuser_tag, tage_map, reihe, richtung, texte=None):
     davor = [tage_map.get((tag - timedelta(days=k)).isoformat(), 0) for k in range(1, 31)]
     serie = sum(1 for k in range(1, 8) if tage_map.get((tag - timedelta(days=k)).isoformat(), 0) >= 2)
     return [math.log(1 + haeuser_tag), math.log((haeuser_tag + 0.5) / (1 + sum(davor) / 30)), serie,
-            momentum, vola, abstand] + textmerkmale(texte)
+            momentum, vola, abstand] + textmerkmale(texte) + ereignismerkmale(ereignis, richtung)
 
 
 def ergebnis(tag, reihe, tage, richtung):
@@ -197,7 +220,7 @@ def auc(p, y):
     return gewonnen / (len(pos) * len(neg))
 
 
-def trainieren(eintraege, archiv_art, treffer_fn, sym_fn, min_haeuser=2, extra=None, halbwertszeit=180):
+def trainieren(eintraege, archiv_art, treffer_fn, sym_fn, min_haeuser=2, extra=None, halbwertszeit=180, ereignisse=None):
     """Gepooltes Modell über alle Thesen. sym_fn(eintrag) → (sym, richtung, tage) oder None."""
     faelle = []
     for e in eintraege:
@@ -217,7 +240,7 @@ def trainieren(eintraege, archiv_art, treffer_fn, sym_fn, min_haeuser=2, extra=N
                 tag = date.fromisoformat(t)
             except ValueError:
                 continue
-            x = merkmale(tag, n, tage_map, reihe, richtung, roh[t].get("texte"))
+            x = merkmale(tag, n, tage_map, reihe, richtung, roh[t].get("texte"), (ereignisse or {}).get((e["id"], t)))
             yv = ergebnis(tag, reihe, tage, richtung)
             if x is not None and yv is not None:
                 faelle.append((tag, x, yv, e["id"]))
@@ -264,10 +287,10 @@ def trainieren(eintraege, archiv_art, treffer_fn, sym_fn, min_haeuser=2, extra=N
     return modell, info
 
 
-def heute(modell, eintrag, archiv_art, treffer_fn, sym, richtung, haeuser_heute, tag, texte=None):
+def heute(modell, eintrag, archiv_art, treffer_fn, sym, richtung, haeuser_heute, tag, texte=None, ereignisse=None):
     reihe = kursreihe(sym)
     tage_map = {t: len(v["haeuser"]) for t, v in (treffer_fn(eintrag, archiv_art) or {}).items()}
-    x = merkmale(tag, haeuser_heute, tage_map, reihe, richtung, texte)
+    x = merkmale(tag, haeuser_heute, tage_map, reihe, richtung, texte, (ereignisse or {}).get((eintrag["id"], tag.isoformat())))
     if x is None or not modell:
         return None, None
     return vorhersagen(modell, x), dict(zip(MERKMALE, [round(v, 3) for v in x]))

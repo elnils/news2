@@ -1949,17 +1949,52 @@ function hausVon(x){return SRC2HAUS[x]||(typeof quellBasis==='function'?quellBas
    manchmal Verwandtes zusammen – als "weitere Quelle" zählt aber nur, was
    dieselbe Nachricht bringt: nahezu gleiche Schlagzeile, oder zwei gemeinsame
    Wörter, oder ein gemeinsamer Name/Ort plus ein gemeinsames Wort. */
+/* Die Rubrik vor dem Doppelpunkt ("Nations League: …", "Liveblog: …",
+   "Nahost | …") ist kein Inhalt: Wörter, die in BEIDEN Rubriken stehen,
+   zählen nicht als gemeinsam. Mehrwortnamen ("Nations League", "Weißes
+   Haus"), die in beiden Titeln nebeneinander stehen, zählen einmal statt
+   zweimal. Sonst galten Dzeko-Abschied, Wirtz-Porträt und Italien–Frankreich
+   als dieselbe Meldung. */
+function rubrikWorte(a){
+  if(a._rub)return a._rub;
+  const m=/^\s*([^:|]{2,48})\s*[:|]\s+\S/.exec(a.title||'');
+  return a._rub=(m&&m[1].trim().split(/\s+/).length<=5&&typeof titelWorte==='function')?titelWorte(m[1]):new Set();
+}
+function wortFolge(a){
+  if(a._wf)return a._wf;
+  const out=[];
+  String(a.title||'').split(/[^\p{L}\p{N}-]+/u).forEach(t=>{if(t)titelWorte(t).forEach(w=>out.push(w))});
+  return a._wf=out;
+}
+function geteilteWorte(a,b){
+  const A=dubWorte(a),B=dubWorte(b),RA=rubrikWorte(a),RB=rubrikWorte(b);
+  const gem=new Set();for(const w of A)if(B.has(w)&&!(RA.has(w)&&RB.has(w)))gem.add(w);
+  if(gem.size<2)return gem.size;
+  const paare=f=>{const s=new Set();for(let i=0;i+1<f.length;i++)if(gem.has(f[i])&&gem.has(f[i+1]))s.add(f[i]+' '+f[i+1]);return s};
+  const pa=paare(wortFolge(a)),pb=paare(wortFolge(b));let doppelt=0;for(const p of pa)if(pb.has(p))doppelt++;
+  return gem.size-doppelt;
+}
+/* Namen und Begriffe ohne die, die nur aus der Rubrik stammen */
+function hartOhneRubrik(a){
+  if(a._hartR)return a._hartR;
+  const h=a._hart||(a._hart=hartSignale(a)),R=rubrikWorte(a);
+  if(!R.size)return a._hartR=h;
+  const out=new Set();
+  h.forEach(k=>{if(k[0]==='z'){out.add(k);return}const w=[...titelWorte(k.slice(2))];if(!w.length||!w.every(x=>R.has(x)))out.add(k)});
+  return a._hartR=out;
+}
 function gleicheSache(a,b){
   if(typeof dubNah!=='function'||typeof titelWorte!=='function')return true;
   /* Billige Prüfungen zuerst (zwischengespeicherte Wortmengen), die teure
      Dublettenprüfung nur, wenn es knapp ist – läuft beim Laden für jede
      Meldung. */
   const A=dubWorte(a),B=dubWorte(b);
-  let n=0;for(const w of A)if(B.has(w)){n++;if(n>=2)return true}
-  const gem=hartGemeinsam(a._hart||(a._hart=hartSignale(a)),b._hart||(b._hart=hartSignale(b)));
+  let n=geteilteWorte(a,b);if(n>=2)return true;
+  const gem=hartGemeinsam(hartOhneRubrik(a),hartOhneRubrik(b));
   if((gem>=1&&n>=1)||gem>=3)return true;
   const komp=kompositumTreffer(A,B);
   if(n+komp>=2||(gem>=1&&komp>=1))return true;
+  if(rubrikWorte(a).size&&rubrikWorte(b).size&&n===0&&gem===0)return false;
   return dubNah(a,b,{ohneFaden:true});
 }
 /* Weitere Häuser zum selben Ereignis – unabhängig davon, ob die KI oder
@@ -1983,7 +2018,8 @@ function ereignisPartner(a){
   [...zaehl].sort((p,q)=>q[1]-p[1]).forEach(([x,n])=>{
     const h=x._qb||(x._qb=hausVon(x.src));
     if(haeuser.has(h)||Math.abs(x.date-a.date)>30*H)return;
-    if(n>=2||dubNah(a,x,{ohneFaden:true})){if(n>=2&&!gleicheSache(a,x))return;haeuser.add(h);out.push(x)}
+    if(n>=2)n=geteilteWorte(a,x);
+    if(n>=2||(!(rubrikWorte(a).size&&rubrikWorte(x).size)&&dubNah(a,x,{ohneFaden:true}))){if(n>=2&&!gleicheSache(a,x))return;haeuser.add(h);out.push(x)}
   });
   return a._partner=out.slice(0,12);
 }
@@ -2005,9 +2041,9 @@ function clusterArtsBasis(a){
     /* Die KI hat diese Meldungen als ein Ereignis gebündelt – oft in anderen
        Worten oder Sprachen. Ausgeschlossen wird nur, was gar nichts teilt:
        kein Wort, keinen Namen, keinen Ort. */
-    const teilt=x=>{const A=dubWorte(a),B=dubWorte(x);for(const w of A)if(B.has(w))return true;
+    const teilt=x=>{const A=dubWorte(a),B=dubWorte(x);if(geteilteWorte(a,x)>=1)return true;
       if(kompositumTreffer(A,B))return true;
-      return hartGemeinsam(a._hart||(a._hart=hartSignale(a)),x._hart||(x._hart=hartSignale(x)))>=1};
+      return hartGemeinsam(hartOhneRubrik(a),hartOhneRubrik(x))>=1};
     return a._kiGruppe.filter(x=>{if(x.id===a.id)return false;const h=x._qb||(x._qb=hausVon(x.src));if(seen.has(h))return false;if(typeof dubWorte==='function'&&!teilt(x))return false;seen.add(h);return true}).sort((x,y)=>y.date-x.date);
   }
   const st=(typeof IDX!=='undefined'&&IDX.story[a.id])||STORIES.find(s=>s.arts.includes(a.id));
@@ -2383,8 +2419,8 @@ function quellenListe(a){
 }
 function rowHTML(a,listName,small){
   return `<div class="row ${S.reader===a.id?'active':''}" data-id="${a.id}" role="button" tabindex="0" onclick="openReader('${a.id}',window.${listName})" onkeydown="rowKey(event,'${a.id}')">
-    <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${quellenPill(a)}${zugangPill(a)}${a.gericht?`<span class="pill grey">${esc(a.az)}</span>`:''}${small?'':`<span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span>`}</div>
-    <div class="ttl" ${small?'style="font-size:var(--fs-sm)"':''}>${esc(a.title)}</div>${small?'':`<div class="teaser">${esc(a.desc)}</div>`}${starHTML(a.id)}${quellenListe(a)}${inlineHTML(a)}</div>`;
+    <div class="meta">${srcHTML(a)}<span>${fmtAgo(a.date)}</span>${listName==='READERSRC'?'':quellenPill(a)}${zugangPill(a)}${a.gericht?`<span class="pill grey">${esc(a.az)}</span>`:''}${small?'':`<span>${(a.topics||[]).map(t=>TOPICS[t]||t).join(', ')}</span>`}</div>
+    <div class="ttl" ${small?'style="font-size:var(--fs-sm)"':''}>${esc(a.title)}</div>${small?'':`<div class="teaser">${esc(a.desc)}</div>`}${starHTML(a.id)}${listName==='READERSRC'?'':quellenListe(a)}${inlineHTML(a)}</div>`;
 }
 /* Spalten der Zeitungsansicht: automatisch, oder am Desktop fest 1 (ein
    Artikel je Zeile, Bild links), 2, 3 oder 4. Am Handy immer eine. */
@@ -5908,7 +5944,8 @@ function renderVorausschau(){
       <div class="note" style="margin-top:8px">Signal: ${sg.haeuser||0} Häuser · ${sg.meldungen||0} Meldungen, ${sg.jung||0} aus den letzten 24 Stunden${sg.gdelt&&sg.gdelt.faktor?` · weltweit ${sg.gdelt.faktor>=1?'×'+fmtNum(sg.gdelt.faktor,1):'rückläufig'} (GDELT)`:''}${sg.archiv_faktor&&!(sg.gdelt&&sg.gdelt.faktor)?` · ${sg.archiv_faktor>=20?'über 20':fmtNum(sg.archiv_faktor,1)}-mal so viel wie sonst im Archiv`:''}${(k.belege||[]).length?` · Belege: ${k.belege.map(kurzLit).map(esc).join('; ')}`:''}</div>
       ${q?`<details class="wk-quellen"><summary>${(k.quellen||[]).length} ${(k.quellen||[]).length===1?'Meldung':'Meldungen'} dazu</summary>${q}</details>`:''}
       </details>
-      <div class="bar" style="margin-top:8px"><button class="btn sm quiet" onclick="wkMonitor('${esc(k.kb_id)}')">Als Monitor beobachten</button></div>
+      ${(k.zusammengefasst||[]).length?`<div class="note" style="margin-top:6px">Zusammengefasst mit ${k.zusammengefasst.map(z=>`${esc(z.kb_id)} „${esc(z.titel)}“${typeof z.p==='number'?` (${Math.round(z.p*100)} %)`:''}`).join(', ')} – gleicher Messpunkt, überwiegend dieselben Meldungen.</div>`:''}
+      <div class="bar" style="margin-top:8px"><button class="btn sm" onclick="wkMonitor('${esc(k.kb_id)}')">Als Monitor beobachten</button></div>
     </div>`}catch(e){console.error('Einschätzung',k&&k.kb_id,e);return `<div class="box wk-karte"><div class="note">Einschätzung ${esc((k&&k.kb_id)||'')} ließ sich nicht darstellen (${esc(String(e.message||e))}).</div></div>`}}).join('')||`<div class="box"><div class="empty"><b>Heute keine geprüfte Einschätzung</b>Kein Ereignis hat einen Zusammenhang der Wissensbasis eindeutig getroffen – das ist ein Ergebnis, kein Fehler.</div></div>`;
   if((W.beobachtung||[]).length)b+=`<div class="sec-hd" style="margin-top:16px"><h2 style="font-size:var(--fs-md)">Unter Beobachtung</h2><span class="cnt">${W.beobachtung.length}</span></div>
     <p class="note" style="margin-bottom:6px">Erste Anzeichen, aber noch zu dünn belegt – meist nur ein Haus.</p>
